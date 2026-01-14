@@ -20,6 +20,18 @@ app.use('/api/auth', authRoutes);
 app.use('/api/company', require('./routes/company'));
 app.use('/uploads', express.static('uploads'));
 
+// Serve Frontend in Production
+const path = require('path');
+if (process.env.NODE_ENV === 'production') {
+    app.use(express.static(path.join(__dirname, '../client/dist')));
+
+    app.get('*', (req, res) => {
+        // Don't interfere with API routes
+        if (req.path.startsWith('/api')) return res.status(404).send('API not found');
+        res.sendFile(path.resolve(__dirname, '../client', 'dist', 'index.html'));
+    });
+}
+
 // Database Connection
 // Database Connection
 const connectDB = async () => {
