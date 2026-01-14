@@ -1,0 +1,11 @@
+# IDEs
+.vscode/
+.idea/
+
+# System
+.DS_Store
+Thumbs.db
+
+# Agent Artifacts
+brain/
+*.log

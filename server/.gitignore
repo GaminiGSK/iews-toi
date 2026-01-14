@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Environment Variables (Secrets)
+.env
+.env.local
+.env.production
+
+# Logs
+npm-debug.log
+yarn-error.log
+logs/
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Uploads (User Content)
+uploads/
+!uploads/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
