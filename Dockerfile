@@ -5,7 +5,6 @@ FROM node:18-bullseye-slim
 WORKDIR /app
 
 # Copy package configs
-COPY package*.json ./
 COPY client/package*.json ./client/
 COPY server/package*.json ./server/
 
