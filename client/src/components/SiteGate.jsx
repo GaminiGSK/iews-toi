@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const SiteGate = ({ children }) => {
     const [accessGranted, setAccessGranted] = useState(false);
     const [code, setCode] = useState('');
     const [error, setError] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const storedAccess = localStorage.getItem('site_access');
@@ -12,12 +15,22 @@ const SiteGate = ({ children }) => {
         }
     }, []);
 
-    const handleUnlock = (e) => {
+    const handleUnlock = async (e) => {
         e.preventDefault();
-        if (code === '112233') {
-            localStorage.setItem('site_access', 'granted');
-            setAccessGranted(true);
-        } else {
+
+        try {
+            // DEV HOST check - in real prod use relative path or env var
+            const res = await axios.post('http://localhost:5000/api/auth/gate-verify', { code });
+
+            if (res.data.access === 'granted' || res.data.access === 'admin') {
+                localStorage.setItem('site_access', 'granted');
+                setAccessGranted(true);
+                if (res.data.access === 'admin') {
+                    navigate('/admin');
+                }
+            }
+        } catch (err) {
+            console.error(err);
             setError(true);
             setCode('');
         }
@@ -32,7 +45,7 @@ const SiteGate = ({ children }) => {
             <div className="max-w-md w-full bg-gray-800 rounded-lg shadow-2xl p-8 border border-gray-700">
                 <div className="text-center mb-8">
                     <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-                        Restricted Access
+                        Your Code
                     </h1>
                     <p className="text-gray-400 mt-2">Enter the 6-digit access code to continue.</p>
                 </div>

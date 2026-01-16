@@ -9,8 +9,8 @@ import SiteGate from './components/SiteGate';
 
 function App() {
   return (
-    <SiteGate>
-      <Router>
+    <Router>
+      <SiteGate>
         <Routes>
           <Route path="/login" element={<Login />} />
 
@@ -24,8 +24,8 @@ function App() {
           {/* Catch all */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
-      </Router>
-    </SiteGate>
+      </SiteGate>
+    </Router>
   );
 }
 

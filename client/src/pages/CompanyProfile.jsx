@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Upload, Save, Building, MapPin, FileText, CheckCircle, Loader2, ArrowLeft, CloudUpload, Table, FileSpreadsheet } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Upload, Save, Building, MapPin, FileText, CheckCircle, Loader2, ArrowLeft, CloudUpload, Table, FileSpreadsheet, LogOut } from 'lucide-react';
 
 export default function CompanyProfile() {
+    const navigate = useNavigate();
     const [view, setView] = useState('home'); // 'home', 'profile', 'bank'
     const [file, setFile] = useState(null); // Used for MOC Text
     const [bankText, setBankText] = useState(''); // New State for Bank Text
@@ -45,6 +47,13 @@ export default function CompanyProfile() {
         } catch (err) {
             console.error('Error fetching profile:', err);
         }
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('site_access'); // Optional: Clear site access too if strict
+        navigate('/login');
     };
 
     // Handler for MOC Text Paste
@@ -132,7 +141,16 @@ export default function CompanyProfile() {
 
     const renderHome = () => (
         <div className="max-w-4xl mx-auto p-12">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome, {formData.companyCode || 'User'}</h1>
+            <div className="flex items-center justify-between mb-2">
+                <h1 className="text-3xl font-bold text-gray-800">Welcome, {formData.companyCode || 'User'}</h1>
+                <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 text-red-500 hover:text-red-700 font-medium transition px-4 py-2 rounded-lg hover:bg-red-50"
+                >
+                    <LogOut size={20} />
+                    Log Out
+                </button>
+            </div>
             <p className="text-gray-500 mb-12">Manage your company details and financial data.</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

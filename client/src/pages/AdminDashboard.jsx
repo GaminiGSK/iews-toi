@@ -1,22 +1,96 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { UserPlus, LogOut, Building, Mail } from 'lucide-react';
+import { UserPlus, LogOut, Building, Mail, Lock, Edit2, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function AdminDashboard() {
-    const [formData, setFormData] = useState({ companyCode: '', password: '', email: '' });
+    const [users, setUsers] = useState([]);
+    const [isCreating, setIsCreating] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editingId, setEditingId] = useState(null);
+    const [formData, setFormData] = useState({ companyName: '', password: '' });
+    const [isChangingCode, setIsChangingCode] = useState(false);
+    const [newAdminCode, setNewAdminCode] = useState('');
     const [message, setMessage] = useState('');
     const navigate = useNavigate();
+
+    // Fetch users on mount
+    const fetchUsers = async () => {
+        try {
+            const res = await axios.get('http://localhost:5000/api/auth/users');
+            setUsers(res.data);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    useEffect(() => {
+        fetchUsers();
+    }, []);
+
+    const resetForm = () => {
+        setFormData({ companyName: '', password: '' });
+        setIsCreating(false);
+        setIsEditing(false);
+        setEditingId(null);
+        setMessage('');
+    };
 
     const handleCreateUser = async (e) => {
         e.preventDefault();
         try {
-            const token = localStorage.getItem('token');
             await axios.post('http://localhost:5000/api/auth/create-user', formData);
-            setMessage('User created successfully!');
-            setFormData({ companyCode: '', password: '', email: '' });
+            resetForm();
+            fetchUsers();
         } catch (err) {
             setMessage(err.response?.data?.message || 'Error creating user');
+        }
+    };
+
+    const handleUpdateUser = async (e) => {
+        e.preventDefault();
+        try {
+            await axios.put(`http://localhost:5000/api/auth/users/${editingId}`, formData);
+            resetForm();
+            fetchUsers();
+        } catch (err) {
+            setMessage(err.response?.data?.message || 'Error updating user');
+        }
+    };
+
+    const startEdit = (user) => {
+        setFormData({
+            companyName: user.companyName,
+            password: user.loginCode
+        });
+        setEditingId(user._id);
+        setIsEditing(true);
+    };
+
+    const deleteUser = async (id) => {
+        if (!window.confirm('Are you sure you want to delete this company?')) return;
+        try {
+            await axios.delete(`http://localhost:5000/api/auth/users/${id}`);
+            fetchUsers();
+        } catch (err) {
+            console.error(err);
+            alert('Error deleting user');
+        }
+    };
+
+    const handleUpdateCode = async (e) => {
+        e.preventDefault();
+        try {
+            await axios.post('http://localhost:5000/api/auth/update-gate-code', {
+                type: 'admin',
+                newCode: newAdminCode
+            });
+            alert('Admin Login Code Updated Successfully!');
+            setIsChangingCode(false);
+            setNewAdminCode('');
+        } catch (err) {
+            console.error(err);
+            alert('Error updating code');
         }
     };
 
@@ -27,103 +101,151 @@ export default function AdminDashboard() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex">
-            {/* Sidebar */}
-            <aside className="w-64 bg-white shadow-md flex-shrink-0 hidden md:block">
-                <div className="p-6">
-                    <h2 className="text-xl font-bold text-blue-600">IEWS TOI</h2>
-                    <p className="text-xs text-gray-500">Admin Console</p>
-                </div>
-                <nav className="mt-4 px-4 space-y-2">
-                    <a href="#" className="flex items-center space-x-2 px-4 py-2.5 bg-blue-50 text-blue-700 rounded-lg">
-                        <UserPlus size={18} />
-                        <span>User Management</span>
-                    </a>
-                </nav>
-                <div className="absolute bottom-4 left-4 right-4">
-                    <button onClick={handleLogout} className="flex items-center space-x-2 w-full px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">
-                        <LogOut size={18} />
-                        <span>Logout</span>
-                    </button>
-                </div>
-            </aside>
+        <div className="min-h-screen bg-black text-white p-10 font-sans">
+            {/* Header / Top Bar */}
+            <div className="max-w-4xl mx-auto flex justify-end gap-4 mb-12">
+                <button
+                    onClick={() => setIsChangingCode(true)}
+                    className="border border-white px-4 py-3 text-lg font-medium hover:bg-gray-900 transition text-white"
+                >
+                    Change Admin Code
+                </button>
+                <button
+                    onClick={() => { resetForm(); setIsCreating(true); }}
+                    className="border-2 border-white px-8 py-3 text-lg font-medium hover:bg-white hover:text-black transition text-white"
+                >
+                    Create TOI
+                </button>
+                <button
+                    onClick={handleLogout}
+                    className="bg-white text-black px-8 py-3 text-lg font-medium hover:bg-gray-200 transition"
+                >
+                    Log Out
+                </button>
+            </div>
 
-            {/* Main Content */}
-            <main className="flex-1 p-8">
-                <header className="flex justify-between items-center mb-8">
-                    <h1 className="text-2xl font-bold text-gray-800">User Management</h1>
-                    <div className="md:hidden">
-                        <button onClick={handleLogout} className="text-gray-600"><LogOut /></button>
-                    </div>
-                </header>
+            {/* Modal for Change Admin Code */}
+            {isChangingCode && (
+                <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+                    <div className="bg-white text-black p-8 rounded-lg shadow-xl w-full max-w-md relative">
+                        <button
+                            onClick={() => setIsChangingCode(false)}
+                            className="absolute top-4 right-4 text-gray-500 hover:text-black"
+                        >
+                            ✕
+                        </button>
+                        <h2 className="text-xl font-bold mb-6">Change Admin Code</h2>
 
-                {/* Create User Form */}
-                <div className="bg-white rounded-xl shadow-sm p-6 max-w-2xl border border-gray-100">
-                    <div className="flex items-center space-x-3 mb-6">
-                        <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
-                            <UserPlus size={24} />
-                        </div>
-                        <div>
-                            <h2 className="text-lg font-semibold text-gray-800">Create New Company User</h2>
-                            <p className="text-sm text-gray-500">Register a new company code for access.</p>
-                        </div>
-                    </div>
-
-                    {message && (
-                        <div className={`mb-6 p-4 rounded-lg text-sm ${message.includes('success') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                            {message}
-                        </div>
-                    )}
-
-                    <form onSubmit={handleCreateUser} className="space-y-5">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Company Code (Login ID)</label>
-                            <div className="relative">
-                                <Building className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                        <form onSubmit={handleUpdateCode} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium mb-1">New 6-Digit Code</label>
                                 <input
+                                    className="w-full border p-2 rounded"
+                                    value={newAdminCode}
+                                    onChange={e => setNewAdminCode(e.target.value)}
+                                    placeholder="e.g. 998877"
                                     type="text"
-                                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                    placeholder="e.g. KH001"
-                                    value={formData.companyCode}
-                                    onChange={(e) => setFormData({ ...formData, companyCode: e.target.value })}
+                                    maxLength="6"
                                     required
                                 />
                             </div>
+                            <button className="w-full bg-black text-white py-2 rounded mt-4">Update Code</button>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal for Create/Edit */}
+            {(isCreating || isEditing) && (
+                <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+                    <div className="bg-white text-black p-8 rounded-xl shadow-lg w-full max-w-md relative">
+                        <button
+                            onClick={resetForm}
+                            className="absolute top-4 right-4 text-gray-500 hover:text-black"
+                        >
+                            ✕
+                        </button>
+
+                        <div className="text-center mb-8">
+                            <h2 className="text-3xl font-bold text-blue-600 mb-2">
+                                {isEditing ? 'Edit Company' : 'Create Company'}
+                            </h2>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        {message && <div className="mb-4 bg-red-100 text-red-700 p-3 rounded text-sm">{message}</div>}
+
+                        <form onSubmit={isEditing ? handleUpdateUser : handleCreateUser} className="space-y-6">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Initial Password</label>
-                                <input
-                                    type="text"
-                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                    value={formData.password}
-                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Contact Email (Optional)</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
                                 <div className="relative">
-                                    <Mail className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                                    <Building className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
                                     <input
-                                        type="email"
-                                        className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                        value={formData.email}
-                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                        className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                                        value={formData.companyName}
+                                        onChange={e => setFormData({ ...formData, companyName: e.target.value })}
+                                        placeholder="e.g. ABC PTE LTD"
+                                        required
                                     />
                                 </div>
                             </div>
-                        </div>
-
-                        <div className="pt-2">
-                            <button type="submit" className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition shadow-sm">
-                                Create Company User
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">System Code</label>
+                                <div className="relative">
+                                    <Lock className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                                    <input
+                                        className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                                        value={formData.password}
+                                        onChange={e => setFormData({ ...formData, password: e.target.value })}
+                                        placeholder="e.g. 654565"
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition duration-200">
+                                {isEditing ? 'Save Changes' : 'Add'}
                             </button>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
-            </main>
+            )}
+
+            {/* List */}
+            <div className="max-w-3xl mx-auto">
+                <div className="space-y-8">
+                    {users.map((user) => (
+                        <div key={user._id} className="flex justify-between items-center text-xl border-b border-gray-800 pb-4">
+                            <div className="flex gap-20 items-center">
+                                <span className="text-red-500 font-medium tracking-wide min-w-[200px]">
+                                    {user.companyName || user.companyCode}
+                                </span>
+                                <span className="text-red-500 font-medium tracking-wide">
+                                    {user.loginCode || '******'}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-6">
+                                <button
+                                    onClick={() => startEdit(user)}
+                                    className="text-white hover:text-blue-400 transition flex items-center gap-2 text-sm"
+                                >
+                                    <Edit2 className="h-4 w-4" />
+                                    Edit
+                                </button>
+                                <button
+                                    onClick={() => deleteUser(user._id)}
+                                    className="text-white hover:text-red-500 transition flex items-center gap-2 text-sm"
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+
+                    {users.length === 0 && (
+                        <div className="text-center text-gray-500 mt-20">No companies found. Create one!</div>
+                    )}
+                </div>
+            </div>
         </div>
     );
 }
