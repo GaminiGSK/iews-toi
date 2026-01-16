@@ -219,8 +219,12 @@ router.post('/gate-verify', async (req, res) => {
             return res.status(401).json({ message: 'Invalid code' });
         }
     } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
+        console.error('GATE VERIFY ERROR:', err);
+        res.status(500).json({
+            message: 'Server Error',
+            details: err.toString(),
+            stack: process.env.NODE_ENV === 'production' ? 'HIDDEN' : err.stack
+        });
     }
 });
 
