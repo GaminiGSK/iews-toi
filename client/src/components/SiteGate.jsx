@@ -19,8 +19,8 @@ const SiteGate = ({ children }) => {
         e.preventDefault();
 
         try {
-            // DEV HOST check - in real prod use relative path or env var
-            const res = await axios.post('http://localhost:5000/api/auth/gate-verify', { code });
+            // Prod use relative path or env var
+            const res = await axios.post('/api/auth/gate-verify', { code });
 
             if (res.data.access === 'granted' || res.data.access === 'admin') {
                 localStorage.setItem('site_access', 'granted');

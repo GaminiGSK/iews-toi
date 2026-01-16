@@ -17,7 +17,7 @@ export default function AdminDashboard() {
     // Fetch users on mount
     const fetchUsers = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/auth/users');
+            const res = await axios.get('/api/auth/users');
             setUsers(res.data);
         } catch (err) {
             console.error(err);
@@ -39,7 +39,7 @@ export default function AdminDashboard() {
     const handleCreateUser = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:5000/api/auth/create-user', formData);
+            await axios.post('/api/auth/create-user', formData);
             resetForm();
             fetchUsers();
         } catch (err) {
@@ -50,7 +50,7 @@ export default function AdminDashboard() {
     const handleUpdateUser = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`http://localhost:5000/api/auth/users/${editingId}`, formData);
+            await axios.put(`/api/auth/users/${editingId}`, formData);
             resetForm();
             fetchUsers();
         } catch (err) {
@@ -70,7 +70,7 @@ export default function AdminDashboard() {
     const deleteUser = async (id) => {
         if (!window.confirm('Are you sure you want to delete this company?')) return;
         try {
-            await axios.delete(`http://localhost:5000/api/auth/users/${id}`);
+            await axios.delete(`/api/auth/users/${id}`);
             fetchUsers();
         } catch (err) {
             console.error(err);
@@ -81,7 +81,7 @@ export default function AdminDashboard() {
     const handleUpdateCode = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:5000/api/auth/update-gate-code', {
+            await axios.post('/api/auth/update-gate-code', {
                 type: 'admin',
                 newCode: newAdminCode
             });

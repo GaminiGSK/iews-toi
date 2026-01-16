@@ -38,7 +38,7 @@ export default function CompanyProfile() {
     const fetchProfile = async () => {
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.get('http://localhost:5000/api/company/profile', {
+            const res = await axios.get('/api/company/profile', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (res.data) {
@@ -64,7 +64,7 @@ export default function CompanyProfile() {
 
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.post('http://localhost:5000/api/company/parse-moc-text', { text: file }, {
+            const res = await axios.post('/api/company/parse-moc-text', { text: file }, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -82,7 +82,7 @@ export default function CompanyProfile() {
             setFormData(newFormData);
 
             // AUTO-SAVE
-            await axios.post('http://localhost:5000/api/company/update-profile', newFormData, {
+            await axios.post('/api/company/update-profile', newFormData, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -99,7 +99,7 @@ export default function CompanyProfile() {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:5000/api/company/update-profile', formData, {
+            await axios.post('/api/company/update-profile', formData, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setMessage('Additional details saved successfully!');
@@ -122,7 +122,7 @@ export default function CompanyProfile() {
 
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.post('http://localhost:5000/api/company/parse-bank-text', { text: bankText }, {
+            const res = await axios.post('/api/company/parse-bank-text', { text: bankText }, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -397,7 +397,7 @@ export default function CompanyProfile() {
 
                             try {
                                 const token = localStorage.getItem('token');
-                                const res = await axios.post('http://localhost:5000/api/company/upload-bank-statement', formData, {
+                                const res = await axios.post('/api/company/upload-bank-statement', formData, {
                                     headers: {
                                         'Authorization': `Bearer ${token}`,
                                         'Content-Type': 'multipart/form-data'

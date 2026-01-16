@@ -11,7 +11,7 @@ export default function Login() {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post('http://localhost:5000/api/auth/login', { code });
+            const res = await axios.post('/api/auth/login', { code });
             localStorage.setItem('token', res.data.token);
             localStorage.setItem('user', JSON.stringify(res.data.user));
 
@@ -62,8 +62,8 @@ export default function Login() {
                     >
                         Sign In
                     </button>
-                    
-                     <div className="text-center mt-4">
+
+                    <div className="text-center mt-4">
                         <a href="/admin" className="text-sm text-gray-400 hover:text-gray-600">Admin Access</a>
                     </div>
                 </form>

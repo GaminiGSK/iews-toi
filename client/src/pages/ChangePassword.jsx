@@ -18,7 +18,7 @@ export default function ChangePassword() {
 
         try {
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:5000/api/auth/change-password', { newPassword }, {
+            await axios.post('/api/auth/change-password', { newPassword }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 

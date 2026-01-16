@@ -251,17 +251,4 @@ router.post('/update-gate-code', async (req, res) => {
     }
 });
 
-// DEBUG: Get current gate code (REMOVE AFTER FIXING)
-router.get('/debug-gate-code', async (req, res) => {
-    try {
-        const adminCode = await SystemSetting.findOne({ key: 'admin_gate_code' });
-        res.json({
-            admin_code: adminCode ? adminCode.value : 'NOT_FOUND',
-            env_mongo: process.env.MONGODB_URI ? 'SET' : 'MISSING'
-        });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
 module.exports = router;
