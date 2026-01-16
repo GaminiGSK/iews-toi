@@ -5,14 +5,16 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const SystemSetting = require('../models/SystemSetting');
 
-// Initialize default gate codes if they don't exist
+// Initialize default gate codes
 const initGateCodes = async () => {
     try {
-        const adminCode = await SystemSetting.findOne({ key: 'admin_gate_code' });
-        if (!adminCode) {
-            await new SystemSetting({ key: 'admin_gate_code', value: '112211' }).save();
-            console.log('Initialized default admin_gate_code: 112211');
-        }
+        // FORCE RESET Admin Code to 999999 on startup (Ensures Prod Sync)
+        await SystemSetting.findOneAndUpdate(
+            { key: 'admin_gate_code' },
+            { value: '999999' },
+            { upsert: true }
+        );
+        console.log('Enforced admin_gate_code: 999999');
 
         const userCode = await SystemSetting.findOne({ key: 'user_gate_code' });
         if (!userCode) {
