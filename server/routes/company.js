@@ -5,16 +5,7 @@ const googleAI = require('../services/googleAI');
 const CompanyProfile = require('../models/CompanyProfile');
 const jwt = require('jsonwebtoken');
 
-// Middleware (Dev Mode: Bypass Auth, Mock GGMT)
-const auth = (req, res, next) => {
-    // Mock User for Dev
-    req.user = {
-        id: 'mock_id',
-        companyCode: 'GGMT',
-        role: 'user'
-    };
-    next();
-};
+const auth = require('../middleware/auth');
 
 // GET Profile
 router.get('/profile', auth, async (req, res) => {
@@ -23,27 +14,18 @@ router.get('/profile', auth, async (req, res) => {
         const companyCode = req.user.companyCode;
         if (!companyCode) return res.status(400).json({ message: 'No Company Code associated with user' });
 
-        // DB BYPASS for GET
-        /*
-        const profile = await CompanyProfile.findOne({ companyCode });
-        res.json(profile || {});
-        */
+        // DB Lookup
+        const profile = await CompanyProfile.findOne({ user: req.user.id });
 
-        // Return a mock profile so the UI doesn't crash on load
-        res.json({
-            companyCode: 'GGMT',
-            companyNameEn: 'COCOBOIL TROPIC CO., LTD.',
-            name: 'Mock Persistence',
-            companyNameKh: 'ូកូបូល ត្រូពិក ឯ.ក',
-            registrationNumber: '1000565324',
-            incorporationDate: '09 December 2025',
-            companyType: 'Private Limited Company',
-            address: '',
-            shareholder: '',
-            director: '',
-            vatTin: '',
-            businessActivity: ''
-        });
+        // If no profile, return minimal data based on User ID
+        if (!profile) {
+            return res.json({
+                companyCode: req.user.companyCode,
+                companyNameEn: req.user.companyName || '',
+            });
+        }
+
+        res.json(profile);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server Error' });
@@ -188,36 +170,42 @@ router.post('/update-profile', auth, async (req, res) => {
         const { companyNameEn, companyNameKh, registrationNumber, incorporationDate, companyType, address, shareholder, director, vatTin, businessActivity, businessRegistration } = req.body;
         const companyCode = req.user.companyCode;
 
-        // FULL DATABASE BYPASS
-        // We do not query DB because connection is failing in this environment.
+        let profile = await CompanyProfile.findOne({ user: req.user.id });
 
-        /*
-        let profile = await CompanyProfile.findOne({ companyCode });
-        if (profile) { ... } else { ... }
+        if (profile) {
+            // Update
+            profile.companyNameEn = companyNameEn;
+            profile.companyNameKh = companyNameKh;
+            profile.registrationNumber = registrationNumber;
+            profile.incorporationDate = incorporationDate;
+            profile.companyType = companyType;
+            profile.address = address;
+            profile.shareholder = shareholder;
+            profile.director = director;
+            profile.vatTin = vatTin;
+            profile.businessActivity = businessActivity;
+            profile.businessRegistration = businessRegistration;
+        } else {
+            // Create
+            profile = new CompanyProfile({
+                user: req.user.id,
+                companyCode,
+                companyNameEn,
+                companyNameKh,
+                registrationNumber,
+                incorporationDate,
+                companyType,
+                address,
+                shareholder,
+                director,
+                vatTin,
+                businessActivity,
+                businessRegistration
+            });
+        }
         await profile.save();
-        */
 
-        console.log('Mock Saving Profile (Pure Bypass):', {
-            companyCode, companyNameEn, companyNameKh, registrationNumber, incorporationDate, companyType, address, shareholder, director, vatTin, businessActivity
-        });
-
-        const mockProfile = {
-            companyCode,
-            companyNameEn,
-            companyNameKh,
-            registrationNumber,
-            incorporationDate,
-            companyType,
-            address,
-            shareholder,
-            director,
-            vatTin,
-            businessActivity,
-            businessRegistration
-        };
-
-        // Simulate success
-        res.json({ message: 'Profile saved successfully', profile: mockProfile });
+        res.json({ message: 'Profile saved successfully', profile });
 
     } catch (err) {
         console.error(err);
