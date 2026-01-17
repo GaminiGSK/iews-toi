@@ -142,7 +142,7 @@ export default function CompanyProfile() {
     const renderHome = () => (
         <div className="max-w-4xl mx-auto p-12">
             <div className="flex items-center justify-between mb-2">
-                <h1 className="text-3xl font-bold text-gray-800">Welcome, {formData.companyCode || 'User'}</h1>
+                <h1 className="text-3xl font-bold text-gray-800">Welcome to the {formData.companyCode || 'Company'}</h1>
                 <button
                     onClick={handleLogout}
                     className="flex items-center gap-2 text-red-500 hover:text-red-700 font-medium transition px-4 py-2 rounded-lg hover:bg-red-50"
