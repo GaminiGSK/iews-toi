@@ -233,69 +233,70 @@ export default function CompanyProfile() {
                 )}
             </div>
 
-            {/* Display Saved Data (Read-Only) */}
-            {formData.companyNameEn && (
-                <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 mb-8 animation-fade-in">
-                    <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                        <CheckCircle className="text-green-500" size={24} />
-                        Saved Company Details
-                    </h2>
+            {/* Editable Company Details Form */}
+            <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 mb-8 animation-fade-in">
+                <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                    <CheckCircle className="text-green-500" size={24} />
+                    Company Details
+                </h2>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-                        <div className="p-4 bg-gray-50 rounded-lg">
-                            <span className="block text-gray-500 mb-1">Company Name (English)</span>
-                            <span className="font-semibold text-gray-800">{formData.companyNameEn}</span>
-                        </div>
-                        <div className="p-4 bg-gray-50 rounded-lg">
-                            <span className="block text-gray-500 mb-1">Company Name (Khmer)</span>
-                            <span className="font-semibold text-gray-800">{formData.companyNameKh || '-'}</span>
-                        </div>
-                        <div className="p-4 bg-gray-50 rounded-lg">
-                            <span className="block text-gray-500 mb-1">Registration Number</span>
-                            <span className="font-semibold text-gray-800">{formData.registrationNumber}</span>
-                        </div>
-                        <div className="p-4 bg-gray-50 rounded-lg">
-                            <span className="block text-gray-500 mb-1">Incorporation Date</span>
-                            <span className="font-semibold text-gray-800">{formData.incorporationDate}</span>
-                        </div>
-                        <div className="p-4 bg-gray-50 rounded-lg">
-                            <span className="block text-gray-500 mb-1">Company Type</span>
-                            <span className="font-semibold text-gray-800">{formData.companyType}</span>
-                        </div>
-                        <div className="p-4 bg-gray-50 rounded-lg md:col-span-2">
-                            <span className="block text-gray-500 mb-1">Address</span>
-                            <span className="font-semibold text-gray-800">{formData.address || '-'}</span>
-                        </div>
-                        <div className="p-4 bg-gray-50 rounded-lg">
-                            <span className="block text-gray-500 mb-1">Shareholder</span>
-                            <span className="font-semibold text-gray-800">{formData.shareholder || '-'}</span>
-                        </div>
-                        <div className="p-4 bg-gray-50 rounded-lg">
-                            <span className="block text-gray-500 mb-1">Director</span>
-                            <span className="font-semibold text-gray-800">{formData.director || '-'}</span>
-                        </div>
-                        <div className="p-4 bg-gray-50 rounded-lg">
-                            <span className="block text-gray-500 mb-1">VAT TIN</span>
-                            <span className="font-semibold text-gray-800">{formData.vatTin || '-'}</span>
-                        </div>
-                        <div className="p-4 bg-gray-50 rounded-lg">
-                            <span className="block text-gray-500 mb-1">Business Activity</span>
-                            <span className="font-semibold text-gray-800">{formData.businessActivity || '-'}</span>
-                        </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Company Name (English)</label>
+                        <input
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            value={formData.companyNameEn || ''}
+                            onChange={(e) => setFormData({ ...formData, companyNameEn: e.target.value })}
+                            placeholder="e.g. ABC Co., Ltd."
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Company Name (Khmer)</label>
+                        <input
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            value={formData.companyNameKh || ''}
+                            onChange={(e) => setFormData({ ...formData, companyNameKh: e.target.value })}
+                            placeholder="Khmer Name"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Registration Number</label>
+                        <input
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            value={formData.registrationNumber || ''}
+                            onChange={(e) => setFormData({ ...formData, registrationNumber: e.target.value })}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Incorporation Date</label>
+                        <input
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            value={formData.incorporationDate || ''}
+                            onChange={(e) => setFormData({ ...formData, incorporationDate: e.target.value })}
+                            placeholder="DD Month YYYY"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Company Type</label>
+                        <input
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            value={formData.companyType || ''}
+                            onChange={(e) => setFormData({ ...formData, companyType: e.target.value })}
+                        />
+                    </div>
+                    <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                        <textarea
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            rows="2"
+                            value={formData.address || ''}
+                            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                        ></textarea>
                     </div>
 
-                    {/* Additional Editable Fields Section */}
-                    <div className="mt-8 pt-8 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="col-span-1 md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                            <textarea
-                                className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                rows="3"
-                                placeholder="Enter company address..."
-                                value={formData.address}
-                                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                            ></textarea>
-                        </div>
+
+                    {/* Additional Fields (Shareholder etc) */}
+                    <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Shareholder</label>
@@ -349,7 +350,7 @@ export default function CompanyProfile() {
                         </button>
                     </div>
                 </div>
-            )}
+            </div>
         </div>
     );
 
