@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const CompanyProfileSchema = new mongoose.Schema({
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Link to User Model
     companyCode: { type: String, required: true, unique: true },
     companyNameEn: { type: String },
     companyNameKh: { type: String },
