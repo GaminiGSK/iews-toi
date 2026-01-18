@@ -32,8 +32,10 @@ export default function CompanyProfile() {
             });
             setMessage(`Successfully saved ${allTransactions.length} transactions!`);
             setTimeout(() => setMessage(''), 3000);
-            setBankFiles([]);
-            setActiveFileIndex(0);
+
+            // User requested to KEEP files on screen after save
+            // setBankFiles([]); 
+            // setActiveFileIndex(0);
         } catch (err) {
             console.error(err);
             const errMsg = err.response?.data?.message || err.message || 'Error saving transactions.';
