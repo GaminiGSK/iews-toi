@@ -30,8 +30,8 @@ export default function CompanyProfile() {
             await axios.post('/api/company/save-transactions', { transactions: allTransactions }, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            setMessage(`Successfully saved ${allTransactions.length} transactions!`);
-            setTimeout(() => setMessage(''), 3000);
+            setMessage(`Successfully saved ${allTransactions.length} transactions! (v3.3 PERSISTED)`);
+            setTimeout(() => setMessage(''), 5000);
 
             // User requested to KEEP files on screen after save
             // setBankFiles([]); 
