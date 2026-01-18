@@ -173,6 +173,9 @@ router.post('/save-transactions', auth, async (req, res) => {
 
     } catch (err) {
         console.error('Save Transaction Error:', err);
+        if (err.name === 'ValidationError') {
+            console.error('Validation Details:', JSON.stringify(err.errors, null, 2));
+        }
         // Return specific error to client for debugging
         res.status(500).json({ message: 'Error saving: ' + (err.message || 'Unknown DB Error') });
     }

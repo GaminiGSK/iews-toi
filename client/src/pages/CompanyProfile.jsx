@@ -36,7 +36,8 @@ export default function CompanyProfile() {
             setActiveFileIndex(0);
         } catch (err) {
             console.error(err);
-            setMessage('Error saving transactions.');
+            const errMsg = err.response?.data?.message || err.message || 'Error saving transactions.';
+            setMessage(errMsg);
         } finally {
             setSavingBank(false);
         }
