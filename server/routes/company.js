@@ -155,10 +155,30 @@ router.post('/save-transactions', auth, async (req, res) => {
             // Clean Balance
             let balance = parseCurrency(tx.balance);
 
+            // Helper to parse DD/MM/YYYY safely
+            const parseDate = (dateStr) => {
+                if (!dateStr) return new Date(); // Fallback to now
+                if (dateStr instanceof Date) return dateStr;
+
+                // Try parsing DD/MM/YYYY
+                const parts = String(dateStr).split('/');
+                if (parts.length === 3) {
+                    const day = parseInt(parts[0], 10);
+                    const month = parseInt(parts[1], 10) - 1; // Months are 0-indexed
+                    const year = parseInt(parts[2], 10);
+                    if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+                        return new Date(Date.UTC(year, month, day));
+                    }
+                }
+                // Fallback for ISO strings or other formats
+                const parsed = new Date(dateStr);
+                return isNaN(parsed.getTime()) ? new Date() : parsed;
+            };
+
             savedDocs.push({
                 user: req.user.id,
                 companyCode: req.user.companyCode,
-                date: new Date(tx.date),
+                date: parseDate(tx.date),
                 description: tx.description,
                 amount: amount,
                 balance: balance,
