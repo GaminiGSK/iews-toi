@@ -175,304 +175,254 @@ export default function CompanyProfile() {
         </div>
     );
 
+    const handleFiles = async (fileList) => {
+        if (fileList.length === 0) return;
+
+        setMessage(`Processing ${fileList.length} files...`);
+        setUploadingBank(true);
+
+        const formData = new FormData();
+        fileList.forEach(file => formData.append('files', file));
+
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.post('/api/company/upload-bank-statement', formData, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+
+            let safeFiles = res.data.files || [];
+            if (!Array.isArray(safeFiles)) safeFiles = [];
+
+            setBankFiles(prev => {
+                const combined = [...prev, ...safeFiles];
+                return combined.sort((a, b) => {
+                    const dateA = a.transactions?.[0]?.date ? new Date(a.transactions[0].date) : new Date(0);
+                    const dateB = b.transactions?.[0]?.date ? new Date(b.transactions[0].date) : new Date(0);
+                    return dateA - dateB;
+                });
+            });
+
+            // Set active file to the first new file if there are new files
+            if (safeFiles.length > 0) {
+                setActiveFileIndex(bankFiles.length); // Index of the first newly added file
+            }
+
+            const newCount = safeFiles.reduce((acc, f) => acc + (f.transactions?.length || 0), 0);
+            setMessage(`Success! Appended ${newCount} transactions from ${safeFiles.length} new files.`);
+
+        } catch (err) {
+            setMessage('Error processing files.');
+            console.error(err);
+        } finally {
+            setUploadingBank(false);
+        }
+    };
+
+    const handleDelete = async (idx, file) => {
+        const isSaved = file.transactions?.some(t => t._id);
+        if (!window.confirm(`Delete ${isSaved ? 'SAVED' : 'this'} file?`)) return;
+
+        if (isSaved) {
+            // Delete from DB
+            const ids = file.transactions.filter(t => t._id).map(t => t._id);
+            try {
+                const token = localStorage.getItem('token');
+                await axios.delete('/api/company/transactions', {
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    data: { transactionIds: ids }
+                });
+                // Force Reload
+                await fetchProfile();
+                setMessage('Deleted saved transactions.');
+            } catch (err) {
+                console.error(err);
+                alert("Error deleting: " + (err.response?.data?.message || err.message));
+            }
+        } else {
+            // Delete Unsaved
+            setBankFiles(prev => prev.filter((_, i) => i !== idx));
+            if (activeFileIndex === idx) setActiveFileIndex(0);
+        }
+    };
+
     const renderBank = () => (
-        <div className="max-w-6xl mx-auto pt-10 px-6 animate-fade-in pb-24">
-            <button onClick={() => setView('home')} className="text-gray-400 hover:text-gray-600 mb-6 flex items-center text-sm font-medium transition">
+        <div className="w-full h-[calc(100vh-80px)] pt-6 px-4 animate-fade-in flex flex-col">
+            <button onClick={() => setView('home')} className="text-gray-400 hover:text-gray-600 mb-4 flex items-center text-sm font-medium transition shrink-0">
                 ← Back to Dashboard
             </button>
 
-            {/* Upload Section */}
-            <div className="bg-white p-10 rounded-2xl shadow-sm border border-gray-100 mb-8 transition-all relative overflow-hidden group">
-                {uploadingBank && (
-                    <div className="absolute inset-0 bg-white/95 z-20 flex flex-col items-center justify-center backdrop-blur-md animate-fade-in">
-                        <Loader2 className="animate-spin h-12 w-12 text-blue-600 mb-4" />
-                        <h3 className="text-xl font-bold text-gray-800 animate-pulse">AI is Crunching the Numbers... 🤖</h3>
-                        <p className="text-gray-500 mt-2">Analyzing pixels, extracting dates, and checking the math!</p>
-                        <p className="text-xs text-gray-400 mt-1">This might take a few seconds per page.</p>
-                    </div>
-                )}
+            <div className="flex flex-1 gap-6 min-h-0">
 
-                <div className="flex items-center gap-4 mb-8">
-                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center text-green-700 font-bold text-lg">
-                        <FileText size={20} />
-                    </div>
-                    <div>
-                        <h2 className="text-xl font-bold text-gray-800">1. Upload Bank Statements (Append Mode)</h2>
-                        <p className="text-gray-500 text-sm">Upload transaction screenshots or PDF files.</p>
-                    </div>
-                </div>
-
-                <div
-                    className="border-2 border-dashed border-green-200 rounded-2xl p-12 text-center hover:border-green-400 hover:bg-green-50/30 transition relative group-hover:shadow-sm"
-                    onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                    onDrop={async (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        if (uploadingBank) return;
-
-                        const fileList = Array.from(e.dataTransfer.files);
-                        if (fileList.length === 0) return;
-
-                        setMessage(`Processing ${fileList.length} files...`);
-                        setUploadingBank(true);
-                        // APPEND MODE: Do NOT clear bankFiles here
-
-                        const formData = new FormData();
-                        fileList.forEach(file => formData.append('files', file));
-
-                        try {
-                            const token = localStorage.getItem('token');
-                            const res = await axios.post('/api/company/upload-bank-statement', formData, {
-                                headers: {
-                                    'Authorization': `Bearer ${token}`,
-                                    'Content-Type': 'multipart/form-data'
-                                }
-                            });
-
-                            let safeFiles = res.data.files || [];
-                            if (!Array.isArray(safeFiles)) safeFiles = [];
-
-                            // APPEND NEW FILES & SORT
-                            setBankFiles(prev => {
-                                const combined = [...prev, ...safeFiles];
-                                // Attempt to sort by extracted date (if available)
-                                // We look at the first tx's date for sorting
-                                return combined.sort((a, b) => {
-                                    const dateA = a.transactions?.[0]?.date ? new Date(a.transactions[0].date) : new Date(0);
-                                    const dateB = b.transactions?.[0]?.date ? new Date(b.transactions[0].date) : new Date(0);
-                                    return dateA - dateB;
-                                });
-                            });
-
-                            setActiveFileIndex((prev) => prev); // Keep focus or maybe switch to new? User choice.
-
-                            const newCount = safeFiles.reduce((acc, f) => acc + (f.transactions?.length || 0), 0);
-                            setMessage(`Success! Appended ${newCount} transactions from ${safeFiles.length} new files. (v3.2 UX Polish)`);
-
-                        } catch (err) {
-                            setMessage('Error processing files.');
-                            console.error(err);
-                        } finally {
-                            setUploadingBank(false);
-                        }
-                    }}
-                >
-                    <input
-                        type="file"
-                        accept="image/*,.pdf"
-                        multiple
-                        onChange={async (e) => {
-                            if (!e.target.files || e.target.files.length === 0) return;
-                            const fileList = Array.from(e.target.files);
-
-                            setMessage(`Processing ${fileList.length} files...`);
-                            setUploadingBank(true);
-                            // APPEND MODE: Do NOT clear bankFiles here
-
-                            const formData = new FormData();
-                            fileList.forEach(file => formData.append('files', file));
-
-                            try {
-                                const token = localStorage.getItem('token');
-                                const res = await axios.post('/api/company/upload-bank-statement', formData, {
-                                    headers: {
-                                        'Authorization': `Bearer ${token}`,
-                                        'Content-Type': 'multipart/form-data'
-                                    }
-                                });
-
-                                let safeFiles = res.data.files || [];
-                                if (!Array.isArray(safeFiles)) safeFiles = [];
-
-                                // APPEND NEW FILES & SORT
-                                setBankFiles(prev => {
-                                    const combined = [...prev, ...safeFiles];
-                                    return combined.sort((a, b) => {
-                                        const dateA = a.transactions?.[0]?.date ? new Date(a.transactions[0].date) : new Date(0);
-                                        const dateB = b.transactions?.[0]?.date ? new Date(b.transactions[0].date) : new Date(0);
-                                        return dateA - dateB;
-                                    });
-                                });
-
-                                const newCount = safeFiles.reduce((acc, f) => acc + (f.transactions?.length || 0), 0);
-                                setMessage(`Success! Appended ${newCount} transactions from ${safeFiles.length} new files. (v3.2 UX Polish)`);
-
-                            } catch (err) {
-                                setMessage('Error uploading files.');
-                                console.error(err);
-                            } finally {
-                                setUploadingBank(false);
-                            }
+                {/* COLUMN 1: UPLOAD ZONE (Vertical) */}
+                <div className="w-64 shrink-0 flex flex-col">
+                    <div
+                        className="flex-1 bg-white border-2 border-dashed border-green-200 rounded-2xl p-4 text-center hover:border-green-400 hover:bg-green-50/30 transition relative group flex flex-col items-center justify-center cursor-pointer"
+                        onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                        onDrop={async (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (uploadingBank) return;
+                            const fileList = Array.from(e.dataTransfer.files);
+                            if (fileList.length === 0) return;
+                            handleFiles(fileList);
                         }}
-                        disabled={uploadingBank}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                    />
+                    >
+                        <input
+                            type="file"
+                            accept="image/*,.pdf"
+                            multiple
+                            onChange={(e) => {
+                                if (e.target.files?.length > 0) handleFiles(Array.from(e.target.files));
+                            }}
+                            disabled={uploadingBank}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        />
 
-                    <div className="flex flex-col items-center pointer-events-none">
-                        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
-                            <CloudUpload size={32} className="text-green-600" />
+                        {uploadingBank && (
+                            <div className="absolute inset-0 bg-white/95 z-20 flex flex-col items-center justify-center backdrop-blur-md rounded-2xl">
+                                <Loader2 className="animate-spin h-8 w-8 text-blue-600 mb-2" />
+                                <p className="text-xs font-bold text-gray-700 animate-pulse">Analyzing...</p>
+                            </div>
+                        )}
+
+                        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-700 mb-4">
+                            <CloudUpload size={24} />
                         </div>
-                        <h3 className="font-bold text-gray-800 text-lg mb-1">
-                            {uploadingBank ? 'Processing Files...' : '1. Upload Bank Statements (Append Mode)'}
+                        <h3 className="font-bold text-gray-800 text-sm mb-2 leading-tight">
+                            Submit your bank statement
                         </h3>
-                        <p className="text-sm text-gray-500 mb-4">
-                            {uploadingBank ? 'Extracting data...' : 'Drag & drop to add more pages'}
+                        <p className="text-xs text-gray-400">
+                            Drag & drop or Click to Upload
                         </p>
-                        <div className="flex gap-2">
-                            <span className="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded">JPG</span>
-                            <span className="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded">PNG</span>
-                            <span className="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded">PDF</span>
-                        </div>
                     </div>
                 </div>
 
-                {message && (
-                    <div className={`mt-4 p-4 rounded-lg text-sm font-medium text-center ${message.includes('Error') ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-700'}`}>
-                        {message}
-                    </div>
-                )}
-            </div>
-
-            {/* SPLIT VIEW - DEFENSIVE CODING */}
-            {bankFiles && bankFiles.length > 0 && (
-                <div className="flex flex-col lg:flex-row gap-6 mb-8 animate-fade-in">
-
-                    {/* LEFT COLUMN: File List */}
-                    <div className="w-full lg:w-1/3 space-y-4">
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                            <div className="p-4 bg-gray-50 border-b border-gray-100 font-bold text-gray-700 flex justify-between items-center">
-                                <span>Uploaded Files ({bankFiles.length})</span>
-                                <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">Saved</span>
-                            </div>
-                            <div className="divide-y divide-gray-100 max-h-[500px] overflow-y-auto">
-                                {bankFiles.map((file, idx) => (
-                                    <div
-                                        key={idx}
-                                        className={`p-4 flex items-center justify-between transition cursor-pointer group ${activeFileIndex === idx ? 'bg-blue-50 border-l-4 border-blue-500' : 'hover:bg-gray-50'}`}
-                                        onClick={() => setActiveFileIndex(idx)}
-                                    >
-                                        <div className="flex-1 min-w-0 mr-2">
-                                            {/* Safe Access */}
-                                            <p className="font-medium text-gray-800 text-sm truncate">{file.originalName}</p>
-                                            <p className="text-xs text-gray-500">{file.dateRange || 'Processing...'}</p>
-                                            <p className="text-xs text-gray-400 mt-0.5">{(file.transactions || []).length} transactions</p>
-                                        </div>
-
-                                        <div className="flex gap-2 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-opacity">
-                                            {/* DELETE BUTTON */}
-                                            <button
-                                                onClick={async (e) => {
-                                                    e.stopPropagation();
-                                                    const isSaved = file.transactions?.some(t => t._id);
-                                                    if (!window.confirm(`Delete ${isSaved ? 'SAVED' : 'this'} file?`)) return;
-
-                                                    if (isSaved) {
-                                                        // Delete from DB
-                                                        const ids = file.transactions.filter(t => t._id).map(t => t._id);
-                                                        try {
-                                                            const token = localStorage.getItem('token');
-                                                            await axios.delete('/api/company/transactions', {
-                                                                headers: { 'Authorization': `Bearer ${token}` },
-                                                                data: { transactionIds: ids }
-                                                            });
-                                                            setMessage('Deleted saved transactions.');
-                                                            fetchProfile(); // Reload
-                                                        } catch (err) {
-                                                            console.error(err);
-                                                            setMessage('Error deleting data.');
-                                                        }
-                                                    } else {
-                                                        // Delete Unsaved
-                                                        setBankFiles(prev => prev.filter((_, i) => i !== idx));
-                                                        if (activeFileIndex === idx) setActiveFileIndex(0);
-                                                    }
-                                                }}
-                                                className="p-2 rounded-full hover:bg-red-100 text-gray-400 hover:text-red-500 transition"
-                                                title="Delete File"
-                                            >
-                                                <X size={18} />
-                                            </button>
-
-                                            {/* EYE BUTTON (Functional) */}
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setActiveFileIndex(idx);
-                                                }}
-                                                className={`p-2 rounded-full hover:bg-blue-100 transition ${activeFileIndex === idx ? 'text-blue-600 bg-blue-50' : 'text-gray-400 hover:text-blue-500'}`}
-                                                title="View Details"
-                                            >
-                                                <Eye size={18} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                {/* COLUMN 2: FILE LIST */}
+                <div className="w-80 shrink-0 flex flex-col space-y-4">
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col h-full overflow-hidden">
+                        <div className="p-4 bg-gray-50 border-b border-gray-100 font-bold text-gray-700 flex justify-between items-center shrink-0">
+                            <span>Uploaded Files ({bankFiles.length})</span>
+                            <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">Saved</span>
                         </div>
-
-                        <button
-                            onClick={handleSaveTransactions}
-                            disabled={savingBank}
-                            className="w-full bg-black text-white px-6 py-4 rounded-xl font-bold hover:bg-gray-800 transition disabled:bg-gray-400 flex items-center justify-center gap-2 shadow-lg"
-                        >
-                            {savingBank ? <Loader2 className="animate-spin h-5 w-5" /> : <Save size={20} />}
-                            {savingBank ? 'SAVING...' : 'SAVE ALL TRANSACTIONS'}
-                        </button>
-                    </div>
-
-                    {/* RIGHT COLUMN: Transaction Table */}
-                    <div className="w-full lg:w-2/3">
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden h-full">
-                            <div className="p-6 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
-                                <div className="flex items-center">
-                                    <div className="p-2 bg-blue-50 rounded-lg mr-3">
-                                        <Table className="text-blue-500" size={20} />
+                        <div className="divide-y divide-gray-100 overflow-y-auto flex-1 p-2">
+                            {bankFiles.map((file, idx) => (
+                                <div
+                                    key={idx}
+                                    className={`p-3 mb-2 rounded-lg flex items-center justify-between transition cursor-pointer group ${activeFileIndex === idx ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50 border border-transparent'}`}
+                                    onClick={() => setActiveFileIndex(idx)}
+                                >
+                                    <div className="flex-1 min-w-0 mr-2">
+                                        <p className="font-bold text-gray-800 text-xs truncate mb-1">{file.originalName}</p>
+                                        <p className="text-[10px] text-gray-500 font-mono">{file.dateRange || 'Processing...'}</p>
+                                        <p className="text-[10px] text-gray-400">{(file.transactions || []).length} txs</p>
                                     </div>
-                                    <div>
-                                        <h3 className="font-bold text-gray-800">Page Details</h3>
-                                        <p className="text-xs text-gray-500">{bankFiles[activeFileIndex]?.dateRange || 'Details'}</p>
+
+                                    <div className="flex gap-1">
+                                        {/* DELETE */}
+                                        <button
+                                            onClick={async (e) => {
+                                                e.stopPropagation();
+                                                handleDelete(idx, file);
+                                            }}
+                                            className="p-1.5 rounded-full hover:bg-red-100 text-gray-300 hover:text-red-500 transition"
+                                        >
+                                            <X size={14} />
+                                        </button>
+                                        {/* EYE */}
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); setActiveFileIndex(idx); }}
+                                            className={`p-1.5 rounded-full transition ${activeFileIndex === idx ? 'text-blue-600 bg-blue-100' : 'text-gray-300 hover:text-blue-500'}`}
+                                        >
+                                            <Eye size={14} />
+                                        </button>
                                     </div>
                                 </div>
-                                <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium flex items-center">
-                                    <CheckCircle size={12} className="mr-1" /> Verified
-                                </span>
-                            </div>
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left">
-                                    <thead className="bg-gray-50 text-gray-500 text-xs uppercase sticky top-0 z-10">
-                                        <tr>
-                                            <th className="px-6 py-4 font-medium whitespace-nowrap">Date</th>
-                                            <th className="px-6 py-4 font-medium min-w-[400px]">Description</th>
-                                            <th className="px-6 py-4 font-medium text-right min-w-[120px]">In</th>
-                                            <th className="px-6 py-4 font-medium text-right min-w-[120px]">Out</th>
-                                            <th className="px-6 py-4 font-medium text-right min-w-[120px]">Bal</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-100">
-                                        {(bankFiles[activeFileIndex]?.transactions || []).map((tx, idx) => (
-                                            <tr key={idx} className="hover:bg-gray-50 transition">
-                                                <td className="px-6 py-4 text-xs text-gray-600 font-mono whitespace-nowrap align-top">
-                                                    {tx.date ? new Date(tx.date).toLocaleDateString('en-GB') : '-'}
-                                                </td>
-                                                <td className="px-6 py-4 text-xs text-gray-800 font-medium whitespace-pre-wrap leading-relaxed align-top">
-                                                    {tx.description}
-                                                </td>
-                                                <td className="px-6 py-4 text-xs text-right font-medium text-green-600 align-top whitespace-nowrap">
-                                                    {tx.moneyIn && parseFloat(tx.moneyIn) > 0 ? `+${parseFloat(tx.moneyIn).toFixed(2)}` : '-'}
-                                                </td>
-                                                <td className="px-6 py-4 text-xs text-right font-medium text-red-600 align-top whitespace-nowrap">
-                                                    {tx.moneyOut && parseFloat(tx.moneyOut) > 0 ? `-${parseFloat(tx.moneyOut).toFixed(2)}` : '-'}
-                                                </td>
-                                                <td className="px-6 py-4 text-xs text-right text-gray-800 font-bold align-top whitespace-nowrap">
-                                                    {tx.balance || '-'}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                            ))}
+                            {bankFiles.length === 0 && (
+                                <div className="text-center py-10 text-gray-300 text-xs italic">
+                                    No files yet.
+                                </div>
+                            )}
+                        </div>
+                        <div className="p-4 border-t border-gray-100 bg-gray-50 shrink-0">
+                            <button
+                                onClick={handleSaveTransactions}
+                                disabled={savingBank || bankFiles.length === 0}
+                                className="w-full bg-black text-white px-4 py-3 rounded-lg font-bold hover:bg-gray-800 transition disabled:bg-gray-400 flex items-center justify-center gap-2 shadow-md text-sm"
+                            >
+                                {savingBank ? <Loader2 className="animate-spin h-4 w-4" /> : <Save size={16} />}
+                                {savingBank ? 'SAVING...' : 'SAVE ALL'}
+                            </button>
                         </div>
                     </div>
+                </div>
+
+                {/* COLUMN 3: DETAILS TABLE */}
+                <div className="flex-1 min-w-0 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col overflow-hidden h-full">
+                    <div className="p-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between shrink-0">
+                        <div className="flex items-center">
+                            <div className="p-2 bg-blue-50 rounded-lg mr-3">
+                                <Table className="text-blue-500" size={20} />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-gray-800">Page Details</h3>
+                                <p className="text-xs text-gray-500">{bankFiles[activeFileIndex]?.dateRange || 'Select a file'}</p>
+                            </div>
+                        </div>
+                        <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium flex items-center">
+                            <CheckCircle size={12} className="mr-1" /> Verified
+                        </span>
+                    </div>
+
+                    <div className="flex-1 overflow-auto bg-white">
+                        <table className="w-full text-left">
+                            <thead className="bg-white text-gray-800 text-xs font-bold uppercase sticky top-0 z-10 border-b border-gray-200 shadow-sm">
+                                <tr>
+                                    <th className="px-4 py-4 whitespace-nowrap w-[120px]">Date</th>
+                                    <th className="px-4 py-4 w-[40%]">Transaction Details</th>
+                                    <th className="px-4 py-4 text-right w-[15%]">Money In</th>
+                                    <th className="px-4 py-4 text-right w-[15%]">Money Out</th>
+                                    <th className="px-4 py-4 text-right w-[15%]">Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {(bankFiles[activeFileIndex]?.transactions || []).length === 0 ? (
+                                    <tr>
+                                        <td colSpan="5" className="text-center py-10 text-gray-400">No transactions to display</td>
+                                    </tr>
+                                ) : (
+                                    (bankFiles[activeFileIndex]?.transactions || []).map((tx, idx) => (
+                                        <tr key={idx} className="hover:bg-gray-50 transition group">
+                                            <td className="px-4 py-4 text-xs text-gray-600 font-bold whitespace-nowrap align-top">
+                                                {tx.date ? new Date(tx.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                                            </td>
+                                            <td className="px-4 py-4 text-xs text-gray-700 font-medium whitespace-pre-wrap leading-relaxed align-top">
+                                                {tx.description}
+                                            </td>
+                                            <td className="px-4 py-4 text-xs text-right font-medium text-gray-800 align-top whitespace-nowrap">
+                                                {tx.moneyIn && parseFloat(tx.moneyIn) > 0 ? parseFloat(tx.moneyIn).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
+                                            </td>
+                                            <td className="px-4 py-4 text-xs text-right font-medium text-gray-800 align-top whitespace-nowrap">
+                                                {tx.moneyOut && parseFloat(tx.moneyOut) > 0 ? parseFloat(tx.moneyOut).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
+                                            </td>
+                                            <td className="px-4 py-4 text-xs text-right text-gray-800 font-bold align-top whitespace-nowrap">
+                                                {tx.balance ? parseFloat(String(tx.balance).replace(/[^0-9.-]+/g, "")).toLocaleString('en-US', { minimumFractionDigits: 2 }) : '-'}
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            {message && (
+                <div className={`mt-4 mx-auto max-w-lg p-3 rounded-full text-xs font-bold text-center fixed bottom-6 left-0 right-0 shadow-lg z-50 animate-bounce-in ${message.includes('Error') ? 'bg-red-500 text-white' : 'bg-black text-white'}`}>
+                    {message}
                 </div>
             )}
         </div>
