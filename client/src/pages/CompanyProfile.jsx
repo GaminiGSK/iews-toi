@@ -31,18 +31,25 @@ export default function CompanyProfile() {
     });
 
     const [savingBank, setSavingBank] = useState(false);
+    const [bankFiles, setBankFiles] = useState([]); // Store uploaded files metadata
+    const [activeFileIndex, setActiveFileIndex] = useState(0); // Which file is currently being viewed
+
 
     const handleSaveTransactions = async () => {
-        if (transactions.length === 0) return;
+        // Flatten all transactions from all files
+        const allTransactions = bankFiles.flatMap(f => f.transactions);
+
+        if (allTransactions.length === 0) return;
         setSavingBank(true);
         try {
             const token = localStorage.getItem('token');
-            await axios.post('/api/company/save-transactions', { transactions }, {
+            await axios.post('/api/company/save-transactions', { transactions: allTransactions }, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            setMessage('Transactions saved successfully!');
+            setMessage(`Successfully saved ${allTransactions.length} transactions!`);
             setTimeout(() => setMessage(''), 3000);
-            setTransactions([]);
+            setBankFiles([]); // Clear after save
+            setActiveFileIndex(0);
         } catch (err) {
             console.error(err);
             setMessage('Error saving transactions.');
@@ -427,8 +434,12 @@ export default function CompanyProfile() {
                                         'Content-Type': 'multipart/form-data'
                                     }
                                 });
-                                setTransactions(res.data.extractedData || []);
-                                setMessage(`Success! Parsed ${res.data.extractedData?.length || 0} transactions from ${fileList.length} files.`);
+                                // Store structured file results
+                                setBankFiles(res.data.files || []);
+                                setActiveFileIndex(0); // Default to first file
+
+                                const totalTx = (res.data.files || []).reduce((acc, f) => acc + f.transactions.length, 0);
+                                setMessage(`Success! Parsed ${totalTx} transactions from ${res.data.files.length} files.`);
                             } catch (err) {
                                 setMessage('Error uploading files.');
                                 console.error(err);
@@ -475,67 +486,101 @@ export default function CompanyProfile() {
                 )}
             </div>
 
-            {/* Extracted Data Table for Bank */}
-            {transactions.length > 0 && (
-                <>
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden animate-fade-in mb-8">
-                        <div className="p-6 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
-                            <div className="flex items-center">
-                                <div className="p-2 bg-blue-50 rounded-lg mr-3">
-                                    <Table className="text-blue-500" size={20} />
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-gray-800">Extracted Transactions</h3>
-                                    <p className="text-xs text-gray-500">Review and verify before finalizing.</p>
-                                </div>
-                            </div>
-                            <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium flex items-center">
-                                <CheckCircle size={12} className="mr-1" /> AI Verified
-                            </span>
-                        </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left">
-                                <thead className="bg-gray-50 text-gray-500 text-xs uppercase">
-                                    <tr>
-                                        <th className="px-6 py-4 font-medium">Date</th>
-                                        <th className="px-6 py-4 font-medium">Description</th>
-                                        <th className="px-6 py-4 font-medium text-right">Money In</th>
-                                        <th className="px-6 py-4 font-medium text-right">Money Out</th>
-                                        <th className="px-6 py-4 font-medium text-right">Balance</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100">
-                                    {transactions.map((tx, idx) => (
-                                        <tr key={idx} className="hover:bg-gray-50 transition">
-                                            <td className="px-6 py-4 text-sm text-gray-600 font-mono">{tx.date}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-800 font-medium">{tx.description}</td>
-                                            <td className="px-6 py-4 text-sm text-right font-medium text-green-600">
-                                                {tx.moneyIn ? `+${parseFloat(tx.moneyIn).toFixed(2)}` : '-'}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-right font-medium text-red-600">
-                                                {tx.moneyOut ? `-${parseFloat(tx.moneyOut).toFixed(2)}` : '-'}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-right text-gray-800 font-bold">
-                                                {tx.balance || '-'}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+            {/* SPLIT VIEW: File List (Left) & Transactions (Right) */}
+            {bankFiles.length > 0 && (
+                <div className="flex flex-col lg:flex-row gap-6 mb-8 animate-fade-in">
 
-                    <div className="flex justify-end mt-4 mb-20">
+                    {/* LEFT COLUMN: File List */}
+                    <div className="w-full lg:w-1/3 space-y-4">
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div className="p-4 bg-gray-50 border-b border-gray-100 font-bold text-gray-700 flex justify-between items-center">
+                                <span>Uploaded Files ({bankFiles.length})</span>
+                                <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">Saved</span>
+                            </div>
+                            <div className="divide-y divide-gray-100 max-h-[500px] overflow-y-auto">
+                                {bankFiles.map((file, idx) => (
+                                    <div
+                                        key={idx}
+                                        className={`p-4 flex items-center justify-between transition cursor-pointer ${activeFileIndex === idx ? 'bg-blue-50 border-l-4 border-blue-500' : 'hover:bg-gray-50'}`}
+                                        onClick={() => setActiveFileIndex(idx)}
+                                    >
+                                        <div>
+                                            {/* Smart Date Range Label */}
+                                            <p className="font-medium text-gray-800 text-sm">{file.dateRange}</p>
+                                            <p className="text-xs text-gray-400 mt-1">{file.transactions.length} transactions</p>
+                                        </div>
+                                        <button
+                                            className={`p-2 rounded-full hover:bg-white hover:shadow-sm transition ${activeFileIndex === idx ? 'text-blue-600' : 'text-gray-400'}`}
+                                            title="View Details"
+                                        >
+                                            <Eye size={20} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Save Button (Mobile/Desktop) */}
                         <button
                             onClick={handleSaveTransactions}
                             disabled={savingBank}
-                            className="bg-black text-white px-8 py-3 rounded-lg font-bold hover:bg-gray-800 transition disabled:bg-gray-400 flex items-center gap-2"
+                            className="w-full bg-black text-white px-6 py-4 rounded-xl font-bold hover:bg-gray-800 transition disabled:bg-gray-400 flex items-center justify-center gap-2 shadow-lg"
                         >
                             {savingBank ? <Loader2 className="animate-spin h-5 w-5" /> : <Save size={20} />}
-                            {savingBank ? 'SAVING...' : 'SAVE TRANSACTIONS'}
+                            {savingBank ? 'SAVING...' : 'SAVE ALL TRANSACTIONS'}
                         </button>
                     </div>
-                </>
+
+                    {/* RIGHT COLUMN: Transaction Table */}
+                    <div className="w-full lg:w-2/3">
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden h-full">
+                            <div className="p-6 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
+                                <div className="flex items-center">
+                                    <div className="p-2 bg-blue-50 rounded-lg mr-3">
+                                        <Table className="text-blue-500" size={20} />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-gray-800">Page Details</h3>
+                                        <p className="text-xs text-gray-500">{bankFiles[activeFileIndex]?.dateRange}</p>
+                                    </div>
+                                </div>
+                                <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium flex items-center">
+                                    <CheckCircle size={12} className="mr-1" /> Verified
+                                </span>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left">
+                                    <thead className="bg-gray-50 text-gray-500 text-xs uppercase">
+                                        <tr>
+                                            <th className="px-6 py-4 font-medium">Date</th>
+                                            <th className="px-6 py-4 font-medium">Description</th>
+                                            <th className="px-6 py-4 font-medium text-right">In</th>
+                                            <th className="px-6 py-4 font-medium text-right">Out</th>
+                                            <th className="px-6 py-4 font-medium text-right">Bal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100">
+                                        {bankFiles[activeFileIndex]?.transactions.map((tx, idx) => (
+                                            <tr key={idx} className="hover:bg-gray-50 transition">
+                                                <td className="px-6 py-4 text-xs text-gray-600 font-mono whitespace-nowrap">{tx.date}</td>
+                                                <td className="px-6 py-4 text-xs text-gray-800 font-medium max-w-[200px] truncate" title={tx.description}>{tx.description}</td>
+                                                <td className="px-6 py-4 text-xs text-right font-medium text-green-600">
+                                                    {tx.moneyIn ? `+${parseFloat(tx.moneyIn).toFixed(2)}` : '-'}
+                                                </td>
+                                                <td className="px-6 py-4 text-xs text-right font-medium text-red-600">
+                                                    {tx.moneyOut ? `-${parseFloat(tx.moneyOut).toFixed(2)}` : '-'}
+                                                </td>
+                                                <td className="px-6 py-4 text-xs text-right text-gray-800 font-bold">
+                                                    {tx.balance || '-'}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

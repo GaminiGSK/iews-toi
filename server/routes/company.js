@@ -82,28 +82,41 @@ router.post('/upload-bank-statement', auth, upload.array('files'), async (req, r
 
         console.log(`Bank Statement Upload: ${req.files.length} files received.`);
 
-        // Loop through all uploaded files and aggregate results
-        let allExtractedData = [];
+        // Process each file individually to maintain grouping
+        const fileResults = [];
 
         for (const file of req.files) {
             console.log(`Processing file: ${file.path}`);
-            // Call the "Advanced Tool" (Mock OCR) for each file
-            // Note: In real world we might run these in parallel with Promise.all
-            const extracted = await googleAI.extractBankStatement(file.path);
-            if (extracted && Array.isArray(extracted)) {
-                allExtractedData = [...allExtractedData, ...extracted];
-            }
-        }
+            let extracted = await googleAI.extractBankStatement(file.path);
 
-        // Sort by Date (Descending - Newest First? Or Ascending? Statements usually run Oldest to Newest)
-        // Let's sort Ascending (Oldest First) so balance calc makes sense
-        allExtractedData.sort((a, b) => new Date(a.date) - new Date(b.date));
+            if (!extracted || !Array.isArray(extracted)) extracted = [];
+
+            // Sort transactions for this file
+            extracted.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            // Calculate Date Range
+            let dateRange = "Unknown Date Range";
+            if (extracted.length > 0) {
+                const start = extracted[0].date;
+                const end = extracted[extracted.length - 1].date;
+                // Format: "Feb 10 - Feb 12, 2025" or similar
+                dateRange = `${start} - ${end}`;
+            }
+
+            fileResults.push({
+                fileId: file.filename, // Multer filename
+                originalName: file.originalname,
+                dateRange: dateRange,
+                status: 'Saved', // Processed & Ready for review
+                transactions: extracted
+            });
+        }
 
         res.json({
             message: `${req.files.length} bank statements analyzed successfully`,
             status: 'success',
             verificationStatus: 'Verified by Advanced_OCR_Engine',
-            extractedData: allExtractedData
+            files: fileResults // Return structured data
         });
     } catch (err) {
         console.error('Bank Upload Error:', err);
