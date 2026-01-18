@@ -331,21 +331,30 @@ router.get('/transactions', auth, async (req, res) => {
 router.delete('/transactions', auth, async (req, res) => {
     try {
         const { transactionIds } = req.body;
+        console.log("DELETE Request Body:", req.body); // DEBUG
+        console.log("DELETE User:", req.user); // DEBUG
+
         if (!transactionIds || !Array.isArray(transactionIds)) {
-            return res.status(400).json({ message: 'Invalid request' });
+            return res.status(400).json({ message: 'Invalid request: transactionIds missing or not array' });
         }
 
         const Transaction = require('../models/Transaction');
 
-        await Transaction.deleteMany({
+        const result = await Transaction.deleteMany({
             _id: { $in: transactionIds },
             companyCode: req.user.companyCode // Security check
         });
 
-        res.json({ message: `Deleted ${transactionIds.length} transactions.` });
+        console.log("Delete Result:", result); // DEBUG
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ message: 'No transactions found to delete (or permission denied)' });
+        }
+
+        res.json({ message: `Deleted ${result.deletedCount} transactions.`, deletedCount: result.deletedCount });
     } catch (err) {
         console.error('Delete Transaction Error:', err);
-        res.status(500).json({ message: 'Error deleting transactions' });
+        res.status(500).json({ message: 'Error deleting transactions: ' + err.message });
     }
 });
 
