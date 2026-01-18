@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from '../utils/axios';
+import axios from 'axios';
 import { Loader2, CheckCircle, Table, Save, X, Eye, FileText, CloudUpload } from 'lucide-react';
 
 export default function CompanyProfile() {
