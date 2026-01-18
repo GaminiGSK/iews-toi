@@ -348,20 +348,63 @@ export default function CompanyProfile() {
                                 {bankFiles.map((file, idx) => (
                                     <div
                                         key={idx}
-                                        className={`p-4 flex items-center justify-between transition cursor-pointer ${activeFileIndex === idx ? 'bg-blue-50 border-l-4 border-blue-500' : 'hover:bg-gray-50'}`}
+                                        className={`p-4 flex items-center justify-between transition cursor-pointer group ${activeFileIndex === idx ? 'bg-blue-50 border-l-4 border-blue-500' : 'hover:bg-gray-50'}`}
                                         onClick={() => setActiveFileIndex(idx)}
                                     >
-                                        <div>
+                                        <div className="flex-1 min-w-0 mr-2">
                                             {/* Safe Access */}
-                                            <p className="font-medium text-gray-800 text-sm">{file.dateRange || 'Processing...'}</p>
-                                            <p className="text-xs text-gray-400 mt-1">{file.transactions?.length || 0} transactions</p>
+                                            <p className="font-medium text-gray-800 text-sm truncate">{file.originalName}</p>
+                                            <p className="text-xs text-gray-500">{file.dateRange || 'Processing...'}</p>
+                                            <p className="text-xs text-gray-400 mt-0.5">{(file.transactions || []).length} transactions</p>
                                         </div>
-                                        <button
-                                            className={`p-2 rounded-full hover:bg-white hover:shadow-sm transition ${activeFileIndex === idx ? 'text-blue-600' : 'text-gray-400'}`}
-                                            title="View Details"
-                                        >
-                                            <Eye size={20} />
-                                        </button>
+
+                                        <div className="flex gap-2 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-opacity">
+                                            {/* DELETE BUTTON */}
+                                            <button
+                                                onClick={async (e) => {
+                                                    e.stopPropagation();
+                                                    const isSaved = file.transactions?.some(t => t._id);
+                                                    if (!window.confirm(`Delete ${isSaved ? 'SAVED' : 'this'} file?`)) return;
+
+                                                    if (isSaved) {
+                                                        // Delete from DB
+                                                        const ids = file.transactions.filter(t => t._id).map(t => t._id);
+                                                        try {
+                                                            const token = localStorage.getItem('token');
+                                                            await axios.delete('/api/company/transactions', {
+                                                                headers: { 'Authorization': `Bearer ${token}` },
+                                                                data: { transactionIds: ids }
+                                                            });
+                                                            setMessage('Deleted saved transactions.');
+                                                            fetchProfile(); // Reload
+                                                        } catch (err) {
+                                                            console.error(err);
+                                                            setMessage('Error deleting data.');
+                                                        }
+                                                    } else {
+                                                        // Delete Unsaved
+                                                        setBankFiles(prev => prev.filter((_, i) => i !== idx));
+                                                        if (activeFileIndex === idx) setActiveFileIndex(0);
+                                                    }
+                                                }}
+                                                className="p-2 rounded-full hover:bg-red-100 text-gray-400 hover:text-red-500 transition"
+                                                title="Delete File"
+                                            >
+                                                <X size={18} />
+                                            </button>
+
+                                            {/* EYE BUTTON (Functional) */}
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setActiveFileIndex(idx);
+                                                }}
+                                                className={`p-2 rounded-full hover:bg-blue-100 transition ${activeFileIndex === idx ? 'text-blue-600 bg-blue-50' : 'text-gray-400 hover:text-blue-500'}`}
+                                                title="View Details"
+                                            >
+                                                <Eye size={18} />
+                                            </button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>

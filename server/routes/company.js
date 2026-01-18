@@ -327,4 +327,26 @@ router.get('/transactions', auth, async (req, res) => {
     }
 });
 
+// DELETE Transactions (by IDs)
+router.delete('/transactions', auth, async (req, res) => {
+    try {
+        const { transactionIds } = req.body;
+        if (!transactionIds || !Array.isArray(transactionIds)) {
+            return res.status(400).json({ message: 'Invalid request' });
+        }
+
+        const Transaction = require('../models/Transaction');
+
+        await Transaction.deleteMany({
+            _id: { $in: transactionIds },
+            companyCode: req.user.companyCode // Security check
+        });
+
+        res.json({ message: `Deleted ${transactionIds.length} transactions.` });
+    } catch (err) {
+        console.error('Delete Transaction Error:', err);
+        res.status(500).json({ message: 'Error deleting transactions' });
+    }
+});
+
 module.exports = router;
