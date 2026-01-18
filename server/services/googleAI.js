@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 // USER PROVIDED KEY
-const API_KEY = process.env.GEMINI_API_KEY || "AIzaSyDHuWy_YAHD1zdJ4mwT0t1_8S0xGr8iDEU";
+const API_KEY = process.env.GEMINI_API_KEY || "AIzaSyCL3dNr_tpKtEHH5wJUzJHq4Ydx8w_xONE";
 
 const genAI = new GoogleGenerativeAI(API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
