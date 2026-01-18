@@ -1,6 +1,9 @@
 // Mock Google AI Service for Development
 // Simulates Document AI and Translation API
 
+// Global counter to simulate "Processing Page 1, then Page 2"
+let mockRequestCounter = 0;
+
 exports.extractDocumentData = async (filePath) => {
     console.log(`[MockAI] Processing file: ${filePath}`);
 
@@ -25,10 +28,7 @@ exports.extractBankStatement = async (filePath) => {
     // Simulate complex OCR processing time
     await new Promise(resolve => setTimeout(resolve, 800));
 
-    const filename = filePath.split(/[/\\]/).pop();
-
     // Page 1 Data (Feb 10 - Feb 12)
-    // Matches "uploaded_image_0..." or "Part 1"
     const page1Data = [
         {
             date: "Feb 10, 2025",
@@ -75,7 +75,6 @@ exports.extractBankStatement = async (filePath) => {
     ];
 
     // Page 2 Data (Feb 17 - Mar 20)
-    // Matches "uploaded_image_1..." or "Part 2"
     const page2Data = [
         {
             date: "Feb 17, 2025",
@@ -135,19 +134,31 @@ exports.extractBankStatement = async (filePath) => {
         }
     ];
 
-    // Check filename logic to prevent duplicates
-    // If filename implies "Page 2" (image_1), returns page2Data.
-    // If filename implies "Page 1" (image_0), returns page1Data.
-    if (filename.includes('image_1') || filename.includes('page2') || filename.includes('Part 2')) {
-        console.log('[MockAI] Detected Page 2');
+    const filename = filePath.split(/[/\\]/).pop();
+    console.log(`[MockAI] Processing: ${filename} (Counter: ${mockRequestCounter})`);
+
+    // ROUND-ROBIN STRATEGY
+    // Call 1 (Counter 0) -> Return Page 1
+    // Call 2 (Counter 1) -> Return Page 2
+
+    // We also keep the filename logic as an override if specific 'page2' string found
+    if (filename.includes('page2') || filename.includes('Part 2')) {
         return page2Data;
-    } else if (filename.includes('image_0') || filename.includes('page1') || filename.includes('Part 1')) {
-        console.log('[MockAI] Detected Page 1');
-        return page1Data;
     }
 
-    // Fallback: Default to Page 1 if unsure
-    return page1Data;
+    // Check if filename contains "image_0" -> Page 1, "image_1" -> Page 2
+    // If not, use Round Robin
+    if (filename.includes('image_1')) return page2Data;
+    if (filename.includes('image_0')) return page1Data;
+
+    // Fallback Round Robin:
+    // If user uploads "file1.png" and "file2.png" (renamed to random hashes),
+    // we just alternate. 
+    // This is the safest way to ensure "Drop 2 files" = "Get 2 different pages".
+    const isPage2 = mockRequestCounter % 2 !== 0;
+    mockRequestCounter++;
+
+    return isPage2 ? page2Data : page1Data;
 };
 
 // Simple regex/split parser for the pasted text format
@@ -161,7 +172,6 @@ exports.parseMOCText = (text) => {
     // 4: Khmer Date
     // 5: Date
 
-    // We try to grab by index, but also add some fallback logic if possible.
     const data = {};
 
     if (lines.length >= 4) {
@@ -179,7 +189,6 @@ exports.parseMOCText = (text) => {
         if (typeLine) data.companyType = typeLine;
     }
 
-    // Default Fallback if parsing fails to find specific structure but has content
     if (!data.companyNameEn && lines.length > 1) data.companyNameEn = lines[1];
     if (!data.registrationNumber) {
         // Find line with only digits
