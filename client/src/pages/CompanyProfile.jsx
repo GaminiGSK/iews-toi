@@ -133,7 +133,7 @@ export default function CompanyProfile() {
                         <FileText size={20} />
                     </div>
                     <div>
-                        <h2 className="text-xl font-bold text-gray-800">1. Upload Bank Statements (Drag & Drop)</h2>
+                        <h2 className="text-xl font-bold text-gray-800">1. Upload Bank Statements (Append Mode)</h2>
                         <p className="text-gray-500 text-sm">Upload transaction screenshots or PDF files.</p>
                     </div>
                 </div>
@@ -151,7 +151,7 @@ export default function CompanyProfile() {
 
                         setMessage(`Processing ${fileList.length} files...`);
                         setUploadingBank(true);
-                        setBankFiles([]);
+                        // APPEND MODE: Do NOT clear bankFiles here
 
                         const formData = new FormData();
                         fileList.forEach(file => formData.append('files', file));
@@ -165,29 +165,15 @@ export default function CompanyProfile() {
                                 }
                             });
 
-                            // --- DEFENSIVE SAFEGUARD ---
-                            // Ensure we don't crash if backend sends different structure
-                            let safeFiles = res.data.files;
-
-                            // Logic: If new 'files' array is missing but old 'extractedData' exists,
-                            // wrap the old data in a fake file object to keep UI working.
-                            if (!safeFiles && res.data.extractedData) {
-                                safeFiles = [{
-                                    fileId: 'legacy_import',
-                                    dateRange: 'Legacy Data',
-                                    transactions: res.data.extractedData, // This assumes extractedData is []
-                                    status: 'Saved'
-                                }];
-                            }
-
-                            // Final safety check: Ensure it is an array
+                            let safeFiles = res.data.files || [];
                             if (!Array.isArray(safeFiles)) safeFiles = [];
 
-                            setBankFiles(safeFiles);
-                            setActiveFileIndex(0);
+                            // APPEND NEW FILES
+                            setBankFiles(prev => [...prev, ...safeFiles]);
+                            setActiveFileIndex((prev) => prev); // Keep focus or maybe switch to new? User choice.
 
-                            const totalTx = safeFiles.reduce((acc, f) => acc + (f.transactions?.length || 0), 0);
-                            setMessage(`Success! Parsed ${totalTx} transactions from ${safeFiles.length} files. (v2.2 Safe)`);
+                            const newCount = safeFiles.reduce((acc, f) => acc + (f.transactions?.length || 0), 0);
+                            setMessage(`Success! Appended ${newCount} transactions from ${safeFiles.length} new files. (v3.1 Append)`);
 
                         } catch (err) {
                             setMessage('Error processing files.');
@@ -207,7 +193,7 @@ export default function CompanyProfile() {
 
                             setMessage(`Processing ${fileList.length} files...`);
                             setUploadingBank(true);
-                            setBankFiles([]);
+                            // APPEND MODE: Do NOT clear bankFiles here
 
                             const formData = new FormData();
                             fileList.forEach(file => formData.append('files', file));
@@ -220,22 +206,16 @@ export default function CompanyProfile() {
                                         'Content-Type': 'multipart/form-data'
                                     }
                                 });
-                                // --- DEFENSIVE SAFEGUARD DUPLICATE ---
-                                let safeFiles = res.data.files;
-                                if (!safeFiles && res.data.extractedData) {
-                                    safeFiles = [{
-                                        fileId: 'legacy_import',
-                                        dateRange: 'Legacy Data',
-                                        transactions: res.data.extractedData,
-                                        status: 'Saved'
-                                    }];
-                                }
+
+                                let safeFiles = res.data.files || [];
                                 if (!Array.isArray(safeFiles)) safeFiles = [];
 
-                                setBankFiles(safeFiles);
-                                setActiveFileIndex(0);
-                                const totalTx = safeFiles.reduce((acc, f) => acc + (f.transactions?.length || 0), 0);
-                                setMessage(`Success! Parsed ${totalTx} transactions from ${safeFiles.length} files. (v3.0 AI-Vision)`);
+                                // APPEND NEW FILES
+                                setBankFiles(prev => [...prev, ...safeFiles]);
+
+                                const newCount = safeFiles.reduce((acc, f => acc + (f.transactions?.length || 0), 0);
+                                setMessage(`Success! Appended ${newCount} transactions from ${safeFiles.length} new files. (v3.1 Append)`);
+
                             } catch (err) {
                                 setMessage('Error uploading files.');
                                 console.error(err);
@@ -252,10 +232,10 @@ export default function CompanyProfile() {
                             <CloudUpload size={32} className="text-green-600" />
                         </div>
                         <h3 className="font-bold text-gray-800 text-lg mb-1">
-                            {uploadingBank ? 'Processing Files...' : '1. Upload Bank Statements (Split View Active)'}
+                            {uploadingBank ? 'Processing Files...' : '1. Upload Bank Statements (Append Mode)'}
                         </h3>
                         <p className="text-sm text-gray-500 mb-4">
-                            {uploadingBank ? 'Extracting data...' : 'Drag & drop multiple screenshots'}
+                            {uploadingBank ? 'Extracting data...' : 'Drag & drop to add more pages'}
                         </p>
                         <div className="flex gap-2">
                             <span className="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded">JPG</span>
@@ -355,15 +335,15 @@ export default function CompanyProfile() {
                                     <tbody className="divide-y divide-gray-100">
                                         {(bankFiles[activeFileIndex]?.transactions || []).map((tx, idx) => (
                                             <tr key={idx} className="hover:bg-gray-50 transition">
-                                                <td className="px-6 py-4 text-xs text-gray-600 font-mono whitespace-nowrap">{tx.date}</td>
-                                                <td className="px-6 py-4 text-xs text-gray-800 font-medium max-w-[200px] truncate" title={tx.description}>{tx.description}</td>
-                                                <td className="px-6 py-4 text-xs text-right font-medium text-green-600">
+                                                <td className="px-6 py-4 text-xs text-gray-600 font-mono whitespace-nowrap align-top">{tx.date}</td>
+                                                <td className="px-6 py-4 text-xs text-gray-800 font-medium whitespace-pre-wrap leading-relaxed align-top" title={tx.description}>{tx.description}</td>
+                                                <td className="px-6 py-4 text-xs text-right font-medium text-green-600 align-top">
                                                     {tx.moneyIn ? `+${parseFloat(tx.moneyIn).toFixed(2)}` : '-'}
                                                 </td>
-                                                <td className="px-6 py-4 text-xs text-right font-medium text-red-600">
+                                                <td className="px-6 py-4 text-xs text-right font-medium text-red-600 align-top">
                                                     {tx.moneyOut ? `-${parseFloat(tx.moneyOut).toFixed(2)}` : '-'}
                                                 </td>
-                                                <td className="px-6 py-4 text-xs text-right text-gray-800 font-bold">
+                                                <td className="px-6 py-4 text-xs text-right text-gray-800 font-bold align-top">
                                                     {tx.balance || '-'}
                                                 </td>
                                             </tr>

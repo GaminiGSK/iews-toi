@@ -142,8 +142,13 @@ router.post('/save-transactions', auth, async (req, res) => {
             if (tx.moneyOut && parseFloat(tx.moneyOut) > 0) amount = -parseFloat(tx.moneyOut);
 
             // Clean Balance (remove commas)
+            // Clean Balance (remove currency symbols, commas, letters)
             let balance = 0;
-            if (tx.balance) balance = parseFloat(String(tx.balance).replace(/,/g, ''));
+            if (tx.balance) {
+                // Remove everything except digits, dot, and minus
+                const cleanBal = String(tx.balance).replace(/[^0-9.-]/g, '');
+                balance = parseFloat(cleanBal) || 0;
+            }
 
             savedDocs.push({
                 user: req.user.id,

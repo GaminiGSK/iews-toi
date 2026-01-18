@@ -55,7 +55,7 @@ exports.extractBankStatement = async (filePath) => {
             [
               {
                 "date": "DD/MM/YYYY", // Normalize date format
-                "description": "Full transaction description text",
+                "description": "Full verbatim description text. Do NOT summarize. Include REF#, Time, Remarks, and all details.",
                 "moneyIn": 0.00, // Number. If empty/dash, use 0.
                 "moneyOut": 0.00, // Number. If empty/dash, use 0.
                 "balance": "0.00" // String representation of the balance column
