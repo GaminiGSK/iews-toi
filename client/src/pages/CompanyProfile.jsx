@@ -439,27 +439,31 @@ export default function CompanyProfile() {
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left">
-                                    <thead className="bg-gray-50 text-gray-500 text-xs uppercase">
+                                    <thead className="bg-gray-50 text-gray-500 text-xs uppercase sticky top-0 z-10">
                                         <tr>
-                                            <th className="px-6 py-4 font-medium">Date</th>
-                                            <th className="px-6 py-4 font-medium min-w-[350px]">Description</th>
-                                            <th className="px-6 py-4 font-medium text-right">In</th>
-                                            <th className="px-6 py-4 font-medium text-right">Out</th>
-                                            <th className="px-6 py-4 font-medium text-right">Bal</th>
+                                            <th className="px-6 py-4 font-medium whitespace-nowrap">Date</th>
+                                            <th className="px-6 py-4 font-medium min-w-[400px]">Description</th>
+                                            <th className="px-6 py-4 font-medium text-right min-w-[120px]">In</th>
+                                            <th className="px-6 py-4 font-medium text-right min-w-[120px]">Out</th>
+                                            <th className="px-6 py-4 font-medium text-right min-w-[120px]">Bal</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100">
                                         {(bankFiles[activeFileIndex]?.transactions || []).map((tx, idx) => (
                                             <tr key={idx} className="hover:bg-gray-50 transition">
-                                                <td className="px-6 py-4 text-xs text-gray-600 font-mono whitespace-nowrap align-top">{tx.date}</td>
-                                                <td className="px-6 py-4 text-xs text-gray-800 font-medium whitespace-pre-wrap leading-relaxed align-top">{tx.description}</td>
-                                                <td className="px-6 py-4 text-xs text-right font-medium text-green-600 align-top">
-                                                    {tx.moneyIn ? `+${parseFloat(tx.moneyIn).toFixed(2)}` : '-'}
+                                                <td className="px-6 py-4 text-xs text-gray-600 font-mono whitespace-nowrap align-top">
+                                                    {tx.date ? new Date(tx.date).toLocaleDateString('en-GB') : '-'}
                                                 </td>
-                                                <td className="px-6 py-4 text-xs text-right font-medium text-red-600 align-top">
-                                                    {tx.moneyOut ? `-${parseFloat(tx.moneyOut).toFixed(2)}` : '-'}
+                                                <td className="px-6 py-4 text-xs text-gray-800 font-medium whitespace-pre-wrap leading-relaxed align-top">
+                                                    {tx.description}
                                                 </td>
-                                                <td className="px-6 py-4 text-xs text-right text-gray-800 font-bold align-top">
+                                                <td className="px-6 py-4 text-xs text-right font-medium text-green-600 align-top whitespace-nowrap">
+                                                    {tx.moneyIn && parseFloat(tx.moneyIn) > 0 ? `+${parseFloat(tx.moneyIn).toFixed(2)}` : '-'}
+                                                </td>
+                                                <td className="px-6 py-4 text-xs text-right font-medium text-red-600 align-top whitespace-nowrap">
+                                                    {tx.moneyOut && parseFloat(tx.moneyOut) > 0 ? `-${parseFloat(tx.moneyOut).toFixed(2)}` : '-'}
+                                                </td>
+                                                <td className="px-6 py-4 text-xs text-right text-gray-800 font-bold align-top whitespace-nowrap">
                                                     {tx.balance || '-'}
                                                 </td>
                                             </tr>
