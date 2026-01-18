@@ -456,7 +456,7 @@ export default function CompanyProfile() {
                             <CloudUpload size={32} className="text-green-600" />
                         </div>
                         <h3 className="font-bold text-gray-800 text-lg mb-1">
-                            {uploadingBank ? 'Processing Files...' : 'Click to Upload Images'}
+                            {uploadingBank ? 'Processing Files...' : '1. Upload Bank Statements (Split View Active)'}
                         </h3>
                         <p className="text-sm text-gray-500 mb-4">
                             {uploadingBank ? 'Extracting data...' : 'Drag & drop multiple screenshots'}
