@@ -29,6 +29,18 @@ const generateGenericPageData = (pageIndex) => {
     // Page 4 -> Month 4 (May)
     const baseMonth = 2 + (pageIndex - 2); // 0-indexed month of 2025
 
+    // Pool of realistic descriptions
+    const descriptions = [
+        "POS Purchase - KOI The Cambodia",
+        "Mobile Topup via ABA App",
+        "TRF to other A/C in ABA. PAYMENT FOR SERVICES",
+        "Intl Transfer Fee - SWIFT SHA",
+        "Cash Deposit via CRM Machine 001",
+        "Bill Payment - ELECTRICITE DU CAMBODGE",
+        "Wing Transfer Outgoing",
+        "Interest Payment for Saving Account"
+    ];
+
     // Create random mock transactions
     const data = [];
     const txCount = 5;
@@ -38,9 +50,12 @@ const generateGenericPageData = (pageIndex) => {
         // Format: "Apr 01, 2025"
         const dateStr = d.toLocaleString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
 
+        // Pick random description
+        const desc = descriptions[(i + pageIndex) % descriptions.length];
+
         data.push({
             date: dateStr,
-            description: `GENERIC MOCK TRANSACTION ${pageIndex}-${i} - AUTO GENERATED FOR PAGE ${pageIndex + 1}`,
+            description: desc, // Realistic Description
             moneyIn: (i % 2 === 0) ? (1000 + i * 100).toFixed(2) : 0,
             moneyOut: (i % 2 !== 0) ? (500 + i * 50).toFixed(2) : 0,
             balance: (5000 + i * 200).toFixed(2) // Mock running balance
