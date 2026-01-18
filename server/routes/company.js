@@ -307,4 +307,24 @@ router.post('/update-profile', auth, async (req, res) => {
     }
 });
 
+// GET Transactions History (Sorted by Date Desc)
+router.get('/transactions', auth, async (req, res) => {
+    try {
+        const Transaction = require('../models/Transaction');
+
+        // Fetch all transactions for this company
+        // Sorted by Date DESC to show newest first
+        const transactions = await Transaction.find({
+            companyCode: req.user.companyCode
+        })
+            .sort({ date: -1 })
+            .lean(); // Faster query
+
+        res.json({ transactions });
+    } catch (err) {
+        console.error('Fetch Transactions Error:', err);
+        res.status(500).json({ message: 'Error fetching transactions' });
+    }
+});
+
 module.exports = router;

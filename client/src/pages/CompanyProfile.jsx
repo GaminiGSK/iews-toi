@@ -20,22 +20,31 @@ export default function CompanyProfile() {
     });
 
     const handleSaveTransactions = async () => {
-        // Safe flatten
-        const allTransactions = (bankFiles || []).flatMap(f => f.transactions || []);
+        // Only save transactions that haven't been saved yet (no _id)
+        const newTransactions = (bankFiles || [])
+            .flatMap(f => f.transactions || [])
+            .filter(tx => !tx._id);
 
-        if (allTransactions.length === 0) return;
+        if (newTransactions.length === 0) {
+            setMessage('All transactions are already saved through v3.4 History Sync.');
+            return;
+        }
+
         setSavingBank(true);
         try {
             const token = localStorage.getItem('token');
-            await axios.post('/api/company/save-transactions', { transactions: allTransactions }, {
+            await axios.post('/api/company/save-transactions', { transactions: newTransactions }, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            setMessage(`Successfully saved ${allTransactions.length} transactions! (v3.3 PERSISTED)`);
-            setTimeout(() => setMessage(''), 5000);
 
-            // User requested to KEEP files on screen after save
-            // setBankFiles([]); 
-            // setActiveFileIndex(0);
+            setMessage(`Successfully saved ${newTransactions.length} new transactions! (v3.4 SYNCED)`);
+
+            // Refresh Profile & History to get the new _ids and group efficiently
+            setTimeout(() => {
+                fetchProfile();
+                setMessage('');
+            }, 2000);
+
         } catch (err) {
             console.error(err);
             const errMsg = err.response?.data?.message || err.message || 'Error saving transactions.';
@@ -59,6 +68,51 @@ export default function CompanyProfile() {
             if (res.data) {
                 setFormData(prev => ({ ...prev, ...res.data }));
             }
+
+            // Also Fetch Saved Transactions
+            try {
+                const txRes = await axios.get('/api/company/transactions', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const allTxs = txRes.data.transactions || [];
+                if (allTxs.length > 0) {
+                    // Group by Month (YYYY-MM)
+                    const groups = {};
+                    allTxs.forEach(tx => {
+                        const dateObj = new Date(tx.date);
+                        const key = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}`;
+                        if (!groups[key]) groups[key] = [];
+                        groups[key].push(tx);
+                    });
+
+                    // Convert to Virtual Files
+                    const historyFiles = Object.keys(groups).sort((a, b) => b.localeCompare(a)).map(key => {
+                        const [year, month] = key.split('-');
+                        const monthName = new Date(year, month - 1).toLocaleString('default', { month: 'short' });
+                        const groupTxs = groups[key];
+
+                        // Calculate Date Range
+                        const dates = groupTxs.map(t => new Date(t.date).getTime()).sort((a, b) => a - b);
+                        const start = new Date(dates[0]).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+                        const end = new Date(dates[dates.length - 1]).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+                        return {
+                            originalName: `Saved History: ${monthName} ${year}`,
+                            dateRange: `${start} - ${end}`,
+                            status: 'Saved',
+                            transactions: groupTxs
+                        };
+                    });
+
+                    setBankFiles(historyFiles);
+                }
+
+            } catch (txErr) {
+                console.error("Error fetching history:", txErr);
+                // Don't block profile load
+            }
+
         } catch (err) {
             console.log("No existing profile found or error fetching.");
         }
