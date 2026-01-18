@@ -136,19 +136,24 @@ router.post('/save-transactions', auth, async (req, res) => {
 
         const savedDocs = [];
         for (const tx of transactions) {
+            // Helper to clean currency strings
+            const parseCurrency = (val) => {
+                if (!val) return 0;
+                // Remove everything except digits, dot, and minus
+                const clean = String(val).replace(/[^0-9.-]/g, '');
+                return parseFloat(clean) || 0;
+            };
+
             // Determine signed amount
             let amount = 0;
-            if (tx.moneyIn && parseFloat(tx.moneyIn) > 0) amount = parseFloat(tx.moneyIn);
-            if (tx.moneyOut && parseFloat(tx.moneyOut) > 0) amount = -parseFloat(tx.moneyOut);
+            const inVal = parseCurrency(tx.moneyIn);
+            const outVal = parseCurrency(tx.moneyOut);
 
-            // Clean Balance (remove commas)
-            // Clean Balance (remove currency symbols, commas, letters)
-            let balance = 0;
-            if (tx.balance) {
-                // Remove everything except digits, dot, and minus
-                const cleanBal = String(tx.balance).replace(/[^0-9.-]/g, '');
-                balance = parseFloat(cleanBal) || 0;
-            }
+            if (inVal > 0) amount = inVal;
+            if (outVal > 0) amount = -outVal;
+
+            // Clean Balance
+            let balance = parseCurrency(tx.balance);
 
             savedDocs.push({
                 user: req.user.id,
@@ -157,7 +162,7 @@ router.post('/save-transactions', auth, async (req, res) => {
                 description: tx.description,
                 amount: amount,
                 balance: balance,
-                currency: 'USD', // Default for now
+                currency: 'USD',
                 originalData: tx
             });
         }
@@ -168,7 +173,8 @@ router.post('/save-transactions', auth, async (req, res) => {
 
     } catch (err) {
         console.error('Save Transaction Error:', err);
-        res.status(500).json({ message: 'Error saving transactions' });
+        // Return specific error to client for debugging
+        res.status(500).json({ message: 'Error saving: ' + (err.message || 'Unknown DB Error') });
     }
 });
 

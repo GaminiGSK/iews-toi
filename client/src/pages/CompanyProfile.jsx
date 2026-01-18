@@ -126,7 +126,14 @@ export default function CompanyProfile() {
 
             {/* Upload Section */}
             <div className="bg-white p-10 rounded-2xl shadow-sm border border-gray-100 mb-8 transition-all relative overflow-hidden group">
-                {uploadingBank && <div className="absolute inset-0 bg-white/80 z-20 flex items-center justify-center backdrop-blur-sm" />}
+                {uploadingBank && (
+                    <div className="absolute inset-0 bg-white/95 z-20 flex flex-col items-center justify-center backdrop-blur-md animate-fade-in">
+                        <Loader2 className="animate-spin h-12 w-12 text-blue-600 mb-4" />
+                        <h3 className="text-xl font-bold text-gray-800 animate-pulse">AI is Crunching the Numbers... 🤖</h3>
+                        <p className="text-gray-500 mt-2">Analyzing pixels, extracting dates, and checking the math!</p>
+                        <p className="text-xs text-gray-400 mt-1">This might take a few seconds per page.</p>
+                    </div>
+                )}
 
                 <div className="flex items-center gap-4 mb-8">
                     <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center text-green-700 font-bold text-lg">
@@ -168,12 +175,22 @@ export default function CompanyProfile() {
                             let safeFiles = res.data.files || [];
                             if (!Array.isArray(safeFiles)) safeFiles = [];
 
-                            // APPEND NEW FILES
-                            setBankFiles(prev => [...prev, ...safeFiles]);
+                            // APPEND NEW FILES & SORT
+                            setBankFiles(prev => {
+                                const combined = [...prev, ...safeFiles];
+                                // Attempt to sort by extracted date (if available)
+                                // We look at the first tx's date for sorting
+                                return combined.sort((a, b) => {
+                                    const dateA = a.transactions?.[0]?.date ? new Date(a.transactions[0].date) : new Date(0);
+                                    const dateB = b.transactions?.[0]?.date ? new Date(b.transactions[0].date) : new Date(0);
+                                    return dateA - dateB;
+                                });
+                            });
+
                             setActiveFileIndex((prev) => prev); // Keep focus or maybe switch to new? User choice.
 
                             const newCount = safeFiles.reduce((acc, f) => acc + (f.transactions?.length || 0), 0);
-                            setMessage(`Success! Appended ${newCount} transactions from ${safeFiles.length} new files. (v3.1 Append)`);
+                            setMessage(`Success! Appended ${newCount} transactions from ${safeFiles.length} new files. (v3.2 UX Polish)`);
 
                         } catch (err) {
                             setMessage('Error processing files.');
@@ -210,11 +227,18 @@ export default function CompanyProfile() {
                                 let safeFiles = res.data.files || [];
                                 if (!Array.isArray(safeFiles)) safeFiles = [];
 
-                                // APPEND NEW FILES
-                                setBankFiles(prev => [...prev, ...safeFiles]);
+                                // APPEND NEW FILES & SORT
+                                setBankFiles(prev => {
+                                    const combined = [...prev, ...safeFiles];
+                                    return combined.sort((a, b) => {
+                                        const dateA = a.transactions?.[0]?.date ? new Date(a.transactions[0].date) : new Date(0);
+                                        const dateB = b.transactions?.[0]?.date ? new Date(b.transactions[0].date) : new Date(0);
+                                        return dateA - dateB;
+                                    });
+                                });
 
-                                const newCount = safeFiles.reduce((acc, f => acc + (f.transactions?.length || 0), 0);
-                                setMessage(`Success! Appended ${newCount} transactions from ${safeFiles.length} new files. (v3.1 Append)`);
+                                const newCount = safeFiles.reduce((acc, f) => acc + (f.transactions?.length || 0), 0);
+                                setMessage(`Success! Appended ${newCount} transactions from ${safeFiles.length} new files. (v3.2 UX Polish)`);
 
                             } catch (err) {
                                 setMessage('Error uploading files.');
@@ -248,14 +272,6 @@ export default function CompanyProfile() {
                 {message && (
                     <div className={`mt-4 p-4 rounded-lg text-sm font-medium text-center ${message.includes('Error') ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-700'}`}>
                         {message}
-                    </div>
-                )}
-
-                {uploadingBank && (
-                    <div className="mt-8 text-center py-8 bg-white border border-gray-100 rounded-xl shadow-sm">
-                        <Loader2 className="animate-spin h-8 w-8 text-green-600 mx-auto mb-3" />
-                        <h3 className="font-bold text-gray-800">AI Verification in Progress</h3>
-                        <p className="text-gray-500 text-sm">Analyzing transaction patterns...</p>
                     </div>
                 )}
             </div>
@@ -326,7 +342,7 @@ export default function CompanyProfile() {
                                     <thead className="bg-gray-50 text-gray-500 text-xs uppercase">
                                         <tr>
                                             <th className="px-6 py-4 font-medium">Date</th>
-                                            <th className="px-6 py-4 font-medium">Description</th>
+                                            <th className="px-6 py-4 font-medium min-w-[350px]">Description</th>
                                             <th className="px-6 py-4 font-medium text-right">In</th>
                                             <th className="px-6 py-4 font-medium text-right">Out</th>
                                             <th className="px-6 py-4 font-medium text-right">Bal</th>
@@ -336,7 +352,7 @@ export default function CompanyProfile() {
                                         {(bankFiles[activeFileIndex]?.transactions || []).map((tx, idx) => (
                                             <tr key={idx} className="hover:bg-gray-50 transition">
                                                 <td className="px-6 py-4 text-xs text-gray-600 font-mono whitespace-nowrap align-top">{tx.date}</td>
-                                                <td className="px-6 py-4 text-xs text-gray-800 font-medium whitespace-pre-wrap leading-relaxed align-top" title={tx.description}>{tx.description}</td>
+                                                <td className="px-6 py-4 text-xs text-gray-800 font-medium whitespace-pre-wrap leading-relaxed align-top">{tx.description}</td>
                                                 <td className="px-6 py-4 text-xs text-right font-medium text-green-600 align-top">
                                                     {tx.moneyIn ? `+${parseFloat(tx.moneyIn).toFixed(2)}` : '-'}
                                                 </td>
