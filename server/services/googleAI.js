@@ -6,7 +6,8 @@ const path = require('path');
 const API_KEY = process.env.GEMINI_API_KEY || "AIzaSyCL3dNr_tpKtEHH5wJUzJHq4Ydx8w_xONE";
 
 const genAI = new GoogleGenerativeAI(API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+// Upgrade to 2.0 Flash as 1.5 alias was missing for this key
+const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 // Helper to encode file to base64
 function fileToGenerativePart(path, mimeType) {
