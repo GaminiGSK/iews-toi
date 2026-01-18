@@ -27,24 +27,25 @@ exports.extractBankStatement = async (filePath) => {
 
     // DYNAMIC DATE LOGIC based on Filename
     // Filename example: 003102780_01Apr2025_30Jun2025...
-    let baseYear = 2025;
-    let baseMonthIndex = 1; // Default Feb
+    let startDate = new Date(2025, 1, 1); // Default Feb 1, 2025
 
-    const filename = filePath.split(/[/\\]/).pop(); // Get basename
-    // Try to find month/year in filename
-    const match = filename.match(/(\d{2})([A-Z][a-z]{2})(\d{4})/);
-    // e.g. 01Apr2025 -> match[2] = Apr
+    const filename = filePath.split(/[/\\]/).pop();
+
+    // Regex to find the FIRST date pattern (DDMonYYYY) in the filename
+    const match = filename.match(/(\d{2})([A-Za-z]{3})(\d{4})/);
 
     if (match) {
-        const monthMap = { 'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5, 'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11 };
-        if (monthMap[match[2]] !== undefined) {
-            baseMonthIndex = monthMap[match[2]];
-            baseYear = parseInt(match[3]);
+        const monthMap = { 'jan': 0, 'feb': 1, 'mar': 2, 'apr': 3, 'may': 4, 'jun': 5, 'jul': 6, 'aug': 7, 'sep': 8, 'oct': 9, 'nov': 10, 'dec': 11 };
+        const monthKey = match[2].toLowerCase();
+        if (monthMap[monthKey] !== undefined) {
+            startDate = new Date(parseInt(match[3]), monthMap[monthKey], parseInt(match[1]));
         }
     }
 
-    const formatDate = (dayOffset) => {
-        const d = new Date(baseYear, baseMonthIndex, 10 + dayOffset); // Start at 10th of month
+    // Helper to add days to start date
+    const getDate = (addDays) => {
+        const d = new Date(startDate);
+        d.setDate(d.getDate() + addDays);
         // Format: "Feb 10, 2025"
         const m = d.toLocaleString('en-US', { month: 'short' });
         const day = d.getDate();
@@ -52,46 +53,47 @@ exports.extractBankStatement = async (filePath) => {
         return `${m} ${day}, ${y}`;
     }
 
-    // Return mock data with dynamic dates
+    // Return mock data distributed across the range
+    // We simulate a statement with transactions on different days
     return [
         {
-            date: formatDate(0),
-            description: `TRF from/to other A/C in ABA. FUNDS RECEIVED FROM GUNASINGHA KASSAPA GAMINI (009 165 879) ORIGINAL AMOUNT 10,700.00 USD REF# 100FT33957222164 ON ${formatDate(0)} 07:21 PM REMARK: NONUNICODE-`,
+            date: getDate(2), // +2 days
+            description: `TRF from/to other A/C in ABA. FUNDS RECEIVED FROM GUNASINGHA KASSAPA GAMINI (009 165 879) ORIGINAL AMOUNT 10,700.00 USD REF# 100FT33957222164 ON ${getDate(2)} 07:21 PM REMARK: NONUNICODE-`,
             moneyIn: 10700.00,
             moneyOut: 0,
             balance: "10,749.08"
         },
         {
-            date: formatDate(0),
-            description: `OTT Single. INTERNATIONAL FUNDS TRANSFER TO GGMT PTE LTD 100FT25021009525 SINGAPORE SWIFT OCBCSGSGBRN OUR FEE 60.00 USD ORIGINAL AMOUNT 5,000.00 USD REF# 100FT33957436494 On ${formatDate(0)} 07:50 PM REMARK: OTHER: Head office fees.`,
+            date: getDate(5), // +5 days
+            description: `OTT Single. INTERNATIONAL FUNDS TRANSFER TO GGMT PTE LTD 100FT25021009525 SINGAPORE SWIFT OCBCSGSGBRN OUR FEE 60.00 USD ORIGINAL AMOUNT 5,000.00 USD REF# 100FT33957436494 On ${getDate(5)} 07:50 PM REMARK: OTHER: Head office fees.`,
             moneyIn: 0,
             moneyOut: 5000.00,
             balance: "5,749.08"
         },
         {
-            date: formatDate(0),
+            date: getDate(12), // +12 days
             description: `OTT Charge Cable. CABLE FEE FOR INTERNATIONAL OUTWARD TRANSFER TO GGMT PTE LTD 100FT25021009525 REF# 100FT33957436496`,
             moneyIn: 0,
             moneyOut: 15.00,
             balance: "5,734.08"
         },
         {
-            date: formatDate(0),
+            date: getDate(15), // +15 days
             description: `OTT Charge Fee (Commission). INTERNATIONAL OUTWARD TRANSFER FEE TO GGMT PTE LTD 100FT25021009525 REF# 100FT33957436499`,
             moneyIn: 0,
             moneyOut: 15.00,
             balance: "5,719.08"
         },
         {
-            date: formatDate(0),
+            date: getDate(25), // +25 days
             description: `OTT Charge (Our Fee). INTERNATIONAL OUTWARD TRANSFER FEE TO GGMT PTE LTD 100FT25021009525 REF# 100FT33957436503`,
             moneyIn: 0,
             moneyOut: 30.00,
             balance: "5,689.08"
         },
         {
-            date: formatDate(2), // 2 days later
-            description: `Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 008338910 ORIGINAL AMOUNT 1,600.00 USD REF# 100FT33969331850 On ${formatDate(2)} 04:50 PM REMARK: GK BACK UP`,
+            date: getDate(28), // +28 days (End of typical month cycle)
+            description: `Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 008338910 ORIGINAL AMOUNT 1,600.00 USD REF# 100FT33969331850 On ${getDate(28)} 04:50 PM REMARK: GK BACK UP`,
             moneyIn: 0,
             moneyOut: 1600.00,
             balance: "4,089.08"
