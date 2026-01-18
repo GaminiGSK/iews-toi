@@ -1,12 +1,14 @@
 const mongoose = require('mongoose');
 
 const TransactionSchema = new mongoose.Schema({
-    companyCode: { type: String, required: true, index: true },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    companyCode: { type: String, required: true },
     date: { type: Date, required: true },
     description: { type: String },
-    amount: { type: Number, required: true },
-    currency: { type: String, required: true }, // USD or KHR
-    transactionId: { type: String }, // Bank's ID
+    amount: { type: Number, required: true }, // Positive for Money In, Negative for Money Out
+    balance: { type: Number }, // Snapshot balance from statement
+    currency: { type: String, required: true, default: 'USD' },
+    transactionId: { type: String }, // Bank's ID or Unique Ref
     category: { type: String }, // GL Category
     originalData: { type: Object } // Store raw mapped data just in case
 }, { timestamps: true });

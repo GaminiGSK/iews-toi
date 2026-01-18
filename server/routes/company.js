@@ -95,6 +95,10 @@ router.post('/upload-bank-statement', auth, upload.array('files'), async (req, r
             }
         }
 
+        // Sort by Date (Descending - Newest First? Or Ascending? Statements usually run Oldest to Newest)
+        // Let's sort Ascending (Oldest First) so balance calc makes sense
+        allExtractedData.sort((a, b) => new Date(a.date) - new Date(b.date));
+
         res.json({
             message: `${req.files.length} bank statements analyzed successfully`,
             status: 'success',
@@ -104,6 +108,49 @@ router.post('/upload-bank-statement', auth, upload.array('files'), async (req, r
     } catch (err) {
         console.error('Bank Upload Error:', err);
         res.status(500).json({ message: 'Error uploading bank statements' });
+    }
+});
+
+// Save Transactions (Bulk)
+router.post('/save-transactions', auth, async (req, res) => {
+    try {
+        const { transactions } = req.body;
+        if (!transactions || !Array.isArray(transactions) || transactions.length === 0) {
+            return res.status(400).json({ message: 'No transactions to save' });
+        }
+
+        const Transaction = require('../models/Transaction');
+
+        const savedDocs = [];
+        for (const tx of transactions) {
+            // Determine signed amount
+            let amount = 0;
+            if (tx.moneyIn && parseFloat(tx.moneyIn) > 0) amount = parseFloat(tx.moneyIn);
+            if (tx.moneyOut && parseFloat(tx.moneyOut) > 0) amount = -parseFloat(tx.moneyOut);
+
+            // Clean Balance (remove commas)
+            let balance = 0;
+            if (tx.balance) balance = parseFloat(String(tx.balance).replace(/,/g, ''));
+
+            savedDocs.push({
+                user: req.user.id,
+                companyCode: req.user.companyCode,
+                date: new Date(tx.date),
+                description: tx.description,
+                amount: amount,
+                balance: balance,
+                currency: 'USD', // Default for now
+                originalData: tx
+            });
+        }
+
+        await Transaction.insertMany(savedDocs);
+
+        res.json({ message: `Successfully saved ${savedDocs.length} transactions!` });
+
+    } catch (err) {
+        console.error('Save Transaction Error:', err);
+        res.status(500).json({ message: 'Error saving transactions' });
     }
 });
 

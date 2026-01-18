@@ -30,6 +30,27 @@ export default function CompanyProfile() {
         companyCode: ''
     });
 
+    const [savingBank, setSavingBank] = useState(false);
+
+    const handleSaveTransactions = async () => {
+        if (transactions.length === 0) return;
+        setSavingBank(true);
+        try {
+            const token = localStorage.getItem('token');
+            await axios.post('/api/company/save-transactions', { transactions }, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            setMessage('Transactions saved successfully!');
+            setTimeout(() => setMessage(''), 3000);
+            setTransactions([]);
+        } catch (err) {
+            console.error(err);
+            setMessage('Error saving transactions.');
+        } finally {
+            setSavingBank(false);
+        }
+    };
+
     // Fetch existing profile on mount
     useEffect(() => {
         fetchProfile();
@@ -456,52 +477,65 @@ export default function CompanyProfile() {
 
             {/* Extracted Data Table for Bank */}
             {transactions.length > 0 && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden animate-fade-in mb-8">
-                    <div className="p-6 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
-                        <div className="flex items-center">
-                            <div className="p-2 bg-blue-50 rounded-lg mr-3">
-                                <Table className="text-blue-500" size={20} />
+                <>
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden animate-fade-in mb-8">
+                        <div className="p-6 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
+                            <div className="flex items-center">
+                                <div className="p-2 bg-blue-50 rounded-lg mr-3">
+                                    <Table className="text-blue-500" size={20} />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-gray-800">Extracted Transactions</h3>
+                                    <p className="text-xs text-gray-500">Review and verify before finalizing.</p>
+                                </div>
                             </div>
-                            <div>
-                                <h3 className="font-bold text-gray-800">Extracted Transactions</h3>
-                                <p className="text-xs text-gray-500">Review and verify before finalizing.</p>
-                            </div>
+                            <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium flex items-center">
+                                <CheckCircle size={12} className="mr-1" /> AI Verified
+                            </span>
                         </div>
-                        <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium flex items-center">
-                            <CheckCircle size={12} className="mr-1" /> AI Verified
-                        </span>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead className="bg-gray-50 text-gray-500 text-xs uppercase">
-                                <tr>
-                                    <th className="px-6 py-4 font-medium">Date</th>
-                                    <th className="px-6 py-4 font-medium">Description</th>
-                                    <th className="px-6 py-4 font-medium text-right">Money In</th>
-                                    <th className="px-6 py-4 font-medium text-right">Money Out</th>
-                                    <th className="px-6 py-4 font-medium text-right">Balance</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                                {transactions.map((tx, idx) => (
-                                    <tr key={idx} className="hover:bg-gray-50 transition">
-                                        <td className="px-6 py-4 text-sm text-gray-600 font-mono">{tx.date}</td>
-                                        <td className="px-6 py-4 text-sm text-gray-800 font-medium">{tx.description}</td>
-                                        <td className="px-6 py-4 text-sm text-right font-medium text-green-600">
-                                            {tx.moneyIn ? `+${parseFloat(tx.moneyIn).toFixed(2)}` : '-'}
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-right font-medium text-red-600">
-                                            {tx.moneyOut ? `-${parseFloat(tx.moneyOut).toFixed(2)}` : '-'}
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-right text-gray-800 font-bold">
-                                            {tx.balance || '-'}
-                                        </td>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left">
+                                <thead className="bg-gray-50 text-gray-500 text-xs uppercase">
+                                    <tr>
+                                        <th className="px-6 py-4 font-medium">Date</th>
+                                        <th className="px-6 py-4 font-medium">Description</th>
+                                        <th className="px-6 py-4 font-medium text-right">Money In</th>
+                                        <th className="px-6 py-4 font-medium text-right">Money Out</th>
+                                        <th className="px-6 py-4 font-medium text-right">Balance</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                    {transactions.map((tx, idx) => (
+                                        <tr key={idx} className="hover:bg-gray-50 transition">
+                                            <td className="px-6 py-4 text-sm text-gray-600 font-mono">{tx.date}</td>
+                                            <td className="px-6 py-4 text-sm text-gray-800 font-medium">{tx.description}</td>
+                                            <td className="px-6 py-4 text-sm text-right font-medium text-green-600">
+                                                {tx.moneyIn ? `+${parseFloat(tx.moneyIn).toFixed(2)}` : '-'}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-right font-medium text-red-600">
+                                                {tx.moneyOut ? `-${parseFloat(tx.moneyOut).toFixed(2)}` : '-'}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-right text-gray-800 font-bold">
+                                                {tx.balance || '-'}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
+
+                    <div className="flex justify-end mt-4 mb-20">
+                        <button
+                            onClick={handleSaveTransactions}
+                            disabled={savingBank}
+                            className="bg-black text-white px-8 py-3 rounded-lg font-bold hover:bg-gray-800 transition disabled:bg-gray-400 flex items-center gap-2"
+                        >
+                            {savingBank ? <Loader2 className="animate-spin h-5 w-5" /> : <Save size={20} />}
+                            {savingBank ? 'SAVING...' : 'SAVE TRANSACTIONS'}
+                        </button>
+                    </div>
+                </>
             )}
         </div>
     );
