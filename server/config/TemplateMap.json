@@ -1,0 +1,42 @@
+{
+    "sheetName": "Monthly Report",
+    "mappings": {
+        "income": [
+            {
+                "category": "Sales",
+                "cell": "B10"
+            },
+            {
+                "category": "Consulting",
+                "cell": "B11"
+            },
+            {
+                "category": "Interest",
+                "cell": "B12"
+            }
+        ],
+        "expenses": [
+            {
+                "category": "Rent",
+                "cell": "B15"
+            },
+            {
+                "category": "Utilities",
+                "cell": "B16"
+            },
+            {
+                "category": "Salaries",
+                "cell": "B17"
+            },
+            {
+                "category": "Supplies",
+                "cell": "B18"
+            }
+        ],
+        "totals": {
+            "totalIncome": "B13",
+            "totalExpenses": "B20",
+            "netProfit": "B22"
+        }
+    }
+}

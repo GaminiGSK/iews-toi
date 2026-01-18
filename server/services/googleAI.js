@@ -7,7 +7,11 @@ const API_KEY = process.env.GEMINI_API_KEY || "AIzaSyCL3dNr_tpKtEHH5wJUzJHq4Ydx8
 
 const genAI = new GoogleGenerativeAI(API_KEY);
 // Downgrade to Gemini 1.0 Pro (Standard Free Tier) to avoid 403 Forbidden on Flash
-const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+// UPDATE: User confirmed Key supports 'gemini-2.0-flash-exp' (Vision)
+const model = genAI.getGenerativeModel({
+    model: "gemini-2.0-flash-exp",
+    systemInstruction: "You are an expert Financial AI Agent. Your job is to extract bank transaction data with 100% accuracy from images."
+});
 
 // Helper to encode file to base64
 function fileToGenerativePart(path, mimeType) {
@@ -23,6 +27,7 @@ exports.extractDocumentData = async (filePath) => {
     console.log(`[GeminiAI] Processing Document: ${filePath}`);
     try {
         const prompt = "Extract the following details from this Company Registration certificate (MOC) as JSON: companyNameEn, companyNameKh, registrationNumber, incorporationDate, address (province/city). Return ONLY raw JSON, no markdown.";
+        // Vision Model supports JPEG/PNG directly
         const imagePart = fileToGenerativePart(filePath, "image/jpeg");
 
         const result = await model.generateContent([prompt, imagePart]);
@@ -37,28 +42,30 @@ exports.extractDocumentData = async (filePath) => {
 };
 
 exports.extractBankStatement = async (filePath) => {
-    console.log(`[GeminiAI] Scanning Bank Statement: ${filePath}`);
+    console.log(`[GeminiAI] Scanning Bank Statement (Vision 2.0): ${filePath}`);
 
     try {
+        // AGENTIC PROMPT: STAGE 1 (Layout) & STAGE 2 (Structure)
         const prompt = `
-            Analyze this Bank Statement image.
-            Extract all transaction rows into a strict JSON Array.
+            Analyze this Bank Statement image visually.
+            1. **Layout Detection**: Locate the main "Account Activity" or "Transaction History" table. Ignore headers/footers outside the table.
+            2. **Data Extraction**: Extract every single row from the table into a JSON Array.
             
             JSON Schema:
             [
               {
-                "date": "Feb 10, 2025",
-                "description": "Transaction details...",
-                "moneyIn": 100.50, // number or 0
-                "moneyOut": 0,    // number or 0
-                "balance": "1,200.00" // string
+                "date": "DD/MM/YYYY", // Normalize date format
+                "description": "Full transaction description text",
+                "moneyIn": 0.00, // Number. If empty/dash, use 0.
+                "moneyOut": 0.00, // Number. If empty/dash, use 0.
+                "balance": "0.00" // String representation of the balance column
               }
             ]
 
             Rules:
-            - If moneyIn/Out is empty/dash, use 0.
-            - Remove currency symbols ($).
-            - Output ONLY the JSON Array. No Markdown. No Explanations.
+            - Look strictly at the columns. Don't hallucinate data.
+            - If "Money In" and "Money Out" are in one column (Signed), separate them based on sign (- is Out).
+            - Output ONLY the JSON Array. No Markdown blocks.
         `;
 
         // Robust Mimetype Detection
@@ -67,6 +74,7 @@ exports.extractBankStatement = async (filePath) => {
         if (ext === '.png') mimeType = 'image/png';
         if (ext === '.pdf') mimeType = 'application/pdf';
         if (ext === '.webp') mimeType = 'image/webp';
+        if (ext === '.jpg' || ext === '.jpeg') mimeType = 'image/jpeg';
 
         const filePart = fileToGenerativePart(filePath, mimeType);
 
@@ -88,6 +96,12 @@ exports.extractBankStatement = async (filePath) => {
                 balance: "0.00"
             }];
         }
+
+        // AGENTIC STAGE 3: LOGICAL VALIDATION (Math Check)
+        // We can optionally verify here, or just mark them for the UI.
+        // For now, we return the raw data and let the UI handle display.
+        // We could calculate a 'verified' flag if needed.
+
         return data;
 
     } catch (error) {
