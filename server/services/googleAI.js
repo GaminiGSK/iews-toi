@@ -1,7 +1,7 @@
 // Mock Google AI Service for Development
 // Simulates Document AI and Translation API
 
-// Global counter to simulate "Processing Page 1, then Page 2"
+// Global counter to simulate "Processing Page 1, then Page 2, then Page 3..."
 let mockRequestCounter = 0;
 
 exports.extractDocumentData = async (filePath) => {
@@ -20,6 +20,33 @@ exports.extractDocumentData = async (filePath) => {
         incorporationDate: "09 December 2025",
         rawText: "Sample extracted text content..."
     };
+};
+
+// Helper: Generate Generic "Page N" data to support unlimited pages without duplicates
+const generateGenericPageData = (pageIndex) => {
+    // Start from April 2025 (since Page 2 ends in March)
+    // Page 3 -> Month 3 (April)
+    // Page 4 -> Month 4 (May)
+    const baseMonth = 2 + (pageIndex - 2); // 0-indexed month of 2025
+
+    // Create random mock transactions
+    const data = [];
+    const txCount = 5;
+
+    for (let i = 0; i < txCount; i++) {
+        const d = new Date(2025, baseMonth, 1 + (i * 5)); // Spread dates: 1st, 6th, 11th...
+        // Format: "Apr 01, 2025"
+        const dateStr = d.toLocaleString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+
+        data.push({
+            date: dateStr,
+            description: `GENERIC MOCK TRANSACTION ${pageIndex}-${i} - AUTO GENERATED FOR PAGE ${pageIndex + 1}`,
+            moneyIn: (i % 2 === 0) ? (1000 + i * 100).toFixed(2) : 0,
+            moneyOut: (i % 2 !== 0) ? (500 + i * 50).toFixed(2) : 0,
+            balance: (5000 + i * 200).toFixed(2) // Mock running balance
+        });
+    }
+    return data;
 };
 
 exports.extractBankStatement = async (filePath) => {
@@ -135,30 +162,32 @@ exports.extractBankStatement = async (filePath) => {
     ];
 
     const filename = filePath.split(/[/\\]/).pop();
-    console.log(`[MockAI] Processing: ${filename} (Counter: ${mockRequestCounter})`);
 
-    // ROUND-ROBIN STRATEGY
-    // Call 1 (Counter 0) -> Return Page 1
-    // Call 2 (Counter 1) -> Return Page 2
-
-    // We also keep the filename logic as an override if specific 'page2' string found
-    if (filename.includes('page2') || filename.includes('Part 2')) {
+    // Explicit Filename Overrides (Primary)
+    if (filename.includes('image_1') || filename.includes('page2') || filename.includes('Part 2')) {
         return page2Data;
     }
+    if (filename.includes('image_0') || filename.includes('page1') || filename.includes('Part 1')) {
+        return page1Data;
+    }
 
-    // Check if filename contains "image_0" -> Page 1, "image_1" -> Page 2
-    // If not, use Round Robin
-    if (filename.includes('image_1')) return page2Data;
-    if (filename.includes('image_0')) return page1Data;
+    // "Page by Page" Simulator Strategy
+    // Uses the global counter to determine which page logic to serve.
+    // 0 -> Page 1
+    // 1 -> Page 2
+    // 2 -> Page 3 (Generated)
+    // 3 -> Page 4 (Generated)
+    // ...
+    const currentPageIndex = mockRequestCounter;
+    mockRequestCounter++; // Increment for next file
 
-    // Fallback Round Robin:
-    // If user uploads "file1.png" and "file2.png" (renamed to random hashes),
-    // we just alternate. 
-    // This is the safest way to ensure "Drop 2 files" = "Get 2 different pages".
-    const isPage2 = mockRequestCounter % 2 !== 0;
-    mockRequestCounter++;
+    console.log(`[MockAI] Processing: ${filename} (Sequence: ${currentPageIndex})`);
 
-    return isPage2 ? page2Data : page1Data;
+    if (currentPageIndex === 0) return page1Data;
+    if (currentPageIndex === 1) return page2Data;
+
+    // For Page 3 and beyond, generate unique data
+    return generateGenericPageData(currentPageIndex);
 };
 
 // Simple regex/split parser for the pasted text format
