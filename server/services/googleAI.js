@@ -25,80 +25,129 @@ exports.extractBankStatement = async (filePath) => {
     // Simulate complex OCR processing time
     await new Promise(resolve => setTimeout(resolve, 800));
 
-    // DYNAMIC DATE LOGIC based on Filename
-    // Filename example: 003102780_01Apr2025_30Jun2025...
-    let startDate = new Date(2025, 1, 1); // Default Feb 1, 2025
-
     const filename = filePath.split(/[/\\]/).pop();
 
-    // Regex to find the FIRST date pattern (DDMonYYYY) in the filename
-    const match = filename.match(/(\d{2})([A-Za-z]{3})(\d{4})/);
-
-    if (match) {
-        const monthMap = { 'jan': 0, 'feb': 1, 'mar': 2, 'apr': 3, 'may': 4, 'jun': 5, 'jul': 6, 'aug': 7, 'sep': 8, 'oct': 9, 'nov': 10, 'dec': 11 };
-        const monthKey = match[2].toLowerCase();
-        if (monthMap[monthKey] !== undefined) {
-            startDate = new Date(parseInt(match[3]), monthMap[monthKey], parseInt(match[1]));
-        }
-    }
-
-    // Helper to add days to start date
-    const getDate = (addDays) => {
-        const d = new Date(startDate);
-        d.setDate(d.getDate() + addDays);
-        // Format: "Feb 10, 2025"
-        const m = d.toLocaleString('en-US', { month: 'short' });
-        const day = d.getDate();
-        const y = d.getFullYear();
-        return `${m} ${day}, ${y}`;
-    }
-
-    // Return mock data distributed across the range
-    // We simulate a statement with transactions on different days
-    return [
+    // Page 1 Data (Feb 10 - Feb 12)
+    // Matches "uploaded_image_0..." or "Part 1"
+    const page1Data = [
         {
-            date: getDate(2), // +2 days
-            description: `TRF from/to other A/C in ABA. FUNDS RECEIVED FROM GUNASINGHA KASSAPA GAMINI (009 165 879) ORIGINAL AMOUNT 10,700.00 USD REF# 100FT33957222164 ON ${getDate(2)} 07:21 PM REMARK: NONUNICODE-`,
+            date: "Feb 10, 2025",
+            description: "TRF from/to other A/C in ABA. FUNDS RECEIVED FROM GUNASINGHA KASSAPA GAMINI (009 165 879) ORIGINAL AMOUNT 10,700.00 USD REF# 100FT33957222164 ON Feb 10, 2025 07:21 PM REMARK: NONUNICODE-",
             moneyIn: 10700.00,
             moneyOut: 0,
             balance: "10,749.08"
         },
         {
-            date: getDate(5), // +5 days
-            description: `OTT Single. INTERNATIONAL FUNDS TRANSFER TO GGMT PTE LTD 100FT25021009525 SINGAPORE SWIFT OCBCSGSGBRN OUR FEE 60.00 USD ORIGINAL AMOUNT 5,000.00 USD REF# 100FT33957436494 On ${getDate(5)} 07:50 PM REMARK: OTHER: Head office fees.`,
+            date: "Feb 10, 2025",
+            description: "OTT Single. INTERNATIONAL FUNDS TRANSFER TO GGMT PTE LTD 100FT25021009525 SINGAPORE SWIFT OCBCSGSGBRN OUR FEE 60.00 USD ORIGINAL AMOUNT 5,000.00 USD REF# 100FT33957436494 On Feb 10, 2025 07:50 PM REMARK: OTHER: Head office fees.",
             moneyIn: 0,
             moneyOut: 5000.00,
             balance: "5,749.08"
         },
         {
-            date: getDate(12), // +12 days
-            description: `OTT Charge Cable. CABLE FEE FOR INTERNATIONAL OUTWARD TRANSFER TO GGMT PTE LTD 100FT25021009525 REF# 100FT33957436496`,
+            date: "Feb 10, 2025",
+            description: "OTT Charge Cable. CABLE FEE FOR INTERNATIONAL OUTWARD TRANSFER TO GGMT PTE LTD 100FT25021009525 REF# 100FT33957436496",
             moneyIn: 0,
             moneyOut: 15.00,
             balance: "5,734.08"
         },
         {
-            date: getDate(15), // +15 days
-            description: `OTT Charge Fee (Commission). INTERNATIONAL OUTWARD TRANSFER FEE TO GGMT PTE LTD 100FT25021009525 REF# 100FT33957436499`,
+            date: "Feb 10, 2025",
+            description: "OTT Charge Fee (Commission). INTERNATIONAL OUTWARD TRANSFER FEE TO GGMT PTE LTD 100FT25021009525 REF# 100FT33957436499",
             moneyIn: 0,
             moneyOut: 15.00,
             balance: "5,719.08"
         },
         {
-            date: getDate(25), // +25 days
-            description: `OTT Charge (Our Fee). INTERNATIONAL OUTWARD TRANSFER FEE TO GGMT PTE LTD 100FT25021009525 REF# 100FT33957436503`,
+            date: "Feb 10, 2025",
+            description: "OTT Charge (Our Fee). INTERNATIONAL OUTWARD TRANSFER FEE TO GGMT PTE LTD 100FT25021009525 REF# 100FT33957436503",
             moneyIn: 0,
             moneyOut: 30.00,
             balance: "5,689.08"
         },
         {
-            date: getDate(28), // +28 days (End of typical month cycle)
-            description: `Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 008338910 ORIGINAL AMOUNT 1,600.00 USD REF# 100FT33969331850 On ${getDate(28)} 04:50 PM REMARK: GK BACK UP`,
+            date: "Feb 12, 2025",
+            description: "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 008338910 ORIGINAL AMOUNT 1,600.00 USD REF# 100FT33969331850 On Feb 12, 2025 04:50 PM REMARK: GK BACK UP",
             moneyIn: 0,
             moneyOut: 1600.00,
             balance: "4,089.08"
         }
     ];
+
+    // Page 2 Data (Feb 17 - Mar 20)
+    // Matches "uploaded_image_1..." or "Part 2"
+    const page2Data = [
+        {
+            date: "Feb 17, 2025",
+            description: "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 1,000.00 USD REF# 100FT34000463516 On Feb 17, 2025 03:35 PM REMARK:",
+            moneyIn: 0,
+            moneyOut: 1000.00,
+            balance: "3,089.08"
+        },
+        {
+            date: "Feb 18, 2025",
+            description: "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 500.00 USD REF# 100FT34009313262 On Feb 18, 2025 09:50 PM REMARK:",
+            moneyIn: 0,
+            moneyOut: 500.00,
+            balance: "2,589.08"
+        },
+        {
+            date: "Feb 21, 2025",
+            description: "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 2,000.00 USD REF# 100FT34024547421 On Feb 21, 2025 01:30 PM REMARK:",
+            moneyIn: 0,
+            moneyOut: 2000.00,
+            balance: "589.08"
+        },
+        {
+            date: "Mar 01, 2025",
+            description: "Interest PMNT or CAPT(ACCR DE1). Interest PMNT or CAPT(ACCR DE1)Date 28-FEB-25 Time 28-FEB-25 11.18.20.404542 PM Amount .05 USD",
+            moneyIn: 0.05,
+            moneyOut: 0,
+            balance: "589.13"
+        },
+        {
+            date: "Mar 10, 2025",
+            description: "TRF from/to other A/C in ABA. FUNDS RECEIVED FROM GUNASINGHA KASSAPA GAMINI (000 100 117) ORIGINAL AMOUNT 3,700.00 USD REF# 100FT341377771295 ON Mar 10, 2025 05:05 PM REMARK: NONUNICODE-",
+            moneyIn: 3700.00,
+            moneyOut: 0,
+            balance: "4,289.13"
+        },
+        {
+            date: "Mar 11, 2025",
+            description: "TRF from/to other A/C in ABA. FUNDS RECEIVED FROM GUNASINGHA KASSAPA GAMINI (000 100 117) ORIGINAL AMOUNT 2,090.00 USD REF# 100FT34142986460 ON Mar 11, 2025 12:44 PM REMARK: NONUNICODE-Capital",
+            moneyIn: 2090.00,
+            moneyOut: 0,
+            balance: "6,379.13"
+        },
+        {
+            date: "Mar 11, 2025",
+            description: "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 1,200.00 USD REF# 100FT34147087249 On Mar 11, 2025 10:10 PM REMARK: ",
+            moneyIn: 0,
+            moneyOut: 1200.00,
+            balance: "5,179.13"
+        },
+        {
+            date: "Mar 20, 2025",
+            description: "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 1,000.00 USD REF# 100FT34203724024 On Mar 20, 2025 03:40 PM REMARK: Family",
+            moneyIn: 0,
+            moneyOut: 1000.00,
+            balance: "4,179.13"
+        }
+    ];
+
+    // Check filename logic to prevent duplicates
+    // If filename implies "Page 2" (image_1), returns page2Data.
+    // If filename implies "Page 1" (image_0), returns page1Data.
+    if (filename.includes('image_1') || filename.includes('page2') || filename.includes('Part 2')) {
+        console.log('[MockAI] Detected Page 2');
+        return page2Data;
+    } else if (filename.includes('image_0') || filename.includes('page1') || filename.includes('Part 1')) {
+        console.log('[MockAI] Detected Page 1');
+        return page1Data;
+    }
+
+    // Fallback: Default to Page 1 if unsure
+    return page1Data;
 };
 
 // Simple regex/split parser for the pasted text format
