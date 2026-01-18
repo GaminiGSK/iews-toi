@@ -2,7 +2,7 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const fs = require('fs');
 const path = require('path');
 
-// USER PROVIDED KEY (Should be moved to process.env.GEMINI_API_KEY in production)
+// USER PROVIDED KEY
 const API_KEY = process.env.GEMINI_API_KEY || "AIzaSyDHuWy_YAHD1zdJ4mwT0t1_8S0xGr8iDEU";
 
 const genAI = new GoogleGenerativeAI(API_KEY);
@@ -76,16 +76,28 @@ exports.extractBankStatement = async (filePath) => {
         console.log("[GeminiAI] Raw Output Length:", text.length);
         const data = cleanAndParseJSON(text);
 
-        if (!Array.isArray(data)) {
-            console.warn("[GeminiAI] Not an array, wrapping:", data);
-            if (!data) return [];
-            return [data];
+        if (!Array.isArray(data) || data.length === 0) {
+            console.warn("[GeminiAI] Output Invalid/Empty. Raw:", text.substring(0, 100));
+            // DEBUG FALLBACK: Return the raw text as a transaction so user can see it
+            return [{
+                date: "DEBUG_ERR",
+                description: "AI Parse Failed. Raw Output: " + text.substring(0, 200).replace(/\n/g, ' '),
+                moneyIn: 0,
+                moneyOut: 0,
+                balance: "0.00"
+            }];
         }
         return data;
 
     } catch (error) {
         console.error("Gemini API Error (Bank):", error);
-        return [];
+        return [{
+            date: "FATAL_ERR",
+            description: "API Failure: " + error.message,
+            moneyIn: 0,
+            moneyOut: 0,
+            balance: "0.00"
+        }];
     }
 };
 

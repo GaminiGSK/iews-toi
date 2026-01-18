@@ -235,7 +235,7 @@ export default function CompanyProfile() {
                                 setBankFiles(safeFiles);
                                 setActiveFileIndex(0);
                                 const totalTx = safeFiles.reduce((acc, f) => acc + (f.transactions?.length || 0), 0);
-                                setMessage(`Success! Parsed ${totalTx} transactions from ${safeFiles.length} files. (v2.2 Safe)`);
+                                setMessage(`Success! Parsed ${totalTx} transactions from ${safeFiles.length} files. (v2.4 AI-Debug)`);
                             } catch (err) {
                                 setMessage('Error uploading files.');
                                 console.error(err);
