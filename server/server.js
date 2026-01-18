@@ -33,12 +33,12 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // Database Connection
-// Database Connection
-const connectDB = async () => {
+// Database Connection & Server Start
+const startServer = async () => {
     try {
         console.log('Attempting to connect to MongoDB...');
         await mongoose.connect(process.env.MONGODB_URI, {
-            serverSelectionTimeoutMS: 5000 // Fail after 5s if not found
+            serverSelectionTimeoutMS: 30000 // 30s Timeout for Cold Starts
         });
         console.log('MongoDB Connected Successfully');
 
@@ -58,15 +58,24 @@ const connectDB = async () => {
             console.log('Admins seeded');
         }
 
+        // Apply Gate Code Logic
+        try {
+            const authRoutes = require('./routes/auth');
+            // Check if initGateCodes is exported or just rely on module load
+            // It runs on load in auth.js, so requiring it above is fine.
+        } catch (e) {
+            console.error("Auth init error", e);
+        }
+
+        // Start Server ONLY after DB is ready
+        app.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}`);
+        });
+
     } catch (err) {
         console.error('MongoDB Connection Failed:', err.message);
-        // Do not exit, let it retry or stay up (though API will fail)
+        process.exit(1); // Exit if DB fails so Cloud Run restarts the container
     }
 };
 
-connectDB();
-
-// Start Server
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+startServer();
