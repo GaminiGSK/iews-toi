@@ -1,5 +1,6 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const fs = require('fs');
+const path = require('path');
 
 // USER PROVIDED KEY (Should be moved to process.env.GEMINI_API_KEY in production)
 const API_KEY = process.env.GEMINI_API_KEY || "AIzaSyDHuWy_YAHD1zdJ4mwT0t1_8S0xGr8iDEU";
@@ -21,7 +22,7 @@ exports.extractDocumentData = async (filePath) => {
     console.log(`[GeminiAI] Processing Document: ${filePath}`);
     try {
         const prompt = "Extract the following details from this Company Registration certificate (MOC) as JSON: companyNameEn, companyNameKh, registrationNumber, incorporationDate, address (province/city). Return ONLY raw JSON, no markdown.";
-        const imagePart = fileToGenerativePart(filePath, "image/jpeg"); // Assuming JPEG/PNG, typical for uploads
+        const imagePart = fileToGenerativePart(filePath, "image/jpeg");
 
         const result = await model.generateContent([prompt, imagePart]);
         const response = await result.response;
@@ -38,24 +39,33 @@ exports.extractBankStatement = async (filePath) => {
     console.log(`[GeminiAI] Scanning Bank Statement: ${filePath}`);
 
     try {
-        // High-Precision Prompt for Financial Data
         const prompt = `
             Analyze this Bank Statement image.
-            Extract all transaction rows into a JSON Array.
-            Each object must have:
-            - "date": Format like "Feb 10, 2025"
-            - "description": The full transaction details/remark.
-            - "moneyIn": The credit amount (numeric, no commas, 0 if empty/dash).
-            - "moneyOut": The debit amount (numeric, no commas, 0 if empty/dash).
-            - "balance": The running balance (string, keep commas).
+            Extract all transaction rows into a strict JSON Array.
+            
+            JSON Schema:
+            [
+              {
+                "date": "Feb 10, 2025",
+                "description": "Transaction details...",
+                "moneyIn": 100.50, // number or 0
+                "moneyOut": 0,    // number or 0
+                "balance": "1,200.00" // string
+              }
+            ]
 
-            Return ONLY the JSON Array. No markdown formatting.
+            Rules:
+            - If moneyIn/Out is empty/dash, use 0.
+            - Remove currency symbols ($).
+            - Output ONLY the JSON Array. No Markdown. No Explanations.
         `;
 
-        // Determine mime type roughly (or just default/try)
-        // For robustness, could check extension, but standard uploads are images/pdf
-        const isPdf = filePath.toLowerCase().endsWith('.pdf');
-        const mimeType = isPdf ? 'application/pdf' : 'image/jpeg';
+        // Robust Mimetype Detection
+        const ext = path.extname(filePath).toLowerCase();
+        let mimeType = 'image/jpeg';
+        if (ext === '.png') mimeType = 'image/png';
+        if (ext === '.pdf') mimeType = 'application/pdf';
+        if (ext === '.webp') mimeType = 'image/webp';
 
         const filePart = fileToGenerativePart(filePath, mimeType);
 
@@ -67,35 +77,37 @@ exports.extractBankStatement = async (filePath) => {
         const data = cleanAndParseJSON(text);
 
         if (!Array.isArray(data)) {
-            console.warn("[GeminiAI] Output was not an array, wrapping.");
-            return data ? [data] : [];
+            console.warn("[GeminiAI] Not an array, wrapping:", data);
+            if (!data) return [];
+            return [data];
         }
         return data;
 
     } catch (error) {
         console.error("Gemini API Error (Bank):", error);
-        // Fallback to empty to prevent crash, let UI show error
         return [];
     }
 };
 
 exports.translateText = async (text, targetLang) => {
-    // Simple translation pass-through
-    // In real app, could also use Gemini for this!
     return text + " (Translated)";
 };
 
 // Utilities
 function cleanAndParseJSON(text) {
     try {
-        // Remove markdown code blocks if present ```json ... ```
+        // 1. Attempt strict clean
         let clean = text.replace(/```json/g, '').replace(/```/g, '').trim();
+
+        // 2. Regex fallback: Find the first '[' and last ']' to ignore preamble
+        const match = clean.match(/\[[\s\S]*\]/);
+        if (match) {
+            clean = match[0];
+        }
+
         return JSON.parse(clean);
     } catch (e) {
-        console.error("JSON Parse Fail:", text.substring(0, 100));
+        console.error("JSON Parse Fail. Raw extract:", text.substring(0, 100));
         return null;
     }
 }
-
-// Retaining legacy mock functions for safety if needed, but not exporting them
-const legacyMock = {}; 
