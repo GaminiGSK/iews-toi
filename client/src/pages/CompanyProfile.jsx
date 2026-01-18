@@ -222,24 +222,39 @@ export default function CompanyProfile() {
     };
 
     const handleDelete = async (idx, file) => {
-        const isSaved = file.transactions?.some(t => t._id);
-        if (!window.confirm(`Delete ${isSaved ? 'SAVED' : 'this'} file?`)) return;
+        // Robust check for saved status
+        const isSaved = file.status === 'Saved' || (file.transactions && file.transactions.some(t => t._id));
+
+        if (!window.confirm(`Delete ${isSaved ? 'PERMANENTLY' : 'this'} item?`)) return;
 
         if (isSaved) {
             // Delete from DB
             const ids = file.transactions.filter(t => t._id).map(t => t._id);
+
+            if (ids.length === 0) {
+                alert("Error: No Transaction IDs found in database for this file.");
+                return;
+            }
+
             try {
                 const token = localStorage.getItem('token');
+
+                // Optimistic UI update
+                setBankFiles(prev => prev.filter((_, i) => i !== idx));
+
                 await axios.delete('/api/company/transactions', {
                     headers: { 'Authorization': `Bearer ${token}` },
                     data: { transactionIds: ids }
                 });
+
+                setMessage(`Deleted ${ids.length} transactions from DB.`);
                 // Force Reload
                 await fetchProfile();
-                setMessage('Deleted saved transactions.');
             } catch (err) {
                 console.error(err);
-                alert("Error deleting: " + (err.response?.data?.message || err.message));
+                alert("Server Error deleting: " + (err.response?.data?.message || err.message));
+                // Reload to restore state if error
+                fetchProfile();
             }
         } else {
             // Delete Unsaved
@@ -381,17 +396,18 @@ export default function CompanyProfile() {
                         <table className="w-full text-left">
                             <thead className="bg-white text-gray-800 text-xs font-bold uppercase sticky top-0 z-10 border-b border-gray-200 shadow-sm">
                                 <tr>
-                                    <th className="px-4 py-4 whitespace-nowrap w-[120px]">Date</th>
-                                    <th className="px-4 py-4 w-[40%]">Transaction Details</th>
-                                    <th className="px-4 py-4 text-right w-[15%]">Money In</th>
-                                    <th className="px-4 py-4 text-right w-[15%]">Money Out</th>
-                                    <th className="px-4 py-4 text-right w-[15%]">Balance</th>
+                                    <th className="px-4 py-4 whitespace-nowrap w-[100px]">Date</th>
+                                    <th className="px-4 py-4">Transaction Details</th>
+                                    <th className="px-4 py-4 text-right w-[100px]">Money In</th>
+                                    <th className="px-4 py-4 text-right w-[100px]">Money Out</th>
+                                    <th className="px-4 py-4 text-right w-[100px]">Balance</th>
+                                    <th className="px-4 py-4 w-[100px]">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                                 {(bankFiles[activeFileIndex]?.transactions || []).length === 0 ? (
                                     <tr>
-                                        <td colSpan="5" className="text-center py-10 text-gray-400">No transactions to display</td>
+                                        <td colSpan="6" className="text-center py-10 text-gray-400">No transactions to display</td>
                                     </tr>
                                 ) : (
                                     (bankFiles[activeFileIndex]?.transactions || []).map((tx, idx) => (
@@ -410,6 +426,9 @@ export default function CompanyProfile() {
                                             </td>
                                             <td className="px-4 py-4 text-xs text-right text-gray-800 font-bold align-top whitespace-nowrap">
                                                 {tx.balance ? parseFloat(String(tx.balance).replace(/[^0-9.-]+/g, "")).toLocaleString('en-US', { minimumFractionDigits: 2 }) : '-'}
+                                            </td>
+                                            <td className="px-4 py-4 text-xs align-top">
+                                                {/* Actions */}
                                             </td>
                                         </tr>
                                     ))
