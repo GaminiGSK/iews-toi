@@ -9,11 +9,27 @@ export default function CompanyProfile() {
     const [uploadingBank, setUploadingBank] = useState(false);
     const [savingBank, setSavingBank] = useState(false);
 
+    // Helper: Parse Date (Handles DD/MM/YYYY and standard formats)
+    const parseDate = (dateStr) => {
+        if (!dateStr) return new Date(0);
+        // Try standard parsing
+        let d = new Date(dateStr);
+        if (!isNaN(d.getTime())) return d;
+
+        // Try parsing DD/MM/YYYY
+        if (typeof dateStr === 'string' && dateStr.match(/^\d{1,2}\/\d{1,2}\/\d{4}/)) {
+            const [day, month, year] = dateStr.split('/');
+            d = new Date(`${year}-${month}-${day}`);
+            if (!isNaN(d.getTime())) return d;
+        }
+        return new Date(0); // Fallback
+    };
+
     // Helper: Safe Date Formatting
     const formatDateSafe = (dateStr) => {
         if (!dateStr) return '-';
-        const d = new Date(dateStr);
-        if (isNaN(d.getTime())) return dateStr; // Fallback to raw string
+        const d = parseDate(dateStr); // Use the robust parser
+        if (d.getTime() === 0 || isNaN(d.getTime())) return dateStr; // Fallback to raw string if still invalid
         return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     };
 
@@ -214,8 +230,8 @@ export default function CompanyProfile() {
                 const combined = [...prev, ...safeFiles];
                 // Sort by date (oldest first)
                 return combined.sort((a, b) => {
-                    const dateA = a.transactions?.[0]?.date ? new Date(a.transactions[0].date) : new Date(0);
-                    const dateB = b.transactions?.[0]?.date ? new Date(b.transactions[0].date) : new Date(0);
+                    const dateA = a.transactions?.[0]?.date ? parseDate(a.transactions[0].date) : new Date(0);
+                    const dateB = b.transactions?.[0]?.date ? parseDate(b.transactions[0].date) : new Date(0);
                     return dateA - dateB;
                 });
             });
