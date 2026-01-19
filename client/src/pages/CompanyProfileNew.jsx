@@ -243,460 +243,492 @@ export default function CompanyProfile() {
         } finally {
             setUploadingDoc(null);
         }
-    };
+        const handleClearDoc = async (docType) => {
+            if (!window.confirm('Are you sure you want to clear this document?')) return;
 
-    const renderProfile = () => (
-        <div className="w-full h-[calc(100vh-80px)] pt-6 px-4 animate-fade-in flex flex-col">
-            <button onClick={() => setView('home')} className="text-gray-400 hover:text-gray-600 mb-4 flex items-center text-sm font-medium transition shrink-0">
-                ← Back to Dashboard
-            </button>
+            try {
+                const token = localStorage.getItem('token');
+                await axios.delete('/api/company/delete-document', {
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    data: { docType }
+                });
 
-            <div className="flex flex-1 gap-6 min-h-0">
+                // Optimistic UI Update or Refresh
+                setFormData(prev => ({
+                    ...prev,
+                    documents: prev.documents.filter(d => d.docType !== docType)
+                }));
+                setMessage('Document cleared.');
+            } catch (err) {
+                console.error(err);
+                setMessage('Error clearing document.');
+            }
+        };
 
-                {/* COL 1: UPLOAD ZONES */}
-                <div className="w-64 shrink-0 flex flex-col space-y-3 overflow-y-auto pr-1">
-                    <h3 className="font-bold text-gray-700 mb-1">Documents Needed</h3>
-                    {DOC_TYPES.map((doc) => (
-                        <div
-                            key={doc.id}
-                            className={`relative border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition group
+
+        const renderProfile = () => (
+            <div className="w-full h-[calc(100vh-80px)] pt-6 px-4 animate-fade-in flex flex-col">
+                <button onClick={() => setView('home')} className="text-gray-400 hover:text-gray-600 mb-4 flex items-center text-sm font-medium transition shrink-0">
+                    ← Back to Dashboard
+                </button>
+
+                <div className="flex flex-1 gap-6 min-h-0">
+
+                    {/* COL 1: UPLOAD ZONES */}
+                    <div className="w-64 shrink-0 flex flex-col space-y-3 overflow-y-auto pr-1">
+                        <h3 className="font-bold text-gray-700 mb-1">Documents Needed</h3>
+                        {DOC_TYPES.map((doc) => (
+                            <div
+                                key={doc.id}
+                                className={`relative border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition group
                                 ${uploadingDoc === doc.id ? 'border-blue-400 bg-blue-50' : 'border-gray-200 hover:border-gray-400 hover:bg-gray-50'}
                             `}
+                                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                                onDrop={(e) => {
+                                    e.preventDefault(); e.stopPropagation();
+                                    if (!uploadingDoc) handleRegUpload(Array.from(e.dataTransfer.files), doc.id);
+                                }}
+                            >
+                                <input
+                                    type="file"
+                                    accept="image/*,.pdf"
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                    disabled={!!uploadingDoc}
+                                    onChange={(e) => {
+                                        if (e.target.files?.length > 0) handleRegUpload(Array.from(e.target.files), doc.id);
+                                    }}
+                                />
+
+                                {uploadingDoc === doc.id ? (
+                                    <Loader2 className="animate-spin text-blue-600 mb-2" />
+                                ) : (
+                                    <doc.icon size={24} className={`text-${doc.color}-500 mb-2 opacity-70 group-hover:scale-110 transition`} />
+                                )}
+
+                                <span className="text-xs font-bold text-gray-600">{doc.label}</span>
+                                <span className="text-[10px] text-gray-400 mt-1">Drag or Click</span>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* COL 2: STATUS LIST */}
+                    <div className="w-72 shrink-0 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col overflow-hidden">
+                        <div className="p-4 border-b border-gray-100 bg-gray-50 font-bold text-gray-700">
+                            Document Status
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-2 space-y-2">
+                            {DOC_TYPES.map(type => {
+                                const uploaded = (formData.documents || []).find(d => d.docType === type.id);
+                                const isVerified = uploaded?.status === 'Verified';
+
+                                return (
+                                    <div key={type.id} className="flex items-center justify-between p-3 bg-white border border-gray-100 rounded-lg shadow-sm">
+                                        <div className="flex items-center min-w-0">
+                                            <div className={`w-2 h-2 rounded-full mr-2 ${isVerified ? 'bg-green-500' : 'bg-gray-300'}`} />
+                                            <div className="flex flex-col truncate">
+                                                <span className="text-xs font-bold text-gray-700 truncate">{type.label}</span>
+                                                <span className="text-[10px] text-gray-400 truncate">
+                                                    {uploaded ? uploaded.originalName : 'Missing'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        {isVerified && <CheckCircle size={14} className="text-green-500 shrink-0 mr-2" />}
+
+                                        {/* Clear Button */}
+                                        {uploaded && (
+                                            <button
+                                                onClick={() => handleClearDoc(type.id)}
+                                                className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition"
+                                                title="Clear Document"
+                                            >
+                                                <X size={14} />
+                                            </button>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* COL 3: EXTRACTED DATA FORM */}
+                    <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col overflow-hidden">
+                        <div className="p-4 border-b border-gray-100 bg-gray-50 font-bold text-gray-700 flex justify-between items-center">
+                            <span>Extracted Data</span>
+                            <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">Auto-Filled by AI</span>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+
+                            {/* Section 1: Identity */}
+                            <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase mb-3 flex items-center">
+                                    <FileText size={12} className="mr-1" /> Company Identity
+                                </h4>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-xs text-gray-500">Company Name (KH)</label>
+                                        <input value={formData.companyNameKh || ''} disabled className="w-full text-sm font-bold bg-gray-50 border-gray-200 rounded-md py-2 px-3" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs text-gray-500">Company Name (EN)</label>
+                                        <input value={formData.companyNameEn || ''} disabled className="w-full text-sm font-bold bg-gray-50 border-gray-200 rounded-md py-2 px-3" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs text-gray-500">Registration ID</label>
+                                        <input value={formData.registrationNumber || ''} disabled className="w-full text-sm font-mono bg-gray-50 border-gray-200 rounded-md py-2 px-3" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs text-gray-500">Incorporation Date</label>
+                                        <input value={formData.incorporationDate || ''} disabled className="w-full text-sm font-mono bg-gray-50 border-gray-200 rounded-md py-2 px-3" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="h-px bg-gray-100 my-2" />
+
+                            {/* Section 2: Tax & Location */}
+                            <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase mb-3 flex items-center">
+                                    <Table size={12} className="mr-1" /> Tax & Location
+                                </h4>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-xs text-gray-500">VAT TIN</label>
+                                        <input value={formData.vatTin || ''} disabled className="w-full text-sm font-mono bg-yellow-50 border-yellow-100 text-yellow-800 rounded-md py-2 px-3" />
+                                    </div>
+                                    <div className="space-y-1 col-span-2">
+                                        <label className="text-xs text-gray-500">Registered Address</label>
+                                        <textarea value={formData.address || ''} disabled rows={2} className="w-full text-sm bg-gray-50 border-gray-200 rounded-md py-2 px-3 resize-none" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="h-px bg-gray-100 my-2" />
+
+                            {/* Section 3: Bank Info */}
+                            <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase mb-3 flex items-center">
+                                    <Table size={12} className="mr-1" /> Bank Information
+                                </h4>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-xs text-gray-500">Bank Name</label>
+                                        <input value={formData.bankName || ''} disabled className="w-full text-sm font-bold bg-gray-50 border-gray-200 rounded-md py-2 px-3" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs text-gray-500">Account Number</label>
+                                        <input value={formData.bankAccountNumber || ''} disabled className="w-full text-sm font-mono bg-green-50 border-green-100 text-green-800 rounded-md py-2 px-3" />
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        );
+
+        const handleFiles = async (fileList) => {
+            if (fileList.length === 0) return;
+
+            setMessage(`Processing ${fileList.length} files...`);
+            setUploadingBank(true);
+
+            const formData = new FormData();
+            fileList.forEach(file => formData.append('files', file));
+
+            try {
+                const token = localStorage.getItem('token');
+                const res = await axios.post('/api/company/upload-bank-statement', formData, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
+
+                let safeFiles = res.data.files || [];
+                if (!Array.isArray(safeFiles)) safeFiles = [];
+
+                // Set active file to the first new file if there are no files currently
+                setBankFiles(prev => {
+                    const combined = [...prev, ...safeFiles];
+                    // Sort by date (oldest first)
+                    return combined.sort((a, b) => {
+                        const dateA = a.transactions?.[0]?.date ? parseDate(a.transactions[0].date) : new Date(0);
+                        const dateB = b.transactions?.[0]?.date ? parseDate(b.transactions[0].date) : new Date(0);
+                        return dateA - dateB;
+                    });
+                });
+
+                // Auto-select first file if we had none
+                if (bankFiles.length === 0 && safeFiles.length > 0) {
+                    setActiveFileIndex(0);
+                }
+
+                const newCount = safeFiles.reduce((acc, f) => acc + (f.transactions?.length || 0), 0);
+                setMessage(`Success! Appended ${newCount} transactions from ${safeFiles.length} new files.`);
+
+            } catch (err) {
+                setMessage('Error processing files.');
+                console.error(err);
+            } finally {
+                setUploadingBank(false);
+            }
+        };
+
+        const handleDelete = async (idx, file) => {
+            // Robust check for saved status
+            const isSaved = file.status === 'Saved' || (file.transactions && file.transactions.some(t => t._id));
+
+            if (!window.confirm(`Delete ${isSaved ? 'PERMANENTLY' : 'this'} item?`)) return;
+
+            if (isSaved) {
+                // Delete from DB
+                const ids = file.transactions.filter(t => t._id).map(t => t._id);
+
+                if (ids.length === 0) {
+                    alert("Error: No Transaction IDs found in database for this file.");
+                    return;
+                }
+
+                try {
+                    const token = localStorage.getItem('token');
+
+                    // Optimistic UI update
+                    setBankFiles(prev => prev.filter((_, i) => i !== idx));
+
+                    await axios.delete('/api/company/transactions', {
+                        headers: { 'Authorization': `Bearer ${token}` },
+                        data: { transactionIds: ids }
+                    });
+
+                    setMessage(`Deleted ${ids.length} transactions from DB.`);
+                    // Force Reload
+                    await fetchProfile();
+                } catch (err) {
+                    console.error(err);
+                    alert("Server Error deleting: " + (err.response?.data?.message || err.message));
+                    // Reload to restore state if error
+                    fetchProfile();
+                }
+            } else {
+                // Delete Unsaved
+                setBankFiles(prev => prev.filter((_, i) => i !== idx));
+                if (activeFileIndex === idx) setActiveFileIndex(0);
+            }
+        };
+
+        const renderBank = () => (
+            <div className="w-full h-[calc(100vh-80px)] pt-6 px-4 animate-fade-in flex flex-col">
+                <button onClick={() => setView('home')} className="text-gray-400 hover:text-gray-600 mb-4 flex items-center text-sm font-medium transition shrink-0">
+                    ← Back to Dashboard
+                </button>
+
+                <div className="flex flex-1 gap-6 min-h-0">
+
+                    {/* COLUMN 1: UPLOAD ZONE (Vertical) */}
+                    <div className="w-64 shrink-0 flex flex-col">
+                        <div
+                            className="flex-1 bg-white border-2 border-dashed border-green-200 rounded-2xl p-4 text-center hover:border-green-400 hover:bg-green-50/30 transition relative group flex flex-col items-center justify-center cursor-pointer"
                             onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                            onDrop={(e) => {
-                                e.preventDefault(); e.stopPropagation();
-                                if (!uploadingDoc) handleRegUpload(Array.from(e.dataTransfer.files), doc.id);
+                            onDrop={async (e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (uploadingBank) return;
+                                const fileList = Array.from(e.dataTransfer.files);
+                                if (fileList.length === 0) return;
+                                handleFiles(fileList);
                             }}
                         >
                             <input
                                 type="file"
                                 accept="image/*,.pdf"
-                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                disabled={!!uploadingDoc}
+                                multiple
                                 onChange={(e) => {
-                                    if (e.target.files?.length > 0) handleRegUpload(Array.from(e.target.files), doc.id);
+                                    if (e.target.files?.length > 0) handleFiles(Array.from(e.target.files));
                                 }}
+                                disabled={uploadingBank}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                             />
 
-                            {uploadingDoc === doc.id ? (
-                                <Loader2 className="animate-spin text-blue-600 mb-2" />
-                            ) : (
-                                <doc.icon size={24} className={`text-${doc.color}-500 mb-2 opacity-70 group-hover:scale-110 transition`} />
-                            )}
-
-                            <span className="text-xs font-bold text-gray-600">{doc.label}</span>
-                            <span className="text-[10px] text-gray-400 mt-1">Drag or Click</span>
-                        </div>
-                    ))}
-                </div>
-
-                {/* COL 2: STATUS LIST */}
-                <div className="w-72 shrink-0 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col overflow-hidden">
-                    <div className="p-4 border-b border-gray-100 bg-gray-50 font-bold text-gray-700">
-                        Document Status
-                    </div>
-                    <div className="flex-1 overflow-y-auto p-2 space-y-2">
-                        {DOC_TYPES.map(type => {
-                            const uploaded = (formData.documents || []).find(d => d.docType === type.id);
-                            const isVerified = uploaded?.status === 'Verified';
-
-                            return (
-                                <div key={type.id} className="flex items-center justify-between p-3 bg-white border border-gray-100 rounded-lg shadow-sm">
-                                    <div className="flex items-center min-w-0">
-                                        <div className={`w-2 h-2 rounded-full mr-2 ${isVerified ? 'bg-green-500' : 'bg-gray-300'}`} />
-                                        <div className="flex flex-col truncate">
-                                            <span className="text-xs font-bold text-gray-700 truncate">{type.label}</span>
-                                            <span className="text-[10px] text-gray-400 truncate">
-                                                {uploaded ? uploaded.originalName : 'Missing'}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    {isVerified && <CheckCircle size={14} className="text-green-500 shrink-0" />}
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-
-                {/* COL 3: EXTRACTED DATA FORM */}
-                <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col overflow-hidden">
-                    <div className="p-4 border-b border-gray-100 bg-gray-50 font-bold text-gray-700 flex justify-between items-center">
-                        <span>Extracted Data</span>
-                        <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">Auto-Filled by AI</span>
-                    </div>
-                    <div className="flex-1 overflow-y-auto p-6 space-y-6">
-
-                        {/* Section 1: Identity */}
-                        <div>
-                            <h4 className="text-xs font-bold text-gray-400 uppercase mb-3 flex items-center">
-                                <FileText size={12} className="mr-1" /> Company Identity
-                            </h4>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                    <label className="text-xs text-gray-500">Company Name (KH)</label>
-                                    <input value={formData.companyNameKh || ''} disabled className="w-full text-sm font-bold bg-gray-50 border-gray-200 rounded-md py-2 px-3" />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs text-gray-500">Company Name (EN)</label>
-                                    <input value={formData.companyNameEn || ''} disabled className="w-full text-sm font-bold bg-gray-50 border-gray-200 rounded-md py-2 px-3" />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs text-gray-500">Registration ID</label>
-                                    <input value={formData.registrationNumber || ''} disabled className="w-full text-sm font-mono bg-gray-50 border-gray-200 rounded-md py-2 px-3" />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs text-gray-500">Incorporation Date</label>
-                                    <input value={formData.incorporationDate || ''} disabled className="w-full text-sm font-mono bg-gray-50 border-gray-200 rounded-md py-2 px-3" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="h-px bg-gray-100 my-2" />
-
-                        {/* Section 2: Tax & Location */}
-                        <div>
-                            <h4 className="text-xs font-bold text-gray-400 uppercase mb-3 flex items-center">
-                                <Table size={12} className="mr-1" /> Tax & Location
-                            </h4>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                    <label className="text-xs text-gray-500">VAT TIN</label>
-                                    <input value={formData.vatTin || ''} disabled className="w-full text-sm font-mono bg-yellow-50 border-yellow-100 text-yellow-800 rounded-md py-2 px-3" />
-                                </div>
-                                <div className="space-y-1 col-span-2">
-                                    <label className="text-xs text-gray-500">Registered Address</label>
-                                    <textarea value={formData.address || ''} disabled rows={2} className="w-full text-sm bg-gray-50 border-gray-200 rounded-md py-2 px-3 resize-none" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="h-px bg-gray-100 my-2" />
-
-                        {/* Section 3: Bank Info */}
-                        <div>
-                            <h4 className="text-xs font-bold text-gray-400 uppercase mb-3 flex items-center">
-                                <Table size={12} className="mr-1" /> Bank Information
-                            </h4>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                    <label className="text-xs text-gray-500">Bank Name</label>
-                                    <input value={formData.bankName || ''} disabled className="w-full text-sm font-bold bg-gray-50 border-gray-200 rounded-md py-2 px-3" />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs text-gray-500">Account Number</label>
-                                    <input value={formData.bankAccountNumber || ''} disabled className="w-full text-sm font-mono bg-green-50 border-green-100 text-green-800 rounded-md py-2 px-3" />
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    );
-
-    const handleFiles = async (fileList) => {
-        if (fileList.length === 0) return;
-
-        setMessage(`Processing ${fileList.length} files...`);
-        setUploadingBank(true);
-
-        const formData = new FormData();
-        fileList.forEach(file => formData.append('files', file));
-
-        try {
-            const token = localStorage.getItem('token');
-            const res = await axios.post('/api/company/upload-bank-statement', formData, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
-
-            let safeFiles = res.data.files || [];
-            if (!Array.isArray(safeFiles)) safeFiles = [];
-
-            // Set active file to the first new file if there are no files currently
-            setBankFiles(prev => {
-                const combined = [...prev, ...safeFiles];
-                // Sort by date (oldest first)
-                return combined.sort((a, b) => {
-                    const dateA = a.transactions?.[0]?.date ? parseDate(a.transactions[0].date) : new Date(0);
-                    const dateB = b.transactions?.[0]?.date ? parseDate(b.transactions[0].date) : new Date(0);
-                    return dateA - dateB;
-                });
-            });
-
-            // Auto-select first file if we had none
-            if (bankFiles.length === 0 && safeFiles.length > 0) {
-                setActiveFileIndex(0);
-            }
-
-            const newCount = safeFiles.reduce((acc, f) => acc + (f.transactions?.length || 0), 0);
-            setMessage(`Success! Appended ${newCount} transactions from ${safeFiles.length} new files.`);
-
-        } catch (err) {
-            setMessage('Error processing files.');
-            console.error(err);
-        } finally {
-            setUploadingBank(false);
-        }
-    };
-
-    const handleDelete = async (idx, file) => {
-        // Robust check for saved status
-        const isSaved = file.status === 'Saved' || (file.transactions && file.transactions.some(t => t._id));
-
-        if (!window.confirm(`Delete ${isSaved ? 'PERMANENTLY' : 'this'} item?`)) return;
-
-        if (isSaved) {
-            // Delete from DB
-            const ids = file.transactions.filter(t => t._id).map(t => t._id);
-
-            if (ids.length === 0) {
-                alert("Error: No Transaction IDs found in database for this file.");
-                return;
-            }
-
-            try {
-                const token = localStorage.getItem('token');
-
-                // Optimistic UI update
-                setBankFiles(prev => prev.filter((_, i) => i !== idx));
-
-                await axios.delete('/api/company/transactions', {
-                    headers: { 'Authorization': `Bearer ${token}` },
-                    data: { transactionIds: ids }
-                });
-
-                setMessage(`Deleted ${ids.length} transactions from DB.`);
-                // Force Reload
-                await fetchProfile();
-            } catch (err) {
-                console.error(err);
-                alert("Server Error deleting: " + (err.response?.data?.message || err.message));
-                // Reload to restore state if error
-                fetchProfile();
-            }
-        } else {
-            // Delete Unsaved
-            setBankFiles(prev => prev.filter((_, i) => i !== idx));
-            if (activeFileIndex === idx) setActiveFileIndex(0);
-        }
-    };
-
-    const renderBank = () => (
-        <div className="w-full h-[calc(100vh-80px)] pt-6 px-4 animate-fade-in flex flex-col">
-            <button onClick={() => setView('home')} className="text-gray-400 hover:text-gray-600 mb-4 flex items-center text-sm font-medium transition shrink-0">
-                ← Back to Dashboard
-            </button>
-
-            <div className="flex flex-1 gap-6 min-h-0">
-
-                {/* COLUMN 1: UPLOAD ZONE (Vertical) */}
-                <div className="w-64 shrink-0 flex flex-col">
-                    <div
-                        className="flex-1 bg-white border-2 border-dashed border-green-200 rounded-2xl p-4 text-center hover:border-green-400 hover:bg-green-50/30 transition relative group flex flex-col items-center justify-center cursor-pointer"
-                        onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                        onDrop={async (e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            if (uploadingBank) return;
-                            const fileList = Array.from(e.dataTransfer.files);
-                            if (fileList.length === 0) return;
-                            handleFiles(fileList);
-                        }}
-                    >
-                        <input
-                            type="file"
-                            accept="image/*,.pdf"
-                            multiple
-                            onChange={(e) => {
-                                if (e.target.files?.length > 0) handleFiles(Array.from(e.target.files));
-                            }}
-                            disabled={uploadingBank}
-                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                        />
-
-                        {uploadingBank && (
-                            <div className="absolute inset-0 bg-white/95 z-20 flex flex-col items-center justify-center backdrop-blur-md rounded-2xl">
-                                <Loader2 className="animate-spin h-8 w-8 text-blue-600 mb-2" />
-                                <p className="text-xs font-bold text-gray-700 animate-pulse">Ai is Analyzing the statment...</p>
-                            </div>
-                        )}
-
-                        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-700 mb-4">
-                            <CloudUpload size={24} />
-                        </div>
-                        <h3 className="font-bold text-gray-800 text-sm mb-2 leading-tight">
-                            Submit your bank statement
-                        </h3>
-                        <p className="text-xs text-gray-400">
-                            Drag & drop or Click to Upload
-                        </p>
-                    </div>
-                </div>
-
-                {/* COLUMN 2: FILE LIST */}
-                <div className="w-80 shrink-0 flex flex-col space-y-4">
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col h-full overflow-hidden">
-                        <div className="p-4 bg-gray-50 border-b border-gray-100 font-bold text-gray-700 flex flex-col gap-3 shrink-0">
-                            <div className="flex justify-between items-center">
-                                <span>Uploaded Files ({bankFiles.length})</span>
-                                <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">Saved</span>
-                            </div>
-                            {/* SAVE BUTTON MOVED TO TOP */}
-                            {bankFiles.length > 0 && (
-                                <button
-                                    onClick={handleSaveTransactions}
-                                    disabled={savingBank}
-                                    className="w-full bg-black text-white px-3 py-2 rounded-lg font-bold hover:bg-gray-800 transition disabled:bg-gray-400 flex items-center justify-center gap-2 shadow-sm text-xs"
-                                >
-                                    {savingBank ? <Loader2 className="animate-spin h-3 w-3" /> : <Save size={14} />}
-                                    {savingBank ? 'SAVING...' : 'SAVE ALL'}
-                                </button>
-                            )}
-                        </div>
-                        <div className="divide-y divide-gray-100 overflow-y-auto flex-1 p-2">
-                            {bankFiles.map((file, idx) => (
-                                <div
-                                    key={idx}
-                                    className={`p-3 mb-2 rounded-lg flex items-center justify-between transition cursor-pointer group ${activeFileIndex === idx ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50 border border-transparent'}`}
-                                    onClick={() => setActiveFileIndex(idx)}
-                                >
-                                    <div className="flex-1 min-w-0 mr-2">
-                                        {/* Primary Title: Date Range */}
-                                        <p className="font-bold text-gray-800 text-xs truncate mb-1">
-                                            {file.transactions?.length > 0
-                                                ? `${formatDateSafe(file.transactions[0].date)} - ${formatDateSafe(file.transactions[file.transactions.length - 1].date)}`
-                                                : file.originalName}
-                                        </p>
-
-                                        {/* Metdata: Original Name + Count */}
-                                        <div className="flex items-center text-[10px] text-gray-400 mt-0.5">
-                                            <FileText size={10} className="mr-1 opacity-50" />
-                                            <span className="truncate max-w-[120px] mr-2" title={file.originalName}>{file.originalName}</span>
-                                            <span className="text-gray-300">|</span>
-                                            <span className="ml-2 font-mono">{(file.transactions || []).length} txs</span>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex gap-1">
-                                        {/* DELETE */}
-                                        <button
-                                            onClick={async (e) => {
-                                                e.stopPropagation();
-                                                handleDelete(idx, file);
-                                            }}
-                                            className="p-1.5 rounded-full hover:bg-red-100 text-gray-300 hover:text-red-500 transition"
-                                        >
-                                            <X size={14} />
-                                        </button>
-                                        {/* EYE */}
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); setActiveFileIndex(idx); }}
-                                            className={`p-1.5 rounded-full transition ${activeFileIndex === idx ? 'text-blue-600 bg-blue-100' : 'text-gray-300 hover:text-blue-500'}`}
-                                        >
-                                            <Eye size={14} />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                            {bankFiles.length === 0 && (
-                                <div className="text-center py-10 text-gray-300 text-xs italic">
-                                    No files yet.
+                            {uploadingBank && (
+                                <div className="absolute inset-0 bg-white/95 z-20 flex flex-col items-center justify-center backdrop-blur-md rounded-2xl">
+                                    <Loader2 className="animate-spin h-8 w-8 text-blue-600 mb-2" />
+                                    <p className="text-xs font-bold text-gray-700 animate-pulse">Ai is Analyzing the statment...</p>
                                 </div>
                             )}
+
+                            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-700 mb-4">
+                                <CloudUpload size={24} />
+                            </div>
+                            <h3 className="font-bold text-gray-800 text-sm mb-2 leading-tight">
+                                Submit your bank statement
+                            </h3>
+                            <p className="text-xs text-gray-400">
+                                Drag & drop or Click to Upload
+                            </p>
                         </div>
                     </div>
-                </div>
 
-                {/* COLUMN 3: DETAILS TABLE */}
-                <div className="flex-1 min-w-0 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col overflow-hidden h-full">
-                    <div className="p-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between shrink-0">
-                        <div className="flex items-center">
-                            <div className="p-2 bg-blue-50 rounded-lg mr-3">
-                                <Table className="text-blue-500" size={20} />
-                            </div>
-                            <div>
-                                <h3 className="font-bold text-gray-800">Page Details</h3>
-                                <p className="text-xs text-gray-500">
-                                    {bankFiles[activeFileIndex]?.transactions?.length > 0
-                                        ? `${formatDateSafe(bankFiles[activeFileIndex].transactions[0].date)} - ${formatDateSafe(bankFiles[activeFileIndex].transactions[bankFiles[activeFileIndex].transactions.length - 1].date)}`
-                                        : (bankFiles[activeFileIndex]?.dateRange || 'Select a file')}
-                                </p>
-                            </div>
-                        </div>
-                        <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium flex items-center">
-                            <CheckCircle size={12} className="mr-1" /> Verified
-                        </span>
-                    </div>
-
-                    <div className="flex-1 overflow-auto bg-white">
-                        <table className="w-full text-left">
-                            <thead className="bg-white text-gray-800 text-xs font-bold uppercase sticky top-0 z-10 border-b border-gray-200 shadow-sm">
-                                <tr>
-                                    <th className="px-4 py-4 whitespace-nowrap w-[100px]">Date</th>
-                                    <th className="px-4 py-4 w-[700px]">Transaction Details</th>
-                                    <th className="px-4 py-4 text-right w-[110px]">Money In</th>
-                                    <th className="px-4 py-4 text-right w-[110px]">Money Out</th>
-                                    <th className="px-4 py-4 text-right w-[110px]">Balance</th>
-                                    <th className="px-4 py-4 w-[80px]">Actions</th>
-                                    <th className="px-4 py-4 w-full"></th> {/* SPACER */}
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                                {(bankFiles[activeFileIndex]?.transactions || []).length === 0 ? (
-                                    <tr>
-                                        <td colSpan="7" className="text-center py-10 text-gray-400">No transactions to display</td>
-                                    </tr>
-                                ) : (
-                                    (bankFiles[activeFileIndex]?.transactions || []).map((tx, idx) => (
-                                        <tr key={idx} className="hover:bg-gray-50 transition group">
-                                            <td className="px-4 py-4 text-xs text-gray-600 font-bold whitespace-nowrap align-top">
-                                                {formatDateSafe(tx?.date)}
-                                            </td>
-                                            <td className="px-4 py-4 text-xs text-gray-700 font-medium align-top">
-                                                <div className="whitespace-pre-wrap leading-relaxed">
-                                                    {tx?.description || ''}
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-4 text-xs text-right font-medium text-green-600 align-top whitespace-nowrap">
-                                                {tx?.moneyIn && parseFloat(tx.moneyIn) > 0 ? parseFloat(tx.moneyIn).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
-                                            </td>
-                                            <td className="px-4 py-4 text-xs text-right font-medium text-red-600 align-top whitespace-nowrap">
-                                                {tx?.moneyOut && parseFloat(tx.moneyOut) > 0 ? parseFloat(tx.moneyOut).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
-                                            </td>
-                                            <td className="px-4 py-4 text-xs text-right text-gray-800 font-bold align-top whitespace-nowrap">
-                                                {tx?.balance ? parseFloat(String(tx.balance).replace(/[^0-9.-]+/g, "")).toLocaleString('en-US', { minimumFractionDigits: 2 }) : '-'}
-                                            </td>
-                                            <td className="px-4 py-4 text-xs align-top">
-                                                {/* Actions */}
-                                            </td>
-                                            <td className="px-4 py-4"></td> {/* SPACER */}
-                                        </tr>
-                                    ))
+                    {/* COLUMN 2: FILE LIST */}
+                    <div className="w-80 shrink-0 flex flex-col space-y-4">
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col h-full overflow-hidden">
+                            <div className="p-4 bg-gray-50 border-b border-gray-100 font-bold text-gray-700 flex flex-col gap-3 shrink-0">
+                                <div className="flex justify-between items-center">
+                                    <span>Uploaded Files ({bankFiles.length})</span>
+                                    <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">Saved</span>
+                                </div>
+                                {/* SAVE BUTTON MOVED TO TOP */}
+                                {bankFiles.length > 0 && (
+                                    <button
+                                        onClick={handleSaveTransactions}
+                                        disabled={savingBank}
+                                        className="w-full bg-black text-white px-3 py-2 rounded-lg font-bold hover:bg-gray-800 transition disabled:bg-gray-400 flex items-center justify-center gap-2 shadow-sm text-xs"
+                                    >
+                                        {savingBank ? <Loader2 className="animate-spin h-3 w-3" /> : <Save size={14} />}
+                                        {savingBank ? 'SAVING...' : 'SAVE ALL'}
+                                    </button>
                                 )}
-                            </tbody>
-                        </table>
+                            </div>
+                            <div className="divide-y divide-gray-100 overflow-y-auto flex-1 p-2">
+                                {bankFiles.map((file, idx) => (
+                                    <div
+                                        key={idx}
+                                        className={`p-3 mb-2 rounded-lg flex items-center justify-between transition cursor-pointer group ${activeFileIndex === idx ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50 border border-transparent'}`}
+                                        onClick={() => setActiveFileIndex(idx)}
+                                    >
+                                        <div className="flex-1 min-w-0 mr-2">
+                                            {/* Primary Title: Date Range */}
+                                            <p className="font-bold text-gray-800 text-xs truncate mb-1">
+                                                {file.transactions?.length > 0
+                                                    ? `${formatDateSafe(file.transactions[0].date)} - ${formatDateSafe(file.transactions[file.transactions.length - 1].date)}`
+                                                    : file.originalName}
+                                            </p>
+
+                                            {/* Metdata: Original Name + Count */}
+                                            <div className="flex items-center text-[10px] text-gray-400 mt-0.5">
+                                                <FileText size={10} className="mr-1 opacity-50" />
+                                                <span className="truncate max-w-[120px] mr-2" title={file.originalName}>{file.originalName}</span>
+                                                <span className="text-gray-300">|</span>
+                                                <span className="ml-2 font-mono">{(file.transactions || []).length} txs</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex gap-1">
+                                            {/* DELETE */}
+                                            <button
+                                                onClick={async (e) => {
+                                                    e.stopPropagation();
+                                                    handleDelete(idx, file);
+                                                }}
+                                                className="p-1.5 rounded-full hover:bg-red-100 text-gray-300 hover:text-red-500 transition"
+                                            >
+                                                <X size={14} />
+                                            </button>
+                                            {/* EYE */}
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); setActiveFileIndex(idx); }}
+                                                className={`p-1.5 rounded-full transition ${activeFileIndex === idx ? 'text-blue-600 bg-blue-100' : 'text-gray-300 hover:text-blue-500'}`}
+                                            >
+                                                <Eye size={14} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                                {bankFiles.length === 0 && (
+                                    <div className="text-center py-10 text-gray-300 text-xs italic">
+                                        No files yet.
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* COLUMN 3: DETAILS TABLE */}
+                    <div className="flex-1 min-w-0 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col overflow-hidden h-full">
+                        <div className="p-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between shrink-0">
+                            <div className="flex items-center">
+                                <div className="p-2 bg-blue-50 rounded-lg mr-3">
+                                    <Table className="text-blue-500" size={20} />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-gray-800">Page Details</h3>
+                                    <p className="text-xs text-gray-500">
+                                        {bankFiles[activeFileIndex]?.transactions?.length > 0
+                                            ? `${formatDateSafe(bankFiles[activeFileIndex].transactions[0].date)} - ${formatDateSafe(bankFiles[activeFileIndex].transactions[bankFiles[activeFileIndex].transactions.length - 1].date)}`
+                                            : (bankFiles[activeFileIndex]?.dateRange || 'Select a file')}
+                                    </p>
+                                </div>
+                            </div>
+                            <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium flex items-center">
+                                <CheckCircle size={12} className="mr-1" /> Verified
+                            </span>
+                        </div>
+
+                        <div className="flex-1 overflow-auto bg-white">
+                            <table className="w-full text-left">
+                                <thead className="bg-white text-gray-800 text-xs font-bold uppercase sticky top-0 z-10 border-b border-gray-200 shadow-sm">
+                                    <tr>
+                                        <th className="px-4 py-4 whitespace-nowrap w-[100px]">Date</th>
+                                        <th className="px-4 py-4 w-[700px]">Transaction Details</th>
+                                        <th className="px-4 py-4 text-right w-[110px]">Money In</th>
+                                        <th className="px-4 py-4 text-right w-[110px]">Money Out</th>
+                                        <th className="px-4 py-4 text-right w-[110px]">Balance</th>
+                                        <th className="px-4 py-4 w-[80px]">Actions</th>
+                                        <th className="px-4 py-4 w-full"></th> {/* SPACER */}
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                    {(bankFiles[activeFileIndex]?.transactions || []).length === 0 ? (
+                                        <tr>
+                                            <td colSpan="7" className="text-center py-10 text-gray-400">No transactions to display</td>
+                                        </tr>
+                                    ) : (
+                                        (bankFiles[activeFileIndex]?.transactions || []).map((tx, idx) => (
+                                            <tr key={idx} className="hover:bg-gray-50 transition group">
+                                                <td className="px-4 py-4 text-xs text-gray-600 font-bold whitespace-nowrap align-top">
+                                                    {formatDateSafe(tx?.date)}
+                                                </td>
+                                                <td className="px-4 py-4 text-xs text-gray-700 font-medium align-top">
+                                                    <div className="whitespace-pre-wrap leading-relaxed">
+                                                        {tx?.description || ''}
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-4 text-xs text-right font-medium text-green-600 align-top whitespace-nowrap">
+                                                    {tx?.moneyIn && parseFloat(tx.moneyIn) > 0 ? parseFloat(tx.moneyIn).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
+                                                </td>
+                                                <td className="px-4 py-4 text-xs text-right font-medium text-red-600 align-top whitespace-nowrap">
+                                                    {tx?.moneyOut && parseFloat(tx.moneyOut) > 0 ? parseFloat(tx.moneyOut).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
+                                                </td>
+                                                <td className="px-4 py-4 text-xs text-right text-gray-800 font-bold align-top whitespace-nowrap">
+                                                    {tx?.balance ? parseFloat(String(tx.balance).replace(/[^0-9.-]+/g, "")).toLocaleString('en-US', { minimumFractionDigits: 2 }) : '-'}
+                                                </td>
+                                                <td className="px-4 py-4 text-xs align-top">
+                                                    {/* Actions */}
+                                                </td>
+                                                <td className="px-4 py-4"></td> {/* SPACER */}
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
+
+                {message && (
+                    <div className={`mt-4 mx-auto max-w-lg p-3 rounded-full text-xs font-bold text-center fixed top-6 left-0 right-0 shadow-lg z-50 animate-bounce-in ${message.includes('Error') ? 'bg-red-500 text-white' : 'bg-black text-white'}`}>
+                        {message}
+                    </div>
+                )}
             </div>
+        );
 
-            {message && (
-                <div className={`mt-4 mx-auto max-w-lg p-3 rounded-full text-xs font-bold text-center fixed top-6 left-0 right-0 shadow-lg z-50 animate-bounce-in ${message.includes('Error') ? 'bg-red-500 text-white' : 'bg-black text-white'}`}>
-                    {message}
-                </div>
-            )}
-        </div>
-    );
-
-    return (
-        <div className="min-h-screen bg-gray-50">
-            {view === 'home' && renderHome()}
-            {view === 'profile' && renderProfile()}
-            {view === 'bank' && renderBank()}
-        </div>
-    );
-}
+        return (
+            <div className="min-h-screen bg-gray-50">
+                {view === 'home' && renderHome()}
+                {view === 'profile' && renderProfile()}
+                {view === 'bank' && renderBank()}
+            </div>
+        );
+    }

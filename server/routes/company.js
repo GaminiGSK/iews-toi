@@ -94,6 +94,31 @@ router.post('/upload-registration', auth, upload.single('file'), async (req, res
     }
 });
 
+// Delete Registration Document
+router.delete('/delete-document', auth, async (req, res) => {
+    try {
+        const { docType } = req.body;
+        if (!docType) return res.status(400).json({ message: 'DocType required' });
+
+        const profile = await CompanyProfile.findOne({ user: req.user.id });
+        if (!profile) return res.status(404).json({ message: 'Profile not found' });
+
+        // Filter out the document
+        const initialLength = profile.documents.length;
+        profile.documents = profile.documents.filter(d => d.docType !== docType);
+
+        if (profile.documents.length === initialLength) {
+            return res.status(404).json({ message: 'Document not found' });
+        }
+
+        await profile.save();
+        res.json({ message: 'Document removed', profile });
+    } catch (err) {
+        console.error('Delete Doc Error:', err);
+        res.status(500).json({ message: 'Error deleting document' });
+    }
+});
+
 // Parse Pasted Text
 router.post('/parse-moc-text', auth, async (req, res) => {
     try {
