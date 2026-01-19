@@ -201,8 +201,10 @@ export default function CompanyProfile() {
             let safeFiles = res.data.files || [];
             if (!Array.isArray(safeFiles)) safeFiles = [];
 
+            // Set active file to the first new file if there are no files currently
             setBankFiles(prev => {
                 const combined = [...prev, ...safeFiles];
+                // Sort by date (oldest first)
                 return combined.sort((a, b) => {
                     const dateA = a.transactions?.[0]?.date ? new Date(a.transactions[0].date) : new Date(0);
                     const dateB = b.transactions?.[0]?.date ? new Date(b.transactions[0].date) : new Date(0);
@@ -210,9 +212,9 @@ export default function CompanyProfile() {
                 });
             });
 
-            // Set active file to the first new file if there are new files
-            if (safeFiles.length > 0) {
-                setActiveFileIndex(bankFiles.length); // Index of the first newly added file
+            // Auto-select first file if we had none
+            if (bankFiles.length === 0 && safeFiles.length > 0) {
+                setActiveFileIndex(0);
             }
 
             const newCount = safeFiles.reduce((acc, f) => acc + (f.transactions?.length || 0), 0);
@@ -425,21 +427,21 @@ export default function CompanyProfile() {
                                     (bankFiles[activeFileIndex]?.transactions || []).map((tx, idx) => (
                                         <tr key={idx} className="hover:bg-gray-50 transition group">
                                             <td className="px-4 py-4 text-xs text-gray-600 font-bold whitespace-nowrap align-top">
-                                                {tx.date ? new Date(tx.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                                                {tx?.date ? new Date(tx.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
                                             </td>
                                             <td className="px-4 py-4 text-xs text-gray-700 font-medium align-top">
                                                 <div className="line-clamp-2 hover:line-clamp-none transition-all duration-300 whitespace-pre-wrap leading-relaxed">
-                                                    {tx.description}
+                                                    {tx?.description || ''}
                                                 </div>
                                             </td>
                                             <td className="px-4 py-4 text-xs text-right font-medium text-green-600 align-top whitespace-nowrap">
-                                                {tx.moneyIn && parseFloat(tx.moneyIn) > 0 ? parseFloat(tx.moneyIn).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
+                                                {tx?.moneyIn && parseFloat(tx.moneyIn) > 0 ? parseFloat(tx.moneyIn).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
                                             </td>
                                             <td className="px-4 py-4 text-xs text-right font-medium text-red-600 align-top whitespace-nowrap">
-                                                {tx.moneyOut && parseFloat(tx.moneyOut) > 0 ? parseFloat(tx.moneyOut).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
+                                                {tx?.moneyOut && parseFloat(tx.moneyOut) > 0 ? parseFloat(tx.moneyOut).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
                                             </td>
                                             <td className="px-4 py-4 text-xs text-right text-gray-800 font-bold align-top whitespace-nowrap">
-                                                {tx.balance ? parseFloat(String(tx.balance).replace(/[^0-9.-]+/g, "")).toLocaleString('en-US', { minimumFractionDigits: 2 }) : '-'}
+                                                {tx?.balance ? parseFloat(String(tx.balance).replace(/[^0-9.-]+/g, "")).toLocaleString('en-US', { minimumFractionDigits: 2 }) : '-'}
                                             </td>
                                             <td className="px-4 py-4 text-xs align-top">
                                                 {/* Actions */}
