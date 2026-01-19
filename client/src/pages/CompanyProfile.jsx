@@ -9,6 +9,14 @@ export default function CompanyProfile() {
     const [uploadingBank, setUploadingBank] = useState(false);
     const [savingBank, setSavingBank] = useState(false);
 
+    // Helper: Safe Date Formatting
+    const formatDateSafe = (dateStr) => {
+        if (!dateStr) return '-';
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return dateStr; // Fallback to raw string
+        return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    };
+
     // Bank Data State
     const [bankFiles, setBankFiles] = useState([]);
     const [activeFileIndex, setActiveFileIndex] = useState(0);
@@ -354,8 +362,8 @@ export default function CompanyProfile() {
                                         <div className="flex flex-col text-[10px] text-gray-500 font-mono mt-0.5">
                                             {(file.transactions?.length > 0) ? (
                                                 <>
-                                                    <span className="flex items-center"><Calendar size={8} className="mr-1 opacity-50" /> Start: {new Date(file.transactions[0].date).toLocaleDateString('en-GB')}</span>
-                                                    <span className="flex items-center ml-2.5">End: {new Date(file.transactions[file.transactions.length - 1].date).toLocaleDateString('en-GB')}</span>
+                                                    <span className="flex items-center"><Calendar size={8} className="mr-1 opacity-50" /> Start: {formatDateSafe(file.transactions[0].date)}</span>
+                                                    <span className="flex items-center ml-2.5">End: {formatDateSafe(file.transactions[file.transactions.length - 1].date)}</span>
                                                 </>
                                             ) : (
                                                 <span>{file.dateRange || 'Processing...'}</span>
@@ -433,7 +441,7 @@ export default function CompanyProfile() {
                                     (bankFiles[activeFileIndex]?.transactions || []).map((tx, idx) => (
                                         <tr key={idx} className="hover:bg-gray-50 transition group">
                                             <td className="px-4 py-4 text-xs text-gray-600 font-bold whitespace-nowrap align-top">
-                                                {tx?.date ? new Date(tx.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                                                {formatDateSafe(tx?.date)}
                                             </td>
                                             <td className="px-4 py-4 text-xs text-gray-700 font-medium align-top">
                                                 <div className="line-clamp-2 hover:line-clamp-none transition-all duration-300 whitespace-pre-wrap leading-relaxed">
