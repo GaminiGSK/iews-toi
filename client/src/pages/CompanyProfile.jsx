@@ -411,7 +411,11 @@ export default function CompanyProfile() {
                             </div>
                             <div>
                                 <h3 className="font-bold text-gray-800">Page Details</h3>
-                                <p className="text-xs text-gray-500">{bankFiles[activeFileIndex]?.dateRange || 'Select a file'}</p>
+                                <p className="text-xs text-gray-500">
+                                    {bankFiles[activeFileIndex]?.transactions?.length > 0
+                                        ? `${formatDateSafe(bankFiles[activeFileIndex].transactions[0].date)} - ${formatDateSafe(bankFiles[activeFileIndex].transactions[bankFiles[activeFileIndex].transactions.length - 1].date)}`
+                                        : (bankFiles[activeFileIndex]?.dateRange || 'Select a file')}
+                                </p>
                             </div>
                         </div>
                         <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium flex items-center">
