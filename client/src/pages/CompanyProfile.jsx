@@ -116,10 +116,13 @@ export default function CompanyProfile() {
                     });
 
                     // Convert to Virtual Files
-                    const historyFiles = Object.keys(groups).sort((a, b) => b.localeCompare(a)).map(key => {
+                    // Sort keys (YYYY-MM) Ascending (Jan -> Dec)
+                    const historyFiles = Object.keys(groups).sort((a, b) => a.localeCompare(b)).map(key => {
                         const [year, month] = key.split('-');
                         const monthName = new Date(year, month - 1).toLocaleString('default', { month: 'short' });
-                        const groupTxs = groups[key];
+
+                        // Sort transactions in this group Oldest -> Newest
+                        const groupTxs = groups[key].sort((a, b) => new Date(a.date) - new Date(b.date));
 
                         // Calculate Date Range
                         const dates = groupTxs.map(t => new Date(t.date).getTime()).sort((a, b) => a - b);
@@ -150,8 +153,19 @@ export default function CompanyProfile() {
     // --- Sub-Components ---
 
     const renderHome = () => (
-        <div className="max-w-4xl mx-auto pt-20 px-6 animate-fade-in">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome, {formData.companyNameEn || formData.companyCode || 'Admin'}</h1>
+        <div className="max-w-4xl mx-auto pt-20 px-6 animate-fade-in relative">
+            <div className="flex justify-between items-start mb-2">
+                <h1 className="text-3xl font-bold text-gray-800">Welcome, {formData.companyNameEn || formData.companyCode || 'Admin'}</h1>
+                <button
+                    onClick={() => {
+                        localStorage.removeItem('token');
+                        window.location.reload();
+                    }}
+                    className="text-sm text-red-500 font-medium hover:text-red-700 hover:bg-red-50 px-3 py-1 rounded-lg transition"
+                >
+                    Log Out
+                </button>
+            </div>
             <p className="text-gray-500 mb-12">Manage your company entity and financial data.</p>
 
             <div className="grid md:grid-cols-2 gap-6">
