@@ -304,7 +304,7 @@ export default function CompanyProfile() {
                         {uploadingBank && (
                             <div className="absolute inset-0 bg-white/95 z-20 flex flex-col items-center justify-center backdrop-blur-md rounded-2xl">
                                 <Loader2 className="animate-spin h-8 w-8 text-blue-600 mb-2" />
-                                <p className="text-xs font-bold text-gray-700 animate-pulse">Analyzing...</p>
+                                <p className="text-xs font-bold text-gray-700 animate-pulse">Ai is Analyzing the statment...</p>
                             </div>
                         )}
 
@@ -323,9 +323,22 @@ export default function CompanyProfile() {
                 {/* COLUMN 2: FILE LIST */}
                 <div className="w-80 shrink-0 flex flex-col space-y-4">
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col h-full overflow-hidden">
-                        <div className="p-4 bg-gray-50 border-b border-gray-100 font-bold text-gray-700 flex justify-between items-center shrink-0">
-                            <span>Uploaded Files ({bankFiles.length})</span>
-                            <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">Saved</span>
+                        <div className="p-4 bg-gray-50 border-b border-gray-100 font-bold text-gray-700 flex flex-col gap-3 shrink-0">
+                            <div className="flex justify-between items-center">
+                                <span>Uploaded Files ({bankFiles.length})</span>
+                                <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">Saved</span>
+                            </div>
+                            {/* SAVE BUTTON MOVED TO TOP */}
+                            {bankFiles.length > 0 && (
+                                <button
+                                    onClick={handleSaveTransactions}
+                                    disabled={savingBank}
+                                    className="w-full bg-black text-white px-3 py-2 rounded-lg font-bold hover:bg-gray-800 transition disabled:bg-gray-400 flex items-center justify-center gap-2 shadow-sm text-xs"
+                                >
+                                    {savingBank ? <Loader2 className="animate-spin h-3 w-3" /> : <Save size={14} />}
+                                    {savingBank ? 'SAVING...' : 'SAVE ALL'}
+                                </button>
+                            )}
                         </div>
                         <div className="divide-y divide-gray-100 overflow-y-auto flex-1 p-2">
                             {bankFiles.map((file, idx) => (
@@ -336,8 +349,11 @@ export default function CompanyProfile() {
                                 >
                                     <div className="flex-1 min-w-0 mr-2">
                                         <p className="font-bold text-gray-800 text-xs truncate mb-1">{file.originalName}</p>
-                                        <p className="text-[10px] text-gray-500 font-mono">{file.dateRange || 'Processing...'}</p>
-                                        <p className="text-[10px] text-gray-400">{(file.transactions || []).length} txs</p>
+                                        <div className="flex items-center text-[10px] text-gray-500 font-mono">
+                                            <Calendar size={10} className="mr-1 opacity-70" />
+                                            {file.dateRange || 'Processing...'}
+                                        </div>
+                                        <p className="text-[10px] text-gray-400 mt-1">{(file.transactions || []).length} txs</p>
                                     </div>
 
                                     <div className="flex gap-1">
@@ -366,16 +382,6 @@ export default function CompanyProfile() {
                                     No files yet.
                                 </div>
                             )}
-                        </div>
-                        <div className="p-4 border-t border-gray-100 bg-gray-50 shrink-0">
-                            <button
-                                onClick={handleSaveTransactions}
-                                disabled={savingBank || bankFiles.length === 0}
-                                className="w-full bg-black text-white px-4 py-3 rounded-lg font-bold hover:bg-gray-800 transition disabled:bg-gray-400 flex items-center justify-center gap-2 shadow-md text-sm"
-                            >
-                                {savingBank ? <Loader2 className="animate-spin h-4 w-4" /> : <Save size={16} />}
-                                {savingBank ? 'SAVING...' : 'SAVE ALL'}
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -421,13 +427,15 @@ export default function CompanyProfile() {
                                             <td className="px-4 py-4 text-xs text-gray-600 font-bold whitespace-nowrap align-top">
                                                 {tx.date ? new Date(tx.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
                                             </td>
-                                            <td className="px-4 py-4 text-xs text-gray-700 font-medium whitespace-pre-wrap leading-relaxed align-top">
-                                                {tx.description}
+                                            <td className="px-4 py-4 text-xs text-gray-700 font-medium align-top">
+                                                <div className="line-clamp-2 hover:line-clamp-none transition-all duration-300 whitespace-pre-wrap leading-relaxed">
+                                                    {tx.description}
+                                                </div>
                                             </td>
-                                            <td className="px-4 py-4 text-xs text-right font-medium text-gray-800 align-top whitespace-nowrap">
+                                            <td className="px-4 py-4 text-xs text-right font-medium text-green-600 align-top whitespace-nowrap">
                                                 {tx.moneyIn && parseFloat(tx.moneyIn) > 0 ? parseFloat(tx.moneyIn).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
                                             </td>
-                                            <td className="px-4 py-4 text-xs text-right font-medium text-gray-800 align-top whitespace-nowrap">
+                                            <td className="px-4 py-4 text-xs text-right font-medium text-red-600 align-top whitespace-nowrap">
                                                 {tx.moneyOut && parseFloat(tx.moneyOut) > 0 ? parseFloat(tx.moneyOut).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
                                             </td>
                                             <td className="px-4 py-4 text-xs text-right text-gray-800 font-bold align-top whitespace-nowrap">
@@ -447,7 +455,7 @@ export default function CompanyProfile() {
             </div>
 
             {message && (
-                <div className={`mt-4 mx-auto max-w-lg p-3 rounded-full text-xs font-bold text-center fixed bottom-6 left-0 right-0 shadow-lg z-50 animate-bounce-in ${message.includes('Error') ? 'bg-red-500 text-white' : 'bg-black text-white'}`}>
+                <div className={`mt-4 mx-auto max-w-lg p-3 rounded-full text-xs font-bold text-center fixed top-6 left-0 right-0 shadow-lg z-50 animate-bounce-in ${message.includes('Error') ? 'bg-red-500 text-white' : 'bg-black text-white'}`}>
                     {message}
                 </div>
             )}
