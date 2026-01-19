@@ -374,18 +374,20 @@ export default function CompanyProfile() {
                                     onClick={() => setActiveFileIndex(idx)}
                                 >
                                     <div className="flex-1 min-w-0 mr-2">
-                                        <p className="font-bold text-gray-800 text-xs truncate mb-1">{file.originalName}</p>
-                                        <div className="flex flex-col text-[10px] text-gray-500 font-mono mt-0.5">
-                                            {(file.transactions?.length > 0) ? (
-                                                <>
-                                                    <span className="flex items-center"><Calendar size={8} className="mr-1 opacity-50" /> Start: {formatDateSafe(file.transactions[0].date)}</span>
-                                                    <span className="flex items-center ml-2.5">End: {formatDateSafe(file.transactions[file.transactions.length - 1].date)}</span>
-                                                </>
-                                            ) : (
-                                                <span>{file.dateRange || 'Processing...'}</span>
-                                            )}
+                                        {/* Primary Title: Date Range */}
+                                        <p className="font-bold text-gray-800 text-xs truncate mb-1">
+                                            {file.transactions?.length > 0
+                                                ? `${formatDateSafe(file.transactions[0].date)} - ${formatDateSafe(file.transactions[file.transactions.length - 1].date)}`
+                                                : file.originalName}
+                                        </p>
+
+                                        {/* Metdata: Original Name + Count */}
+                                        <div className="flex items-center text-[10px] text-gray-400 mt-0.5">
+                                            <FileText size={10} className="mr-1 opacity-50" />
+                                            <span className="truncate max-w-[120px] mr-2" title={file.originalName}>{file.originalName}</span>
+                                            <span className="text-gray-300">|</span>
+                                            <span className="ml-2 font-mono">{(file.transactions || []).length} txs</span>
                                         </div>
-                                        <p className="text-[10px] text-gray-400 mt-1">{(file.transactions || []).length} txs</p>
                                     </div>
 
                                     <div className="flex gap-1">
