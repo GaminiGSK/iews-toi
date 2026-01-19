@@ -80,6 +80,11 @@ export default function CompanyProfile() {
                     // Group by Month (YYYY-MM)
                     const groups = {};
                     allTxs.forEach(tx => {
+                        // FIX: Restore moneyIn/moneyOut for UI
+                        const amount = parseFloat(tx.amount || 0);
+                        tx.moneyIn = amount > 0 ? amount : 0;
+                        tx.moneyOut = amount < 0 ? Math.abs(amount) : 0;
+
                         const dateObj = new Date(tx.date);
                         const key = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}`;
                         if (!groups[key]) groups[key] = [];
@@ -397,17 +402,18 @@ export default function CompanyProfile() {
                             <thead className="bg-white text-gray-800 text-xs font-bold uppercase sticky top-0 z-10 border-b border-gray-200 shadow-sm">
                                 <tr>
                                     <th className="px-4 py-4 whitespace-nowrap w-[100px]">Date</th>
-                                    <th className="px-4 py-4">Transaction Details</th>
-                                    <th className="px-4 py-4 text-right w-[100px]">Money In</th>
-                                    <th className="px-4 py-4 text-right w-[100px]">Money Out</th>
-                                    <th className="px-4 py-4 text-right w-[100px]">Balance</th>
-                                    <th className="px-4 py-4 w-[100px]">Actions</th>
+                                    <th className="px-4 py-4 w-[500px]">Transaction Details</th>
+                                    <th className="px-4 py-4 text-right w-[110px]">Money In</th>
+                                    <th className="px-4 py-4 text-right w-[110px]">Money Out</th>
+                                    <th className="px-4 py-4 text-right w-[110px]">Balance</th>
+                                    <th className="px-4 py-4 w-[80px]">Actions</th>
+                                    <th className="px-4 py-4 w-full"></th> {/* SPACER */}
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                                 {(bankFiles[activeFileIndex]?.transactions || []).length === 0 ? (
                                     <tr>
-                                        <td colSpan="6" className="text-center py-10 text-gray-400">No transactions to display</td>
+                                        <td colSpan="7" className="text-center py-10 text-gray-400">No transactions to display</td>
                                     </tr>
                                 ) : (
                                     (bankFiles[activeFileIndex]?.transactions || []).map((tx, idx) => (
@@ -430,6 +436,7 @@ export default function CompanyProfile() {
                                             <td className="px-4 py-4 text-xs align-top">
                                                 {/* Actions */}
                                             </td>
+                                            <td className="px-4 py-4"></td> {/* SPACER */}
                                         </tr>
                                     ))
                                 )}
