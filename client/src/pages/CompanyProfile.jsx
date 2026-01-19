@@ -78,8 +78,13 @@ export default function CompanyProfile() {
         }
     };
 
-    // Fetch existing profile on mount
+    // Fetch existing profile on mount (Protected Route Logic)
     useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login';
+            return;
+        }
         fetchProfile();
     }, []);
 
@@ -147,6 +152,11 @@ export default function CompanyProfile() {
 
         } catch (err) {
             console.log("No existing profile found or error fetching.");
+            if (err.response && err.response.status === 401) {
+                // Token invalid/expired
+                localStorage.removeItem('token');
+                window.location.href = '/login';
+            }
         }
     };
 
@@ -159,7 +169,7 @@ export default function CompanyProfile() {
                 <button
                     onClick={() => {
                         localStorage.removeItem('token');
-                        window.location.reload();
+                        window.location.href = '/login';
                     }}
                     className="text-sm text-red-500 font-medium hover:text-red-700 hover:bg-red-50 px-3 py-1 rounded-lg transition"
                 >

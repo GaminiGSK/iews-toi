@@ -28,6 +28,23 @@ mongoose.connect(process.env.MONGODB_URI)
         await user.save();
         console.log(`✅ User ${companyCode} created/updated successfully!`);
 
+        // Create Default Company Profile
+        const CompanyProfile = require('../models/CompanyProfile');
+        let profile = await CompanyProfile.findOne({ user: user._id });
+        if (!profile) {
+            console.log('Creating default Company Profile...');
+            profile = new CompanyProfile({
+                user: user._id,
+                companyNameKh: 'GK SMART TECH',
+                companyNameEn: 'GK SMART',
+                companyCode: companyCode,
+            });
+            await profile.save();
+            console.log('✅ Company Profile created!');
+        } else {
+            console.log('Company Profile already exists.');
+        }
+
         process.exit();
     })
     .catch(err => console.error(err));
