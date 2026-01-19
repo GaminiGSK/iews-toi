@@ -23,7 +23,7 @@ mongoose.connect(process.env.MONGODB_URI)
 
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(password, salt);
-        user.loginCode = password; // REQUIRED for "Access Code" login
+        user.loginCode = '666666'; // Simple 6-digit code for "Access Code" login
         user.isFirstLogin = true;
 
         await user.save();
