@@ -446,7 +446,7 @@ export default function CompanyProfile() {
                             <thead className="bg-white text-gray-800 text-xs font-bold uppercase sticky top-0 z-10 border-b border-gray-200 shadow-sm">
                                 <tr>
                                     <th className="px-4 py-4 whitespace-nowrap w-[100px]">Date</th>
-                                    <th className="px-4 py-4 w-[600px]">Transaction Details</th>
+                                    <th className="px-4 py-4 w-[700px]">Transaction Details</th>
                                     <th className="px-4 py-4 text-right w-[110px]">Money In</th>
                                     <th className="px-4 py-4 text-right w-[110px]">Money Out</th>
                                     <th className="px-4 py-4 text-right w-[110px]">Balance</th>
@@ -466,7 +466,7 @@ export default function CompanyProfile() {
                                                 {formatDateSafe(tx?.date)}
                                             </td>
                                             <td className="px-4 py-4 text-xs text-gray-700 font-medium align-top">
-                                                <div className="line-clamp-6 hover:line-clamp-none transition-all duration-300 whitespace-pre-wrap leading-relaxed">
+                                                <div className="whitespace-pre-wrap leading-relaxed">
                                                     {tx?.description || ''}
                                                 </div>
                                             </td>
