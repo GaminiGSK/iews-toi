@@ -204,26 +204,194 @@ export default function CompanyProfile() {
         </div>
     );
 
+    // --- Profile UI Logic (v2.0 Redesign) ---
+    const DOC_TYPES = [
+        { id: 'moc_cert', label: '1. MOC Certificate', icon: FileText, color: 'blue' },
+        { id: 'kh_extract', label: '2. Business Extract (KH)', icon: FileText, color: 'indigo' },
+        { id: 'en_extract', label: '3. Business Extract (EN)', icon: FileText, color: 'indigo' },
+        { id: 'tax_patent', label: '4. Tax Patent', icon: Table, color: 'green' },
+        { id: 'tax_id', label: '5. VAT Certificate', icon: Table, color: 'green' },
+        { id: 'bank_opening', label: '6. Bank Opening Letter', icon: FileText, color: 'purple' },
+    ];
+
+    const [uploadingDoc, setUploadingDoc] = useState(null);
+
+    const handleRegUpload = async (files, docType) => {
+        if (files.length === 0) return;
+        setUploadingDoc(docType);
+        setMessage(`Analyzing ${docType.replace('_', ' ')}...`);
+
+        const formData = new FormData();
+        formData.append('file', files[0]);
+        formData.append('docType', docType);
+
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.post('/api/company/upload-registration', formData, {
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
+            });
+
+            setMessage('Document Verified & Data Extracted!');
+
+            // Refresh Profile to see new data and doc status
+            const profileRes = await axios.get('/api/company/profile', { headers: { 'Authorization': `Bearer ${token}` } });
+            setFormData(prev => ({ ...prev, ...profileRes.data }));
+
+        } catch (err) {
+            console.error(err);
+            setMessage('Error processing document.');
+        } finally {
+            setUploadingDoc(null);
+        }
+    };
+
     const renderProfile = () => (
-        <div className="max-w-3xl mx-auto pt-10 px-6 animate-fade-in">
-            <button onClick={() => setView('home')} className="text-gray-400 hover:text-gray-600 mb-6 flex items-center text-sm font-medium transition">
+        <div className="w-full h-[calc(100vh-80px)] pt-6 px-4 animate-fade-in flex flex-col">
+            <button onClick={() => setView('home')} className="text-gray-400 hover:text-gray-600 mb-4 flex items-center text-sm font-medium transition shrink-0">
                 ← Back to Dashboard
             </button>
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-                <h2 className="text-2xl font-bold text-gray-800 mb-6">Company Profile</h2>
-                <div className="space-y-4">
-                    <p className="text-sm text-gray-500">Profile editing is currently read-only in this demo version.</p>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="p-4 bg-gray-50 rounded-lg">
-                            <label className="text-xs text-gray-400 uppercase font-bold">Company Name (KH)</label>
-                            <p className="font-medium text-gray-800">{formData.companyNameKh || '-'}</p>
+
+            <div className="flex flex-1 gap-6 min-h-0">
+
+                {/* COL 1: UPLOAD ZONES */}
+                <div className="w-64 shrink-0 flex flex-col space-y-3 overflow-y-auto pr-1">
+                    <h3 className="font-bold text-gray-700 mb-1">Documents Needed</h3>
+                    {DOC_TYPES.map((doc) => (
+                        <div
+                            key={doc.id}
+                            className={`relative border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition group
+                                ${uploadingDoc === doc.id ? 'border-blue-400 bg-blue-50' : 'border-gray-200 hover:border-gray-400 hover:bg-gray-50'}
+                            `}
+                            onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                            onDrop={(e) => {
+                                e.preventDefault(); e.stopPropagation();
+                                if (!uploadingDoc) handleRegUpload(Array.from(e.dataTransfer.files), doc.id);
+                            }}
+                        >
+                            <input
+                                type="file"
+                                accept="image/*,.pdf"
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                disabled={!!uploadingDoc}
+                                onChange={(e) => {
+                                    if (e.target.files?.length > 0) handleRegUpload(Array.from(e.target.files), doc.id);
+                                }}
+                            />
+
+                            {uploadingDoc === doc.id ? (
+                                <Loader2 className="animate-spin text-blue-600 mb-2" />
+                            ) : (
+                                <doc.icon size={24} className={`text-${doc.color}-500 mb-2 opacity-70 group-hover:scale-110 transition`} />
+                            )}
+
+                            <span className="text-xs font-bold text-gray-600">{doc.label}</span>
+                            <span className="text-[10px] text-gray-400 mt-1">Drag or Click</span>
                         </div>
-                        <div className="p-4 bg-gray-50 rounded-lg">
-                            <label className="text-xs text-gray-400 uppercase font-bold">Company Name (EN)</label>
-                            <p className="font-medium text-gray-800">{formData.companyNameEn || '-'}</p>
-                        </div>
+                    ))}
+                </div>
+
+                {/* COL 2: STATUS LIST */}
+                <div className="w-72 shrink-0 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col overflow-hidden">
+                    <div className="p-4 border-b border-gray-100 bg-gray-50 font-bold text-gray-700">
+                        Document Status
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-2 space-y-2">
+                        {DOC_TYPES.map(type => {
+                            const uploaded = (formData.documents || []).find(d => d.docType === type.id);
+                            const isVerified = uploaded?.status === 'Verified';
+
+                            return (
+                                <div key={type.id} className="flex items-center justify-between p-3 bg-white border border-gray-100 rounded-lg shadow-sm">
+                                    <div className="flex items-center min-w-0">
+                                        <div className={`w-2 h-2 rounded-full mr-2 ${isVerified ? 'bg-green-500' : 'bg-gray-300'}`} />
+                                        <div className="flex flex-col truncate">
+                                            <span className="text-xs font-bold text-gray-700 truncate">{type.label}</span>
+                                            <span className="text-[10px] text-gray-400 truncate">
+                                                {uploaded ? uploaded.originalName : 'Missing'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    {isVerified && <CheckCircle size={14} className="text-green-500 shrink-0" />}
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
+
+                {/* COL 3: EXTRACTED DATA FORM */}
+                <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col overflow-hidden">
+                    <div className="p-4 border-b border-gray-100 bg-gray-50 font-bold text-gray-700 flex justify-between items-center">
+                        <span>Extracted Data</span>
+                        <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">Auto-Filled by AI</span>
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-6 space-y-6">
+
+                        {/* Section 1: Identity */}
+                        <div>
+                            <h4 className="text-xs font-bold text-gray-400 uppercase mb-3 flex items-center">
+                                <FileText size={12} className="mr-1" /> Company Identity
+                            </h4>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <label className="text-xs text-gray-500">Company Name (KH)</label>
+                                    <input value={formData.companyNameKh || ''} disabled className="w-full text-sm font-bold bg-gray-50 border-gray-200 rounded-md py-2 px-3" />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs text-gray-500">Company Name (EN)</label>
+                                    <input value={formData.companyNameEn || ''} disabled className="w-full text-sm font-bold bg-gray-50 border-gray-200 rounded-md py-2 px-3" />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs text-gray-500">Registration ID</label>
+                                    <input value={formData.registrationNumber || ''} disabled className="w-full text-sm font-mono bg-gray-50 border-gray-200 rounded-md py-2 px-3" />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs text-gray-500">Incorporation Date</label>
+                                    <input value={formData.incorporationDate || ''} disabled className="w-full text-sm font-mono bg-gray-50 border-gray-200 rounded-md py-2 px-3" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="h-px bg-gray-100 my-2" />
+
+                        {/* Section 2: Tax & Location */}
+                        <div>
+                            <h4 className="text-xs font-bold text-gray-400 uppercase mb-3 flex items-center">
+                                <Table size={12} className="mr-1" /> Tax & Location
+                            </h4>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <label className="text-xs text-gray-500">VAT TIN</label>
+                                    <input value={formData.vatTin || ''} disabled className="w-full text-sm font-mono bg-yellow-50 border-yellow-100 text-yellow-800 rounded-md py-2 px-3" />
+                                </div>
+                                <div className="space-y-1 col-span-2">
+                                    <label className="text-xs text-gray-500">Registered Address</label>
+                                    <textarea value={formData.address || ''} disabled rows={2} className="w-full text-sm bg-gray-50 border-gray-200 rounded-md py-2 px-3 resize-none" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="h-px bg-gray-100 my-2" />
+
+                        {/* Section 3: Bank Info */}
+                        <div>
+                            <h4 className="text-xs font-bold text-gray-400 uppercase mb-3 flex items-center">
+                                <Table size={12} className="mr-1" /> Bank Information
+                            </h4>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <label className="text-xs text-gray-500">Bank Name</label>
+                                    <input value={formData.bankName || ''} disabled className="w-full text-sm font-bold bg-gray-50 border-gray-200 rounded-md py-2 px-3" />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs text-gray-500">Account Number</label>
+                                    <input value={formData.bankAccountNumber || ''} disabled className="w-full text-sm font-mono bg-green-50 border-green-100 text-green-800 rounded-md py-2 px-3" />
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
             </div>
         </div>
     );

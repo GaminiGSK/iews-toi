@@ -33,22 +33,59 @@ router.get('/profile', auth, async (req, res) => {
 });
 
 // Upload Registration & Extract
+// Upload Registration & Extract (Multi-Doc)
 router.post('/upload-registration', auth, upload.single('file'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+        const { docType } = req.body; // 'moc_cert', 'kh_extract', etc.
 
-        console.log('File uploaded:', req.file.path);
+        console.log(`[RegUpload] Type: ${docType} | File: ${req.file.path}`);
 
         // 1. Extract Data
-        const extracted = await googleAI.extractDocumentData(req.file.path);
+        const extracted = await googleAI.extractDocumentData(req.file.path, docType);
 
-        // 2. Translate/Normalize Name if needed
-        // (Mock service already handles this, but in real life we'd check extracted.companyNameEn)
+        // 2. Find Profile
+        let profile = await CompanyProfile.findOne({ user: req.user.id });
+        if (!profile) {
+            // Should exist usually, but create if generic
+            profile = new CompanyProfile({ user: req.user.id, companyCode: req.user.companyCode });
+        }
+
+        // 3. Update Documents List
+        const newDoc = {
+            docType: docType || 'unknown',
+            originalName: req.file.originalname,
+            path: req.file.path,
+            status: 'Verified', // Assume verified if AI runs, or 'Pending'
+            extractedText: JSON.stringify(extracted),
+            uploadedAt: new Date()
+        };
+
+        // Remove old doc of same type
+        if (docType) {
+            profile.documents = profile.documents.filter(d => d.docType !== docType);
+        }
+        profile.documents.push(newDoc);
+
+        // 4. Update Profile Fields based on Extracted Data
+        if (extracted) {
+            if (extracted.companyNameEn) profile.companyNameEn = extracted.companyNameEn;
+            if (extracted.companyNameKh) profile.companyNameKh = extracted.companyNameKh;
+            if (extracted.registrationNumber) profile.registrationNumber = extracted.registrationNumber;
+            if (extracted.incorporationDate) profile.incorporationDate = extracted.incorporationDate;
+            if (extracted.address) profile.address = extracted.address;
+            if (extracted.vatTin) profile.vatTin = extracted.vatTin;
+            // Bank Info
+            if (extracted.bankAccountNumber) profile.bankAccountNumber = extracted.bankAccountNumber;
+            if (extracted.bankName) profile.bankName = extracted.bankName;
+        }
+
+        await profile.save();
 
         res.json({
-            message: 'Extraction successful',
+            message: 'Extraction & Save successful',
             data: extracted,
-            filePath: req.file.path
+            profile: profile
         });
 
     } catch (err) {

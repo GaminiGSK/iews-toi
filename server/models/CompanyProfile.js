@@ -13,7 +13,23 @@ const CompanyProfileSchema = new mongoose.Schema({
     director: { type: String },
     vatTin: { type: String },
     businessActivity: { type: String },
-    businessRegistration: { type: String }, // Path to PDF
+
+    // Structured Documents List
+    documents: [{
+        docType: { type: String, required: true }, // 'moc_cert', 'kh_extract', 'en_extract', 'tax_patent', 'tax_id', 'bank_opening'
+        originalName: String,
+        path: String,
+        status: { type: String, default: 'Pending' }, // 'Pending', 'Verified', 'Error'
+        extractedText: String, // Raw AI text if needed
+        uploadedAt: { type: Date, default: Date.now }
+    }],
+
+    // Bank Details (Extracted)
+    bankName: { type: String },
+    bankAccountName: { type: String },
+    bankAccountNumber: { type: String },
+    bankCurrency: { type: String },
+
     extractedData: { type: Map, of: String } // For flexibility
 }, { timestamps: true });
 

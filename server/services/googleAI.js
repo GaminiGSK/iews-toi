@@ -23,10 +23,32 @@ function fileToGenerativePart(path, mimeType) {
     };
 }
 
-exports.extractDocumentData = async (filePath) => {
-    console.log(`[GeminiAI] Processing Document: ${filePath}`);
+exports.extractDocumentData = async (filePath, docType) => {
+    console.log(`[GeminiAI] Processing Document: ${filePath} (Type: ${docType})`);
     try {
-        const prompt = "Extract the following details from this Company Registration certificate (MOC) as JSON: companyNameEn, companyNameKh, registrationNumber, incorporationDate, address (province/city). Return ONLY raw JSON, no markdown.";
+        let prompt = "";
+
+        switch (docType) {
+            case 'moc_cert':
+                prompt = "Extract from MOC Certificate (JSON): companyNameEn, companyNameKh, registrationNumber, incorporationDate (DD/MM/YYYY), address.";
+                break;
+            case 'kh_extract':
+            case 'en_extract':
+                prompt = "Extract from Business Extract (JSON): companyNameEn, registrationNumber, businessActivity, directorName, capitalAmount.";
+                break;
+            case 'tax_patent':
+            case 'tax_id':
+                prompt = "Extract from Tax/VAT Certificate (JSON): vatTin, companyNameKh, taxRegistrationDate.";
+                break;
+            case 'bank_opening':
+                prompt = "Extract from Bank Account Letter (JSON): bankName, bankAccountNumber, bankAccountName, bankCurrency.";
+                break;
+            default:
+                prompt = "Extract all visible business details from this image as JSON: companyNameEn, companyNameKh, registrationNumber, address, vatTin.";
+        }
+
+        prompt += " Return ONLY raw JSON, no markdown.";
+
         // Vision Model supports JPEG/PNG directly
         const imagePart = fileToGenerativePart(filePath, "image/jpeg");
 

@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
 import ChangePassword from './pages/ChangePassword';
-import CompanyProfile from './pages/CompanyProfile';
+import CompanyProfile from './pages/CompanyProfileNew';
 import PrivateRoute from './components/PrivateRoute';
 
 import SiteGate from './components/SiteGate';
