@@ -351,9 +351,15 @@ export default function CompanyProfile() {
                                 >
                                     <div className="flex-1 min-w-0 mr-2">
                                         <p className="font-bold text-gray-800 text-xs truncate mb-1">{file.originalName}</p>
-                                        <div className="flex items-center text-[10px] text-gray-500 font-mono">
-                                            <Calendar size={10} className="mr-1 opacity-70" />
-                                            {file.dateRange || 'Processing...'}
+                                        <div className="flex flex-col text-[10px] text-gray-500 font-mono mt-0.5">
+                                            {(file.transactions?.length > 0) ? (
+                                                <>
+                                                    <span className="flex items-center"><Calendar size={8} className="mr-1 opacity-50" /> Start: {new Date(file.transactions[0].date).toLocaleDateString('en-GB')}</span>
+                                                    <span className="flex items-center ml-2.5">End: {new Date(file.transactions[file.transactions.length - 1].date).toLocaleDateString('en-GB')}</span>
+                                                </>
+                                            ) : (
+                                                <span>{file.dateRange || 'Processing...'}</span>
+                                            )}
                                         </div>
                                         <p className="text-[10px] text-gray-400 mt-1">{(file.transactions || []).length} txs</p>
                                     </div>
