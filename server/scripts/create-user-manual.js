@@ -23,15 +23,24 @@ mongoose.connect(process.env.MONGODB_URI)
 
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(password, salt);
+        user.loginCode = password; // REQUIRED for "Access Code" login
         user.isFirstLogin = true;
 
         await user.save();
         console.log(`✅ User ${companyCode} created/updated successfully!`);
 
-        // Create Default Company Profile
+        // Create or Link Company Profile
         const CompanyProfile = require('../models/CompanyProfile');
-        let profile = await CompanyProfile.findOne({ user: user._id });
-        if (!profile) {
+
+        // Check for existing profile by companyCode (even if user is different/deleted)
+        let profile = await CompanyProfile.findOne({ companyCode: companyCode });
+
+        if (profile) {
+            console.log('Found existing Company Profile. Re-linking to new User ID...');
+            profile.user = user._id;
+            await profile.save();
+            console.log('✅ Company Profile re-linked!');
+        } else {
             console.log('Creating default Company Profile...');
             profile = new CompanyProfile({
                 user: user._id,
@@ -41,8 +50,6 @@ mongoose.connect(process.env.MONGODB_URI)
             });
             await profile.save();
             console.log('✅ Company Profile created!');
-        } else {
-            console.log('Company Profile already exists.');
         }
 
         process.exit();
