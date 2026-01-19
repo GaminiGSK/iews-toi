@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Loader2, CheckCircle, Table, Save, X, Eye, FileText, CloudUpload } from 'lucide-react';
+import { Loader2, CheckCircle, AlertCircle, Table, Save, X, Eye, FileText, CloudUpload, Calendar } from 'lucide-react';
 
 export default function CompanyProfile() {
     const [view, setView] = useState('home'); // home, profile, bank
