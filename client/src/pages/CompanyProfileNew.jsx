@@ -250,9 +250,9 @@ export default function CompanyProfile() {
 
         try {
             const token = localStorage.getItem('token');
-            await axios.delete('/api/company/delete-document', {
-                headers: { 'Authorization': `Bearer ${token}` },
-                data: { docType }
+            // Use URL Param for robustness
+            await axios.delete(`/api/company/document/${docType}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
             });
 
             // Optimistic UI Update or Refresh

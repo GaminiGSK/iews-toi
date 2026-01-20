@@ -95,9 +95,9 @@ router.post('/upload-registration', auth, upload.single('file'), async (req, res
 });
 
 // Delete Registration Document
-router.delete('/delete-document', auth, async (req, res) => {
+router.delete('/document/:docType', auth, async (req, res) => {
     try {
-        const { docType } = req.body;
+        const { docType } = req.params;
         if (!docType) return res.status(400).json({ message: 'DocType required' });
 
         const profile = await CompanyProfile.findOne({ user: req.user.id });
