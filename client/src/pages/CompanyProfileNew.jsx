@@ -499,9 +499,10 @@ export default function CompanyProfile() {
                 // Optimistic UI update
                 setBankFiles(prev => prev.filter((_, i) => i !== idx));
 
-                await axios.delete('/api/company/transactions', {
-                    headers: { 'Authorization': `Bearer ${token}` },
-                    data: { transactionIds: ids }
+                await axios.post('/api/company/delete-transactions', {
+                    transactionIds: ids
+                }, {
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
 
                 setMessage(`Deleted ${ids.length} transactions from DB.`);

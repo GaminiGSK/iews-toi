@@ -95,24 +95,25 @@ router.post('/upload-registration', auth, upload.single('file'), async (req, res
 });
 
 // Delete Registration Document
+// Delete Registration Document (Atomic $pull)
 router.delete('/document/:docType', auth, async (req, res) => {
     try {
         const { docType } = req.params;
         if (!docType) return res.status(400).json({ message: 'DocType required' });
 
-        const profile = await CompanyProfile.findOne({ user: req.user.id });
-        if (!profile) return res.status(404).json({ message: 'Profile not found' });
+        // Atomic operation - safer for concurrency and array handling
+        const result = await CompanyProfile.findOneAndUpdate(
+            { user: req.user.id },
+            { $pull: { documents: { docType: docType } } },
+            { new: true }
+        );
 
-        // Filter out the document
-        const initialLength = profile.documents.length;
-        profile.documents = profile.documents.filter(d => d.docType !== docType);
+        if (!result) return res.status(404).json({ message: 'Profile not found' });
 
-        if (profile.documents.length === initialLength) {
-            return res.status(404).json({ message: 'Document not found' });
-        }
+        // Check if document was actually removed (optional, but good for feedback)
+        // Ideally we would compare list length before/after, but for atomic perf we just return updated profile
 
-        await profile.save();
-        res.json({ message: 'Document removed', profile });
+        res.json({ message: 'Document removed successfully', profile: result });
     } catch (err) {
         console.error('Delete Doc Error:', err);
         res.status(500).json({ message: 'Error deleting document' });
@@ -390,34 +391,49 @@ router.get('/transactions', auth, async (req, res) => {
 });
 
 // DELETE Transactions (by IDs)
+// DELETE Transactions (by IDs) - Legacy Support (May fail on some proxies)
 router.delete('/transactions', auth, async (req, res) => {
     try {
         const { transactionIds } = req.body;
-        console.log("DELETE Request Body:", req.body); // DEBUG
-        console.log("DELETE User:", req.user); // DEBUG
-
         if (!transactionIds || !Array.isArray(transactionIds)) {
-            return res.status(400).json({ message: 'Invalid request: transactionIds missing or not array' });
+            return res.status(400).json({ message: 'Invalid request: transactionIds missing' });
         }
+        await deleteTransactions(req, res, transactionIds);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
 
+// POST Delete Transactions (Robust Alternative)
+router.post('/delete-transactions', auth, async (req, res) => {
+    try {
+        const { transactionIds } = req.body;
+        if (!transactionIds || !Array.isArray(transactionIds)) {
+            return res.status(400).json({ message: 'Invalid request: transactionIds missing' });
+        }
+        await deleteTransactions(req, res, transactionIds);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Shared Helper
+async function deleteTransactions(req, res, ids) {
+    try {
         const Transaction = require('../models/Transaction');
-
         const result = await Transaction.deleteMany({
-            _id: { $in: transactionIds },
-            companyCode: req.user.companyCode // Security check
+            _id: { $in: ids },
+            companyCode: req.user.companyCode
         });
 
-        console.log("Delete Result:", result); // DEBUG
-
         if (result.deletedCount === 0) {
-            return res.status(404).json({ message: 'No transactions found to delete (or permission denied)' });
+            return res.status(404).json({ message: 'No transactions found or permission denied' });
         }
-
         res.json({ message: `Deleted ${result.deletedCount} transactions.`, deletedCount: result.deletedCount });
     } catch (err) {
         console.error('Delete Transaction Error:', err);
         res.status(500).json({ message: 'Error deleting transactions: ' + err.message });
     }
-});
+}
 
 module.exports = router;
