@@ -481,6 +481,46 @@ router.delete('/codes/:id', auth, async (req, res) => {
     }
 });
 
+// --- CURRENCY EXCHANGE API ---
+
+// GET All Exchange Rates
+router.get('/rates', auth, async (req, res) => {
+    try {
+        const ExchangeRate = require('../models/ExchangeRate');
+        const rates = await ExchangeRate.find({ companyCode: req.user.companyCode })
+            .sort({ year: -1 });
+        res.json({ rates });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error fetching rates' });
+    }
+});
+
+// POST Upsert Exchange Rate
+router.post('/rates', auth, async (req, res) => {
+    try {
+        const ExchangeRate = require('../models/ExchangeRate');
+        const { year, rate } = req.body;
+
+        if (!year || !rate) return res.status(400).json({ message: 'Year and Rate required' });
+
+        const updatedRate = await ExchangeRate.findOneAndUpdate(
+            { companyCode: req.user.companyCode, year },
+            {
+                user: req.user.id,
+                rate
+            },
+            { new: true, upsert: true } // Create if not exists
+        );
+
+        res.json({ message: 'Rate saved', rate: updatedRate });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error saving rate' });
+    }
+});
+
 // POST Delete Transactions (Robust Alternative)
 router.post('/delete-transactions', auth, async (req, res) => {
     try {
