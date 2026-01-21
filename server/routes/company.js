@@ -390,6 +390,26 @@ router.get('/transactions', auth, async (req, res) => {
     }
 });
 
+// GET General Ledger (All History, Sorted Date ASC)
+router.get('/ledger', auth, async (req, res) => {
+    try {
+        const Transaction = require('../models/Transaction');
+
+        // Fetch all transactions for this company
+        // Sorted by Date ASC (Oldest to Newest) for Ledger View
+        const transactions = await Transaction.find({
+            companyCode: req.user.companyCode
+        })
+            .sort({ date: 1 })
+            .lean();
+
+        res.json({ transactions });
+    } catch (err) {
+        console.error('Fetch Ledger Error:', err);
+        res.status(500).json({ message: 'Error fetching ledger' });
+    }
+});
+
 // DELETE Transactions (by IDs)
 // DELETE Transactions (by IDs) - Legacy Support (May fail on some proxies)
 router.delete('/transactions', auth, async (req, res) => {

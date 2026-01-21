@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Loader2, CheckCircle, AlertCircle, Table, Save, X, Eye, FileText, CloudUpload, Calendar } from 'lucide-react';
+import { Loader2, CheckCircle, AlertCircle, Table, Save, X, Eye, FileText, CloudUpload, Calendar, Book } from 'lucide-react';
+import GeneralLedger from './GeneralLedger';
 
 export default function CompanyProfile() {
     const [view, setView] = useState('home'); // home, profile, bank
@@ -199,6 +200,17 @@ export default function CompanyProfile() {
                     </div>
                     <h3 className="text-xl font-bold text-gray-800 mb-2">Bank Statements</h3>
                     <p className="text-gray-500 text-sm">Upload monthly statements, parse transactions via AI, and sync data.</p>
+                </div>
+
+                <div
+                    onClick={() => setView('ledger')}
+                    className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition group"
+                >
+                    <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
+                        <Book className="text-purple-600" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">General Ledger</h3>
+                    <p className="text-gray-500 text-sm">View chronological financial history of all transactions.</p>
                 </div>
             </div>
         </div>
@@ -809,11 +821,16 @@ export default function CompanyProfile() {
         </div>
     );
 
+    // RENDER LOGIC
+    if (view === 'home') return renderHome();
+    if (view === 'ledger') return <GeneralLedger onBack={() => setView('home')} />;
+    if (view === 'profile') return renderProfile();
+    if (view === 'bank') return renderBank();
+
+    // Default or fallback view
     return (
         <div className="min-h-screen bg-gray-50">
-            {view === 'home' && renderHome()}
-            {view === 'profile' && renderProfile()}
-            {view === 'bank' && renderBank()}
+            <p>Unknown view: {view}</p>
         </div>
     );
 }
