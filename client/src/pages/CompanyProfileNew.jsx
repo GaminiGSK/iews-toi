@@ -176,7 +176,7 @@ export default function CompanyProfile() {
                     Log Out
                 </button>
             </div>
-            <p className="text-gray-500 mb-12">Manage your company entity and financial data. <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded ml-2">v2.1 (Fix: 6488)</span></p>
+            <p className="text-gray-500 mb-12">Manage your company entity and financial data. <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded ml-2">v2.1.1 (Debug)</span></p>
 
             <div className="grid md:grid-cols-2 gap-6">
                 <div
@@ -239,7 +239,9 @@ export default function CompanyProfile() {
 
         } catch (err) {
             console.error(err);
-            setMessage('Error processing document.');
+            const errMsg = err.response?.data?.message || err.message;
+            setMessage('Error: ' + errMsg);
+            alert('Upload Failed: ' + errMsg); // Explicit feedback
         } finally {
             setUploadingDoc(null);
         }
@@ -469,8 +471,10 @@ export default function CompanyProfile() {
             setMessage(`Success! Appended ${newCount} transactions from ${safeFiles.length} new files.`);
 
         } catch (err) {
-            setMessage('Error processing files.');
-            console.error(err);
+            console.error("Bank Upload Error:", err);
+            const errMsg = err.response?.data?.message || err.message;
+            setMessage('Error: ' + errMsg);
+            alert('Bank Upload Failed: ' + errMsg); // Explicit feedback
         } finally {
             setUploadingBank(false);
         }
