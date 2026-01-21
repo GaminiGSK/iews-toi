@@ -4,6 +4,7 @@ const AccountCodeSchema = new mongoose.Schema({
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     companyCode: { type: String, required: true },
     code: { type: String, required: true, trim: true },
+    toiCode: { type: String, required: true, trim: true }, // Standard System Code
     description: { type: String, required: true, maxlength: 50, trim: true }
 }, { timestamps: true });
 

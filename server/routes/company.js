@@ -443,15 +443,16 @@ router.get('/codes', auth, async (req, res) => {
 router.post('/codes', auth, async (req, res) => {
     try {
         const AccountCode = require('../models/AccountCode');
-        const { code, description } = req.body;
+        const { code, toiCode, description } = req.body;
 
-        if (!code || !description) return res.status(400).json({ message: 'Code and Description required' });
+        if (!code || !toiCode || !description) return res.status(400).json({ message: 'Code, TOI Code, and Description required' });
         if (description.length > 50) return res.status(400).json({ message: 'Description max 50 chars' });
 
         const newCode = new AccountCode({
             user: req.user.id,
             companyCode: req.user.companyCode,
             code,
+            toiCode,
             description
         });
 

@@ -11,6 +11,7 @@ const AccountingCodes = ({ onBack }) => {
     // Form State
     const [newCode, setNewCode] = useState('');
     const [newDesc, setNewDesc] = useState('');
+    const [newToiCode, setNewToiCode] = useState('');
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
@@ -46,6 +47,7 @@ const AccountingCodes = ({ onBack }) => {
             const token = localStorage.getItem('token');
             const res = await axios.post('/api/company/codes', {
                 code: newCode,
+                toiCode: newToiCode,
                 description: newDesc
             }, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -53,6 +55,7 @@ const AccountingCodes = ({ onBack }) => {
 
             setCodes(prev => [...prev, res.data.code].sort((a, b) => a.code.localeCompare(b.code)));
             setNewCode('');
+            setNewToiCode('');
             setNewDesc('');
             setIsAdding(false);
             setError(null);
@@ -125,6 +128,17 @@ const AccountingCodes = ({ onBack }) => {
                                         required
                                     />
                                 </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 mb-1">TOI CODE</label>
+                                    <input
+                                        type="text"
+                                        value={newToiCode}
+                                        onChange={e => setNewToiCode(e.target.value.toUpperCase())}
+                                        placeholder="e.g. 1000"
+                                        className="border border-gray-300 rounded-lg px-3 py-2 w-32 font-mono text-sm uppercase focus:ring-2 focus:ring-orange-500 outline-none"
+                                        required
+                                    />
+                                </div>
                                 <div className="flex-1">
                                     <label className="block text-xs font-bold text-gray-500 mb-1">DESCRIPTION (Max 50)</label>
                                     <input
@@ -160,21 +174,25 @@ const AccountingCodes = ({ onBack }) => {
                         <table className="w-full text-left">
                             <thead className="bg-gray-50 text-gray-600 text-xs font-bold uppercase border-b border-gray-200">
                                 <tr>
-                                    <th className="px-6 py-4 w-[150px]">Code</th>
+                                    <th className="px-6 py-4 w-[120px]">Code</th>
+                                    <th className="px-6 py-4 w-[120px]">TOI Code</th>
                                     <th className="px-6 py-4">Description</th>
                                     <th className="px-6 py-4 w-[100px] text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                                 {loading ? (
-                                    <tr><td colSpan="3" className="px-6 py-8 text-center text-gray-400">Loading...</td></tr>
+                                    <tr><td colSpan="4" className="px-6 py-8 text-center text-gray-400">Loading...</td></tr>
                                 ) : codes.length === 0 ? (
-                                    <tr><td colSpan="3" className="px-6 py-8 text-center text-gray-400">No codes defined yet.</td></tr>
+                                    <tr><td colSpan="4" className="px-6 py-8 text-center text-gray-400">No codes defined yet.</td></tr>
                                 ) : (
                                     codes.map(c => (
                                         <tr key={c._id} className="hover:bg-gray-50 transition group">
                                             <td className="px-6 py-4 font-mono font-bold text-orange-600">
                                                 {c.code}
+                                            </td>
+                                            <td className="px-6 py-4 font-mono font-medium text-gray-600">
+                                                {c.toiCode || '-'}
                                             </td>
                                             <td className="px-6 py-4 text-gray-700 font-medium">
                                                 {c.description}
