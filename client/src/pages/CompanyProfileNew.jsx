@@ -176,7 +176,7 @@ export default function CompanyProfile() {
                     Log Out
                 </button>
             </div>
-            <p className="text-gray-500 mb-12">Manage your company entity and financial data.</p>
+            <p className="text-gray-500 mb-12">Manage your company entity and financial data. <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded ml-2">v2.1 (Fix: 6488)</span></p>
 
             <div className="grid md:grid-cols-2 gap-6">
                 <div
@@ -255,15 +255,13 @@ export default function CompanyProfile() {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
-            // Optimistic UI Update or Refresh
-            setFormData(prev => ({
-                ...prev,
-                documents: prev.documents.filter(d => d.docType !== docType)
-            }));
-            setMessage('Document cleared.');
+            // NUCLEAR OPTION: Force Reload to ensure state sync
+            alert('Document cleared. Page will reload.');
+            window.location.reload();
+
         } catch (err) {
             console.error(err);
-            setMessage('Error clearing document.');
+            alert('Error clearing document: ' + (err.response?.data?.message || err.message));
         }
     };
 
@@ -505,9 +503,9 @@ export default function CompanyProfile() {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
-                setMessage(`Deleted ${ids.length} transactions from DB.`);
-                // Force Reload
-                await fetchProfile();
+                alert(`Deleted ${ids.length} transactions. Page will reload.`);
+                window.location.reload();
+
             } catch (err) {
                 console.error(err);
                 alert("Server Error deleting: " + (err.response?.data?.message || err.message));
@@ -515,7 +513,7 @@ export default function CompanyProfile() {
                 fetchProfile();
             }
         } else {
-            // Delete Unsaved
+            // Delete Unsaved - No reload needed
             setBankFiles(prev => prev.filter((_, i) => i !== idx));
             if (activeFileIndex === idx) setActiveFileIndex(0);
         }
