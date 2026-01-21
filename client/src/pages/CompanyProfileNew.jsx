@@ -240,8 +240,14 @@ export default function CompanyProfile() {
         } catch (err) {
             console.error(err);
             const errMsg = err.response?.data?.message || err.message;
+            if (errMsg === 'Token is not valid' || err.response?.status === 401) {
+                alert('Session Expired. Please Login Again.');
+                localStorage.removeItem('token');
+                window.location.href = '/login';
+                return;
+            }
             setMessage('Error: ' + errMsg);
-            alert('Upload Failed: ' + errMsg); // Explicit feedback
+            alert('Upload Failed: ' + errMsg);
         } finally {
             setUploadingDoc(null);
         }
@@ -263,7 +269,14 @@ export default function CompanyProfile() {
 
         } catch (err) {
             console.error(err);
-            alert('Error clearing document: ' + (err.response?.data?.message || err.message));
+            const errMsg = err.response?.data?.message || err.message;
+            if (errMsg === 'Token is not valid' || err.response?.status === 401) {
+                alert('Session Expired. Please Login Again.');
+                localStorage.removeItem('token');
+                window.location.href = '/login';
+                return;
+            }
+            alert('Error clearing document: ' + errMsg);
         }
     };
 
@@ -473,8 +486,16 @@ export default function CompanyProfile() {
         } catch (err) {
             console.error("Bank Upload Error:", err);
             const errMsg = err.response?.data?.message || err.message;
+
+            if (errMsg === 'Token is not valid' || err.response?.status === 401) {
+                alert('Session Expired. Please Login Again.');
+                localStorage.removeItem('token');
+                window.location.href = '/login';
+                return;
+            }
+
             setMessage('Error: ' + errMsg);
-            alert('Bank Upload Failed: ' + errMsg); // Explicit feedback
+            alert('Bank Upload Failed: ' + errMsg);
         } finally {
             setUploadingBank(false);
         }
@@ -512,7 +533,16 @@ export default function CompanyProfile() {
 
             } catch (err) {
                 console.error(err);
-                alert("Server Error deleting: " + (err.response?.data?.message || err.message));
+                const errMsg = err.response?.data?.message || err.message;
+
+                if (errMsg === 'Token is not valid' || err.response?.status === 401) {
+                    alert('Session Expired. Please Login Again.');
+                    localStorage.removeItem('token');
+                    window.location.href = '/login';
+                    return;
+                }
+
+                alert("Server Error deleting: " + errMsg);
                 // Reload to restore state if error
                 fetchProfile();
             }
