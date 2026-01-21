@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Loader2, CheckCircle, AlertCircle, Table, Save, X, Eye, FileText, CloudUpload, Calendar, Book, Tag, DollarSign } from 'lucide-react';
+import { Loader2, CheckCircle, AlertCircle, Table, Save, X, Eye, FileText, CloudUpload, Calendar, Book, Tag, DollarSign, Scale } from 'lucide-react';
 import GeneralLedger from './GeneralLedger';
 import AccountingCodes from './AccountingCodes';
 import CurrencyExchange from './CurrencyExchange';
+import TrialBalance from './TrialBalance';
 
 export default function CompanyProfile() {
     const [view, setView] = useState('home'); // home, profile, bank
@@ -235,6 +236,17 @@ export default function CompanyProfile() {
                     </div>
                     <h3 className="text-xl font-bold text-gray-800 mb-2">Currency Exchange</h3>
                     <p className="text-gray-500 text-sm">Set Annual Exchange Rates (USD to KHR).</p>
+                </div>
+
+                <div
+                    onClick={() => setView('report')}
+                    className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition group"
+                >
+                    <div className="w-12 h-12 bg-teal-50 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
+                        <Scale className="text-teal-800" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">Trial Balance</h3>
+                    <p className="text-gray-500 text-sm">View Consolidated Report (Dr/Cr).</p>
                 </div>
             </div>
         </div>
@@ -850,6 +862,7 @@ export default function CompanyProfile() {
     if (view === 'ledger') return <GeneralLedger onBack={() => setView('home')} />;
     if (view === 'codes') return <AccountingCodes onBack={() => setView('home')} />;
     if (view === 'currency') return <CurrencyExchange onBack={() => setView('home')} />;
+    if (view === 'report') return <TrialBalance onBack={() => setView('home')} />;
     if (view === 'profile') return renderProfile();
     if (view === 'bank') return renderBank();
 

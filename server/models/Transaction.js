@@ -10,6 +10,7 @@ const TransactionSchema = new mongoose.Schema({
     currency: { type: String, required: true, default: 'USD' },
     transactionId: { type: String }, // Bank's ID or Unique Ref
     category: { type: String }, // GL Category
+    accountCode: { type: mongoose.Schema.Types.ObjectId, ref: 'AccountCode' }, // Link to Chart of Accounts
     originalData: { type: Object } // Store raw mapped data just in case
 }, { timestamps: true });
 

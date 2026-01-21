@@ -3,6 +3,7 @@ import axios from 'axios';
 
 const GeneralLedger = ({ onBack }) => {
     const [transactions, setTransactions] = useState([]);
+    const [codes, setCodes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -14,10 +15,13 @@ const GeneralLedger = ({ onBack }) => {
         try {
             setLoading(true);
             const token = localStorage.getItem('token');
-            const res = await axios.get('/api/company/ledger', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            setTransactions(res.data.transactions || []);
+            const [ledgerRes, codesRes] = await Promise.all([
+                axios.get('/api/company/ledger', { headers: { 'Authorization': `Bearer ${token}` } }),
+                axios.get('/api/company/codes', { headers: { 'Authorization': `Bearer ${token}` } })
+            ]);
+
+            setTransactions(ledgerRes.data.transactions || []);
+            setCodes(codesRes.data.codes || []);
             setError(null);
         } catch (err) {
             console.error(err);
@@ -30,6 +34,27 @@ const GeneralLedger = ({ onBack }) => {
             }
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleTagChange = async (transactionId, accountCodeId) => {
+        try {
+            const token = localStorage.getItem('token');
+            // Optimistically update UI
+            setTransactions(prev => prev.map(tx =>
+                tx._id === transactionId ? { ...tx, accountCode: accountCodeId } : tx
+            ));
+
+            await axios.post('/api/company/transactions/tag', {
+                transactionId,
+                accountCodeId: accountCodeId || null // handle Empty string logic
+            }, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+        } catch (err) {
+            console.error(err);
+            alert('Failed to update tag');
+            fetchLedger(); // Revert on error
         }
     };
 
@@ -77,6 +102,7 @@ const GeneralLedger = ({ onBack }) => {
                             <thead className="bg-gray-50 text-gray-600 text-xs font-bold uppercase border-b border-gray-200">
                                 <tr>
                                     <th className="px-6 py-4 w-[120px]" rowSpan="2">Date</th>
+                                    <th className="px-6 py-4 w-[200px]" rowSpan="2">Account Code</th>
                                     <th className="px-6 py-4 min-w-[300px]" rowSpan="2">Description</th>
                                     <th className="px-6 py-4 text-center border-l border-gray-200" colSpan="3">USD ($)</th>
                                     <th className="px-6 py-4 text-center border-l border-gray-200" colSpan="3">KHR (៛)</th>
@@ -97,6 +123,20 @@ const GeneralLedger = ({ onBack }) => {
                                             {formatDateSafe(tx.date)}
                                             {/* Show small exchange rate below date */}
                                             {tx.rateUsed > 0 && <div className="text-[10px] text-teal-600 mt-1 font-normal">@{tx.rateUsed}</div>}
+                                        </td>
+                                        <td className="px-6 py-4 text-xs align-top">
+                                            <select
+                                                value={tx.accountCode || ''}
+                                                onChange={(e) => handleTagChange(tx._id, e.target.value)}
+                                                className="w-full border border-gray-200 rounded-lg px-2 py-1 text-xs font-mono focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                                            >
+                                                <option value="">-- Select Code --</option>
+                                                {codes.map(c => (
+                                                    <option key={c._id} value={c._id}>
+                                                        {c.code} - {c.description}
+                                                    </option>
+                                                ))}
+                                            </select>
                                         </td>
                                         <td className="px-6 py-4 text-xs text-gray-700 font-medium align-top leading-relaxed whitespace-pre-wrap">
                                             {tx.description}

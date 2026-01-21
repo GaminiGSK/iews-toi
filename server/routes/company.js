@@ -543,6 +543,121 @@ router.post('/rates', auth, async (req, res) => {
     }
 });
 
+// --- TRIAL BALANCE API ---
+
+// POST Tag Transaction with Account Code
+router.post('/transactions/tag', auth, async (req, res) => {
+    try {
+        const Transaction = require('../models/Transaction');
+        const { transactionId, accountCodeId } = req.body;
+
+        if (!transactionId) return res.status(400).json({ message: 'Transaction ID required' });
+
+        // Update the transaction
+        const updatedTx = await Transaction.findOneAndUpdate(
+            { _id: transactionId, companyCode: req.user.companyCode },
+            { accountCode: accountCodeId }, // null removes the tag
+            { new: true }
+        ).populate('accountCode');
+
+        res.json({ message: 'Transaction tagged', transaction: updatedTx });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error tagging transaction' });
+    }
+});
+
+// GET Trial Balance Report
+router.get('/trial-balance', auth, async (req, res) => {
+    try {
+        const Transaction = require('../models/Transaction');
+        const AccountCode = require('../models/AccountCode');
+        const ExchangeRate = require('../models/ExchangeRate');
+
+        // 1. Fetch Data
+        const codes = await AccountCode.find({ companyCode: req.user.companyCode }).lean();
+        const transactions = await Transaction.find({
+            companyCode: req.user.companyCode,
+            accountCode: { $ne: null } // Only tagged items
+        }).populate('accountCode').lean();
+        const rates = await ExchangeRate.find({ companyCode: req.user.companyCode }).lean();
+
+        // 2. Helper for Rate
+        const getRate = (date) => {
+            const year = new Date(date).getFullYear();
+            const rateObj = rates.find(r => r.year === year);
+            return rateObj ? rateObj.rate : 0;
+        };
+
+        // 3. Aggregate Data
+        // Map: CodeID -> { code, desc, toi, drUSD, crUSD, drKHR, crKHR }
+        const reportMap = {};
+
+        // Initialize with all existing codes (so even empty ones show up?)
+        // Or just show used ones? The image implies showing the full Chart of Accounts usually.
+        // Let's list ALL codes defined.
+        codes.forEach(c => {
+            reportMap[c._id] = {
+                id: c._id,
+                code: c.code,
+                toiCode: c.toiCode,
+                description: c.description,
+                drUSD: 0,
+                crUSD: 0,
+                drKHR: 0, // Calculated dynamically
+                crKHR: 0
+            };
+        });
+
+        // Sum Transactions
+        transactions.forEach(tx => {
+            if (!tx.accountCode) return;
+            const codeId = tx.accountCode._id;
+
+            // If code was deleted but tx still has ref, skip or handle safely
+            if (!reportMap[codeId]) return;
+
+            const rate = getRate(tx.date);
+            const amtUSD = tx.amount;
+            const amtKHR = amtUSD * rate;
+
+            if (amtUSD > 0) {
+                // Money In -> Debit (Asset) or Credit (Revenue)?
+                // Standard: Bank Deposit = Debit Bank.
+                // But if this is "Sales", it should be Credit.
+                // We don't know the "Type" of the account yet (Asset/Liab/Equity).
+                // Image: Sales of Goods is Credit. Cost of Goods is Debit.
+                // WE ARE ONLY TAGGING FROM BANK STATEMENT (Cash Basis).
+                // Cash In = Bank Debit (The Bank Line) AND Account Credit (The Income Line).
+                // Cash Out = Bank Credit (The Bank Line) AND Account Debit (The Expense Line).
+
+                // IMPORTANT: The user is tagging the "Contra Account".
+                // If Bank says +$100 (Cash In), and I tag "Sales", then "Sales" is Credit $100.
+                // If Bank says -$50 (Cash Out), and I tag "Expenses", then "Expenses" is Debit $50.
+
+                // SO:
+                // If Tx Amount > 0 (Money In) -> The Tagged Account is CREDIT.
+                // If Tx Amount < 0 (Money Out) -> The Tagged Account is DEBIT.
+
+                reportMap[codeId].crUSD += Math.abs(amtUSD);
+                reportMap[codeId].crKHR += Math.abs(amtKHR);
+            } else {
+                // Money Out (Negative)
+                reportMap[codeId].drUSD += Math.abs(amtUSD);
+                reportMap[codeId].drKHR += Math.abs(amtKHR);
+            }
+        });
+
+        const report = Object.values(reportMap).sort((a, b) => a.code.localeCompare(b.code));
+
+        res.json({ report });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error generating Trial Balance' });
+    }
+});
+
 // POST Delete Transactions (Robust Alternative)
 router.post('/delete-transactions', auth, async (req, res) => {
     try {
