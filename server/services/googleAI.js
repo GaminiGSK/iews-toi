@@ -142,6 +142,53 @@ exports.translateText = async (text, targetLang) => {
     return text + " (Translated)";
 };
 
+exports.suggestAccountingCodes = async (transactions, codes) => {
+    console.log(`[GeminiAI] Auto-Tagging ${transactions.length} transactions with ${codes.length} codes.`);
+
+    // Prepare the Prompt Data
+    // We only need basic info to save tokens
+    const codeList = codes.map(c => `${c.code}: ${c.description} (TOI: ${c.toiCode})`).join('\n');
+    const txList = transactions.map(t => `ID: ${t._id} | Desc: ${t.description} | Amount: ${t.amount}`).join('\n');
+
+    const prompt = `
+        You are an expert Accountant.
+        Here is my Chart of Accounts:
+        ${codeList}
+
+        Here is a list of Bank Transactions:
+        ${txList}
+
+        Task:
+        Assign the most appropriate Account Code to each transaction based on its description and amount.
+        - Positive amounts are usually Deposits (Revenue, Refunds, Equity).
+        - Negative amounts are usually Withdrawals (Expenses, Assets, Liabilities).
+        - Use "Context Clues" from the description (e.g. "ABA" -> Bank Charges or Transfer).
+        - If unsure, pick the closest match or verify if it's "Uncategorized".
+
+        Output strictly a JSON Array of objects:
+        [
+            { "transactionId": "...", "accountCode": "..." },
+            ...
+        ]
+        The "accountCode" value must matched the 'code' field provided (e.g. "61220").
+        Return ONLY valid JSON.
+    `;
+
+    try {
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+        const suggestions = cleanAndParseJSON(text);
+
+        if (!Array.isArray(suggestions)) return [];
+
+        return suggestions;
+    } catch (e) {
+        console.error("Gemini Auto-Tag Error:", e);
+        return [];
+    }
+};
+
 // Utilities
 function cleanAndParseJSON(text) {
     try {

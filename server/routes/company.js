@@ -698,4 +698,48 @@ async function deleteTransactions(req, res, ids) {
     }
 }
 
+// POST Auto-Tag Transactions (AI)
+router.post('/transactions/auto-tag', auth, async (req, res) => {
+    try {
+        const Transaction = require('../models/Transaction');
+        const AccountCode = require('../models/AccountCode');
+        const googleAI = require('../services/googleAI');
+
+        // 1. Fetch Transactions (Untagged only, limit to 20 to avoid token limits)
+        const transactions = await Transaction.find({
+            companyCode: req.user.companyCode,
+            accountCode: null
+        }).limit(20);
+
+        if (transactions.length === 0) {
+            return res.json({ message: 'No untagged transactions found.' });
+        }
+
+        // 2. Fetch all codes
+        const codes = await AccountCode.find({ companyCode: req.user.companyCode });
+
+        // 3. Call AI
+        const suggestions = await googleAI.suggestAccountingCodes(transactions, codes);
+
+        // 4. Apply Updates
+        let updatedCount = 0;
+        for (const sugg of suggestions) {
+            // Find the code ID
+            const codeDoc = codes.find(c => c.code === sugg.accountCode);
+            if (codeDoc) {
+                await Transaction.findByIdAndUpdate(sugg.transactionId, {
+                    accountCode: codeDoc._id
+                });
+                updatedCount++;
+            }
+        }
+
+        res.json({ message: `AI Auto-Tagged ${updatedCount} transactions.`, count: updatedCount });
+
+    } catch (err) {
+        console.error("Auto-Tag API Error:", err);
+        res.status(500).json({ message: 'Error running AI Auto-Tag' });
+    }
+});
+
 module.exports = router;

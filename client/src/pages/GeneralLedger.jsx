@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { Wand2 } from 'lucide-react';
 
 const GeneralLedger = ({ onBack }) => {
     const [transactions, setTransactions] = useState([]);
     const [codes, setCodes] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [tagging, setTagging] = useState(false);
     const [error, setError] = useState(null);
 
     useEffect(() => {
@@ -58,6 +58,23 @@ const GeneralLedger = ({ onBack }) => {
         }
     };
 
+    const handleAutoTag = async () => {
+        try {
+            setTagging(true);
+            const token = localStorage.getItem('token');
+            const res = await axios.post('/api/company/transactions/auto-tag', {}, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            alert(res.data.message);
+            fetchLedger(); // Refresh to see changes
+        } catch (err) {
+            console.error(err);
+            alert('Auto-Tag failed. Check console.');
+        } finally {
+            setTagging(false);
+        }
+    };
+
     const formatDateSafe = (dateString) => {
         if (!dateString) return '-';
         try {
@@ -81,12 +98,22 @@ const GeneralLedger = ({ onBack }) => {
                     </h1>
                     <p className="text-xs text-gray-500 mt-1">Full chronological financial history.</p>
                 </div>
-                <button
-                    onClick={onBack}
-                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition"
-                >
-                    ← Back to Dashboard
-                </button>
+                <div className="flex gap-3">
+                    <button
+                        onClick={handleAutoTag}
+                        disabled={tagging}
+                        className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-lg text-sm font-medium transition flex items-center gap-2 shadow-sm disabled:opacity-50"
+                    >
+                        <Wand2 className={`w-4 h-4 ${tagging ? 'animate-spin' : ''}`} />
+                        {tagging ? 'AI Analyzing...' : 'Auto-Tag with AI'}
+                    </button>
+                    <button
+                        onClick={onBack}
+                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition"
+                    >
+                        ← Back
+                    </button>
+                </div>
             </div>
 
             <div className="flex-1 p-8 overflow-auto">
