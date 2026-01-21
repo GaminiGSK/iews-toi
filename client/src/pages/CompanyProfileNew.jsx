@@ -176,7 +176,7 @@ export default function CompanyProfile() {
                     Log Out
                 </button>
             </div>
-            <p className="text-gray-500 mb-12">Manage your company entity and financial data. <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded ml-2">v2.2 (Debug Console)</span></p>
+            <p className="text-gray-500 mb-12">Manage your company entity and financial data. <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded ml-2">v2.3 (Verbose Error)</span></p>
 
             <div className="grid md:grid-cols-2 gap-6">
                 <div
@@ -285,7 +285,6 @@ export default function CompanyProfile() {
                 details: JSON.stringify(err.response?.data || {}, null, 2)
             });
 
-            alert('Error clearing document: ' + errMsg);
         }
     };
 
@@ -512,7 +511,6 @@ export default function CompanyProfile() {
                 details: JSON.stringify(err.response?.data || {}, null, 2)
             });
 
-            alert('Bank Upload Failed: ' + errMsg);
         } finally {
             setUploadingBank(false);
         }
@@ -566,7 +564,6 @@ export default function CompanyProfile() {
                     details: JSON.stringify(err.response?.data || {}, null, 2)
                 });
 
-                alert("Server Error deleting: " + errMsg);
                 // Reload to restore state if error
                 fetchProfile();
             }

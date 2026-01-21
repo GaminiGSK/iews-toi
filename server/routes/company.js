@@ -432,7 +432,15 @@ async function deleteTransactions(req, res, ids) {
         res.json({ message: `Deleted ${result.deletedCount} transactions.`, deletedCount: result.deletedCount });
     } catch (err) {
         console.error('Delete Transaction Error:', err);
-        res.status(500).json({ message: 'Error deleting transactions: ' + err.message });
+        res.status(500).json({
+            message: 'Error deleting transactions: ' + err.message,
+            stack: err.stack,
+            debug: {
+                user: req.user,
+                ids: ids,
+                type: typeof ids
+            }
+        });
     }
 }
 
