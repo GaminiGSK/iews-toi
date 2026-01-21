@@ -391,19 +391,41 @@ router.get('/transactions', auth, async (req, res) => {
 });
 
 // GET General Ledger (All History, Sorted Date ASC)
+// GET General Ledger (All History, Sorted Date ASC)
 router.get('/ledger', auth, async (req, res) => {
     try {
         const Transaction = require('../models/Transaction');
+        const ExchangeRate = require('../models/ExchangeRate');
 
         // Fetch all transactions for this company
-        // Sorted by Date ASC (Oldest to Newest) for Ledger View
         const transactions = await Transaction.find({
             companyCode: req.user.companyCode
         })
             .sort({ date: 1 })
             .lean();
 
-        res.json({ transactions });
+        // Fetch all Exchange Rates
+        const rates = await ExchangeRate.find({ companyCode: req.user.companyCode }).lean();
+
+        // Helper to get rate for a year
+        const getRate = (date) => {
+            const year = new Date(date).getFullYear();
+            const rateObj = rates.find(r => r.year === year);
+            return rateObj ? rateObj.rate : 0; // Default to 0 if not set
+        };
+
+        // Enrich transactions with KHR values
+        const enrichedTransactions = transactions.map(tx => {
+            const rate = getRate(tx.date);
+            return {
+                ...tx,
+                rateUsed: rate,
+                amountKHR: (tx.amount || 0) * rate,
+                balanceKHR: (tx.balance || 0) * rate
+            };
+        });
+
+        res.json({ transactions: enrichedTransactions });
     } catch (err) {
         console.error('Fetch Ledger Error:', err);
         res.status(500).json({ message: 'Error fetching ledger' });
