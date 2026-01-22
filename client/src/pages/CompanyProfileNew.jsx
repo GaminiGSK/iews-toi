@@ -401,7 +401,10 @@ export default function CompanyProfile() {
                                 <div
                                     key={type.id}
                                     className={`flex items-center justify-between p-3 bg-white border border-gray-100 rounded-lg shadow-sm transition-all ${uploaded ? 'cursor-pointer hover:bg-blue-50 hover:border-blue-200' : ''}`}
-                                    onClick={() => uploaded && setViewDoc(uploaded)}
+                                    onClick={() => {
+                                        // alert('Debug: Clicked Row. Uploaded: ' + (uploaded ? 'YES' : 'NO'));
+                                        if (uploaded) setViewDoc(uploaded);
+                                    }}
                                 >
                                     <div className="flex items-center min-w-0">
                                         <div className={`w-2 h-2 rounded-full mr-2 ${isVerified ? 'bg-green-500' : 'bg-gray-300'}`} />
@@ -925,8 +928,9 @@ export default function CompanyProfile() {
 
             {/* DOCUMENT INSPECTOR MODAL */}
             {viewDoc && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-white w-full max-w-7xl h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm animate-fade-in pointer-events-auto">
+                    {/* {alert('Debug: Rendering Modal for ' + viewDoc.docType)} */}
+                    <div className="bg-white w-full max-w-7xl h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden relative">
 
                         {/* Modal Header */}
                         <div className="h-16 border-b border-gray-100 flex items-center justify-between px-6 bg-white shrink-0">
