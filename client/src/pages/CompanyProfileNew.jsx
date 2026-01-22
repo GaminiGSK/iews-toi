@@ -416,7 +416,22 @@ export default function CompanyProfile() {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-1">
+                                        {/* VIEW BUTTON (Explicit Trigger) */}
+                                        {uploaded && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setViewDoc(uploaded);
+                                                }}
+                                                className="p-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition mr-1 flex items-center gap-1"
+                                                title="View Document & Replica"
+                                            >
+                                                <Eye size={12} />
+                                                <span className="text-[10px] font-bold">VIEW</span>
+                                            </button>
+                                        )}
+
                                         {isVerified && <CheckCircle size={14} className="text-green-500 shrink-0" />}
 
                                         {/* Clear Button */}
