@@ -227,11 +227,30 @@ router.post('/upload-bank-statement', auth, upload.array('files'), async (req, r
         console.log(`Bank Statement Upload: ${req.files.length} files received.`);
 
         // Process each file individually to maintain grouping
+        // Process each file individually to maintain grouping
         const fileResults = [];
 
         for (const file of req.files) {
             console.log(`Processing file: ${file.path}`);
+
+            // --- GOOGLE DRIVE UPLOAD ---
+            let driveId = null;
+            try {
+                const driveData = await uploadFile(file.path, file.mimetype, file.filename);
+                driveId = driveData.id;
+                console.log(`[Drive] Bank File Uploaded: ${driveId}`);
+            } catch (driveErr) {
+                console.warn("Drive Upload Skipped/Failed (Using Local):", driveErr.message);
+            }
+
+            // Extract Data (using Local Path before deletion, OR could stream from Drive if optimized)
+            // Currently extractBankStatement uses fs.readFileSync, so we need local file.
             let extracted = await googleAI.extractBankStatement(file.path);
+
+            // Cleanup Local File if Drive Upload Succeeded
+            if (driveId) {
+                try { fs.unlinkSync(file.path); } catch (e) { console.error('Delete Temp Fail:', e); }
+            }
 
             if (!extracted || !Array.isArray(extracted)) extracted = [];
 

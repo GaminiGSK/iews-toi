@@ -809,9 +809,23 @@ export default function CompanyProfile() {
                                 </p>
                             </div>
                         </div>
-                        <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium flex items-center">
-                            <CheckCircle size={12} className="mr-1" /> Verified
-                        </span>
+                        <div className="flex items-center gap-2">
+                            {/* NEW: View Original PDF Button */}
+                            {bankFiles[activeFileIndex]?.path && bankFiles[activeFileIndex].path.startsWith('drive:') && (
+                                <a
+                                    href={`${getDocUrl(bankFiles[activeFileIndex])}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs bg-white border border-gray-200 text-gray-600 px-3 py-1 rounded-full hover:text-blue-600 hover:border-blue-300 transition flex items-center gap-2 mr-2"
+                                >
+                                    <FileText size={12} />
+                                    <span>View Original</span>
+                                </a>
+                            )}
+                            <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium flex items-center">
+                                <CheckCircle size={12} className="mr-1" /> Verified
+                            </span>
+                        </div>
                     </div>
 
                     <div className="flex-1 overflow-auto bg-white">
