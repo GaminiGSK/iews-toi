@@ -5,6 +5,7 @@ import GeneralLedger from './GeneralLedger';
 import AccountingCodes from './AccountingCodes';
 import CurrencyExchange from './CurrencyExchange';
 import TrialBalance from './TrialBalance';
+import MOCCertificate from '../components/MOCCertificate';
 
 export default function CompanyProfile() {
     const [view, setView] = useState('home'); // home, profile, bank
@@ -12,6 +13,10 @@ export default function CompanyProfile() {
     const [loading, setLoading] = useState(false);
     const [uploadingBank, setUploadingBank] = useState(false);
     const [savingBank, setSavingBank] = useState(false);
+
+    // MOC Inspector State
+    const [viewDoc, setViewDoc] = useState(null); // { docType, path, ... }
+    const [regenerating, setRegenerating] = useState(false);
 
     // Helper: Parse Date (Handles DD/MM/YYYY and standard formats)
     const parseDate = (dateStr) => {
@@ -394,7 +399,10 @@ export default function CompanyProfile() {
 
                             return (
                                 <div key={type.id} className="flex items-center justify-between p-3 bg-white border border-gray-100 rounded-lg shadow-sm">
-                                    <div className="flex items-center min-w-0">
+                                    <div
+                                        className="flex items-center min-w-0 cursor-pointer hover:underline decoration-blue-300 underline-offset-4"
+                                        onClick={() => uploaded && setViewDoc(uploaded)}
+                                    >
                                         <div className={`w-2 h-2 rounded-full mr-2 ${isVerified ? 'bg-green-500' : 'bg-gray-300'}`} />
                                         <div className="flex flex-col truncate">
                                             <span className="text-xs font-bold text-gray-700 truncate">{type.label}</span>
@@ -857,19 +865,135 @@ export default function CompanyProfile() {
         </div>
     );
 
-    // RENDER LOGIC
-    if (view === 'home') return renderHome();
-    if (view === 'ledger') return <GeneralLedger onBack={() => setView('home')} />;
-    if (view === 'codes') return <AccountingCodes onBack={() => setView('home')} />;
-    if (view === 'currency') return <CurrencyExchange onBack={() => setView('home')} />;
-    if (view === 'report') return <TrialBalance onBack={() => setView('home')} />;
-    if (view === 'profile') return renderProfile();
-    if (view === 'bank') return renderBank();
+    // --- Inspector Handlers ---
+    const handleRegenerate = async () => {
+        if (!viewDoc) return;
+        setRegenerating(true);
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.post('/api/company/regenerate-document', {
+                docType: viewDoc.docType
+            }, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
 
-    // Default or fallback view
+            // Update Form Data
+            setFormData(prev => ({ ...prev, ...res.data.profile }));
+
+            // Flash Update
+            setMessage('Document Re-scanned Successfully!');
+
+        } catch (err) {
+            console.error(err);
+            alert('Regeneration Failed: ' + (err.response?.data?.message || err.message));
+        } finally {
+            setRegenerating(false);
+        }
+    };
+
+    // RENDER LOGIC
     return (
-        <div className="min-h-screen bg-gray-50">
-            <p>Unknown view: {view}</p>
+        <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900">
+            {/* Header */}
+            <header className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm h-16 flex items-center px-6 justify-between">
+                <div className="flex items-center gap-3 cursor-pointer" onClick={() => setView('home')}>
+                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold shadow-sm">
+                        IO
+                    </div>
+                    <span className="font-bold text-lg tracking-tight text-gray-800">IncorpOne <span className="text-gray-400 font-normal">System</span></span>
+                </div>
+                {/* Quick Actions or User Menu could go here */}
+            </header>
+
+            {/* Main Content */}
+            <main className="flex-1 overflow-hidden">
+                {view === 'home' && renderHome()}
+                {view === 'profile' && renderProfile()}
+                {view === 'bank' && renderBank()}
+                {view === 'ledger' && <GeneralLedger onBack={() => setView('home')} />}
+                {view === 'codes' && <AccountingCodes onBack={() => setView('home')} />}
+                {view === 'currency' && <CurrencyExchange onBack={() => setView('home')} />}
+                {view === 'report' && <TrialBalance onBack={() => setView('home')} />}
+            </main>
+
+            {/* DOCUMENT INSPECTOR MODAL */}
+            {viewDoc && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-white w-full max-w-7xl h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+
+                        {/* Modal Header */}
+                        <div className="h-16 border-b border-gray-100 flex items-center justify-between px-6 bg-white shrink-0">
+                            <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                                <FileText size={20} className="text-blue-600" />
+                                Inspecting: <span className="text-blue-900">{viewDoc.originalName}</span>
+                            </h3>
+                            <button onClick={() => setViewDoc(null)} className="p-2 hover:bg-gray-100 rounded-full transition text-gray-500">
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        {/* Split View Body */}
+                        <div className="flex-1 flex overflow-hidden bg-gray-100">
+
+                            {/* LEFT: Image Preview (Scrollable) */}
+                            <div className="w-1/2 overflow-auto p-8 flex items-start justify-center bg-gray-900/5 shadow-inner">
+                                <img
+                                    src={'/' + viewDoc.path.replace(/\\\\/g, '/')} // Fix windows paths
+                                    alt="Document Preview"
+                                    className="max-w-full shadow-2xl rounded-sm border border-gray-300"
+                                />
+                            </div>
+
+                            {/* RIGHT: Digital Replica */}
+                            <div className="w-1/2 overflow-auto p-8 bg-white border-l border-gray-200 flex flex-col items-center">
+                                {/* Only show MOC Replica for MOC Cert, else standard form or JSON */}
+                                {viewDoc.docType === 'moc_cert' ? (
+                                    <MOCCertificate
+                                        data={formData}
+                                        onRegenerate={handleRegenerate}
+                                        regenerating={regenerating}
+                                    />
+                                ) : (
+                                    <div className="text-center text-gray-500 mt-20 w-full">
+                                        <p className="mb-4 font-bold text-gray-700">No Digital Replica available for this document type.</p>
+                                        <p className="text-sm mb-4">You can verify the raw data below:</p>
+                                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 text-left text-xs font-mono overflow-auto max-h-[500px]">
+                                            <pre>
+                                                {JSON.stringify(JSON.parse(viewDoc.extractedText || '{}'), null, 2)}
+                                            </pre>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Toast/Debug Overlay */}
+            {message && (
+                <div className="fixed bottom-6 right-6 bg-gray-900 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 animate-slide-up z-50">
+                    {uploadingBank || savingBank || regenerating ? <Loader2 className="animate-spin" size={18} /> : <CheckCircle size={18} className="text-green-400" />}
+                    <span className="font-medium text-sm">{message}</span>
+                </div>
+            )}
+
+            {debugLog && (
+                <div className="fixed bottom-6 left-6 max-w-sm bg-red-50 border border-red-200 text-red-800 p-4 rounded-xl shadow-lg animate-slide-up z-50">
+                    <div className="flex justify-between items-start mb-2">
+                        <strong className="text-sm flex items-center gap-2"><AlertCircle size={14} /> {debugLog.title}</strong>
+                        <button onClick={() => setDebugLog(null)}><X size={14} /></button>
+                    </div>
+                    <p className="text-xs mb-2">{debugLog.message}</p>
+                    <pre className="bg-white p-2 rounded border border-red-100 text-[10px] overflow-auto max-h-32">
+                        {debugLog.details}
+                    </pre>
+                    <p className="text-[10px] text-red-400 mt-2">
+                        Please take a screenshot of this error and send it to support.
+                    </p>
+                </div>
+            )}
         </div>
     );
 }

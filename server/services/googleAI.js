@@ -30,7 +30,7 @@ exports.extractDocumentData = async (filePath, docType) => {
 
         switch (docType) {
             case 'moc_cert':
-                prompt = "Extract from MOC Certificate (JSON): companyNameEn, companyNameKh, registrationNumber, incorporationDate (DD/MM/YYYY), address.";
+                prompt = "Extract from MOC Certificate (JSON): companyNameEn, companyNameKh, registrationNumber, oldRegistrationNumber, incorporationDate (DD/MM/YYYY), companyType (e.g. Sole Proprietorship, PLC), address.";
                 break;
             case 'kh_extract':
             case 'en_extract':

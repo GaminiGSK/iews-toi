@@ -6,6 +6,7 @@ const CompanyProfileSchema = new mongoose.Schema({
     companyNameEn: { type: String },
     companyNameKh: { type: String },
     registrationNumber: { type: String },
+    oldRegistrationNumber: { type: String },
     incorporationDate: { type: String },
     companyType: { type: String },
     address: { type: String },

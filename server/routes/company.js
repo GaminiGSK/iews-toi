@@ -138,6 +138,56 @@ router.post('/parse-moc-text', auth, async (req, res) => {
     }
 });
 
+// Regenerate Document (Re-run AI)
+router.post('/regenerate-document', auth, async (req, res) => {
+    try {
+        const { docType } = req.body;
+        if (!docType) return res.status(400).json({ message: 'DocType required' });
+
+        const profile = await CompanyProfile.findOne({ user: req.user.id });
+        if (!profile) return res.status(404).json({ message: 'Profile not found' });
+
+        const doc = profile.documents.find(d => d.docType === docType);
+        if (!doc) return res.status(404).json({ message: 'Document not found' });
+
+        console.log(`[Regen] Re-processing ${docType} @ ${doc.path}`);
+
+        // Call AI on existing path
+        const extracted = await googleAI.extractDocumentData(doc.path, docType);
+
+        // Update fields
+        if (extracted) {
+            if (extracted.companyNameEn) profile.companyNameEn = extracted.companyNameEn;
+            if (extracted.companyNameKh) profile.companyNameKh = extracted.companyNameKh;
+            if (extracted.registrationNumber) profile.registrationNumber = extracted.registrationNumber;
+            if (extracted.oldRegistrationNumber) profile.oldRegistrationNumber = extracted.oldRegistrationNumber;
+            if (extracted.incorporationDate) profile.incorporationDate = extracted.incorporationDate;
+            if (extracted.companyType) profile.companyType = extracted.companyType;
+            if (extracted.address) profile.address = extracted.address;
+            if (extracted.vatTin) profile.vatTin = extracted.vatTin;
+            if (extracted.bankAccountNumber) profile.bankAccountNumber = extracted.bankAccountNumber;
+            if (extracted.bankName) profile.bankName = extracted.bankName;
+
+            // Update doc status/metadata
+            doc.extractedText = JSON.stringify(extracted);
+            doc.status = 'Verified';
+            profile.markModified('documents');
+        }
+
+        await profile.save();
+
+        res.json({
+            message: 'Regeneration successful',
+            data: extracted,
+            profile
+        });
+
+    } catch (err) {
+        console.error('Regen Error:', err);
+        res.status(500).json({ message: 'Error regenerating document' });
+    }
+});
+
 // Upload Bank Statement (Multiple Images/PDFs) for OCR
 router.post('/upload-bank-statement', auth, upload.array('files'), async (req, res) => {
     try {
