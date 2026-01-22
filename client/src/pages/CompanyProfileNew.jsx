@@ -6,6 +6,7 @@ import AccountingCodes from './AccountingCodes';
 import CurrencyExchange from './CurrencyExchange';
 import TrialBalance from './TrialBalance';
 import MOCCertificate from '../components/MOCCertificate';
+import AIAssistant from '../components/AIAssistant';
 
 export default function CompanyProfile() {
     const [view, setView] = useState('home'); // home, profile, bank
@@ -1046,6 +1047,9 @@ export default function CompanyProfile() {
                     </p>
                 </div>
             )}
+
+            {/* AI Assistant Chatbot - Ready for Agent i52 */}
+            <AIAssistant />
         </div>
     );
 }
