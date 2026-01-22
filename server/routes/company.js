@@ -4,8 +4,25 @@ const upload = require('../middleware/upload');
 const googleAI = require('../services/googleAI');
 const CompanyProfile = require('../models/CompanyProfile');
 const jwt = require('jsonwebtoken');
+const { uploadFile, getFileStream } = require('../services/googleDrive');
+const fs = require('fs'); // For cleanup 
 
 const auth = require('../middleware/auth');
+
+// --- FILE PROXY ROUTE (Google Drive) ---
+router.get('/files/:fileId', auth, async (req, res) => {
+    try {
+        const { fileId } = req.params;
+        // Basic security check for alphanumeric ID
+        if (!/^[a-zA-Z0-9_\-]+$/.test(fileId)) return res.status(400).send('Invalid File ID');
+
+        const stream = await getFileStream(fileId);
+        stream.pipe(res);
+    } catch (err) {
+        console.error('File Proxy Error:', err.message);
+        res.status(404).send('File not found or access denied');
+    }
+});
 
 // GET Profile
 router.get('/profile', auth, async (req, res) => {
@@ -44,10 +61,24 @@ router.post('/upload-registration', auth, upload.single('file'), async (req, res
         // 1. Extract Data
         const extracted = await googleAI.extractDocumentData(req.file.path, docType);
 
+        // --- GOOGLE DRIVE UPLOAD ---
+        let driveId = null;
+        try {
+            const driveData = await uploadFile(req.file.path, req.file.mimetype, req.file.filename);
+            driveId = driveData.id;
+            console.log(`[Drive] Uploaded as ${driveId}`);
+
+            // Delete Local File Only If Drive Successful
+            try { fs.unlinkSync(req.file.path); } catch (e) { console.error('Delete Temp Fail:', e); }
+
+        } catch (driveErr) {
+            console.warn("Drive Upload Skipped/Failed (Using Local):", driveErr.message);
+            // Fallback: File remains on disk
+        }
+
         // 2. Find Profile
         let profile = await CompanyProfile.findOne({ user: req.user.id });
         if (!profile) {
-            // Should exist usually, but create if generic
             profile = new CompanyProfile({ user: req.user.id, companyCode: req.user.companyCode });
         }
 
@@ -55,8 +86,8 @@ router.post('/upload-registration', auth, upload.single('file'), async (req, res
         const newDoc = {
             docType: docType || 'unknown',
             originalName: req.file.originalname,
-            path: req.file.path,
-            status: 'Verified', // Assume verified if AI runs, or 'Pending'
+            path: driveId ? `drive:${driveId}` : req.file.path,
+            status: 'Verified',
             extractedText: JSON.stringify(extracted),
             uploadedAt: new Date()
         };

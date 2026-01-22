@@ -42,6 +42,18 @@ export default function CompanyProfile() {
         return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     };
 
+    // Helper: Get Document URL (Local vs Drive)
+    const getDocUrl = (doc) => {
+        if (!doc?.path) return '';
+        if (doc.path.startsWith('drive:')) {
+            const id = doc.path.split(':')[1];
+            // Pass token in query for access
+            return `/api/company/files/${id}?token=${localStorage.getItem('token')}`;
+        }
+        // Fallback for legacy local files
+        return '/' + doc.path.replace(/\\\\/g, '/');
+    };
+
     // Bank Data State
     const [bankFiles, setBankFiles] = useState([]);
     const [activeFileIndex, setActiveFileIndex] = useState(0);
@@ -964,7 +976,7 @@ export default function CompanyProfile() {
                             {/* LEFT: Image Preview (Scrollable) */}
                             <div className="w-1/2 overflow-auto p-8 flex items-start justify-center bg-gray-900/5 shadow-inner">
                                 <img
-                                    src={'/' + viewDoc.path.replace(/\\\\/g, '/')} // Fix windows paths
+                                    src={getDocUrl(viewDoc)}
                                     alt="Document Preview"
                                     className="max-w-full shadow-2xl rounded-sm border border-gray-300"
                                 />

@@ -9,3 +9,7 @@ Thumbs.db
 # Agent Artifacts
 brain/
 *.log
+
+# Secrets
+service-account.json
+credentials.json
