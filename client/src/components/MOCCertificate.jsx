@@ -2,8 +2,12 @@ import React from 'react';
 import { RefreshCw, QrCode } from 'lucide-react';
 
 const MOCCertificate = ({ data, onRegenerate, regenerating }) => {
+    console.log("MOCCertificate Rendering. Data:", data);
     return (
-        <div className="relative w-full aspect-[1.414/1] bg-white text-black font-serif shadow-2xl overflow-hidden select-none">
+        <div className="relative w-full aspect-[1.414/1] bg-white text-black font-serif shadow-2xl overflow-hidden select-none border border-gray-300">
+            {/* DEBUG: Remove in production */}
+            {/* <div className="absolute top-0 left-0 bg-red-500 text-white text-[10px] z-50 p-1">DEBUG: MOC Component Mounted</div> */}
+
             {/* 1. ORNATE BORDER (Simulated with double borders) */}
             <div className="absolute inset-2 border-4 border-[#B8860B] rounded-sm pointer-events-none z-10"></div>
             <div className="absolute inset-4 border border-[#B8860B] rounded-sm pointer-events-none z-10"></div>
