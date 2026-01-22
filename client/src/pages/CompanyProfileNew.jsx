@@ -398,11 +398,12 @@ export default function CompanyProfile() {
                             const isVerified = uploaded?.status === 'Verified';
 
                             return (
-                                <div key={type.id} className="flex items-center justify-between p-3 bg-white border border-gray-100 rounded-lg shadow-sm">
-                                    <div
-                                        className="flex items-center min-w-0 cursor-pointer hover:underline decoration-blue-300 underline-offset-4"
-                                        onClick={() => uploaded && setViewDoc(uploaded)}
-                                    >
+                                <div
+                                    key={type.id}
+                                    className={`flex items-center justify-between p-3 bg-white border border-gray-100 rounded-lg shadow-sm transition-all ${uploaded ? 'cursor-pointer hover:bg-blue-50 hover:border-blue-200' : ''}`}
+                                    onClick={() => uploaded && setViewDoc(uploaded)}
+                                >
+                                    <div className="flex items-center min-w-0">
                                         <div className={`w-2 h-2 rounded-full mr-2 ${isVerified ? 'bg-green-500' : 'bg-gray-300'}`} />
                                         <div className="flex flex-col truncate">
                                             <span className="text-xs font-bold text-gray-700 truncate">{type.label}</span>
@@ -411,18 +412,24 @@ export default function CompanyProfile() {
                                             </span>
                                         </div>
                                     </div>
-                                    {isVerified && <CheckCircle size={14} className="text-green-500 shrink-0 mr-2" />}
 
-                                    {/* Clear Button */}
-                                    {uploaded && (
-                                        <button
-                                            onClick={() => handleClearDoc(type.id)}
-                                            className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition"
-                                            title="Clear Document"
-                                        >
-                                            <X size={14} />
-                                        </button>
-                                    )}
+                                    <div className="flex items-center gap-2">
+                                        {isVerified && <CheckCircle size={14} className="text-green-500 shrink-0" />}
+
+                                        {/* Clear Button */}
+                                        {uploaded && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleClearDoc(type.id);
+                                                }}
+                                                className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition z-10"
+                                                title="Clear Document"
+                                            >
+                                                <X size={14} />
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             );
                         })}
@@ -504,7 +511,7 @@ export default function CompanyProfile() {
                 </div>
 
             </div>
-        </div>
+        </div >
     );
 
     const handleFiles = async (fileList) => {
