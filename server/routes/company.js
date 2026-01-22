@@ -266,11 +266,25 @@ router.post('/upload-bank-statement', auth, upload.array('files'), async (req, r
                 dateRange = `${start} - ${end}`;
             }
 
+            // --- SAVE TO DB REGISTRY ---
+            const BankFile = require('../models/BankFile');
+            const newBankFile = new BankFile({
+                user: req.user.id,
+                companyCode: req.user.companyCode,
+                originalName: file.originalname,
+                driveId: driveId ? `drive:${driveId}` : `local:${file.filename}`,
+                mimeType: file.mimetype,
+                dateRange: dateRange,
+                transactionCount: extracted.length
+            });
+            await newBankFile.save();
+
             fileResults.push({
-                fileId: file.filename, // Multer filename
+                _id: newBankFile._id, // Return real DB ID
+                path: newBankFile.driveId, // Return real Path for frontend Link
                 originalName: file.originalname,
                 dateRange: dateRange,
-                status: 'Saved', // Processed & Ready for review
+                status: 'Saved',
                 transactions: extracted
             });
         }

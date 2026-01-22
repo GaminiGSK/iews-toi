@@ -121,55 +121,20 @@ export default function CompanyProfile() {
 
             // Also Fetch Saved Transactions
             try {
-                const txRes = await axios.get('/api/company/transactions', {
+                // Modified: Fetch Real Bank Files from Registry
+                const fileRes = await axios.get('/api/company/bank-files', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
-                const allTxs = txRes.data.transactions || [];
-                if (allTxs.length > 0) {
-                    // Group by Month (YYYY-MM)
-                    const groups = {};
-                    allTxs.forEach(tx => {
-                        // FIX: Restore moneyIn/moneyOut for UI
-                        const amount = parseFloat(tx.amount || 0);
-                        tx.moneyIn = amount > 0 ? amount : 0;
-                        tx.moneyOut = amount < 0 ? Math.abs(amount) : 0;
-
-                        const dateObj = new Date(tx.date);
-                        const key = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}`;
-                        if (!groups[key]) groups[key] = [];
-                        groups[key].push(tx);
-                    });
-
-                    // Convert to Virtual Files
-                    // Sort keys (YYYY-MM) Ascending (Jan -> Dec)
-                    const historyFiles = Object.keys(groups).sort((a, b) => a.localeCompare(b)).map(key => {
-                        const [year, month] = key.split('-');
-                        const monthName = new Date(year, month - 1).toLocaleString('default', { month: 'short' });
-
-                        // Sort transactions in this group Oldest -> Newest
-                        const groupTxs = groups[key].sort((a, b) => new Date(a.date) - new Date(b.date));
-
-                        // Calculate Date Range
-                        const dates = groupTxs.map(t => new Date(t.date).getTime()).sort((a, b) => a - b);
-                        const start = new Date(dates[0]).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
-                        const end = new Date(dates[dates.length - 1]).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-
-                        return {
-                            originalName: `Saved History: ${monthName} ${year}`,
-                            dateRange: `${start} - ${end}`,
-                            status: 'Saved',
-                            transactions: groupTxs
-                        };
-                    });
-
-                    setBankFiles(historyFiles);
-                }
+                const realFiles = fileRes.data.files || [];
+                setBankFiles(realFiles);
 
             } catch (txErr) {
                 console.error("Error fetching history:", txErr);
                 // Don't block profile load
             }
+
+
 
         } catch (err) {
             console.log("No existing profile found or error fetching.");
