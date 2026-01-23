@@ -31,7 +31,7 @@ const AIAssistant = () => {
             const token = localStorage.getItem('token');
             const res = await axios.post('/api/chat/message',
                 { message: userMsg.text },
-                { headers: { 'x-auth-token': token } }
+                { headers: { 'Authorization': `Bearer ${token}` } }
             );
 
             // Re-inflate markdown-like text if needed, but for now just display
