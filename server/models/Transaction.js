@@ -11,6 +11,7 @@ const TransactionSchema = new mongoose.Schema({
     transactionId: { type: String }, // Bank's ID or Unique Ref
     category: { type: String }, // GL Category
     accountCode: { type: mongoose.Schema.Types.ObjectId, ref: 'AccountCode' }, // Link to Chart of Accounts
+    sequence: { type: Number, default: 0 }, // For ordering same-day transactions
     originalData: { type: Object } // Store raw mapped data just in case
 }, { timestamps: true });
 

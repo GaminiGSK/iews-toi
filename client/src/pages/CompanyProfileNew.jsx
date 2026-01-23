@@ -170,8 +170,13 @@ export default function CompanyProfile() {
                         const [year, month] = key.split('-');
                         const monthName = new Date(year, month - 1).toLocaleString('default', { month: 'short' });
 
-                        // Sort transactions in this group Oldest -> Newest
-                        const groupTxs = groups[key].sort((a, b) => new Date(a.date) - new Date(b.date));
+                        // Sort transactions in this group Oldest -> Newest (using Date and Sequence)
+                        const groupTxs = groups[key].sort((a, b) => {
+                            const dateA = new Date(a.date);
+                            const dateB = new Date(b.date);
+                            if (dateA - dateB !== 0) return dateA - dateB;
+                            return (a.sequence || 0) - (b.sequence || 0); // Use stored sequence for tie-break
+                        });
 
                         // Calculate Date Range
                         const dates = groupTxs.map(t => new Date(t.date).getTime()).sort((a, b) => a - b);
@@ -782,7 +787,15 @@ export default function CompanyProfile() {
                         <div className="p-4 bg-gray-50 border-b border-gray-100 font-bold text-gray-700 flex flex-col gap-3 shrink-0">
                             <div className="flex justify-between items-center">
                                 <span>Uploaded Files ({bankFiles.length})</span>
-                                <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">Saved</span>
+                                {bankFiles.length > 0 && bankFiles.every(f => f.status === 'Saved') ? (
+                                    <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded flex items-center gap-1">
+                                        <CheckCircle size={10} /> All Saved
+                                    </span>
+                                ) : bankFiles.length > 0 ? (
+                                    <span className="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded flex items-center gap-1">
+                                        <AlertCircle size={10} /> Pending Save
+                                    </span>
+                                ) : null}
                             </div>
                             {/* SAVE BUTTON MOVED TO TOP */}
                             {bankFiles.length > 0 && (

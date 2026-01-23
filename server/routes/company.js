@@ -278,6 +278,9 @@ router.post('/upload-bank-statement', auth, upload.array('files'), async (req, r
                 dateRange = `${start} - ${end}`;
             }
 
+            // Assign Sequence Number to preserve order
+            extracted = extracted.map((tx, idx) => ({ ...tx, sequence: idx }));
+
             fileResults.push({
                 fileId: file.filename, // Multer filename
                 driveId: driveId,
@@ -360,6 +363,7 @@ router.post('/save-transactions', auth, async (req, res) => {
                 amount: amount,
                 balance: balance,
                 currency: 'USD',
+                sequence: tx.sequence || 0, // NEW: Save Sequence
                 originalData: tx
             });
         }
@@ -515,7 +519,7 @@ router.get('/ledger', auth, async (req, res) => {
         const transactions = await Transaction.find({
             companyCode: req.user.companyCode
         })
-            .sort({ date: 1 })
+            .sort({ date: 1, sequence: 1 }) // SORT BY DATE THEN SEQUENCE
             .lean();
 
         // Fetch all Exchange Rates
