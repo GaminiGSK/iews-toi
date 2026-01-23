@@ -656,467 +656,464 @@ export default function CompanyProfile() {
         if (!window.confirm(`Delete ${isSaved ? 'PERMANENTLY' : 'this'} item?`)) return;
 
         if (isSaved) {
-            // Delete from DB
-            const ids = file.transactions.map(t => t._id).filter(Boolean);
-            if (ids.length > 0) {
-                try {
-                    const token = localStorage.getItem('token');
-                    await axios.post('/api/company/delete-transactions', {
-                        transactionIds: ids
-                    }, {
+            try {
+                const token = localStorage.getItem('token');
+
+                // If it's a Bank Registry File (has _id), use the new delete-bank-file API
+                if (file._id) {
+                    await axios.delete(`/api/company/bank-files/${file._id}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
-                    // Success - reload to sync everything
-                    alert(`Deleted ${ids.length} transactions. Page will reload.`);
-                    window.location.reload();
-                } catch (err) {
-                    console.error('Delete API Error:', err);
-
-                    // If 404, it means they are already gone from DB. Just clean up UI.
-                    if (err.response && err.response.status === 404) {
-                        console.warn("Transactions not found in DB, removing from UI only.");
-                        setBankFiles(prev => prev.filter((_, i) => i !== idx)); // Optimistic remove
-                        if (activeFileIndex === idx) setActiveFileIndex(0);
-                        return;
+                } else {
+                    // Fallback to legacy transaction deletion
+                    const ids = file.transactions.map(t => t._id).filter(Boolean);
+                    if (ids.length > 0) {
+                        await axios.post('/api/company/delete-transactions', {
+                            transactionIds: ids
+                        }, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
                     }
-
-                    const errMsg = err.response?.data?.message || err.message;
-
-                    // Force Remove Option for ANY error
-                    if (window.confirm(`Delete failed on server (${errMsg}). \n\nDo you want to FORCE REMOVE this item from your list anyway?`)) {
-                        setBankFiles(prev => prev.filter((_, i) => i !== idx));
-                        if (activeFileIndex === idx) setActiveFileIndex(0);
-                        return;
-                    }
-
-                    if (errMsg === 'Token is not valid' || err.response?.status === 401) {
-                        alert('Session Expired. Please Login Again.');
-                        localStorage.removeItem('token');
-                        window.location.href = '/login';
-                        return;
-                    }
-
-                    // Show On-Screen Error
-                    setDebugLog({
-                        title: 'Delete Failed',
-                        message: errMsg,
-                        details: JSON.stringify(err.response?.data || {}, null, 2)
-                    });
                 }
-            } else {
-                // No IDs found even though isSaved property was true
-                // This is an inconsistent state. Just remove from UI.
-                console.warn("Item marked as Saved but has no IDs. Removing locally.");
-                setBankFiles(prev => prev.filter((_, i) => i !== idx));
-                if (activeFileIndex === idx) setActiveFileIndex(0);
+
+                alert(`Document and transactions deleted. Page will reload.`);
+                window.location.reload();
+
+            } catch (err) {
+                console.error('Delete API Error:', err);
+
+                // If 404, it means they are already gone from DB. Just clean up UI.
+                if (err.response && err.response.status === 404) {
+                    console.warn("Transactions not found in DB, removing from UI only.");
+                    setBankFiles(prev => prev.filter((_, i) => i !== idx)); // Optimistic remove
+                    if (activeFileIndex === idx) setActiveFileIndex(0);
+                    return;
+                }
+
+                const errMsg = err.response?.data?.message || err.message;
+
+                // Force Remove Option for ANY error
+                if (window.confirm(`Delete failed on server (${errMsg}). \n\nDo you want to FORCE REMOVE this item from your list anyway?`)) {
+                    setBankFiles(prev => prev.filter((_, i) => i !== idx));
+                    if (activeFileIndex === idx) setActiveFileIndex(0);
+                    return;
+                }
+
+                if (errMsg === 'Token is not valid' || err.response?.status === 401) {
+                    alert('Session Expired. Please Login Again.');
+                    localStorage.removeItem('token');
+                    window.location.href = '/login';
+                    return;
+                }
+
+                // Show On-Screen Error
+                setDebugLog({
+                    title: 'Delete Failed',
+                    message: errMsg,
+                    details: JSON.stringify(err.response?.data || {}, null, 2)
+                });
             }
         } else {
-            // Delete Unsaved - No reload needed
+            // No IDs found even though isSaved property was true
+            // This is an inconsistent state. Just remove from UI.
+            console.warn("Item marked as Saved but has no IDs. Removing locally.");
             setBankFiles(prev => prev.filter((_, i) => i !== idx));
             if (activeFileIndex === idx) setActiveFileIndex(0);
-
-            // Attempt to Soft Delete from Drive if driveId is present
-            if (file.driveId) {
-                try {
-                    const token = localStorage.getItem('token');
-                    await axios.post('/api/company/delete-file', { driveId: file.driveId }, {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    console.log(`Soft deleted file ${file.driveId}`);
-                } catch (err) {
-                    console.error("Soft delete failed (non-critical):", err);
-                }
-            }
         }
-    };
+    } else {
+        // Delete Unsaved - No reload needed
+        setBankFiles(prev => prev.filter((_, i) => i !== idx));
+    if (activeFileIndex === idx) setActiveFileIndex(0);
+}
+};
 
-    const renderBank = () => (
-        <div className="w-full h-[calc(100vh-80px)] pt-6 px-4 animate-fade-in flex flex-col">
-            <button onClick={() => setView('home')} className="text-gray-400 hover:text-gray-600 mb-4 flex items-center text-sm font-medium transition shrink-0">
-                ← Back to Dashboard
-            </button>
+const renderBank = () => (
+    <div className="w-full h-[calc(100vh-80px)] pt-6 px-4 animate-fade-in flex flex-col">
+        <button onClick={() => setView('home')} className="text-gray-400 hover:text-gray-600 mb-4 flex items-center text-sm font-medium transition shrink-0">
+            ← Back to Dashboard
+        </button>
 
-            <div className="flex flex-1 gap-6 min-h-0">
+        <div className="flex flex-1 gap-6 min-h-0">
 
-                {/* COLUMN 1: UPLOAD ZONE (Vertical) */}
-                <div className="w-64 shrink-0 flex flex-col">
-                    <div
-                        className="flex-1 bg-white border-2 border-dashed border-green-200 rounded-2xl p-4 text-center hover:border-green-400 hover:bg-green-50/30 transition relative group flex flex-col items-center justify-center cursor-pointer"
-                        onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                        onDrop={async (e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            if (uploadingBank) return;
-                            const fileList = Array.from(e.dataTransfer.files);
-                            if (fileList.length === 0) return;
-                            handleFiles(fileList);
+            {/* COLUMN 1: UPLOAD ZONE (Vertical) */}
+            <div className="w-64 shrink-0 flex flex-col">
+                <div
+                    className="flex-1 bg-white border-2 border-dashed border-green-200 rounded-2xl p-4 text-center hover:border-green-400 hover:bg-green-50/30 transition relative group flex flex-col items-center justify-center cursor-pointer"
+                    onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    onDrop={async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (uploadingBank) return;
+                        const fileList = Array.from(e.dataTransfer.files);
+                        if (fileList.length === 0) return;
+                        handleFiles(fileList);
+                    }}
+                >
+                    <input
+                        type="file"
+                        accept="image/*,.pdf"
+                        multiple
+                        onChange={(e) => {
+                            if (e.target.files?.length > 0) handleFiles(Array.from(e.target.files));
                         }}
-                    >
-                        <input
-                            type="file"
-                            accept="image/*,.pdf"
-                            multiple
-                            onChange={(e) => {
-                                if (e.target.files?.length > 0) handleFiles(Array.from(e.target.files));
-                            }}
-                            disabled={uploadingBank}
-                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                        />
+                        disabled={uploadingBank}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                    />
 
-                        {uploadingBank && (
-                            <div className="absolute inset-0 bg-white/95 z-20 flex flex-col items-center justify-center backdrop-blur-md rounded-2xl">
-                                <Loader2 className="animate-spin h-8 w-8 text-blue-600 mb-2" />
-                                <p className="text-xs font-bold text-gray-700 animate-pulse">Ai is Analyzing the statment...</p>
+                    {uploadingBank && (
+                        <div className="absolute inset-0 bg-white/95 z-20 flex flex-col items-center justify-center backdrop-blur-md rounded-2xl">
+                            <Loader2 className="animate-spin h-8 w-8 text-blue-600 mb-2" />
+                            <p className="text-xs font-bold text-gray-700 animate-pulse">Ai is Analyzing the statment...</p>
+                        </div>
+                    )}
+
+                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-700 mb-4">
+                        <CloudUpload size={24} />
+                    </div>
+                    <h3 className="font-bold text-gray-800 text-sm mb-2 leading-tight">
+                        Submit your bank statement
+                    </h3>
+                    <p className="text-xs text-gray-400">
+                        Drag & drop or Click to Upload
+                    </p>
+                </div>
+            </div>
+
+            {/* COLUMN 2: FILE LIST */}
+            <div className="w-80 shrink-0 flex flex-col space-y-4">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col h-full overflow-hidden">
+                    <div className="p-4 bg-gray-50 border-b border-gray-100 font-bold text-gray-700 flex flex-col gap-3 shrink-0">
+                        <div className="flex justify-between items-center">
+                            <span>Uploaded Files ({bankFiles.length})</span>
+                            {bankFiles.length > 0 && bankFiles.every(f => f.status === 'Saved') ? (
+                                <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded flex items-center gap-1">
+                                    <CheckCircle size={10} /> All Saved
+                                </span>
+                            ) : bankFiles.length > 0 ? (
+                                <span className="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded flex items-center gap-1">
+                                    <AlertCircle size={10} /> Pending Save
+                                </span>
+                            ) : null}
+                        </div>
+                        {/* SAVE BUTTON MOVED TO TOP */}
+                        {bankFiles.length > 0 && (
+                            <button
+                                onClick={handleSaveTransactions}
+                                disabled={savingBank}
+                                className="w-full bg-black text-white px-3 py-2 rounded-lg font-bold hover:bg-gray-800 transition disabled:bg-gray-400 flex items-center justify-center gap-2 shadow-sm text-xs"
+                            >
+                                {savingBank ? <Loader2 className="animate-spin h-3 w-3" /> : <Save size={14} />}
+                                {savingBank ? 'SAVING...' : 'SAVE ALL'}
+                            </button>
+                        )}
+                    </div>
+                    <div className="divide-y divide-gray-100 overflow-y-auto flex-1 p-2">
+                        {bankFiles.map((file, idx) => (
+                            <div
+                                key={idx}
+                                className={`p-3 mb-2 rounded-lg flex items-center justify-between transition cursor-pointer group ${activeFileIndex === idx ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50 border border-transparent'}`}
+                                onClick={() => setActiveFileIndex(idx)}
+                            >
+                                <div className="flex-1 min-w-0 mr-2">
+                                    {/* Primary Title: Date Range */}
+                                    <p className="font-bold text-gray-800 text-xs truncate mb-1">
+                                        {file.transactions?.length > 0
+                                            ? `${formatDateSafe(file.transactions[0].date)} - ${formatDateSafe(file.transactions[file.transactions.length - 1].date)}`
+                                            : file.originalName}
+                                    </p>
+
+                                    {/* Metdata: Original Name + Count */}
+                                    <div className="flex items-center text-[10px] text-gray-400 mt-0.5">
+                                        <FileText size={10} className="mr-1 opacity-50" />
+                                        <span className="truncate max-w-[120px] mr-2" title={file.originalName}>{file.originalName}</span>
+                                        <span className="text-gray-300">|</span>
+                                        <span className="ml-2 font-mono">{(file.transactions || []).length} txs</span>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-1">
+                                    {/* DELETE */}
+                                    <button
+                                        onClick={async (e) => {
+                                            e.stopPropagation();
+                                            handleDelete(idx, file);
+                                        }}
+                                        className="p-1.5 rounded-full hover:bg-red-100 text-gray-300 hover:text-red-500 transition"
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                    {/* EYE */}
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); setActiveFileIndex(idx); }}
+                                        className={`p-1.5 rounded-full transition ${activeFileIndex === idx ? 'text-blue-600 bg-blue-100' : 'text-gray-300 hover:text-blue-500'}`}
+                                    >
+                                        <Eye size={14} />
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                        {bankFiles.length === 0 && (
+                            <div className="text-center py-10 text-gray-300 text-xs italic">
+                                No files yet.
                             </div>
                         )}
-
-                        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-700 mb-4">
-                            <CloudUpload size={24} />
-                        </div>
-                        <h3 className="font-bold text-gray-800 text-sm mb-2 leading-tight">
-                            Submit your bank statement
-                        </h3>
-                        <p className="text-xs text-gray-400">
-                            Drag & drop or Click to Upload
-                        </p>
-                    </div>
-                </div>
-
-                {/* COLUMN 2: FILE LIST */}
-                <div className="w-80 shrink-0 flex flex-col space-y-4">
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col h-full overflow-hidden">
-                        <div className="p-4 bg-gray-50 border-b border-gray-100 font-bold text-gray-700 flex flex-col gap-3 shrink-0">
-                            <div className="flex justify-between items-center">
-                                <span>Uploaded Files ({bankFiles.length})</span>
-                                {bankFiles.length > 0 && bankFiles.every(f => f.status === 'Saved') ? (
-                                    <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded flex items-center gap-1">
-                                        <CheckCircle size={10} /> All Saved
-                                    </span>
-                                ) : bankFiles.length > 0 ? (
-                                    <span className="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded flex items-center gap-1">
-                                        <AlertCircle size={10} /> Pending Save
-                                    </span>
-                                ) : null}
-                            </div>
-                            {/* SAVE BUTTON MOVED TO TOP */}
-                            {bankFiles.length > 0 && (
-                                <button
-                                    onClick={handleSaveTransactions}
-                                    disabled={savingBank}
-                                    className="w-full bg-black text-white px-3 py-2 rounded-lg font-bold hover:bg-gray-800 transition disabled:bg-gray-400 flex items-center justify-center gap-2 shadow-sm text-xs"
-                                >
-                                    {savingBank ? <Loader2 className="animate-spin h-3 w-3" /> : <Save size={14} />}
-                                    {savingBank ? 'SAVING...' : 'SAVE ALL'}
-                                </button>
-                            )}
-                        </div>
-                        <div className="divide-y divide-gray-100 overflow-y-auto flex-1 p-2">
-                            {bankFiles.map((file, idx) => (
-                                <div
-                                    key={idx}
-                                    className={`p-3 mb-2 rounded-lg flex items-center justify-between transition cursor-pointer group ${activeFileIndex === idx ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50 border border-transparent'}`}
-                                    onClick={() => setActiveFileIndex(idx)}
-                                >
-                                    <div className="flex-1 min-w-0 mr-2">
-                                        {/* Primary Title: Date Range */}
-                                        <p className="font-bold text-gray-800 text-xs truncate mb-1">
-                                            {file.transactions?.length > 0
-                                                ? `${formatDateSafe(file.transactions[0].date)} - ${formatDateSafe(file.transactions[file.transactions.length - 1].date)}`
-                                                : file.originalName}
-                                        </p>
-
-                                        {/* Metdata: Original Name + Count */}
-                                        <div className="flex items-center text-[10px] text-gray-400 mt-0.5">
-                                            <FileText size={10} className="mr-1 opacity-50" />
-                                            <span className="truncate max-w-[120px] mr-2" title={file.originalName}>{file.originalName}</span>
-                                            <span className="text-gray-300">|</span>
-                                            <span className="ml-2 font-mono">{(file.transactions || []).length} txs</span>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex gap-1">
-                                        {/* DELETE */}
-                                        <button
-                                            onClick={async (e) => {
-                                                e.stopPropagation();
-                                                handleDelete(idx, file);
-                                            }}
-                                            className="p-1.5 rounded-full hover:bg-red-100 text-gray-300 hover:text-red-500 transition"
-                                        >
-                                            <X size={14} />
-                                        </button>
-                                        {/* EYE */}
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); setActiveFileIndex(idx); }}
-                                            className={`p-1.5 rounded-full transition ${activeFileIndex === idx ? 'text-blue-600 bg-blue-100' : 'text-gray-300 hover:text-blue-500'}`}
-                                        >
-                                            <Eye size={14} />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                            {bankFiles.length === 0 && (
-                                <div className="text-center py-10 text-gray-300 text-xs italic">
-                                    No files yet.
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-                {/* COLUMN 3: DETAILS TABLE */}
-                <div className="flex-1 min-w-0 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col overflow-hidden h-full">
-                    <div className="p-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between shrink-0">
-                        <div className="flex items-center">
-                            <div className="p-2 bg-blue-50 rounded-lg mr-3">
-                                <Table className="text-blue-500" size={20} />
-                            </div>
-                            <div>
-                                <h3 className="font-bold text-gray-800">Page Details</h3>
-                                <p className="text-xs text-gray-500">
-                                    {bankFiles[activeFileIndex]?.transactions?.length > 0
-                                        ? `${formatDateSafe(bankFiles[activeFileIndex].transactions[0].date)} - ${formatDateSafe(bankFiles[activeFileIndex].transactions[bankFiles[activeFileIndex].transactions.length - 1].date)}`
-                                        : (bankFiles[activeFileIndex]?.dateRange || 'Select a file')}
-                                </p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            {/* NEW: View Original PDF Button */}
-                            {(bankFiles[activeFileIndex]?.path?.startsWith('drive:') || bankFiles[activeFileIndex]?.driveId) && (
-                                <a
-                                    href={`${getDocUrl(bankFiles[activeFileIndex] || { path: 'drive:' + bankFiles[activeFileIndex].driveId })}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-xs bg-white border border-gray-200 text-gray-600 px-3 py-1 rounded-full hover:text-blue-600 hover:border-blue-300 transition flex items-center gap-2 mr-2"
-                                >
-                                    <FileText size={12} />
-                                    <span>View Original</span>
-                                </a>
-                            )}
-                            <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium flex items-center">
-                                <CheckCircle size={12} className="mr-1" /> Verified
-                            </span>
-                        </div>
-                    </div>
-
-                    <div className="flex-1 overflow-auto bg-white">
-                        <table className="w-full text-left">
-                            <thead className="bg-white text-gray-800 text-xs font-bold uppercase sticky top-0 z-10 border-b border-gray-200 shadow-sm">
-                                <tr>
-                                    <th className="px-4 py-4 whitespace-nowrap w-[100px]">Date</th>
-                                    <th className="px-4 py-4 w-[700px]">Transaction Details</th>
-                                    <th className="px-4 py-4 text-right w-[110px]">Money In</th>
-                                    <th className="px-4 py-4 text-right w-[110px]">Money Out</th>
-                                    <th className="px-4 py-4 text-right w-[110px]">Balance</th>
-                                    <th className="px-4 py-4 w-[80px]">Actions</th>
-                                    <th className="px-4 py-4 w-full"></th> {/* SPACER */}
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                                {(bankFiles[activeFileIndex]?.transactions || []).length === 0 ? (
-                                    <tr>
-                                        <td colSpan="7" className="text-center py-10 text-gray-400">No transactions to display</td>
-                                    </tr>
-                                ) : (
-                                    (bankFiles[activeFileIndex]?.transactions || []).map((tx, idx) => (
-                                        <tr key={idx} className="hover:bg-gray-50 transition group">
-                                            <td className="px-4 py-4 text-xs text-gray-600 font-bold whitespace-nowrap align-top">
-                                                {formatDateSafe(tx?.date)}
-                                            </td>
-                                            <td className="px-4 py-4 text-xs text-gray-700 font-medium align-top">
-                                                <div className="whitespace-pre-wrap leading-relaxed">
-                                                    {tx?.description || ''}
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-4 text-xs text-right font-medium text-green-600 align-top whitespace-nowrap">
-                                                {tx?.moneyIn && parseFloat(tx.moneyIn) > 0 ? parseFloat(tx.moneyIn).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
-                                            </td>
-                                            <td className="px-4 py-4 text-xs text-right font-medium text-red-600 align-top whitespace-nowrap">
-                                                {tx?.moneyOut && parseFloat(tx.moneyOut) > 0 ? parseFloat(tx.moneyOut).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
-                                            </td>
-                                            <td className="px-4 py-4 text-xs text-right text-gray-800 font-bold align-top whitespace-nowrap">
-                                                {tx?.balance ? parseFloat(String(tx.balance).replace(/[^0-9.-]+/g, "")).toLocaleString('en-US', { minimumFractionDigits: 2 }) : '-'}
-                                            </td>
-                                            <td className="px-4 py-4 text-xs align-top">
-                                                {/* Actions */}
-                                            </td>
-                                            <td className="px-4 py-4"></td> {/* SPACER */}
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
                     </div>
                 </div>
             </div>
 
-            {message && (
-                <div className={`mt-4 mx-auto max-w-lg p-3 rounded-full text-xs font-bold text-center fixed top-6 left-0 right-0 shadow-lg z-50 animate-bounce-in ${message.includes('Error') ? 'bg-red-500 text-white' : 'bg-black text-white'}`}>
-                    {message}
-                </div>
-            )}
-
-            {/* DEBUG CONSOLE (For User Feedback) */}
-            {debugLog && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-6">
-                    <div className="bg-white rounded-xl shadow-2xl p-6 max-w-2xl w-full border-2 border-red-500 relative">
-                        <button
-                            onClick={() => setDebugLog(null)}
-                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
-                        >
-                            <X />
-                        </button>
-                        <h3 className="text-xl font-bold text-red-600 mb-2 flex items-center">
-                            <span className="bg-red-100 p-2 rounded-full mr-3">⚠️</span>
-                            {debugLog.title}
-                        </h3>
-                        <p className="text-gray-800 font-medium mb-4">{debugLog.message}</p>
-
-                        <div className="bg-gray-100 p-4 rounded-lg overflow-x-auto mb-4">
-                            <pre className="text-xs font-mono text-gray-600">
-                                {debugLog.details}
-                            </pre>
+            {/* COLUMN 3: DETAILS TABLE */}
+            <div className="flex-1 min-w-0 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col overflow-hidden h-full">
+                <div className="p-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between shrink-0">
+                    <div className="flex items-center">
+                        <div className="p-2 bg-blue-50 rounded-lg mr-3">
+                            <Table className="text-blue-500" size={20} />
                         </div>
-
-                        <p className="text-xs text-gray-400 text-center">
-                            Please take a screenshot of this error and send it to support.
-                        </p>
+                        <div>
+                            <h3 className="font-bold text-gray-800">Page Details</h3>
+                            <p className="text-xs text-gray-500">
+                                {bankFiles[activeFileIndex]?.transactions?.length > 0
+                                    ? `${formatDateSafe(bankFiles[activeFileIndex].transactions[0].date)} - ${formatDateSafe(bankFiles[activeFileIndex].transactions[bankFiles[activeFileIndex].transactions.length - 1].date)}`
+                                    : (bankFiles[activeFileIndex]?.dateRange || 'Select a file')}
+                            </p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        {/* NEW: View Original PDF Button */}
+                        {(bankFiles[activeFileIndex]?.path?.startsWith('drive:') || bankFiles[activeFileIndex]?.driveId) && (
+                            <a
+                                href={`${getDocUrl(bankFiles[activeFileIndex] || { path: 'drive:' + bankFiles[activeFileIndex].driveId })}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs bg-white border border-gray-200 text-gray-600 px-3 py-1 rounded-full hover:text-blue-600 hover:border-blue-300 transition flex items-center gap-2 mr-2"
+                            >
+                                <FileText size={12} />
+                                <span>View Original</span>
+                            </a>
+                        )}
+                        <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium flex items-center">
+                            <CheckCircle size={12} className="mr-1" /> Verified
+                        </span>
                     </div>
                 </div>
-            )}
+
+                <div className="flex-1 overflow-auto bg-white">
+                    <table className="w-full text-left">
+                        <thead className="bg-white text-gray-800 text-xs font-bold uppercase sticky top-0 z-10 border-b border-gray-200 shadow-sm">
+                            <tr>
+                                <th className="px-4 py-4 whitespace-nowrap w-[100px]">Date</th>
+                                <th className="px-4 py-4 w-[700px]">Transaction Details</th>
+                                <th className="px-4 py-4 text-right w-[110px]">Money In</th>
+                                <th className="px-4 py-4 text-right w-[110px]">Money Out</th>
+                                <th className="px-4 py-4 text-right w-[110px]">Balance</th>
+                                <th className="px-4 py-4 w-[80px]">Actions</th>
+                                <th className="px-4 py-4 w-full"></th> {/* SPACER */}
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {(bankFiles[activeFileIndex]?.transactions || []).length === 0 ? (
+                                <tr>
+                                    <td colSpan="7" className="text-center py-10 text-gray-400">No transactions to display</td>
+                                </tr>
+                            ) : (
+                                (bankFiles[activeFileIndex]?.transactions || []).map((tx, idx) => (
+                                    <tr key={idx} className="hover:bg-gray-50 transition group">
+                                        <td className="px-4 py-4 text-xs text-gray-600 font-bold whitespace-nowrap align-top">
+                                            {formatDateSafe(tx?.date)}
+                                        </td>
+                                        <td className="px-4 py-4 text-xs text-gray-700 font-medium align-top">
+                                            <div className="whitespace-pre-wrap leading-relaxed">
+                                                {tx?.description || ''}
+                                            </div>
+                                        </td>
+                                        <td className="px-4 py-4 text-xs text-right font-medium text-green-600 align-top whitespace-nowrap">
+                                            {tx?.moneyIn && parseFloat(tx.moneyIn) > 0 ? parseFloat(tx.moneyIn).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
+                                        </td>
+                                        <td className="px-4 py-4 text-xs text-right font-medium text-red-600 align-top whitespace-nowrap">
+                                            {tx?.moneyOut && parseFloat(tx.moneyOut) > 0 ? parseFloat(tx.moneyOut).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
+                                        </td>
+                                        <td className="px-4 py-4 text-xs text-right text-gray-800 font-bold align-top whitespace-nowrap">
+                                            {tx?.balance ? parseFloat(String(tx.balance).replace(/[^0-9.-]+/g, "")).toLocaleString('en-US', { minimumFractionDigits: 2 }) : '-'}
+                                        </td>
+                                        <td className="px-4 py-4 text-xs align-top">
+                                            {/* Actions */}
+                                        </td>
+                                        <td className="px-4 py-4"></td> {/* SPACER */}
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-    );
 
-    // --- Inspector Handlers ---
-    const handleRegenerate = async () => {
-        if (!viewDoc) return;
-        setRegenerating(true);
-        try {
-            const token = localStorage.getItem('token');
-            const res = await axios.post('/api/company/regenerate-document', {
-                docType: viewDoc.docType
-            }, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+        {message && (
+            <div className={`mt-4 mx-auto max-w-lg p-3 rounded-full text-xs font-bold text-center fixed top-6 left-0 right-0 shadow-lg z-50 animate-bounce-in ${message.includes('Error') ? 'bg-red-500 text-white' : 'bg-black text-white'}`}>
+                {message}
+            </div>
+        )}
 
-            // Update Form Data
-            setFormData(prev => ({ ...prev, ...res.data.profile }));
+        {/* DEBUG CONSOLE (For User Feedback) */}
+        {debugLog && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-6">
+                <div className="bg-white rounded-xl shadow-2xl p-6 max-w-2xl w-full border-2 border-red-500 relative">
+                    <button
+                        onClick={() => setDebugLog(null)}
+                        className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+                    >
+                        <X />
+                    </button>
+                    <h3 className="text-xl font-bold text-red-600 mb-2 flex items-center">
+                        <span className="bg-red-100 p-2 rounded-full mr-3">⚠️</span>
+                        {debugLog.title}
+                    </h3>
+                    <p className="text-gray-800 font-medium mb-4">{debugLog.message}</p>
 
-            // Flash Update
-            setMessage('Document Re-scanned Successfully!');
-
-        } catch (err) {
-            console.error(err);
-            alert('Regeneration Failed: ' + (err.response?.data?.message || err.message));
-        } finally {
-            setRegenerating(false);
-        }
-    };
-
-    // RENDER LOGIC
-    return (
-        <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900">
-            {/* Header */}
-            <header className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm h-16 flex items-center px-6 justify-between">
-                <div className="flex items-center gap-3 cursor-pointer" onClick={() => setView('home')}>
-                    <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold shadow-sm text-sm tracking-tighter">
-                        GK
+                    <div className="bg-gray-100 p-4 rounded-lg overflow-x-auto mb-4">
+                        <pre className="text-xs font-mono text-gray-600">
+                            {debugLog.details}
+                        </pre>
                     </div>
-                    <span className="font-bold text-lg tracking-tight text-gray-800">GK SMART <span className="text-gray-400 font-normal">& Ai</span></span>
-                </div>
-                {/* Quick Actions or User Menu could go here */}
-            </header>
 
-            {/* Main Content */}
-            <main className="flex-1 overflow-hidden">
-                {view === 'home' && renderHome()}
-                {view === 'profile' && renderProfile()}
-                {view === 'bank' && renderBank()}
-                {view === 'ledger' && <GeneralLedger onBack={() => setView('home')} />}
-                {view === 'codes' && <AccountingCodes onBack={() => setView('home')} />}
-                {view === 'currency' && <CurrencyExchange onBack={() => setView('home')} />}
-                {view === 'report' && <TrialBalance onBack={() => setView('home')} />}
-            </main>
-
-            {/* DOCUMENT INSPECTOR MODAL */}
-            {viewDoc && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm animate-fade-in pointer-events-auto">
-                    {/* {alert('Debug: Rendering Modal for ' + viewDoc.docType)} */}
-                    <div className="bg-white w-full max-w-7xl h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden relative">
-
-                        {/* Modal Header */}
-                        <div className="h-16 border-b border-gray-100 flex items-center justify-between px-6 bg-white shrink-0">
-                            <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
-                                <FileText size={20} className="text-blue-600" />
-                                Inspecting: <span className="text-blue-900">{viewDoc.originalName}</span>
-                            </h3>
-                            <button onClick={() => setViewDoc(null)} className="p-2 hover:bg-gray-100 rounded-full transition text-gray-500">
-                                <X size={20} />
-                            </button>
-                        </div>
-
-                        {/* Split View Body */}
-                        <div className="flex-1 flex overflow-hidden bg-gray-100">
-
-                            {/* LEFT: Image Preview (Scrollable) */}
-                            <div className="w-1/2 overflow-auto p-8 flex items-start justify-center bg-gray-900/5 shadow-inner">
-                                <img
-                                    src={getDocUrl(viewDoc)}
-                                    alt="Document Preview"
-                                    className="max-w-full shadow-2xl rounded-sm border border-gray-300"
-                                />
-                            </div>
-
-                            {/* RIGHT: Digital Replica */}
-                            <div className="w-1/2 overflow-auto p-8 bg-white border-l border-gray-200 flex flex-col items-center">
-                                {/* Only show MOC Replica for MOC Cert, else standard form or JSON */}
-                                {viewDoc.docType === 'moc_cert' ? (
-                                    <MOCCertificate
-                                        data={formData}
-                                        onRegenerate={handleRegenerate}
-                                        regenerating={regenerating}
-                                    />
-                                ) : (
-                                    <div className="text-center text-gray-500 mt-20 w-full">
-                                        <p className="mb-4 font-bold text-gray-700">No Digital Replica available for this document type.</p>
-                                        <p className="text-sm mb-4">You can verify the raw data below:</p>
-                                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 text-left text-xs font-mono overflow-auto max-h-[500px]">
-                                            <pre>
-                                                {JSON.stringify(JSON.parse(viewDoc.extractedText || '{}'), null, 2)}
-                                            </pre>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Toast/Debug Overlay */}
-            {message && (
-                <div className="fixed bottom-6 right-6 bg-gray-900 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 animate-slide-up z-50">
-                    {uploadingBank || savingBank || regenerating ? <Loader2 className="animate-spin" size={18} /> : <CheckCircle size={18} className="text-green-400" />}
-                    <span className="font-medium text-sm">{message}</span>
-                </div>
-            )}
-
-            {debugLog && (
-                <div className="fixed bottom-6 left-6 max-w-sm bg-red-50 border border-red-200 text-red-800 p-4 rounded-xl shadow-lg animate-slide-up z-50">
-                    <div className="flex justify-between items-start mb-2">
-                        <strong className="text-sm flex items-center gap-2"><AlertCircle size={14} /> {debugLog.title}</strong>
-                        <button onClick={() => setDebugLog(null)}><X size={14} /></button>
-                    </div>
-                    <p className="text-xs mb-2">{debugLog.message}</p>
-                    <pre className="bg-white p-2 rounded border border-red-100 text-[10px] overflow-auto max-h-32">
-                        {debugLog.details}
-                    </pre>
-                    <p className="text-[10px] text-red-400 mt-2">
+                    <p className="text-xs text-gray-400 text-center">
                         Please take a screenshot of this error and send it to support.
                     </p>
                 </div>
-            )}
-        </div>
-    );
+            </div>
+        )}
+    </div>
+);
+
+// --- Inspector Handlers ---
+const handleRegenerate = async () => {
+    if (!viewDoc) return;
+    setRegenerating(true);
+    try {
+        const token = localStorage.getItem('token');
+        const res = await axios.post('/api/company/regenerate-document', {
+            docType: viewDoc.docType
+        }, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        // Update Form Data
+        setFormData(prev => ({ ...prev, ...res.data.profile }));
+
+        // Flash Update
+        setMessage('Document Re-scanned Successfully!');
+
+    } catch (err) {
+        console.error(err);
+        alert('Regeneration Failed: ' + (err.response?.data?.message || err.message));
+    } finally {
+        setRegenerating(false);
+    }
+};
+
+// RENDER LOGIC
+return (
+    <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900">
+        {/* Header */}
+        <header className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm h-16 flex items-center px-6 justify-between">
+            <div className="flex items-center gap-3 cursor-pointer" onClick={() => setView('home')}>
+                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold shadow-sm text-sm tracking-tighter">
+                    GK
+                </div>
+                <span className="font-bold text-lg tracking-tight text-gray-800">GK SMART <span className="text-gray-400 font-normal">& Ai</span></span>
+            </div>
+            {/* Quick Actions or User Menu could go here */}
+        </header>
+
+        {/* Main Content */}
+        <main className="flex-1 overflow-hidden">
+            {view === 'home' && renderHome()}
+            {view === 'profile' && renderProfile()}
+            {view === 'bank' && renderBank()}
+            {view === 'ledger' && <GeneralLedger onBack={() => setView('home')} />}
+            {view === 'codes' && <AccountingCodes onBack={() => setView('home')} />}
+            {view === 'currency' && <CurrencyExchange onBack={() => setView('home')} />}
+            {view === 'report' && <TrialBalance onBack={() => setView('home')} />}
+        </main>
+
+        {/* DOCUMENT INSPECTOR MODAL */}
+        {viewDoc && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm animate-fade-in pointer-events-auto">
+                {/* {alert('Debug: Rendering Modal for ' + viewDoc.docType)} */}
+                <div className="bg-white w-full max-w-7xl h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden relative">
+
+                    {/* Modal Header */}
+                    <div className="h-16 border-b border-gray-100 flex items-center justify-between px-6 bg-white shrink-0">
+                        <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                            <FileText size={20} className="text-blue-600" />
+                            Inspecting: <span className="text-blue-900">{viewDoc.originalName}</span>
+                        </h3>
+                        <button onClick={() => setViewDoc(null)} className="p-2 hover:bg-gray-100 rounded-full transition text-gray-500">
+                            <X size={20} />
+                        </button>
+                    </div>
+
+                    {/* Split View Body */}
+                    <div className="flex-1 flex overflow-hidden bg-gray-100">
+
+                        {/* LEFT: Image Preview (Scrollable) */}
+                        <div className="w-1/2 overflow-auto p-8 flex items-start justify-center bg-gray-900/5 shadow-inner">
+                            <img
+                                src={getDocUrl(viewDoc)}
+                                alt="Document Preview"
+                                className="max-w-full shadow-2xl rounded-sm border border-gray-300"
+                            />
+                        </div>
+
+                        {/* RIGHT: Digital Replica */}
+                        <div className="w-1/2 overflow-auto p-8 bg-white border-l border-gray-200 flex flex-col items-center">
+                            {/* Only show MOC Replica for MOC Cert, else standard form or JSON */}
+                            {viewDoc.docType === 'moc_cert' ? (
+                                <MOCCertificate
+                                    data={formData}
+                                    onRegenerate={handleRegenerate}
+                                    regenerating={regenerating}
+                                />
+                            ) : (
+                                <div className="text-center text-gray-500 mt-20 w-full">
+                                    <p className="mb-4 font-bold text-gray-700">No Digital Replica available for this document type.</p>
+                                    <p className="text-sm mb-4">You can verify the raw data below:</p>
+                                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 text-left text-xs font-mono overflow-auto max-h-[500px]">
+                                        <pre>
+                                            {JSON.stringify(JSON.parse(viewDoc.extractedText || '{}'), null, 2)}
+                                        </pre>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        )}
+
+        {/* Toast/Debug Overlay */}
+        {message && (
+            <div className="fixed bottom-6 right-6 bg-gray-900 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 animate-slide-up z-50">
+                {uploadingBank || savingBank || regenerating ? <Loader2 className="animate-spin" size={18} /> : <CheckCircle size={18} className="text-green-400" />}
+                <span className="font-medium text-sm">{message}</span>
+            </div>
+        )}
+
+        {debugLog && (
+            <div className="fixed bottom-6 left-6 max-w-sm bg-red-50 border border-red-200 text-red-800 p-4 rounded-xl shadow-lg animate-slide-up z-50">
+                <div className="flex justify-between items-start mb-2">
+                    <strong className="text-sm flex items-center gap-2"><AlertCircle size={14} /> {debugLog.title}</strong>
+                    <button onClick={() => setDebugLog(null)}><X size={14} /></button>
+                </div>
+                <p className="text-xs mb-2">{debugLog.message}</p>
+                <pre className="bg-white p-2 rounded border border-red-100 text-[10px] overflow-auto max-h-32">
+                    {debugLog.details}
+                </pre>
+                <p className="text-[10px] text-red-400 mt-2">
+                    Please take a screenshot of this error and send it to support.
+                </p>
+            </div>
+        )}
+    </div>
+);
 }
