@@ -648,6 +648,13 @@ export default function CompanyProfile() {
         }
     };
 
+    // ==========================================
+    // 🔒 PROTECTED CORE LOGIC - DO NOT MODIFY
+    // The following `handleDelete` function is critical for data integrity.
+    // It handles both database transactions and Google Drive file cleanup.
+    // Any changes to this function require explicit user approval.
+    // Last Verified: Jan 2026
+    // ==========================================
     const handleDelete = async (idx, file) => {
         // Robust check for saved status
         // Robust check for saved status: Only if it has database IDs
