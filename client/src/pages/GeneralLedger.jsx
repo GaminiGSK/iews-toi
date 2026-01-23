@@ -119,6 +119,30 @@ const GeneralLedger = ({ onBack }) => {
             </div>
 
             <div className="flex-1 p-8 overflow-auto">
+                {/* Summary Cards */}
+                {!loading && transactions.length > 0 && (
+                    <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Money In</p>
+                            <p className="text-2xl font-bold text-green-600 mt-1">
+                                ${transactions.reduce((acc, tx) => acc + (tx.amount > 0 ? tx.amount : 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                            </p>
+                        </div>
+                        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Money Out</p>
+                            <p className="text-2xl font-bold text-red-600 mt-1">
+                                ${Math.abs(transactions.reduce((acc, tx) => acc + (tx.amount < 0 ? tx.amount : 0), 0)).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                            </p>
+                        </div>
+                        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Net Balance</p>
+                            <p className="text-2xl font-bold text-blue-900 mt-1">
+                                ${transactions.reduce((acc, tx) => acc + (tx.amount || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                            </p>
+                        </div>
+                    </div>
+                )}
+
                 <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                     {loading ? (
                         <div className="p-12 text-center text-gray-500">Loading Ledger...</div>
