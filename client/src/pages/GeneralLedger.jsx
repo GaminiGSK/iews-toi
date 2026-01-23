@@ -158,14 +158,19 @@ const GeneralLedger = ({ onBack }) => {
 
     const renderTable = (data, showHeader = true) => {
         // Calculate totals for this specific view/group
-        const viewTotals = data.reduce((acc, tx) => ({
-            in: acc.in + (tx.amount > 0 ? tx.amount : 0),
-            out: acc.out + (tx.amount < 0 ? Math.abs(tx.amount) : 0),
-            net: acc.net + (tx.amount || 0),
-            inKHR: acc.inKHR + (tx.amountKHR > 0 ? tx.amountKHR : 0),
-            outKHR: acc.outKHR + (tx.amountKHR < 0 ? Math.abs(tx.amountKHR) : 0),
-            netKHR: acc.netKHR + (tx.balanceKHR || 0)
-        }), { in: 0, out: 0, net: 0, inKHR: 0, outKHR: 0, netKHR: 0 });
+        const viewTotals = data.reduce((acc, tx) => {
+            // Only include confirmed transactions in the Bank Balance Calculation
+            if (!tx.accountCode || tx.accountCode === 'uncategorized') return acc;
+
+            return {
+                in: acc.in + (tx.amount > 0 ? tx.amount : 0),
+                out: acc.out + (tx.amount < 0 ? Math.abs(tx.amount) : 0),
+                net: acc.net + (tx.amount || 0),
+                inKHR: acc.inKHR + (tx.amountKHR > 0 ? tx.amountKHR : 0),
+                outKHR: acc.outKHR + (tx.amountKHR < 0 ? Math.abs(tx.amountKHR) : 0),
+                netKHR: acc.netKHR + (tx.balanceKHR || 0)
+            };
+        }, { in: 0, out: 0, net: 0, inKHR: 0, outKHR: 0, netKHR: 0 });
 
         return (
             <table className="w-full text-left">
