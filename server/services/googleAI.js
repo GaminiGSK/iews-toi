@@ -75,8 +75,10 @@ exports.extractBankStatement = async (filePath) => {
             
             JSON Schema:
             [
+            JSON Schema:
+            [
               {
-                "date": "YYYY-MM-DD", // CRITICAL: Use ISO Format (YYYY-MM-DD). Do NOT use DD/MM/YYYY.
+                "date": "DD-MMM-YYYY", // CRITICAL: Return format like "01-Jul-2025". Use English Month Abbr.
                 "description": "Full verbatim description text. Do NOT summarize. Include REF#, Time, Remarks, and all details.",
                 "moneyIn": 0.00, // Number. If empty/dash, use 0.
                 "moneyOut": 0.00, // Number. If empty/dash, use 0.

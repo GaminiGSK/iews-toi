@@ -42,6 +42,11 @@ export default function CompanyProfile() {
                 d = new Date(dateStr.replace(',', '')); // Remove comma for reliable parsing
                 if (!isNaN(d.getTime())) return d;
             }
+            // Try parsing DD-MMM-YYYY (e.g. 01-Jul-2025)
+            if (dateStr.match(/^\d{1,2}-[A-Za-z]{3}-\d{4}/)) {
+                d = new Date(dateStr);
+                if (!isNaN(d.getTime())) return d;
+            }
         }
         return new Date(0); // Fallback
     };
