@@ -128,14 +128,38 @@ const AccountingCodes = ({ onBack }) => {
             <div className="flex-1 p-8 overflow-auto">
                 <div className="max-w-6xl mx-auto"> {/* Widened container */}
 
-                    {/* Add Button */}
+                    {/* Toolbar */}
                     {!isEditing && (
-                        <button
-                            onClick={() => setIsEditing(true)}
-                            className="mb-6 flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-bold shadow-sm transition"
-                        >
-                            <Plus className="w-4 h-4" /> Add Code
-                        </button>
+                        <div className="mb-6 flex items-center justify-between">
+                            <button
+                                onClick={() => setIsEditing(true)}
+                                className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-bold shadow-sm transition"
+                            >
+                                <Plus className="w-4 h-4" /> Add Code
+                            </button>
+
+                            <button
+                                onClick={async () => {
+                                    if (window.confirm("Use AI to research and generate rules for all missing codes? This may take a moment.")) {
+                                        try {
+                                            setLoading(true); // Re-use loading state to show progress
+                                            const token = localStorage.getItem('token');
+                                            const res = await axios.post('/api/company/codes/generate-missing', {}, {
+                                                headers: { 'Authorization': `Bearer ${token}` }
+                                            });
+                                            alert(res.data.message);
+                                            fetchCodes(); // Refresh list
+                                        } catch (err) {
+                                            alert("Error generating rules: " + (err.response?.data?.message || err.message));
+                                            setLoading(false);
+                                        }
+                                    }
+                                }}
+                                className="flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-4 py-2 rounded-lg font-medium border border-indigo-200 transition"
+                            >
+                                <Sparkles className="w-4 h-4" /> Auto-Research Missing Rules
+                            </button>
+                        </div>
                     )}
 
                     {/* Form (Add or Edit) */}

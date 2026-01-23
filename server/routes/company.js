@@ -737,6 +737,49 @@ router.delete('/codes/:id', auth, async (req, res) => {
     }
 });
 
+// POST Auto-Generate Missing Rules
+router.post('/codes/generate-missing', auth, async (req, res) => {
+    try {
+        const AccountCode = require('../models/AccountCode');
+
+        // Find all codes with empty matchDescription
+        const missingCodes = await AccountCode.find({
+            companyCode: req.user.companyCode,
+            $or: [{ matchDescription: { $exists: false } }, { matchDescription: "" }]
+        });
+
+        console.log(`[AI Rules] Found ${missingCodes.length} codes needing rules.`);
+
+        // Process in parallel (limited batch size to avoid rate limits if needed, but Gemini Flash is fast)
+        // We'll process them all and wait.
+        let updatedCount = 0;
+
+        const updatePromises = missingCodes.map(async (doc) => {
+            try {
+                const aiRule = await googleAI.generateMatchDescription(doc.code, doc.description);
+                if (aiRule) {
+                    doc.matchDescription = aiRule;
+                    await doc.save();
+                    updatedCount++;
+                }
+            } catch (innerErr) {
+                console.error(`Failed to gen rule for ${doc.code}:`, innerErr);
+            }
+        });
+
+        await Promise.all(updatePromises);
+
+        res.json({
+            message: `Successfully generated rules for ${updatedCount} codes.`,
+            updatedCount
+        });
+
+    } catch (err) {
+        console.error("Bulk Rule Gen Error:", err);
+        res.status(500).json({ message: 'Error generating rules' });
+    }
+});
+
 // --- CURRENCY EXCHANGE API ---
 
 // GET All Exchange Rates

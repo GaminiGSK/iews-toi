@@ -150,9 +150,15 @@ exports.translateText = async (text, targetLang) => {
 exports.generateMatchDescription = async (code, description) => {
     // Generate a description of what kind of bank transactions would match this account
     const prompt = `
-        As an expert accountant, provide a brief, comma-separated list of 3-5 typical bank transaction descriptions that would correspond to the General Ledger account: "${code} - ${description}".
-        Example for "Utilities": "Electricity bill payment, Water extraction fee, Internet service charge"
-        Return ONLY the comma-separated string. No quotes, no markdown.
+        You are an expert Accountant and Researcher.
+        Task: Provide a comma-separated list of 3-5 typical, real-world bank transaction descriptions that would correspond to the General Ledger account: "${code} - ${description}".
+        
+        Guidelines:
+        - Research/Think: What does this account code actually represent in a business context?
+        - Specificity: Don't just say "payment". Be specific like "Vattanac Bank Fee", "Google Workspace Subscription", "Payroll Transfer - Jan".
+        - Format: Return ONLY the comma-separated string. No quotes, no markdown.
+        
+        Example for "Utilities": "EDC Electricity Bill, PPWSA Water Bill, ISP Internet Charge"
     `;
     try {
         const result = await model.generateContent(prompt);
