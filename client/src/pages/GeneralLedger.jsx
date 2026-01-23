@@ -197,20 +197,20 @@ const GeneralLedger = ({ onBack }) => {
                             <td className="px-6 py-4 text-blue-900">Bank Balance</td>
                             {/* USD */}
                             <td className="px-4 py-4 text-right text-green-600 border-l border-blue-100">
-                                {viewTotals.in > 0 ? viewTotals.in.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '-'}
+
                             </td>
                             <td className="px-4 py-4 text-right text-red-600">
-                                {viewTotals.out > 0 ? viewTotals.out.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '-'}
+
                             </td>
                             <td className="px-4 py-4 text-right text-blue-900 text-lg">
                                 {viewTotals.net.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                             </td>
                             {/* KHR */}
                             <td className="px-4 py-4 text-right text-teal-600 border-l border-blue-100">
-                                {viewTotals.inKHR > 0 ? viewTotals.inKHR.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '-'}
+
                             </td>
                             <td className="px-4 py-4 text-right text-red-500">
-                                {viewTotals.outKHR > 0 ? viewTotals.outKHR.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '-'}
+
                             </td>
                             <td className="px-4 py-4 text-right text-gray-500">
                                 -
