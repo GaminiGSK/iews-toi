@@ -6,7 +6,6 @@ import AccountingCodes from './AccountingCodes';
 import CurrencyExchange from './CurrencyExchange';
 import TrialBalance from './TrialBalance';
 import MOCCertificate from '../components/MOCCertificate';
-import AIAssistant from '../components/AIAssistant';
 
 export default function CompanyProfile() {
     const [view, setView] = useState('home'); // home, profile, bank
@@ -1110,8 +1109,7 @@ export default function CompanyProfile() {
                 </div>
             )}
 
-            {/* AI Assistant */}
-            <AIAssistant />
+
 
             {/* Toast/Debug Overlay */}
             {message && (
