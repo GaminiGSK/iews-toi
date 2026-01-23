@@ -147,12 +147,29 @@ exports.translateText = async (text, targetLang) => {
     return text + " (Translated)";
 };
 
+exports.generateMatchDescription = async (code, description) => {
+    // Generate a description of what kind of bank transactions would match this account
+    const prompt = `
+        As an expert accountant, provide a brief, comma-separated list of 3-5 typical bank transaction descriptions that would correspond to the General Ledger account: "${code} - ${description}".
+        Example for "Utilities": "Electricity bill payment, Water extraction fee, Internet service charge"
+        Return ONLY the comma-separated string. No quotes, no markdown.
+    `;
+    try {
+        const result = await model.generateContent(prompt);
+        const text = result.response.text();
+        return text.trim();
+    } catch (e) {
+        console.error("Gemini Match Desc Error:", e);
+        return "";
+    }
+};
+
 exports.suggestAccountingCodes = async (transactions, codes) => {
     console.log(`[GeminiAI] Auto-Tagging ${transactions.length} transactions with ${codes.length} codes.`);
 
     // Prepare the Prompt Data
     // We only need basic info to save tokens
-    const codeList = codes.map(c => `${c.code}: ${c.description} (TOI: ${c.toiCode})`).join('\n');
+    const codeList = codes.map(c => `${c.code}: ${c.description} ${c.matchDescription ? `(Matching: ${c.matchDescription})` : ''} (TOI: ${c.toiCode})`).join('\n');
     const txList = transactions.map(t => `ID: ${t._id} | Desc: ${t.description} | Amount: ${t.amount}`).join('\n');
 
     const prompt = `
@@ -165,10 +182,17 @@ exports.suggestAccountingCodes = async (transactions, codes) => {
 
         Task:
         Assign the most appropriate Account Code to each transaction based on its description and amount.
-        - Positive amounts are usually Deposits (Revenue, Refunds, Equity).
-        - Negative amounts are usually Withdrawals (Expenses, Assets, Liabilities).
-        - Use "Context Clues" from the description (e.g. "ABA" -> Bank Charges or Transfer).
-        - If unsure, pick the closest match or verify if it's "Uncategorized".
+        
+        CRITICAL RULES (User Defined):
+        1. **Income (Positive Amount)**: ALWAYS tag as "10110" (Cash On Hand).
+        2. **Expenses (Negative Amount)**:
+           - IF Amount is between -$0.01 and -$10.00: Tag as "61220" (Bank Charges).
+           - IF Amount is between -$10.01 and -$100.00: Tag as "61100" (Commission).
+           - IF Amount is less than -$100.00 (e.g. -500): Tag as "61070" (Payroll Expenses).
+        
+        General Guidelines (Only if rules above don't apply):
+        - Use "Context Clues" from the description.
+        - If unsure, pick the closest match.
 
         Output strictly a JSON Array of objects:
         [
@@ -194,6 +218,49 @@ exports.suggestAccountingCodes = async (transactions, codes) => {
     }
 };
 
+exports.chatWithFinancialAgent = async (message, context) => {
+    try {
+        const { companyName, codes, recentTransactions, summary, monthlyStats } = context;
+
+        // Construct a context-aware prompt
+        const prompt = `
+            You are an expert Financial Assistant for the company "${companyName}".
+            
+            **Current Financial Context:**
+            - **Net Balance**: ${summary.balance}
+            - **Total Income**: ${summary.income}
+            - **Total Expenses**: ${summary.expense}
+
+            **Monthly Trends (Last 12 Months):**
+            ${monthlyStats ? monthlyStats.map(m => `- ${m.month}: Income ${m.income}, Expense ${m.expense}, Net ${m.net}`).join('\n') : 'No monthly data available.'}
+
+            **Chart of Accounts (Top 50):**
+            ${codes.map(c => `- ${c.code} (${c.description})`).slice(0, 50).join('\n')}
+
+            **Recent Transactions (Last 10):**
+            ${recentTransactions.map(t => `- [${t.date}] ${t.description} : ${t.amount} (Code: ${t.code || 'Uncategorized'})`).join('\n')}
+
+            **User Query:** "${message}"
+
+            **Instructions:**
+            1. Answer the user's question accurately based on the data provided.
+            2. If asking about specific transactions not listed here, say you only have access to the most recent ones.
+            3. Be professional, concise, and helpful.
+            4. If the user asks for financial advice, give a disclaimer.
+            5. Use Markdown for formatting (bold, lists).
+
+            Answer:
+        `;
+
+        const result = await model.generateContent(prompt);
+        return result.response.text();
+
+    } catch (e) {
+        console.error("Gemini Chat Error:", e);
+        return "I apologize, but I am having trouble processing your request right now. Please try again later.";
+    }
+};
+
 // Utilities
 function cleanAndParseJSON(text) {
     try {
@@ -212,3 +279,4 @@ function cleanAndParseJSON(text) {
         return null;
     }
 }
+

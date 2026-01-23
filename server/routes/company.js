@@ -234,11 +234,11 @@ router.post('/regenerate-document', auth, async (req, res) => {
 // Upload Bank Statement (Multiple Images/PDFs) for OCR
 router.post('/upload-bank-statement', auth, upload.array('files'), async (req, res) => {
     try {
+        const BankFile = require('../models/BankFile');
         if (!req.files || req.files.length === 0) return res.status(400).json({ message: 'No files uploaded' });
 
         console.log(`Bank Statement Upload: ${req.files.length} files received.`);
 
-        // Process each file individually to maintain grouping
         // Process each file individually to maintain grouping
         const fileResults = [];
 
@@ -255,8 +255,7 @@ router.post('/upload-bank-statement', auth, upload.array('files'), async (req, r
                 console.warn("Drive Upload Skipped/Failed (Using Local):", driveErr.message);
             }
 
-            // Extract Data (using Local Path before deletion, OR could stream from Drive if optimized)
-            // Currently extractBankStatement uses fs.readFileSync, so we need local file.
+            // Extract Data (using Local Path before deletion)
             let extracted = await googleAI.extractBankStatement(file.path);
 
             // Cleanup Local File if Drive Upload Succeeded
@@ -274,21 +273,68 @@ router.post('/upload-bank-statement', auth, upload.array('files'), async (req, r
             if (extracted.length > 0) {
                 const start = extracted[0].date;
                 const end = extracted[extracted.length - 1].date;
-                // Format: "Feb 10 - Feb 12, 2025" or similar
                 dateRange = `${start} - ${end}`;
             }
 
-            // Assign Sequence Number to preserve order
+            // Assign Sequence Number
             extracted = extracted.map((tx, idx) => ({ ...tx, sequence: idx }));
 
+            // --- AUTO-TAGGING LOGIC ---
+            try {
+                const AccountCode = require('../models/AccountCode');
+                // Fetch codes if not already cached (could cache optimization later)
+                const codes = await AccountCode.find({ companyCode: req.user.companyCode });
+                const codeMap = {};
+                codes.forEach(c => codeMap[c.code] = c._id); // Map "10110" -> ObjectId
+
+                extracted = extracted.map(tx => {
+                    let targetCode = null;
+                    // Determine Amount (MoneyIn vs MoneyOut columns)
+                    const inVal = parseFloat(String(tx.moneyIn).replace(/[^0-9.-]/g, '')) || 0;
+                    const outVal = parseFloat(String(tx.moneyOut).replace(/[^0-9.-]/g, '')) || 0;
+
+                    if (inVal > 0) {
+                        targetCode = "10110"; // Income -> Cash On Hand
+                    } else if (outVal > 0) {
+                        // Expenses (Magnitude check)
+                        if (outVal < 10) targetCode = "61220"; // Bank Charges
+                        else if (outVal < 100) targetCode = "61100"; // Commission
+                        else targetCode = "61070"; // Payroll
+                    }
+
+                    if (targetCode && codeMap[targetCode]) {
+                        return { ...tx, accountCode: codeMap[targetCode], code: targetCode };
+                    }
+                    return tx;
+                });
+            } catch (tagErr) {
+                console.error("Auto-Tag Error:", tagErr);
+            }
+
+            // --- SAVE FILE METADATA TO DB ---
+            const newFile = new BankFile({
+                user: req.user.id,
+                companyCode: req.user.companyCode,
+                originalName: file.originalname,
+                driveId: driveId,
+                mimeType: file.mimetype,
+                size: file.size,
+                dateRange: dateRange,
+                transactionCount: extracted.length,
+                path: driveId ? `drive:${driveId}` : null,
+                status: 'Processed'
+            });
+            await newFile.save();
+
             fileResults.push({
-                fileId: file.filename, // Multer filename
+                _id: newFile._id,
+                fileId: file.filename,
                 driveId: driveId,
                 originalName: file.originalname,
                 dateRange: dateRange,
-                status: 'Parsed', // Processed & Ready for review
+                status: 'Parsed',
                 transactions: extracted,
-                path: driveId ? `drive:${driveId}` : null // CRITICAL: Frontend needs this to generate View Link
+                path: newFile.path
             });
         }
 
@@ -301,6 +347,48 @@ router.post('/upload-bank-statement', auth, upload.array('files'), async (req, r
     } catch (err) {
         console.error('Bank Upload Error:', err);
         res.status(500).json({ message: 'Error uploading bank statements' });
+    }
+});
+
+// GET Bank Files List
+router.get('/bank-files', auth, async (req, res) => {
+    try {
+        const BankFile = require('../models/BankFile');
+        const files = await BankFile.find({ companyCode: req.user.companyCode })
+            .sort({ uploadedAt: -1 });
+        res.json({ files });
+    } catch (err) {
+        console.error('Get Bank Files Error:', err);
+        res.status(500).json({ message: 'Error fetching bank files' });
+    }
+});
+
+// DELETE Bank File
+router.delete('/bank-file/:id', auth, async (req, res) => {
+    try {
+        const BankFile = require('../models/BankFile');
+        const { id } = req.params;
+
+        const file = await BankFile.findOne({ _id: id, companyCode: req.user.companyCode });
+        if (!file) return res.status(404).json({ message: 'File not found' });
+
+        // Delete from Drive
+        if (file.driveId) {
+            try {
+                // Use the shared delete helper which moves to "Deleted" folder
+                await deleteFile(file.driveId);
+            } catch (ignore) {
+                console.warn("Drive delete failed, continuing DB delete:", ignore.message);
+            }
+        }
+
+        // Delete from DB
+        await BankFile.deleteOne({ _id: id });
+
+        res.json({ message: 'File deleted successfully' });
+    } catch (err) {
+        console.error('Delete Bank File Error:', err);
+        res.status(500).json({ message: 'Error deleting bank file' });
     }
 });
 
@@ -363,7 +451,8 @@ router.post('/save-transactions', auth, async (req, res) => {
                 amount: amount,
                 balance: balance,
                 currency: 'USD',
-                sequence: tx.sequence || 0, // NEW: Save Sequence
+                sequence: tx.sequence || 0,
+                accountCode: tx.accountCode || undefined, // Allow pre-tagged codes
                 originalData: tx
             });
         }
@@ -588,12 +677,25 @@ router.post('/codes', auth, async (req, res) => {
         if (!code || !toiCode || !description) return res.status(400).json({ message: 'Code, TOI Code, and Description required' });
         if (description.length > 50) return res.status(400).json({ message: 'Description max 50 chars' });
 
+        let { code, toiCode, description, matchDescription } = req.body;
+
+        if (!code || !toiCode || !description) return res.status(400).json({ message: 'Code, TOI Code, and Description required' });
+        if (description.length > 50) return res.status(400).json({ message: 'Description max 50 chars' });
+
+        // Auto-Generate Match Description if not provided
+        if (!matchDescription) {
+            try {
+                matchDescription = await googleAI.generateMatchDescription(code, description);
+            } catch (ignore) { console.warn("AI Gen failed", ignore); }
+        }
+
         const newCode = new AccountCode({
             user: req.user.id,
             companyCode: req.user.companyCode,
             code,
             toiCode,
-            description
+            description,
+            matchDescription
         });
 
         await newCode.save();
@@ -604,6 +706,25 @@ router.post('/codes', auth, async (req, res) => {
             return res.status(400).json({ message: 'Code already exists' });
         }
         res.status(500).json({ message: 'Error adding code' });
+    }
+});
+
+// PUT Update Code
+router.put('/codes/:id', auth, async (req, res) => {
+    try {
+        const AccountCode = require('../models/AccountCode');
+        const { code, toiCode, description, matchDescription } = req.body;
+
+        const updated = await AccountCode.findOneAndUpdate(
+            { _id: req.params.id, companyCode: req.user.companyCode },
+            { code, toiCode, description, matchDescription },
+            { new: true }
+        );
+
+        if (!updated) return res.status(404).json({ message: 'Code not found' });
+        res.json({ message: 'Code updated', code: updated });
+    } catch (err) {
+        res.status(500).json({ message: 'Error updating code' });
     }
 });
 

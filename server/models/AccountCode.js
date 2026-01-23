@@ -5,7 +5,8 @@ const AccountCodeSchema = new mongoose.Schema({
     companyCode: { type: String, required: true },
     code: { type: String, required: true, trim: true },
     toiCode: { type: String, required: true, trim: true }, // Standard System Code
-    description: { type: String, required: true, maxlength: 50, trim: true }
+    description: { type: String, required: true, maxlength: 50, trim: true },
+    matchDescription: { type: String, trim: true } // Description of transactions that should match this code
 }, { timestamps: true });
 
 // Ensure codes are unique per company
