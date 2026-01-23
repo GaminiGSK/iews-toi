@@ -4,7 +4,7 @@ const upload = require('../middleware/upload');
 const googleAI = require('../services/googleAI');
 const CompanyProfile = require('../models/CompanyProfile');
 const jwt = require('jsonwebtoken');
-const { uploadFile, getFileStream } = require('../services/googleDrive');
+const { uploadFile, getFileStream, deleteFile } = require('../services/googleDrive');
 const fs = require('fs'); // For cleanup 
 
 const auth = require('../middleware/auth');
@@ -141,6 +141,18 @@ router.delete('/document/:docType', auth, async (req, res) => {
 
         if (!result) return res.status(404).json({ message: 'Profile not found' });
 
+        // Check if we need to delete from Drive
+        // (We need the old doc path which we just pulled... actually findOneAndUpdate returns the NEW doc by default with {new:true})
+        // Better strategy: Find first, then Pull.
+        const originalProfile = await CompanyProfile.findOne({ user: req.user.id });
+        const docToDelete = originalProfile.documents.find(d => d.docType === docType);
+
+        if (docToDelete && docToDelete.path && docToDelete.path.startsWith('drive:')) {
+            const driveId = docToDelete.path.split(':')[1];
+            // Async delete (soft delete) - don't await/block response
+            deleteFile(driveId).catch(err => console.error("BG Delete Error:", err));
+        }
+
         // Check if document was actually removed (optional, but good for feedback)
         // Ideally we would compare list length before/after, but for atomic perf we just return updated profile
 
@@ -268,10 +280,12 @@ router.post('/upload-bank-statement', auth, upload.array('files'), async (req, r
 
             fileResults.push({
                 fileId: file.filename, // Multer filename
+                driveId: driveId,
                 originalName: file.originalname,
                 dateRange: dateRange,
-                status: 'Saved', // Processed & Ready for review
-                transactions: extracted
+                status: 'Parsed', // Processed & Ready for review
+                transactions: extracted,
+                path: driveId ? `drive:${driveId}` : null // CRITICAL: Frontend needs this to generate View Link
             });
         }
 
@@ -797,6 +811,20 @@ async function deleteTransactions(req, res, ids) {
         });
     }
 }
+
+// DELETE File (Soft Delete from Drive) - For Unsaved Files
+router.post('/delete-file', auth, async (req, res) => {
+    try {
+        const { driveId } = req.body;
+        if (!driveId) return res.status(400).json({ message: 'Drive ID required' });
+
+        await deleteFile(driveId);
+        res.json({ message: 'File moved to Deleted folder' });
+    } catch (err) {
+        console.error('Delete File Route Error:', err);
+        res.status(500).json({ message: 'Error deleting file' });
+    }
+});
 
 // POST Auto-Tag Transactions (AI)
 router.post('/transactions/auto-tag', auth, async (req, res) => {

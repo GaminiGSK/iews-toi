@@ -3,14 +3,19 @@ const path = require('path');
 const fs = require('fs');
 
 // Ensure upload directory exists
-const uploadDir = path.join(__dirname, '../uploads');
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
+// Use /tmp for Cloud Run compatibility
+const uploadDir = path.join('/tmp'); // Cloud-Native Temp Dir
+// Local fallback if /tmp doesn't exist (e.g. Windows dev)
+const useLocal = !fs.existsSync('/tmp');
+const activeDir = useLocal ? path.join(__dirname, '../uploads') : '/tmp';
+
+if (useLocal && !fs.existsSync(activeDir)) {
+    fs.mkdirSync(activeDir, { recursive: true });
 }
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, uploadDir);
+        cb(null, activeDir);
     },
     filename: function (req, file, cb) {
         // Unique filename: timestamp-original

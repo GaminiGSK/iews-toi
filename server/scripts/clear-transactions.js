@@ -8,8 +8,8 @@ console.log('Connecting to:', process.env.MONGODB_URI);
 mongoose.connect(process.env.MONGODB_URI)
     .then(async () => {
         console.log('MongoDB Connected');
+        console.log('Deleting ALL Transactions...');
 
-        console.log('Deleting all transactions...');
         const result = await Transaction.deleteMany({});
         console.log(`Deleted ${result.deletedCount} transactions.`);
 

@@ -18,7 +18,7 @@ app.use(morgan('dev'));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/company', require('./routes/company'));
-app.use('/uploads', express.static('uploads'));
+// app.use('/uploads', express.static('uploads')); // Disabled for Cloud Persistence Safety
 
 // Serve Frontend in Production
 const path = require('path');

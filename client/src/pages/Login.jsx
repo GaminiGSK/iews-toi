@@ -29,7 +29,10 @@ export default function Login() {
         <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
             <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-blue-600 mb-2">IEWS TOI</h1>
+                    <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-2xl shadow-lg mx-auto mb-4 tracking-tighter">
+                        GK
+                    </div>
+                    <h1 className="text-3xl font-bold text-blue-600 mb-2">GK SMART & Ai</h1>
                     <p className="text-gray-500">Welcome Back</p>
                     <p className="text-gray-400 text-sm mt-1">Sign in with your Access Code</p>
                 </div>

@@ -76,7 +76,7 @@ exports.extractBankStatement = async (filePath) => {
             JSON Schema:
             [
               {
-                "date": "DD/MM/YYYY", // Normalize date format
+                "date": "YYYY-MM-DD", // CRITICAL: Use ISO Format (YYYY-MM-DD). Do NOT use DD/MM/YYYY.
                 "description": "Full verbatim description text. Do NOT summarize. Include REF#, Time, Remarks, and all details.",
                 "moneyIn": 0.00, // Number. If empty/dash, use 0.
                 "moneyOut": 0.00, // Number. If empty/dash, use 0.
@@ -85,6 +85,9 @@ exports.extractBankStatement = async (filePath) => {
             ]
 
             Rules:
+            - **CRITICAL**: Look for the 'Statement Date', 'Period', or 'Date' header at the top of the image to determine the correct YEAR. 
+            - If the transaction rows only show 'DD MMM' (e.g. 15 Feb), use the YEAR found in the header. 
+            - Do NOT default to the current year unless no year is found in the entire document.
             - Look strictly at the columns. Don't hallucinate data.
             - If "Money In" and "Money Out" are in one column (Signed), separate them based on sign (- is Out).
             - Output ONLY the JSON Array. No Markdown blocks.

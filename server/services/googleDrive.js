@@ -60,17 +60,86 @@ async function getFileStream(fileId) {
     }
 }
 
+// Helper: Find folder by name
+async function findFolder(name, parentId = null) {
+    try {
+        let query = `mimeType='application/vnd.google-apps.folder' and name='${name}' and trashed=false`;
+        if (parentId) {
+            query += ` and '${parentId}' in parents`;
+        }
+        const res = await drive.files.list({
+            q: query,
+            fields: 'files(id, name)',
+            spaces: 'drive',
+        });
+        if (res.data.files.length > 0) return res.data.files[0];
+        return null;
+    } catch (error) {
+        console.error('Find Folder Error:', error.message);
+        return null;
+    }
+}
+
+// Helper: Create folder
+async function createFolder(name, parentId = null) {
+    const fileMetadata = {
+        name: name,
+        mimeType: 'application/vnd.google-apps.folder',
+    };
+    if (parentId) {
+        fileMetadata.parents = [parentId];
+    }
+    try {
+        const file = await drive.files.create({
+            resource: fileMetadata,
+            fields: 'id',
+        });
+        return file.data;
+    } catch (error) {
+        console.error('Create Folder Error:', error.message);
+        throw error;
+    }
+}
+
 /**
- * Delete a file from Google Drive
+ * "Delete" a file by moving it to a "Deleted" folder
  * @param {string} fileId 
  */
 async function deleteFile(fileId) {
     try {
-        await drive.files.delete({ fileId: fileId });
-        console.log(`🗑️ Deleted from Drive: ${fileId}`);
+        // 1. Get Project Root Folder ID (if any) or just use root
+        const rootFolderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
+
+        // 2. Find or Create "Deleted" folder
+        const deletedFolderName = "Deleted";
+        let deletedFolder = await findFolder(deletedFolderName, rootFolderId);
+
+        if (!deletedFolder) {
+            console.log(`Creating '${deletedFolderName}' folder...`);
+            deletedFolder = await createFolder(deletedFolderName, rootFolderId);
+        }
+
+        // 3. Move file to "Deleted" folder
+        // We need to retrieve the current parents to remove them
+        const file = await drive.files.get({
+            fileId: fileId,
+            fields: 'parents'
+        });
+
+        const previousParents = file.data.parents ? file.data.parents.join(',') : '';
+
+        await drive.files.update({
+            fileId: fileId,
+            addParents: deletedFolder.id,
+            removeParents: previousParents,
+            fields: 'id, parents'
+        });
+
+        console.log(`🗑️ Moved to Deleted Folder: ${fileId}`);
+
     } catch (error) {
-        console.error('❌ Google Drive Delete Error:', error.message);
-        // Don't throw, just log
+        console.error('❌ Google Drive Soft-Delete Error:', error.message);
+        // Fallback: If move fails, do nothing or log. Don't permanently delete if logic fails.
     }
 }
 

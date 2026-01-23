@@ -26,10 +26,22 @@ export default function CompanyProfile() {
         if (!isNaN(d.getTime())) return d;
 
         // Try parsing DD/MM/YYYY
-        if (typeof dateStr === 'string' && dateStr.match(/^\d{1,2}\/\d{1,2}\/\d{4}/)) {
-            const [day, month, year] = dateStr.split('/');
-            d = new Date(`${year}-${month}-${day}`);
-            if (!isNaN(d.getTime())) return d;
+        if (typeof dateStr === 'string') {
+            if (dateStr.match(/^\d{1,2}\/\d{1,2}\/\d{4}/)) {
+                const [day, month, year] = dateStr.split('/');
+                d = new Date(`${year}-${month}-${day}`);
+                if (!isNaN(d.getTime())) return d;
+            }
+            // Try parsing YYYY-MM-DD
+            if (dateStr.match(/^\d{4}-\d{2}-\d{2}/)) {
+                d = new Date(dateStr);
+                if (!isNaN(d.getTime())) return d;
+            }
+            // Try parsing MMM DD YYYY (e.g. Jul 01 2025 or Jul 01, 2025)
+            if (dateStr.match(/^[A-Za-z]{3}\s\d{1,2},?\s\d{4}/)) {
+                d = new Date(dateStr.replace(',', '')); // Remove comma for reliable parsing
+                if (!isNaN(d.getTime())) return d;
+            }
         }
         return new Date(0); // Fallback
     };
@@ -67,7 +79,13 @@ export default function CompanyProfile() {
     const handleSaveTransactions = async () => {
         // Only save transactions that haven't been saved yet (no _id)
         const newTransactions = (bankFiles || [])
-            .flatMap(f => f.transactions || [])
+            .flatMap(f => (f.transactions || []).map(t => ({
+                ...t,
+                // CRITICAL: Preserve driveId from parent file if available
+                driveId: f.driveId || t.driveId,
+                // Also preserve path if available (backup)
+                path: f.path || t.path
+            })))
             .filter(tx => !tx._id);
 
         if (newTransactions.length === 0) {
@@ -155,11 +173,22 @@ export default function CompanyProfile() {
                         const start = new Date(dates[0]).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
                         const end = new Date(dates[dates.length - 1]).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
+                        // Fix Syntax: Ensure txWithDrive find is correct
+                        const txWithDrive = groupTxs.find(t => t.originalData && (t.originalData.driveId || t.originalData.path));
+
+                        let path = null;
+                        if (txWithDrive) {
+                            if (txWithDrive.originalData.path) path = txWithDrive.originalData.path;
+                            else if (txWithDrive.originalData.driveId) path = `drive:${txWithDrive.originalData.driveId}`;
+                        }
+
                         return {
                             originalName: `Saved History: ${monthName} ${year}`,
                             dateRange: `${start} - ${end}`,
                             status: 'Saved',
-                            transactions: groupTxs
+                            transactions: groupTxs,
+                            path: path,
+                            driveId: txWithDrive?.originalData?.driveId
                         };
                     });
 
@@ -611,59 +640,82 @@ export default function CompanyProfile() {
 
     const handleDelete = async (idx, file) => {
         // Robust check for saved status
-        const isSaved = file.status === 'Saved' || (file.transactions && file.transactions.some(t => t._id));
+        // Robust check for saved status: Only if it has database IDs
+        const isSaved = file.transactions && file.transactions.some(t => t._id);
 
         if (!window.confirm(`Delete ${isSaved ? 'PERMANENTLY' : 'this'} item?`)) return;
 
         if (isSaved) {
             // Delete from DB
-            const ids = file.transactions.filter(t => t._id).map(t => t._id);
+            if (ids.length > 0) {
+                try {
+                    const token = localStorage.getItem('token');
+                    await axios.post('/api/company/delete-transactions', {
+                        transactionIds: ids
+                    }, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    // Success - reload to sync everything
+                    alert(`Deleted ${ids.length} transactions. Page will reload.`);
+                    window.location.reload();
+                } catch (err) {
+                    console.error('Delete API Error:', err);
 
-            if (ids.length === 0) {
-                alert("Error: No Transaction IDs found in database for this file.");
-                return;
-            }
+                    // If 404, it means they are already gone from DB. Just clean up UI.
+                    if (err.response && err.response.status === 404) {
+                        console.warn("Transactions not found in DB, removing from UI only.");
+                        setBankFiles(prev => prev.filter((_, i) => i !== idx)); // Optimistic remove
+                        if (activeFileIndex === idx) setActiveFileIndex(0);
+                        return;
+                    }
 
-            try {
-                const token = localStorage.getItem('token');
+                    const errMsg = err.response?.data?.message || err.message;
 
-                // Optimistic UI update
-                setBankFiles(prev => prev.filter((_, i) => i !== idx));
+                    // Force Remove Option for ANY error
+                    if (window.confirm(`Delete failed on server (${errMsg}). \n\nDo you want to FORCE REMOVE this item from your list anyway?`)) {
+                        setBankFiles(prev => prev.filter((_, i) => i !== idx));
+                        if (activeFileIndex === idx) setActiveFileIndex(0);
+                        return;
+                    }
 
-                await axios.post('/api/company/delete-transactions', {
-                    transactionIds: ids
-                }, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                    if (errMsg === 'Token is not valid' || err.response?.status === 401) {
+                        alert('Session Expired. Please Login Again.');
+                        localStorage.removeItem('token');
+                        window.location.href = '/login';
+                        return;
+                    }
 
-                alert(`Deleted ${ids.length} transactions. Page will reload.`);
-                window.location.reload();
-
-            } catch (err) {
-                console.error(err);
-                const errMsg = err.response?.data?.message || err.message;
-
-                if (errMsg === 'Token is not valid' || err.response?.status === 401) {
-                    alert('Session Expired. Please Login Again.');
-                    localStorage.removeItem('token');
-                    window.location.href = '/login';
-                    return;
+                    // Show On-Screen Error
+                    setDebugLog({
+                        title: 'Delete Failed',
+                        message: errMsg,
+                        details: JSON.stringify(err.response?.data || {}, null, 2)
+                    });
                 }
-
-                // Show On-Screen Error for Screenshotting
-                setDebugLog({
-                    title: 'Delete Failed',
-                    message: errMsg,
-                    details: JSON.stringify(err.response?.data || {}, null, 2)
-                });
-
-                // Reload to restore state if error
-                fetchProfile();
+            } else {
+                // No IDs found even though isSaved property was true
+                // This is an inconsistent state. Just remove from UI.
+                console.warn("Item marked as Saved but has no IDs. Removing locally.");
+                setBankFiles(prev => prev.filter((_, i) => i !== idx));
+                if (activeFileIndex === idx) setActiveFileIndex(0);
             }
         } else {
             // Delete Unsaved - No reload needed
             setBankFiles(prev => prev.filter((_, i) => i !== idx));
             if (activeFileIndex === idx) setActiveFileIndex(0);
+
+            // Attempt to Soft Delete from Drive if driveId is present
+            if (file.driveId) {
+                try {
+                    const token = localStorage.getItem('token');
+                    await axios.post('/api/company/delete-file', { driveId: file.driveId }, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    console.log(`Soft deleted file ${file.driveId}`);
+                } catch (err) {
+                    console.error("Soft delete failed (non-critical):", err);
+                }
+            }
         }
     };
 
@@ -811,9 +863,9 @@ export default function CompanyProfile() {
                         </div>
                         <div className="flex items-center gap-2">
                             {/* NEW: View Original PDF Button */}
-                            {bankFiles[activeFileIndex]?.path && bankFiles[activeFileIndex].path.startsWith('drive:') && (
+                            {(bankFiles[activeFileIndex]?.path?.startsWith('drive:') || bankFiles[activeFileIndex]?.driveId) && (
                                 <a
-                                    href={`${getDocUrl(bankFiles[activeFileIndex])}`}
+                                    href={`${getDocUrl(bankFiles[activeFileIndex] || { path: 'drive:' + bankFiles[activeFileIndex].driveId })}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-xs bg-white border border-gray-200 text-gray-600 px-3 py-1 rounded-full hover:text-blue-600 hover:border-blue-300 transition flex items-center gap-2 mr-2"
@@ -948,10 +1000,10 @@ export default function CompanyProfile() {
             {/* Header */}
             <header className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm h-16 flex items-center px-6 justify-between">
                 <div className="flex items-center gap-3 cursor-pointer" onClick={() => setView('home')}>
-                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold shadow-sm">
-                        IO
+                    <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold shadow-sm text-sm tracking-tighter">
+                        GK
                     </div>
-                    <span className="font-bold text-lg tracking-tight text-gray-800">IncorpOne <span className="text-gray-400 font-normal">System</span></span>
+                    <span className="font-bold text-lg tracking-tight text-gray-800">GK SMART <span className="text-gray-400 font-normal">& Ai</span></span>
                 </div>
                 {/* Quick Actions or User Menu could go here */}
             </header>
