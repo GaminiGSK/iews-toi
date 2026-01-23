@@ -302,14 +302,14 @@ const GeneralLedger = ({ onBack }) => {
                                     {/* Bulk Assign Tool */}
                                     {filteredTransactions.length > 0 && (
                                         <div className="mt-3 pt-3 border-t border-blue-100 flex flex-col gap-2">
-                                            <p className="text-[10px] font-bold text-blue-400 uppercase">Bulk Actions</p>
+                                            <p className="text-[10px] font-bold text-blue-400 uppercase">Re-assign</p>
                                             <div className="flex items-center gap-2">
                                                 <select
                                                     value={bulkTargetCode}
                                                     onChange={(e) => setBulkTargetCode(e.target.value)}
                                                     className="flex-1 text-xs border border-gray-200 rounded px-2 py-1 outline-none bg-white font-medium text-gray-700"
                                                 >
-                                                    <option value="">Move visible to...</option>
+                                                    <option value="">Assign balance to...</option>
                                                     {codes.map(c => (
                                                         <option key={c._id} value={c._id}>
                                                             {c.code} - {c.description}
@@ -326,24 +326,6 @@ const GeneralLedger = ({ onBack }) => {
                                             </div>
                                         </div>
                                     )}
-                                </div>
-                                {/* Integrated Filter Dropdown */}
-                                <div className="relative">
-                                    <div className="text-right mb-1">
-                                        <label className="text-[10px] text-blue-400 font-bold uppercase">Filter View</label>
-                                    </div>
-                                    <select
-                                        value={filterCode}
-                                        onChange={(e) => setFilterCode(e.target.value)}
-                                        className="text-xs font-bold text-blue-600 bg-blue-50 border border-blue-100 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-blue-200 max-w-[150px]"
-                                    >
-                                        <option value="">All Accounts</option>
-                                        {codes.map(c => (
-                                            <option key={c._id} value={c._id}>
-                                                {c.code} - {c.description}
-                                            </option>
-                                        ))}
-                                    </select>
                                 </div>
                             </div>
                         </div>
