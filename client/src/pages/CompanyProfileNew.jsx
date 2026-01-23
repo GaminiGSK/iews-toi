@@ -657,6 +657,7 @@ export default function CompanyProfile() {
 
         if (isSaved) {
             // Delete from DB
+            const ids = file.transactions.map(t => t._id).filter(Boolean);
             if (ids.length > 0) {
                 try {
                     const token = localStorage.getItem('token');
