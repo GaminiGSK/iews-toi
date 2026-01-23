@@ -10,6 +10,7 @@ const GeneralLedger = ({ onBack }) => {
     const [error, setError] = useState(null);
     const [viewMode, setViewMode] = useState('date'); // 'date' | 'code'
     const [filterCode, setFilterCode] = useState('');
+    const [bulkTargetCode, setBulkTargetCode] = useState('');
 
     useEffect(() => {
         fetchLedger();
@@ -59,6 +60,39 @@ const GeneralLedger = ({ onBack }) => {
             console.error(err);
             alert('Failed to update tag');
             fetchLedger(); // Revert on error
+        }
+    };
+
+    const handleBulkTag = async () => {
+        if (!bulkTargetCode) return;
+        if (!window.confirm(`Are you sure you want to assign account "${codes.find(c => c._id === bulkTargetCode)?.code}" to all ${filteredTransactions.length} visible transactions?`)) return;
+
+        try {
+            setTagging(true);
+            const token = localStorage.getItem('token');
+            const transactionIds = filteredTransactions.map(t => t._id);
+
+            // Send as a single bulk request if backend supports it, or parallel requests
+            // Since we don't have a bulk-tag-specific endpoint confirmed, let's try to assume we can add one easily or just loop. 
+            // Loop is safer without backend changes.
+            const promises = transactionIds.map(id =>
+                axios.post('/api/company/transactions/tag', {
+                    transactionId: id,
+                    accountCodeId: bulkTargetCode
+                }, { headers: { 'Authorization': `Bearer ${token}` } })
+            );
+
+            await Promise.all(promises);
+
+            alert('Bulk assignment complete.');
+            setBulkTargetCode('');
+            fetchLedger();
+        } catch (err) {
+            console.error(err);
+            alert('Some transactions failed to update.');
+            fetchLedger();
+        } finally {
+            setTagging(false);
         }
     };
 
@@ -264,9 +298,40 @@ const GeneralLedger = ({ onBack }) => {
                                     <p className="text-2xl font-bold text-blue-900 mt-1">
                                         ${filteredTransactions.reduce((acc, tx) => acc + (tx.amount || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                                     </p>
+
+                                    {/* Bulk Assign Tool */}
+                                    {filteredTransactions.length > 0 && (
+                                        <div className="mt-3 pt-3 border-t border-blue-100 flex flex-col gap-2">
+                                            <p className="text-[10px] font-bold text-blue-400 uppercase">Bulk Actions</p>
+                                            <div className="flex items-center gap-2">
+                                                <select
+                                                    value={bulkTargetCode}
+                                                    onChange={(e) => setBulkTargetCode(e.target.value)}
+                                                    className="flex-1 text-xs border border-gray-200 rounded px-2 py-1 outline-none bg-white font-medium text-gray-700"
+                                                >
+                                                    <option value="">Move visible to...</option>
+                                                    {codes.map(c => (
+                                                        <option key={c._id} value={c._id}>
+                                                            {c.code} - {c.description}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <button
+                                                    onClick={handleBulkTag}
+                                                    disabled={!bulkTargetCode || tagging}
+                                                    className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-bold transition disabled:opacity-50"
+                                                >
+                                                    Apply
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                                 {/* Integrated Filter Dropdown */}
                                 <div className="relative">
+                                    <div className="text-right mb-1">
+                                        <label className="text-[10px] text-blue-400 font-bold uppercase">Filter View</label>
+                                    </div>
                                     <select
                                         value={filterCode}
                                         onChange={(e) => setFilterCode(e.target.value)}
