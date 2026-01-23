@@ -156,78 +156,115 @@ const GeneralLedger = ({ onBack }) => {
         });
     };
 
-    const renderTable = (data, showHeader = true) => (
-        <table className="w-full text-left">
-            {showHeader && (
-                <thead className="bg-gray-50 text-gray-600 text-xs font-bold uppercase border-b border-gray-200">
-                    <tr>
-                        <th className="px-6 py-4 w-[120px]" rowSpan="2">Date</th>
-                        <th className="px-6 py-4 w-[200px]" rowSpan="2">Account Code</th>
-                        <th className="px-6 py-4 min-w-[300px]" rowSpan="2">Description</th>
-                        <th className="px-6 py-4 text-center border-l border-gray-200" colSpan="3">USD ($)</th>
-                        <th className="px-6 py-4 text-center border-l border-gray-200" colSpan="3">KHR (៛)</th>
-                    </tr>
-                    <tr className="border-t border-gray-200">
-                        <th className="px-4 py-2 text-right border-l text-gray-500">In</th>
-                        <th className="px-4 py-2 text-right text-gray-500">Out</th>
-                        <th className="px-4 py-2 text-right text-gray-500">Bal</th>
-                        <th className="px-4 py-2 text-right border-l text-gray-500">In</th>
-                        <th className="px-4 py-2 text-right text-gray-500">Out</th>
-                        <th className="px-4 py-2 text-right text-gray-500">Bal</th>
-                    </tr>
-                </thead>
-            )}
-            <tbody className="divide-y divide-gray-100">
-                {data.map((tx, idx) => (
-                    <tr key={idx} className="hover:bg-gray-50 transition">
-                        <td className="px-6 py-4 text-xs text-gray-600 font-bold whitespace-nowrap align-top">
-                            {formatDateSafe(tx.date)}
-                            {tx.rateUsed > 0 && <div className="text-[10px] text-teal-600 mt-1 font-normal">@{tx.rateUsed}</div>}
-                        </td>
-                        <td className="px-6 py-4 text-xs align-top">
-                            <select
-                                value={tx.accountCode || ''}
-                                onChange={(e) => handleTagChange(tx._id, e.target.value)}
-                                className="w-full border border-gray-200 rounded-lg px-2 py-1 text-xs font-mono focus:ring-2 focus:ring-blue-500 outline-none bg-white"
-                            >
-                                <option value="">-- Select Code --</option>
-                                {codes.map(c => (
-                                    <option key={c._id} value={c._id}>
-                                        {c.code} - {c.description}
-                                    </option>
-                                ))}
-                            </select>
-                        </td>
-                        <td className="px-6 py-4 text-xs text-gray-700 font-medium align-top leading-relaxed whitespace-pre-wrap">
-                            {tx.description}
-                        </td>
+    const renderTable = (data, showHeader = true) => {
+        // Calculate totals for this specific view/group
+        const viewTotals = data.reduce((acc, tx) => ({
+            in: acc.in + (tx.amount > 0 ? tx.amount : 0),
+            out: acc.out + (tx.amount < 0 ? Math.abs(tx.amount) : 0),
+            net: acc.net + (tx.amount || 0),
+            inKHR: acc.inKHR + (tx.amountKHR > 0 ? tx.amountKHR : 0),
+            outKHR: acc.outKHR + (tx.amountKHR < 0 ? Math.abs(tx.amountKHR) : 0),
+            netKHR: acc.netKHR + (tx.balanceKHR || 0)
+        }), { in: 0, out: 0, net: 0, inKHR: 0, outKHR: 0, netKHR: 0 });
 
-                        {/* USD COLUMNS */}
-                        <td className="px-4 py-4 text-xs text-right font-bold text-green-600 align-top whitespace-nowrap border-l border-gray-100">
-                            {tx.amount > 0 ? tx.amount.toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
-                        </td>
-                        <td className="px-4 py-4 text-xs text-right font-bold text-red-600 align-top whitespace-nowrap">
-                            {tx.amount < 0 ? Math.abs(tx.amount).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
-                        </td>
-                        <td className="px-4 py-4 text-xs text-right text-gray-900 font-bold align-top whitespace-nowrap">
-                            {tx.balance ? tx.balance.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '-'}
-                        </td>
+        return (
+            <table className="w-full text-left">
+                {showHeader && (
+                    <thead className="bg-gray-50 text-gray-600 text-xs font-bold uppercase border-b border-gray-200">
+                        <tr>
+                            <th className="px-6 py-4 w-[120px]" rowSpan="2">Date</th>
+                            <th className="px-6 py-4 w-[200px]" rowSpan="2">Account Code</th>
+                            <th className="px-6 py-4 min-w-[300px]" rowSpan="2">Description</th>
+                            <th className="px-6 py-4 text-center border-l border-gray-200" colSpan="3">USD ($)</th>
+                            <th className="px-6 py-4 text-center border-l border-gray-200" colSpan="3">KHR (៛)</th>
+                        </tr>
+                        <tr className="border-t border-gray-200">
+                            <th className="px-4 py-2 text-right border-l text-gray-500">In</th>
+                            <th className="px-4 py-2 text-right text-gray-500">Out</th>
+                            <th className="px-4 py-2 text-right text-gray-500">Bal</th>
+                            <th className="px-4 py-2 text-right border-l text-gray-500">In</th>
+                            <th className="px-4 py-2 text-right text-gray-500">Out</th>
+                            <th className="px-4 py-2 text-right text-gray-500">Bal</th>
+                        </tr>
+                    </thead>
+                )}
+                <tbody className="divide-y divide-gray-100">
+                    {/* Bank Balance Summary Row */}
+                    {showHeader && (
+                        <tr className="bg-blue-50/30 font-bold text-sm border-b border-blue-100">
+                            <td className="px-6 py-4"></td>
+                            <td className="px-6 py-4"></td>
+                            <td className="px-6 py-4 text-blue-900">Bank Balance</td>
+                            {/* USD */}
+                            <td className="px-4 py-4 text-right text-green-600 border-l border-blue-100">
+                                {viewTotals.in > 0 ? viewTotals.in.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '-'}
+                            </td>
+                            <td className="px-4 py-4 text-right text-red-600">
+                                {viewTotals.out > 0 ? viewTotals.out.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '-'}
+                            </td>
+                            <td className="px-4 py-4 text-right text-blue-900 text-lg">
+                                {viewTotals.net.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                            </td>
+                            {/* KHR */}
+                            <td className="px-4 py-4 text-right text-teal-600 border-l border-blue-100">
+                                {viewTotals.inKHR > 0 ? viewTotals.inKHR.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '-'}
+                            </td>
+                            <td className="px-4 py-4 text-right text-red-500">
+                                {viewTotals.outKHR > 0 ? viewTotals.outKHR.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '-'}
+                            </td>
+                            <td className="px-4 py-4 text-right text-gray-500">
+                                -
+                            </td>
+                        </tr>
+                    )}
 
-                        {/* KHR COLUMNS */}
-                        <td className="px-4 py-4 text-xs text-right font-bold text-teal-600 align-top whitespace-nowrap border-l border-gray-100 bg-gray-50/50">
-                            {tx.amountKHR > 0 ? tx.amountKHR.toLocaleString('en-US', { maximumFractionDigits: 0 }) : ''}
-                        </td>
-                        <td className="px-4 py-4 text-xs text-right font-bold text-red-400 align-top whitespace-nowrap bg-gray-50/50">
-                            {tx.amountKHR < 0 ? Math.abs(tx.amountKHR).toLocaleString('en-US', { maximumFractionDigits: 0 }) : ''}
-                        </td>
-                        <td className="px-4 py-4 text-xs text-right text-gray-600 font-bold align-top whitespace-nowrap bg-gray-50/50">
-                            {tx.balanceKHR ? tx.balanceKHR.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '-'}
-                        </td>
-                    </tr>
-                ))}
-            </tbody>
-        </table>
-    );
+                    {data.map((tx, idx) => (
+                        <tr key={idx} className="hover:bg-gray-50 transition">
+                            <td className="px-6 py-4 text-xs text-gray-600 font-bold whitespace-nowrap align-top">
+                                {formatDateSafe(tx.date)}
+                                {tx.rateUsed > 0 && <div className="text-[10px] text-teal-600 mt-1 font-normal">@{tx.rateUsed}</div>}
+                            </td>
+                            <td className="px-6 py-4 text-xs align-top">
+                                <select
+                                    value={tx.accountCode || ''}
+                                    onChange={(e) => handleTagChange(tx._id, e.target.value)}
+                                    className="w-full border border-gray-200 rounded-lg px-2 py-1 text-xs font-mono focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                                >
+                                    <option value="">-- Select Code --</option>
+                                    {codes.map(c => (
+                                        <option key={c._id} value={c._id}>
+                                            {c.code} - {c.description}
+                                        </option>
+                                    ))}
+                                </select>
+                            </td>
+                            <td className="px-6 py-4 text-xs text-gray-700 font-medium align-top leading-relaxed whitespace-pre-wrap">
+                                {tx.description}
+                            </td>
+                            <td className="px-4 py-4 text-xs text-right font-bold text-green-600 align-top whitespace-nowrap border-l border-gray-100">
+                                {tx.amount > 0 ? tx.amount.toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
+                            </td>
+                            <td className="px-4 py-4 text-xs text-right font-bold text-red-600 align-top whitespace-nowrap">
+                                {tx.amount < 0 ? Math.abs(tx.amount).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
+                            </td>
+                            <td className="px-4 py-4 text-xs text-right text-gray-900 font-bold align-top whitespace-nowrap">
+                                {tx.balance ? tx.balance.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '-'}
+                            </td>
+                            <td className="px-4 py-4 text-xs text-right font-bold text-teal-600 align-top whitespace-nowrap border-l border-gray-100 bg-gray-50/50">
+                                {tx.amountKHR > 0 ? tx.amountKHR.toLocaleString('en-US', { maximumFractionDigits: 0 }) : ''}
+                            </td>
+                            <td className="px-4 py-4 text-xs text-right font-bold text-red-400 align-top whitespace-nowrap bg-gray-50/50">
+                                {tx.amountKHR < 0 ? Math.abs(tx.amountKHR).toLocaleString('en-US', { maximumFractionDigits: 0 }) : ''}
+                            </td>
+                            <td className="px-4 py-4 text-xs text-right text-gray-600 font-bold align-top whitespace-nowrap bg-gray-50/50">
+                                {tx.balanceKHR ? tx.balanceKHR.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '-'}
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        );
+    };
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900">
@@ -374,8 +411,9 @@ const GeneralLedger = ({ onBack }) => {
                     )}
                 </div>
             </div>
-        </div >
+        </div>
     );
 };
 
 export default GeneralLedger;
+
