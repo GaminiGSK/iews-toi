@@ -242,51 +242,46 @@ const GeneralLedger = ({ onBack }) => {
             </div>
 
             <div className="flex-1 p-8 overflow-auto">
-                {/* Summary & Filters */}
-                {!loading && (
-                    <div className="max-w-7xl mx-auto space-y-6 mb-8">
-                        {/* Filter Bar */}
-                        <div className="flex justify-end">
-                            <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg border border-gray-200 shadow-sm">
-                                <span className="text-xs font-bold text-gray-500 uppercase">Values for:</span>
-                                <select
-                                    value={filterCode}
-                                    onChange={(e) => setFilterCode(e.target.value)}
-                                    className="text-sm font-medium text-blue-700 outline-none bg-transparent min-w-[200px]"
-                                >
-                                    <option value="">All Transactions</option>
-                                    {codes.map(c => (
-                                        <option key={c._id} value={c._id}>
-                                            {c.code} - {c.description}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                {/* Summary Cards */}
+                {!loading && transactions.length > 0 && (
+                    <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Money In</p>
+                            <p className="text-2xl font-bold text-green-600 mt-1">
+                                ${filteredTransactions.reduce((acc, tx) => acc + (tx.amount > 0 ? tx.amount : 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                            </p>
                         </div>
-
-                        {/* Summary Cards */}
-                        {transactions.length > 0 && (
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Money In</p>
-                                    <p className="text-2xl font-bold text-green-600 mt-1">
-                                        ${filteredTransactions.reduce((acc, tx) => acc + (tx.amount > 0 ? tx.amount : 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                                    </p>
-                                </div>
-                                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Money Out</p>
-                                    <p className="text-2xl font-bold text-red-600 mt-1">
-                                        ${Math.abs(filteredTransactions.reduce((acc, tx) => acc + (tx.amount < 0 ? tx.amount : 0), 0)).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                                    </p>
-                                </div>
-                                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Money Out</p>
+                            <p className="text-2xl font-bold text-red-600 mt-1">
+                                ${Math.abs(filteredTransactions.reduce((acc, tx) => acc + (tx.amount < 0 ? tx.amount : 0), 0)).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                            </p>
+                        </div>
+                        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 ring-2 ring-blue-50 relative">
+                            <div className="flex justify-between items-start">
+                                <div>
                                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Net Balance</p>
                                     <p className="text-2xl font-bold text-blue-900 mt-1">
                                         ${filteredTransactions.reduce((acc, tx) => acc + (tx.amount || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                                     </p>
                                 </div>
+                                {/* Integrated Filter Dropdown */}
+                                <div className="relative">
+                                    <select
+                                        value={filterCode}
+                                        onChange={(e) => setFilterCode(e.target.value)}
+                                        className="text-xs font-bold text-blue-600 bg-blue-50 border border-blue-100 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-blue-200 max-w-[150px]"
+                                    >
+                                        <option value="">All Accounts</option>
+                                        {codes.map(c => (
+                                            <option key={c._id} value={c._id}>
+                                                {c.code} - {c.description}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
-                        )}
+                        </div>
                     </div>
                 )}
 
@@ -332,7 +327,7 @@ const GeneralLedger = ({ onBack }) => {
                     )}
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 
