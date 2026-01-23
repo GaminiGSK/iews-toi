@@ -672,11 +672,6 @@ router.get('/codes', auth, async (req, res) => {
 router.post('/codes', auth, async (req, res) => {
     try {
         const AccountCode = require('../models/AccountCode');
-        const { code, toiCode, description } = req.body;
-
-        if (!code || !toiCode || !description) return res.status(400).json({ message: 'Code, TOI Code, and Description required' });
-        if (description.length > 50) return res.status(400).json({ message: 'Description max 50 chars' });
-
         let { code, toiCode, description, matchDescription } = req.body;
 
         if (!code || !toiCode || !description) return res.status(400).json({ message: 'Code, TOI Code, and Description required' });
