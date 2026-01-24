@@ -7,6 +7,8 @@ import 'jspdf-autotable';
 
 const TrialBalance = ({ onBack }) => {
     const [report, setReport] = useState([]);
+    const [fiscalYear, setFiscalYear] = useState(new Date().getFullYear()); // Dynamic Year
+    const [totals, setTotals] = useState({ drUSD: 0, crUSD: 0, drKHR: 0, crKHR: 0 });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [viewMode, setViewMode] = useState('visual'); // 'visual' | 'table'
@@ -20,10 +22,13 @@ const TrialBalance = ({ onBack }) => {
         try {
             setLoading(true);
             const token = localStorage.getItem('token');
-            const res = await axios.get('/api/company/trial-balance', {
+            const res = await axios.get(`/api/company/trial-balance?fiscalYear=${fiscalYear}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             setReport(res.data.report || []);
+            setTotals(res.data.totals || { drUSD: 0, crUSD: 0, drKHR: 0, crKHR: 0 });
+            // Set Year if available
+            if (res.data.currentYear) setFiscalYear(res.data.currentYear);
             setError(null);
         } catch (err) {
             console.error(err);
@@ -316,7 +321,9 @@ const TrialBalance = ({ onBack }) => {
                                 <table className="w-full border-collapse min-w-[900px]">
                                     <thead>
                                         <tr className="bg-gray-50 border-b border-gray-300">
-                                            <th className="border-r border-gray-300 p-2 text-left w-1/3"></th>
+                                            <th className="border-r border-gray-300 p-2 text-center w-20 text-xs text-gray-500 uppercase">Code</th>
+                                            <th className="border-r border-gray-300 p-2 text-center w-24 text-xs text-gray-500 uppercase">TOI Code</th>
+                                            <th className="border-r border-gray-300 p-2 text-left"></th>
                                             <th className="border-r border-gray-300 p-2 text-center w-16 text-xs text-gray-500 uppercase">Note</th>
                                             <th colSpan="2" className="border-r border-gray-300 p-2 text-center font-bold text-gray-900 bg-blue-50/50">
                                                 For the year ended<br /><span className="text-xs font-normal">31-Dec-{new Date().getFullYear()}</span><br />
@@ -329,6 +336,8 @@ const TrialBalance = ({ onBack }) => {
                                             <th className="p-2 text-center w-16 text-xs text-gray-500 uppercase">Ref</th>
                                         </tr>
                                         <tr className="bg-gray-100 text-xs font-bold text-gray-700 border-b border-gray-400">
+                                            <th className="border-r border-gray-300 p-2 text-center"></th>
+                                            <th className="border-r border-gray-300 p-2 text-center"></th>
                                             <th className="border-r border-gray-300 p-2 text-left pl-4 uppercase">Description</th>
                                             <th className="border-r border-gray-300 p-2"></th>
                                             <th className="border-r border-gray-300 p-2 text-right w-32 bg-blue-50/50">Dr</th>
@@ -354,7 +363,7 @@ const TrialBalance = ({ onBack }) => {
                                             return (
                                                 <React.Fragment key={prefix}>
                                                     <tr className="bg-gray-200 border-t border-b border-gray-300">
-                                                        <td colSpan="7" className="p-2 px-4 uppercase tracking-widest text-xs font-bold text-gray-800">
+                                                        <td colSpan="9" className="p-2 px-4 uppercase tracking-widest text-xs font-bold text-gray-800">
                                                             {groupName}
                                                         </td>
                                                     </tr>
@@ -370,7 +379,13 @@ const TrialBalance = ({ onBack }) => {
 
                                                         return (
                                                             <tr key={row.code} className="hover:bg-yellow-50 transition border-b border-gray-200 text-sm group">
-                                                                <td className="border-r border-gray-300 p-2 pl-4 text-gray-800 group-hover:text-black">
+                                                                <td className="border-r border-gray-300 p-2 text-center text-xs font-mono text-gray-600">
+                                                                    {row.code}
+                                                                </td>
+                                                                <td className="border-r border-gray-300 p-2 text-center text-xs font-mono text-gray-500">
+                                                                    {row.toiCode}
+                                                                </td>
+                                                                <td className="border-r border-gray-300 p-2 pl-4 text-gray-800 group-hover:text-black font-medium">
                                                                     {row.description}
                                                                 </td>
                                                                 <td className="border-r border-gray-300 p-2 text-center text-xs text-blue-600 font-bold">
@@ -400,6 +415,8 @@ const TrialBalance = ({ onBack }) => {
                                         })}
                                         {/* Grand Total Row */}
                                         <tr className="bg-gray-300 font-bold border-t-2 border-gray-400">
+                                            <td className="border-r border-gray-400"></td>
+                                            <td className="border-r border-gray-400"></td>
                                             <td className="border-r border-gray-400 p-3 text-right uppercase text-xs">Total</td>
                                             <td className="border-r border-gray-400"></td>
                                             <td className="border-r border-gray-400 p-3 text-right text-gray-900">
@@ -408,12 +425,8 @@ const TrialBalance = ({ onBack }) => {
                                             <td className="border-r border-gray-400 p-3 text-right text-gray-900">
                                                 {(totals.crKHR / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                                             </td>
-                                            <td className="border-r border-gray-400 p-3 text-right text-gray-600">
-                                                -
-                                            </td>
-                                            <td className="border-r border-gray-400 p-3 text-right text-gray-600">
-                                                -
-                                            </td>
+                                            <td className="border-r border-gray-400"></td>
+                                            <td className="border-r border-gray-400"></td>
                                             <td></td>
                                         </tr>
                                     </tbody>

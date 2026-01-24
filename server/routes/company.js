@@ -982,7 +982,10 @@ router.get('/trial-balance', auth, async (req, res) => {
 
         const report = Object.values(reportMap).sort((a, b) => a.code.localeCompare(b.code));
 
-        res.json({ report });
+        res.json({
+            report: report,
+            currentYear: currentYear // Pass derived year to UI
+        });
 
     } catch (err) {
         console.error(err);
