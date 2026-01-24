@@ -996,36 +996,64 @@ router.post('/transactions/auto-tag', auth, async (req, res) => {
         const AccountCode = require('../models/AccountCode');
         const googleAI = require('../services/googleAI');
 
-        // 1. Fetch Transactions (Untagged only, limit to 20 to avoid token limits)
+        // 1. Fetch ALL Transactions to re-apply rules (Overwrite mode)
         const transactions = await Transaction.find({
-            companyCode: req.user.companyCode,
-            accountCode: null
-        }).limit(20);
+            companyCode: req.user.companyCode
+        });
 
         if (transactions.length === 0) {
-            return res.json({ message: 'No untagged transactions found.' });
+            return res.json({ message: 'No transactions found.' });
         }
 
         // 2. Fetch all codes
         const codes = await AccountCode.find({ companyCode: req.user.companyCode });
 
-        // 3. Call AI
-        const suggestions = await googleAI.suggestAccountingCodes(transactions, codes);
+        // Identify Target Codes
+        // 1. Cash On Hand (Money In)
+        let cashCode = codes.find(c => c.code === '10110'); // Standard
+        if (!cashCode) cashCode = codes.find(c => c.description.toLowerCase().includes('cash'));
 
-        // 4. Apply Updates
+        // 2. Salary Expenses (Money Out default)
+        let salaryCode = codes.find(c => c.code === '61070'); // Standard
+        if (!salaryCode) salaryCode = codes.find(c => c.description.toLowerCase().includes('salary'));
+
+        // 3. Bank Fees (Money Out < $10)
+        let feesCode = codes.find(c => c.code === '61220'); // Standard
+        if (!feesCode) feesCode = codes.find(c => c.description.toLowerCase().includes('fees') || c.description.toLowerCase().includes('charges'));
+
         let updatedCount = 0;
-        for (const sugg of suggestions) {
-            // Find the code ID
-            const codeDoc = codes.find(c => c.code === sugg.accountCode);
-            if (codeDoc) {
-                await Transaction.findByIdAndUpdate(sugg.transactionId, {
-                    accountCode: codeDoc._id
-                });
-                updatedCount++;
+
+        // 3. Process Transactions (Strict Rules)
+        for (const tx of transactions) {
+            // RULE 1: Money In -> Cash On Hand
+            if (tx.amount > 0) {
+                if (cashCode) {
+                    tx.accountCode = cashCode._id;
+                    await tx.save();
+                    updatedCount++;
+                }
+            }
+            // RULE 2 & 3: Money Out Rules
+            else {
+                const absAmount = Math.abs(tx.amount);
+
+                if (absAmount < 10 && feesCode) {
+                    // Less than $10 -> Bank Fees
+                    tx.accountCode = feesCode._id;
+                    await tx.save();
+                    updatedCount++;
+                } else if (salaryCode) {
+                    // All other Money Out -> Salary Expenses
+                    tx.accountCode = salaryCode._id;
+                    await tx.save();
+                    updatedCount++;
+                }
             }
         }
 
-        res.json({ message: `AI Auto-Tagged ${updatedCount} transactions.`, count: updatedCount });
+        // Note: AI is skipped entirely as rules cover 100% of cases requested.
+
+        res.json({ message: `Auto-Tag complete. ${updatedCount} transactions updated based on strict rules.`, count: updatedCount });
 
     } catch (err) {
         console.error("Auto-Tag API Error:", err);
