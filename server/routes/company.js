@@ -875,6 +875,16 @@ router.get('/trial-balance', auth, async (req, res) => {
         };
 
         // 3. Aggregate Data
+
+        // Determine Report Year for Prior Year Rate Logic
+        // Find max date in transactions, or default to current year
+        const currentYear = transactions.length > 0
+            ? new Date(Math.max(...transactions.map(t => new Date(t.date).getTime()))).getFullYear()
+            : new Date().getFullYear();
+
+        const priorRateObj = rates.find(r => r.year === currentYear - 1);
+        const priorRate = priorRateObj ? priorRateObj.rate : 4000; // Fallback 4000 if no rate set
+
         // Map: CodeID -> { code, desc, toi, drUSD, crUSD, drKHR, crKHR }
         const reportMap = {};
 
@@ -887,10 +897,17 @@ router.get('/trial-balance', auth, async (req, res) => {
                 code: c.code,
                 toiCode: c.toiCode,
                 description: c.description,
+                note: c.note || '', // Audit Note Ref (A12, B1 etc)
                 drUSD: 0,
                 crUSD: 0,
                 drKHR: 0, // Calculated dynamically
-                crKHR: 0
+                crKHR: 0,
+
+                // Prior Year Data (Static from Code Definition)
+                priorDrUSD: c.priorYearDr || 0,
+                priorCrUSD: c.priorYearCr || 0,
+                priorDrKHR: (c.priorYearDr || 0) * priorRate,
+                priorCrKHR: (c.priorYearCr || 0) * priorRate
             };
         });
 

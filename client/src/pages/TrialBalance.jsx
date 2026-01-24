@@ -10,6 +10,7 @@ const TrialBalance = ({ onBack }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [viewMode, setViewMode] = useState('visual'); // 'visual' | 'table'
+    const [inThousands, setInThousands] = useState(false);
 
     useEffect(() => {
         fetchReport();
@@ -293,63 +294,131 @@ const TrialBalance = ({ onBack }) => {
                 )}
 
                 {viewMode === 'table' && (
-                    <div className="max-w-7xl mx-auto bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden animate-fade-in font-sans">
+                    <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-lg border border-gray-300 overflow-hidden text-sm font-serif animate-fade-in">
+
+                        {/* Audit Toolbar */}
+                        <div className="bg-gray-100 p-2 flex justify-end items-center border-b border-gray-300 gap-4">
+                            <label className="flex items-center gap-2 cursor-pointer select-none">
+                                <input
+                                    type="checkbox"
+                                    checked={inThousands}
+                                    onChange={(e) => setInThousands(e.target.checked)}
+                                    className="rounded text-blue-600 focus:ring-blue-500 h-4 w-4"
+                                />
+                                <span className="text-gray-700 font-sans text-xs font-semibold">Show in KHR'000 (Tax Mode)</span>
+                            </label>
+                        </div>
+
                         {loading && report.length === 0 ? (
-                            <div className="p-12 text-center text-gray-500">Generating Report...</div>
+                            <div className="p-12 text-center text-gray-500 font-sans">Generating Audit Report...</div>
                         ) : (
-                            <table className="w-full text-left">
-                                <thead className="bg-slate-50 border-b border-slate-200 text-xs font-bold uppercase text-slate-500 tracking-wider">
-                                    <tr>
-                                        <th className="px-6 py-4">Code</th>
-                                        <th className="px-6 py-4">TOI Code</th>
-                                        <th className="px-6 py-4">Description</th>
-                                        <th className="px-6 py-4 text-right bg-slate-100/50">Dr (USD)</th>
-                                        <th className="px-6 py-4 text-right bg-slate-100/50">Cr (USD)</th>
-                                        <th className="px-6 py-4 text-right">Dr (KHR)</th>
-                                        <th className="px-6 py-4 text-right">Cr (KHR)</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100 bg-white">
-                                    {report.length === 0 ? (
-                                        <tr><td colSpan="7" className="px-6 py-12 text-center text-gray-400">No transactions tagged yet. Go to General Ledger to start tagging.</td></tr>
-                                    ) : (
-                                        report.map((row, idx) => (
-                                            <tr key={idx} className="hover:bg-blue-50/30 transition text-sm group">
-                                                <td className="px-6 py-4 font-bold text-slate-700">{row.code}</td>
-                                                <td className="px-6 py-4 text-slate-500">{row.toiCode}</td>
-                                                <td className="px-6 py-4 text-slate-800 font-medium group-hover:text-blue-700">{row.description}</td>
-                                                <td className={`px-6 py-4 text-right font-mono bg-slate-50/30 ${row.drUSD > 0 ? 'text-slate-900 font-semibold' : 'text-slate-300'}`}>
-                                                    {row.drUSD > 0 ? row.drUSD.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '-'}
-                                                </td>
-                                                <td className={`px-6 py-4 text-right font-mono bg-slate-50/30 ${row.crUSD > 0 ? 'text-slate-900 font-semibold' : 'text-slate-300'}`}>
-                                                    {row.crUSD > 0 ? row.crUSD.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '-'}
-                                                </td>
-                                                <td className="px-6 py-4 text-right font-mono text-slate-500">
-                                                    {row.drKHR > 0 ? row.drKHR.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '-'}
-                                                </td>
-                                                <td className="px-6 py-4 text-right font-mono text-slate-500">
-                                                    {row.crKHR > 0 ? row.crKHR.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '-'}
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                    <tr className="bg-slate-50 font-bold border-t border-slate-200">
-                                        <td colSpan="3" className="px-6 py-5 text-right text-slate-600 uppercase tracking-widest text-xs">Totals</td>
-                                        <td className={`px-6 py-5 text-right text-lg ${isBalancedUSD ? 'text-emerald-700' : 'text-rose-600'}`}>
-                                            {totals.drUSD.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                                        </td>
-                                        <td className={`px-6 py-5 text-right text-lg ${isBalancedUSD ? 'text-emerald-700' : 'text-rose-600'}`}>
-                                            {totals.crUSD.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                                        </td>
-                                        <td className="px-6 py-5 text-right text-slate-500">
-                                            {totals.drKHR.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                                        </td>
-                                        <td className="px-6 py-5 text-right text-slate-500">
-                                            {totals.crKHR.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            <div className="overflow-x-auto">
+                                <table className="w-full border-collapse min-w-[900px]">
+                                    <thead>
+                                        <tr className="bg-gray-50 border-b border-gray-300">
+                                            <th className="border-r border-gray-300 p-2 text-left w-1/3"></th>
+                                            <th className="border-r border-gray-300 p-2 text-center w-16 text-xs text-gray-500 uppercase">Note</th>
+                                            <th colSpan="2" className="border-r border-gray-300 p-2 text-center font-bold text-gray-900 bg-blue-50/50">
+                                                For the year ended<br /><span className="text-xs font-normal">31-Dec-{new Date().getFullYear()}</span><br />
+                                                <span className="text-xs uppercase text-gray-500">{inThousands ? "KHR'000" : "KHR"}</span>
+                                            </th>
+                                            <th colSpan="2" className="border-r border-gray-300 p-2 text-center font-bold text-gray-500 bg-gray-50">
+                                                For the year ended<br /><span className="text-xs font-normal">31-Dec-{new Date().getFullYear() - 1}</span><br />
+                                                <span className="text-xs uppercase text-gray-400">{inThousands ? "KHR'000" : "KHR"}</span>
+                                            </th>
+                                            <th className="p-2 text-center w-16 text-xs text-gray-500 uppercase">Ref</th>
+                                        </tr>
+                                        <tr className="bg-gray-100 text-xs font-bold text-gray-700 border-b border-gray-400">
+                                            <th className="border-r border-gray-300 p-2 text-left pl-4 uppercase">Description</th>
+                                            <th className="border-r border-gray-300 p-2"></th>
+                                            <th className="border-r border-gray-300 p-2 text-right w-32 bg-blue-50/50">Dr</th>
+                                            <th className="border-r border-gray-300 p-2 text-right w-32 bg-blue-50/50">Cr</th>
+                                            <th className="border-r border-gray-300 p-2 text-right w-32 bg-gray-50">Dr</th>
+                                            <th className="border-r border-gray-300 p-2 text-right w-32 bg-gray-50">Cr</th>
+                                            <th className="p-2"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {['1', '2', '3', '4', '6'].map(prefix => {
+                                            const groupName = {
+                                                '1': 'ASSETS', '2': 'LIABILITIES', '3': 'EQUITY',
+                                                '4': 'INCOME', '6': 'EXPENSES'
+                                            }[prefix] || 'OTHER';
+
+                                            // Filter rows for this section
+                                            const groupRows = report.filter(r => r.code.startsWith(prefix) ||
+                                                (prefix === '6' && ['5', '7', '8', '9'].some(p => r.code.startsWith(p)))).sort((a, b) => a.code.localeCompare(b.code));
+
+                                            if (groupRows.length === 0) return null;
+
+                                            return (
+                                                <React.Fragment key={prefix}>
+                                                    <tr className="bg-gray-200 border-t border-b border-gray-300">
+                                                        <td colSpan="7" className="p-2 px-4 uppercase tracking-widest text-xs font-bold text-gray-800">
+                                                            {groupName}
+                                                        </td>
+                                                    </tr>
+                                                    {groupRows.map(row => {
+                                                        const scale = inThousands ? 1000 : 1;
+                                                        const dr = row.drKHR ? row.drKHR / scale : 0;
+                                                        const cr = row.crKHR ? row.crKHR / scale : 0;
+                                                        const pDr = row.priorDrKHR ? row.priorDrKHR / scale : 0;
+                                                        const pCr = row.priorCrKHR ? row.priorCrKHR / scale : 0;
+
+                                                        // Optional: Hide rows with ZERO activity in ALL columns?
+                                                        if (dr === 0 && cr === 0 && pDr === 0 && pCr === 0) return null;
+
+                                                        return (
+                                                            <tr key={row.code} className="hover:bg-yellow-50 transition border-b border-gray-200 text-sm group">
+                                                                <td className="border-r border-gray-300 p-2 pl-4 text-gray-800 group-hover:text-black">
+                                                                    {row.description}
+                                                                </td>
+                                                                <td className="border-r border-gray-300 p-2 text-center text-xs text-blue-600 font-bold">
+                                                                    {row.note}
+                                                                </td>
+                                                                <td className="border-r border-gray-300 p-2 text-right font-mono text-gray-900 bg-blue-50/10">
+                                                                    {dr > 0 ? dr.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '-'}
+                                                                </td>
+                                                                <td className="border-r border-gray-300 p-2 text-right font-mono text-gray-900 bg-blue-50/10">
+                                                                    {cr > 0 ? cr.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '-'}
+                                                                </td>
+                                                                {/* Prior Year */}
+                                                                <td className="border-r border-gray-300 p-2 text-right font-mono text-gray-500 bg-gray-50">
+                                                                    {pDr > 0 ? pDr.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '-'}
+                                                                </td>
+                                                                <td className="border-r border-gray-300 p-2 text-right font-mono text-gray-500 bg-gray-50">
+                                                                    {pCr > 0 ? pCr.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '-'}
+                                                                </td>
+                                                                <td className="p-2 text-center text-xs text-gray-400">
+                                                                    {row.note}
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </React.Fragment>
+                                            );
+                                        })}
+                                        {/* Grand Total Row */}
+                                        <tr className="bg-gray-300 font-bold border-t-2 border-gray-400">
+                                            <td className="border-r border-gray-400 p-3 text-right uppercase text-xs">Total</td>
+                                            <td className="border-r border-gray-400"></td>
+                                            <td className="border-r border-gray-400 p-3 text-right text-gray-900">
+                                                {(totals.drKHR / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                                            </td>
+                                            <td className="border-r border-gray-400 p-3 text-right text-gray-900">
+                                                {(totals.crKHR / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                                            </td>
+                                            <td className="border-r border-gray-400 p-3 text-right text-gray-600">
+                                                -
+                                            </td>
+                                            <td className="border-r border-gray-400 p-3 text-right text-gray-600">
+                                                -
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         )}
                     </div>
                 )}
