@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Building } from 'lucide-react';
@@ -7,6 +7,21 @@ export default function Login() {
     const [code, setCode] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
+
+    // Auto-login removed to allow access to main account
+    /*
+    useEffect(() => {
+        if (window.location.hostname === 'localhost') {
+            axios.post('/api/auth/dev-login')
+                .then(res => {
+                    localStorage.setItem('token', res.data.token);
+                    localStorage.setItem('user', JSON.stringify(res.data.user));
+                    navigate('/admin'); 
+                })
+                .catch(err => console.error("Dev auto-login failed:", err));
+        }
+    }, [navigate]);
+    */
 
     const handleLogin = async (e) => {
         e.preventDefault();

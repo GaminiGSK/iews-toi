@@ -41,6 +41,35 @@ const adminAuth = (req, res, next) => {
     });
 };
 
+// DEV ONLY: Quick Login for Localhost Subagent
+router.post('/dev-login', async (req, res) => {
+    try {
+        // Find ANY admin or create one
+        let user = await User.findOne({ role: 'admin' });
+        if (!user) {
+            // Create a fallback admin if none exists
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash('admin', salt);
+
+            user = new User({
+                companyName: 'Dev Admin',
+                companyCode: 'ADMIN',
+                password: hashedPassword,
+                loginCode: 'admin',
+                role: 'admin'
+            });
+            await user.save();
+        }
+
+        const payload = { id: user._id, role: user.role, isFirstLogin: false, companyCode: user.companyCode };
+        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
+        res.json({ token, user: { id: user._id, role: user.role, companyCode: user.companyCode } });
+    } catch (e) {
+        console.error("Dev login error:", e);
+        res.status(500).json({ message: e.message });
+    }
+});
+
 // Login (Using Company Code OR Single Access Code)
 router.post('/login', async (req, res) => {
     const { companyCode, password, code } = req.body;

@@ -85,7 +85,7 @@ const GeneralLedger = ({ onBack }) => {
             await Promise.all(promises);
 
             alert('Bulk assignment complete.');
-            setBulkTargetCode('');
+            // setBulkTargetCode(''); // Keep selected so user can see the new Bank Balance
             fetchLedger();
         } catch (err) {
             console.error(err);
@@ -159,8 +159,11 @@ const GeneralLedger = ({ onBack }) => {
     const renderTable = (data, showHeader = true) => {
         // Calculate totals for this specific view/group
         const viewTotals = data.reduce((acc, tx) => {
-            // Only include confirmed transactions in the Bank Balance Calculation
-            if (!tx.accountCode || tx.accountCode === 'uncategorized') return acc;
+            // User Request: Balance should only appear when interacting/applying.
+            // Strict matching: Only show balance of transactions that ACTUALLY have the code.
+            // Before Apply: Shows 0 (or existing). After Apply: Shows new total.
+            if (!bulkTargetCode) return acc;
+            if (tx.accountCode !== bulkTargetCode) return acc;
 
             return {
                 in: acc.in + (tx.amount > 0 ? tx.amount : 0),
@@ -195,7 +198,7 @@ const GeneralLedger = ({ onBack }) => {
                 )}
                 <tbody className="divide-y divide-gray-100">
                     {/* Bank Balance Summary Row */}
-                    {showHeader && (
+                    {showHeader && bulkTargetCode && (
                         <tr className="bg-blue-50/30 font-bold text-sm border-b border-blue-100">
                             <td className="px-6 py-4"></td>
                             <td className="px-6 py-4"></td>
