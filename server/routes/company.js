@@ -886,8 +886,21 @@ router.get('/trial-balance', auth, async (req, res) => {
             };
         });
 
-        // Sum Transactions
+        // Sum Transactions and Calculate Control Total (Implicit Bank Balance)
+        let netControlUSD = 0;
+        let netControlKHR = 0;
+
         transactions.forEach(tx => {
+            const amtUSD = tx.amount;
+            // Accumulate Control Total (Source Side Logic)
+            // Money In (+) increases Bank (Debit)
+            // Money Out (-) decreases Bank (Credit)
+            if (amtUSD !== undefined) {
+                const rate = getRate(tx.date);
+                netControlUSD += amtUSD;
+                netControlKHR += (amtUSD * rate);
+            }
+
             if (!tx.accountCode) return;
             const codeId = tx.accountCode._id;
 
@@ -895,35 +908,33 @@ router.get('/trial-balance', auth, async (req, res) => {
             if (!reportMap[codeId]) return;
 
             const rate = getRate(tx.date);
-            const amtUSD = tx.amount;
             const amtKHR = amtUSD * rate;
 
             if (amtUSD > 0) {
-                // Money In -> Debit (Asset) or Credit (Revenue)?
-                // Standard: Bank Deposit = Debit Bank.
-                // But if this is "Sales", it should be Credit.
-                // We don't know the "Type" of the account yet (Asset/Liab/Equity).
-                // Image: Sales of Goods is Credit. Cost of Goods is Debit.
-                // WE ARE ONLY TAGGING FROM BANK STATEMENT (Cash Basis).
-                // Cash In = Bank Debit (The Bank Line) AND Account Credit (The Income Line).
-                // Cash Out = Bank Credit (The Bank Line) AND Account Debit (The Expense Line).
-
-                // IMPORTANT: The user is tagging the "Contra Account".
-                // If Bank says +$100 (Cash In), and I tag "Sales", then "Sales" is Credit $100.
-                // If Bank says -$50 (Cash Out), and I tag "Expenses", then "Expenses" is Debit $50.
-
-                // SO:
-                // If Tx Amount > 0 (Money In) -> The Tagged Account is CREDIT.
-                // If Tx Amount < 0 (Money Out) -> The Tagged Account is DEBIT.
-
+                // Money In -> Tag is Credit
                 reportMap[codeId].crUSD += Math.abs(amtUSD);
                 reportMap[codeId].crKHR += Math.abs(amtKHR);
             } else {
-                // Money Out (Negative)
+                // Money Out -> Tag is Debit
                 reportMap[codeId].drUSD += Math.abs(amtUSD);
                 reportMap[codeId].drKHR += Math.abs(amtKHR);
             }
         });
+
+        // Apply Control Total to Bank Account (10130 ABA)
+        // This forces the "Net Balance" to appear in the Trial Balance
+        const bankCode = codes.find(c => c.code === '10130');
+        if (bankCode && reportMap[bankCode._id]) {
+            if (netControlUSD > 0) {
+                // Net In -> Debit Bank
+                reportMap[bankCode._id].drUSD += netControlUSD;
+                reportMap[bankCode._id].drKHR += netControlKHR;
+            } else {
+                // Net Out -> Credit Bank
+                reportMap[bankCode._id].crUSD += Math.abs(netControlUSD);
+                reportMap[bankCode._id].crKHR += Math.abs(netControlKHR);
+            }
+        }
 
         const report = Object.values(reportMap).sort((a, b) => a.code.localeCompare(b.code));
 
