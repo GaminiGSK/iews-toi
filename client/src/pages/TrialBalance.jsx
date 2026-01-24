@@ -326,11 +326,11 @@ const TrialBalance = ({ onBack }) => {
                                             <th className="border-r border-gray-300 p-2 text-left"></th>
                                             <th className="border-r border-gray-300 p-2 text-center w-16 text-xs text-gray-500 uppercase">Note</th>
                                             <th colSpan="2" className="border-r border-gray-300 p-2 text-center font-bold text-gray-900 bg-blue-50/50">
-                                                For the year ended<br /><span className="text-xs font-normal">31-Dec-{new Date().getFullYear()}</span><br />
+                                                For the year ended<br /><span className="text-xs font-normal">31-Dec-{fiscalYear}</span><br />
                                                 <span className="text-xs uppercase text-gray-500">{inThousands ? "KHR'000" : "KHR"}</span>
                                             </th>
                                             <th colSpan="2" className="border-r border-gray-300 p-2 text-center font-bold text-gray-500 bg-gray-50">
-                                                For the year ended<br /><span className="text-xs font-normal">31-Dec-{new Date().getFullYear() - 1}</span><br />
+                                                For the year ended<br /><span className="text-xs font-normal">31-Dec-{fiscalYear - 1}</span><br />
                                                 <span className="text-xs uppercase text-gray-400">{inThousands ? "KHR'000" : "KHR"}</span>
                                             </th>
                                             <th className="p-2 text-center w-16 text-xs text-gray-500 uppercase">Ref</th>
