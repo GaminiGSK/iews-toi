@@ -854,8 +854,8 @@ router.get('/trial-balance', auth, async (req, res) => {
         // 1. Fetch Data
         const codes = await AccountCode.find({ companyCode: req.user.companyCode }).lean();
         const transactions = await Transaction.find({
-            companyCode: req.user.companyCode,
-            accountCode: { $ne: null } // Only tagged items
+            companyCode: req.user.companyCode
+            // Include ALL transactions to calculate correct Bank Control Total
         }).populate('accountCode').lean();
         const rates = await ExchangeRate.find({ companyCode: req.user.companyCode }).lean();
 
