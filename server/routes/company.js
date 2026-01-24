@@ -618,7 +618,7 @@ router.get('/ledger', auth, async (req, res) => {
         const getRate = (date) => {
             const year = new Date(date).getFullYear();
             const rateObj = rates.find(r => r.year === year);
-            return rateObj ? rateObj.rate : 0; // Default to 0 if not set
+            return rateObj ? rateObj.rate : 4000; // Default to 4000 (Safe Fallback)
         };
 
         // Enrich transactions with KHR values
@@ -871,7 +871,7 @@ router.get('/trial-balance', auth, async (req, res) => {
         const getRate = (date) => {
             const year = new Date(date).getFullYear();
             const rateObj = rates.find(r => r.year === year);
-            return rateObj ? rateObj.rate : 0;
+            return rateObj ? rateObj.rate : 4000;
         };
 
         // 3. Aggregate Data
