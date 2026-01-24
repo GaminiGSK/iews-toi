@@ -72,18 +72,19 @@ const GeneralLedger = ({ onBack }) => {
             return;
         }
 
-        // Filter Candidates: Unassigned AND correct direction
+        // Filter Candidates: VISIBLE transactions with correct direction that are NOT already ABA
+        // This allows RE-ASSIGNING transactions (e.g. moving from 'Cash' to 'ABA')
         const candidates = filteredTransactions.filter(t =>
-            (!t.accountCode || t.accountCode === 'uncategorized') &&
+            (t.accountCode !== abaCode._id) &&
             (type === 'in' ? t.amount > 0 : t.amount < 0)
         );
 
         if (candidates.length === 0) {
-            alert(`No unassigned ${type === 'in' ? 'Money IN' : 'Money OUT'} transactions found.`);
+            alert(`No valid ${type === 'in' ? 'Money IN' : 'Money OUT'} transactions found to re-assign.`);
             return;
         }
 
-        const confirmMsg = `QUICK ASSIGN (${type.toUpperCase()}): \n\nAssign "${abaCode.code} - ${abaCode.description}" to ${candidates.length} transactions?\n\nTotal: $${Math.abs(candidates.reduce((sum, t) => sum + t.amount, 0)).toLocaleString()}`;
+        const confirmMsg = `CONFIRM RE-ASSIGN (${type.toUpperCase()}):\n\nRe-assign ${candidates.length} transactions to "${abaCode.code} - ${abaCode.description}"?\n\nThis will update their classification in the Trial Balance.\n\nTotal Value: $${Math.abs(candidates.reduce((sum, t) => sum + t.amount, 0)).toLocaleString()}`;
 
         if (!window.confirm(confirmMsg)) return;
 
@@ -98,7 +99,7 @@ const GeneralLedger = ({ onBack }) => {
             );
 
             await Promise.all(promises);
-            alert(`${type === 'in' ? 'Money In' : 'Money Out'} transactions assigned to ABA.`);
+            alert(`${type === 'in' ? 'Money In' : 'Money Out'} transactions re-assigned to ABA.`);
             fetchLedger();
         } catch (err) {
             console.error(err);
