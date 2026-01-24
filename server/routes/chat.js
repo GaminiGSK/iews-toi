@@ -22,10 +22,14 @@ router.post('/message', auth, async (req, res) => {
         // Fetch recent transactions (Limit 15 for context)
         const transactions = await Transaction.find({ companyCode })
             .sort({ date: -1 }) // Newest first
-            .limit(15);
+            .limit(15)
+            .populate('accountCode')
+            .lean();
+
+        console.log(`[Chat Debug] User: ${req.user.companyCode} | Txs Found: ${transactions.length}`);
 
         // Fetch Chart of Accounts
-        const rawCodes = await AccountCode.find({ companyCode }).sort({ code: 1 });
+        const rawCodes = await AccountCode.find({ companyCode }).sort({ code: 1 }).lean();
         const codes = rawCodes.map(c => ({ code: c.code, description: c.description }));
 
         // Calculate a quick Financial Summary (All time or YTD?)
@@ -44,6 +48,8 @@ router.post('/message', auth, async (req, res) => {
                 }
             }
         ]);
+
+        console.log('[Chat Debug] Summary Data:', JSON.stringify(summaryStats));
 
         // Calculate Monthly Trends (Last 12 Months)
         const monthlyStatsRaw = await Transaction.aggregate([
@@ -74,11 +80,16 @@ router.post('/message', auth, async (req, res) => {
         };
 
         const recentTxContext = transactions.map(t => ({
-            date: t.date.toISOString().split('T')[0],
+            date: t.date ? t.date.toISOString().split('T')[0] : 'No Date',
             description: t.description,
             amount: t.amount,
-            code: t.accountCode
+            code: t.accountCode ? t.accountCode.code : 'Uncategorized' // Use Code string if populated, else 'Uncategorized'
         }));
+
+        // Debug Context
+        if (transactions.length === 0) {
+            console.warn(`[Chat Warning] No transactions found for company ${companyCode}`);
+        }
 
         // 2. Call AI Service
         const context = {
@@ -102,16 +113,16 @@ router.post('/message', auth, async (req, res) => {
 
                 if (toolPayload.tool_use === 'create_rule') {
                     const ruleData = toolPayload.rule_data;
-                    
+
                     // Validate basic rule data
                     if (ruleData.targetAccountCode && ruleData.criteria) {
                         const ClassificationRule = require('../models/ClassificationRule');
-                        
+
                         // Check availability
-                        const existingRule = await ClassificationRule.findOne({ 
-                            companyCode, 
-                            ruleType: ruleData.ruleType, 
-                            criteria: ruleData.criteria 
+                        const existingRule = await ClassificationRule.findOne({
+                            companyCode,
+                            ruleType: ruleData.ruleType,
+                            criteria: ruleData.criteria
                         });
 
                         if (existingRule) {
