@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Loader2, CheckCircle, AlertCircle, Table, Save, X, Eye, FileText, CloudUpload, Calendar, Book, Tag, DollarSign, Scale } from 'lucide-react';
+import { Loader2, CheckCircle, AlertCircle, Table, Save, X, Eye, FileText, CloudUpload, Calendar, Book, Tag, DollarSign, Scale, TrendingUp } from 'lucide-react';
 import GeneralLedger from './GeneralLedger';
 import AccountingCodes from './AccountingCodes';
 import CurrencyExchange from './CurrencyExchange';
 import TrialBalance from './TrialBalance';
+import FinancialStatements from './FinancialStatements';
 import MOCCertificate from '../components/MOCCertificate';
 
 export default function CompanyProfile() {
@@ -322,7 +323,18 @@ export default function CompanyProfile() {
                         <Scale className="text-teal-800" />
                     </div>
                     <h3 className="text-xl font-bold text-gray-800 mb-2">Trial Balance</h3>
-                    <p className="text-gray-500 text-sm">View Consolidated Report (Dr/Cr).</p>
+                    <p className="text-gray-500 text-sm">Step 4-6: Unadjusted & Adjusted Trial Balance.</p>
+                </div>
+
+                <div
+                    onClick={() => setView('financials')}
+                    className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition group border-l-4 border-l-indigo-600 ring-1 ring-indigo-50"
+                >
+                    <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
+                        <TrendingUp className="text-indigo-800" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">Financial Statements</h3>
+                    <p className="text-gray-500 text-sm">Step 7: Final P&L and Balance Sheet (Blue AI).</p>
                 </div>
             </div>
         </div>
@@ -1051,6 +1063,7 @@ export default function CompanyProfile() {
                 {view === 'codes' && <AccountingCodes onBack={() => setView('home')} />}
                 {view === 'currency' && <CurrencyExchange onBack={() => setView('home')} />}
                 {view === 'report' && <TrialBalance onBack={() => setView('home')} />}
+                {view === 'financials' && <FinancialStatements onBack={() => setView('home')} />}
             </main>
 
             {/* DOCUMENT INSPECTOR MODAL */}
