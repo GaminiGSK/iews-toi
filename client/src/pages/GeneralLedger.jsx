@@ -63,51 +63,7 @@ const GeneralLedger = ({ onBack }) => {
         }
     };
 
-    // Quick Assign for ABA (10130) Money In/Out
-    const handleQuickAssign = async (type) => { // type: 'in' or 'out'
-        const abaCode = codes.find(c => c.code === '10130' || c.description.toUpperCase().includes('ABA'));
 
-        if (!abaCode) {
-            alert('Error: Account Code 10130 (ABA) not found.');
-            return;
-        }
-
-        // Filter Candidates: VISIBLE transactions with correct direction that are NOT already ABA
-        // This allows RE-ASSIGNING transactions (e.g. moving from 'Cash' to 'ABA')
-        const candidates = filteredTransactions.filter(t =>
-            (t.accountCode !== abaCode._id) &&
-            (type === 'in' ? t.amount > 0 : t.amount < 0)
-        );
-
-        if (candidates.length === 0) {
-            alert(`No valid ${type === 'in' ? 'Money IN' : 'Money OUT'} transactions found to re-assign.`);
-            return;
-        }
-
-        const confirmMsg = `CONFIRM RE-ASSIGN (${type.toUpperCase()}):\n\nRe-assign ${candidates.length} transactions to "${abaCode.code} - ${abaCode.description}"?\n\nThis will update their classification in the Trial Balance.\n\nTotal Value: $${Math.abs(candidates.reduce((sum, t) => sum + t.amount, 0)).toLocaleString()}`;
-
-        if (!window.confirm(confirmMsg)) return;
-
-        try {
-            setTagging(true);
-            const token = localStorage.getItem('token');
-            const promises = candidates.map(t =>
-                axios.post('/api/company/transactions/tag', {
-                    transactionId: t._id,
-                    accountCodeId: abaCode._id
-                }, { headers: { 'Authorization': `Bearer ${token}` } })
-            );
-
-            await Promise.all(promises);
-            alert(`${type === 'in' ? 'Money In' : 'Money Out'} transactions re-assigned to ABA.`);
-            fetchLedger();
-        } catch (err) {
-            console.error(err);
-            alert('Quick assign failed.');
-        } finally {
-            setTagging(false);
-        }
-    };
 
     // Unassign all ABA (10130) transactions (Undo/Reset)
     const handleUnassignABA = async () => {
@@ -431,28 +387,12 @@ const GeneralLedger = ({ onBack }) => {
                                     {!filterCode && (
                                         <div className="mt-4 pt-3 border-t border-blue-100 flex flex-col gap-2">
                                             <p className="text-[10px] font-bold text-gray-500 uppercase">QUICK ACTIONS (ABA 10130)</p>
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={() => handleQuickAssign('in')}
-                                                    disabled={tagging}
-                                                    className="flex-1 py-1.5 bg-white border border-green-600 text-green-700 hover:bg-green-50 rounded text-xs font-bold transition shadow-sm"
-                                                >
-                                                    Tag All IN as ABA
-                                                </button>
-                                                <button
-                                                    onClick={() => handleQuickAssign('out')}
-                                                    disabled={tagging}
-                                                    className="flex-1 py-1.5 bg-white border border-blue-600 text-blue-700 hover:bg-blue-50 rounded text-xs font-bold transition shadow-sm"
-                                                >
-                                                    Tag All OUT as ABA
-                                                </button>
-                                            </div>
                                             <button
                                                 onClick={handleUnassignABA}
                                                 disabled={tagging}
                                                 className="w-full py-1.5 bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 border border-gray-200 hover:border-red-200 rounded text-xs font-bold transition"
                                             >
-                                                Reset ABA Tags (Undo)
+                                                Reset ABA Tags (Undo Mistake)
                                             </button>
                                         </div>
                                     )}
