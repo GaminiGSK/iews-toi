@@ -63,6 +63,51 @@ const GeneralLedger = ({ onBack }) => {
         }
     };
 
+    // Quick Assign for ABA (10130) Money In/Out
+    const handleQuickAssign = async (type) => { // type: 'in' or 'out'
+        const abaCode = codes.find(c => c.code === '10130' || c.description.toUpperCase().includes('ABA'));
+
+        if (!abaCode) {
+            alert('Error: Account Code 10130 (ABA) not found.');
+            return;
+        }
+
+        // Filter Candidates: Unassigned AND correct direction
+        const candidates = filteredTransactions.filter(t =>
+            (!t.accountCode || t.accountCode === 'uncategorized') &&
+            (type === 'in' ? t.amount > 0 : t.amount < 0)
+        );
+
+        if (candidates.length === 0) {
+            alert(`No unassigned ${type === 'in' ? 'Money IN' : 'Money OUT'} transactions found.`);
+            return;
+        }
+
+        const confirmMsg = `QUICK ASSIGN (${type.toUpperCase()}): \n\nAssign "${abaCode.code} - ${abaCode.description}" to ${candidates.length} transactions?\n\nTotal: $${Math.abs(candidates.reduce((sum, t) => sum + t.amount, 0)).toLocaleString()}`;
+
+        if (!window.confirm(confirmMsg)) return;
+
+        try {
+            setTagging(true);
+            const token = localStorage.getItem('token');
+            const promises = candidates.map(t =>
+                axios.post('/api/company/transactions/tag', {
+                    transactionId: t._id,
+                    accountCodeId: abaCode._id
+                }, { headers: { 'Authorization': `Bearer ${token}` } })
+            );
+
+            await Promise.all(promises);
+            alert(`${type === 'in' ? 'Money In' : 'Money Out'} transactions assigned to ABA.`);
+            fetchLedger();
+        } catch (err) {
+            console.error(err);
+            alert('Quick assign failed.');
+        } finally {
+            setTagging(false);
+        }
+    };
+
     const handleSafeBulkTag = async () => {
         if (!bulkTargetCode) return;
 
@@ -345,6 +390,29 @@ const GeneralLedger = ({ onBack }) => {
                                             .reduce((acc, tx) => acc + (tx.amount || 0), 0)
                                             .toLocaleString('en-US', { minimumFractionDigits: 2 })}
                                     </p>
+
+                                    {/* Quick Actions for ABA (10130) */}
+                                    {!filterCode && (
+                                        <div className="mt-4 pt-3 border-t border-blue-100 flex flex-col gap-2">
+                                            <p className="text-[10px] font-bold text-gray-500 uppercase">QUICK ACTIONS (ABA 10130)</p>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => handleQuickAssign('in')}
+                                                    disabled={tagging}
+                                                    className="flex-1 py-1.5 bg-white border border-green-600 text-green-700 hover:bg-green-50 rounded text-xs font-bold transition shadow-sm"
+                                                >
+                                                    Assign to Money IN
+                                                </button>
+                                                <button
+                                                    onClick={() => handleQuickAssign('out')}
+                                                    disabled={tagging}
+                                                    className="flex-1 py-1.5 bg-white border border-blue-600 text-blue-700 hover:bg-blue-50 rounded text-xs font-bold transition shadow-sm"
+                                                >
+                                                    Assign to Money Out
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {/* Safe Bulk Assign Tool */}
                                     {!filterCode && transactions.some(t => !t.accountCode || t.accountCode === 'uncategorized') && (
