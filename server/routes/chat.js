@@ -104,12 +104,17 @@ router.post('/message', auth, async (req, res) => {
 
         // 3. Handle Potential Tool Use (Rule Creation)
         let finalText = aiResponse;
+        let toolAction = null;
 
         // Try to parse JSON output from AI (it might wrap in markdown ```json ... ```)
         try {
             const cleanJson = aiResponse.replace(/```json/g, '').replace(/```/g, '').trim();
             if (cleanJson.startsWith('{') && cleanJson.includes('"tool_use"')) {
                 const toolPayload = JSON.parse(cleanJson);
+
+                // Store payload to send to frontend
+                toolAction = toolPayload;
+                finalText = toolPayload.reply_text; // Default reply
 
                 if (toolPayload.tool_use === 'create_rule') {
                     const ruleData = toolPayload.rule_data;
@@ -146,6 +151,7 @@ router.post('/message', auth, async (req, res) => {
                         finalText = "I understood you want to create a rule, but I couldn't identify the specific code or criteria. Please try again.";
                     }
                 }
+                // For 'propose_journal_entry', we do nothing here. We just pass 'toolAction' to frontend.
             }
         } catch (e) {
             // Not JSON or parse error, just return raw text
@@ -153,7 +159,7 @@ router.post('/message', auth, async (req, res) => {
         }
 
         // 4. Return Response
-        res.json({ text: finalText });
+        res.json({ text: finalText, toolAction });
 
     } catch (err) {
         console.error("Chat API Error:", err);

@@ -245,21 +245,27 @@ exports.chatWithFinancialAgent = async (message, context) => {
 
             **Instructions:**
             1. **DETECT RULE REQUESTS**: If the user asks to "set a rule", "always tag", "categorize X as Y", or "change the limit", you MUST process this as a Rule Creation Request.
-            2. **RULE RESPONSE FORMAT**: If a rule request is detected, output **ONLY** a JSON object (no markdown) in this format:
-               {
-                 "tool_use": "create_rule",
-                 "rule_data": {
-                   "name": "Short Descr of Rule",
-                   "ruleType": "keyword" (or "amount_in", "amount_out"),
-                   "criteria": "keyword_or_number",
-                   "operator": "contains" (or "equals", "lt", "gt"),
-                   "targetAccountCode": "EXACT_CODE_FROM_LIST_ABOVE"
-                 },
-                 "reply_text": "I have created a rule to start categorizing [criteria] as [Code - Desc]."
-               }
-               - **IMPORTANT**: finding the 'targetAccountCode': Look at the "Chart of Accounts" provided above. Find the best matching code (e.g., if user says "Rent", find "64000 (Rent Expense)"). If you can't find a code, ask the user for clarification in plain text instead of using the tool.
+               - Output JSON: { "tool_use": "create_rule", "rule_data": { ... }, "reply_text": "..." }
 
-            3. **NORMAL CHAT**: If it is NOT a rule request, answer normally in plain text.
+            2. **DETECT ADJUSTMENT REQUESTS (NEW)**: If the user asks to "depreciate assets", "accrue expenses", "adjust the books", or "manual entry":
+               - You must act as a Senior Accountant. Calculate the Debits and Credits.
+               - Output **ONLY** a JSON object in this format:
+               {
+                 "tool_use": "propose_journal_entry",
+                 "journal_data": {
+                   "date": "YYYY-MM-DD" (Today or specified),
+                   "description": "Clear description of adjustment",
+                   "lines": [
+                      { "accountCode": "CODE_FROM_LIST", "debit": 100, "credit": 0 },
+                      { "accountCode": "CODE_FROM_LIST", "debit": 0, "credit": 100 }
+                   ],
+                   "aiReasoning": "Brief explanation of accounting standard applied (e.g. IAS 16)"
+                 },
+                 "reply_text": "I have prepared an adjustment for [Description]. Please review and confirm."
+               }
+               - **VALIDATION**: Total Debits MUST equal Total Credits. Find the correct Codes from the list provided.
+
+            3. **NORMAL CHAT**: If it is NOT a rule/adjustment request, answer normally in plain text.
                - Be professional, concise, and helpful.
                - Use Markdown for formatting (bold, lists).
 

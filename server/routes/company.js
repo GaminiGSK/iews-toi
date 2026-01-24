@@ -857,6 +857,14 @@ router.get('/trial-balance', auth, async (req, res) => {
             companyCode: req.user.companyCode
             // Include ALL transactions to calculate correct Bank Control Total
         }).populate('accountCode').lean();
+
+        // Fetch Manual Journal Entries (Adjustments)
+        const JournalEntry = require('../models/JournalEntry');
+        const journalEntries = await JournalEntry.find({
+            companyCode: req.user.companyCode,
+            status: 'Posted'
+        }).lean();
+
         const rates = await ExchangeRate.find({ companyCode: req.user.companyCode }).lean();
 
         // 2. Helper for Rate
@@ -919,6 +927,25 @@ router.get('/trial-balance', auth, async (req, res) => {
                 reportMap[codeId].drUSD += Math.abs(amtUSD);
                 reportMap[codeId].drKHR += Math.abs(amtKHR);
             }
+        });
+
+        // Sum Journal Entries (Adjustments)
+        // This makes the Trial Balance "Live" and "Adjustable"
+        journalEntries.forEach(je => {
+            const rate = getRate(je.date);
+            je.lines.forEach(line => {
+                const codeId = line.accountCode;
+                if (!reportMap[codeId]) return; // Skip if code not found
+
+                if (line.debit > 0) {
+                    reportMap[codeId].drUSD += line.debit;
+                    reportMap[codeId].drKHR += (line.debit * rate);
+                }
+                if (line.credit > 0) {
+                    reportMap[codeId].crUSD += line.credit;
+                    reportMap[codeId].crKHR += (line.credit * rate);
+                }
+            });
         });
 
         // Apply Control Total to Bank Account (10130 ABA)
@@ -985,6 +1012,45 @@ async function deleteTransactions(req, res, ids) {
         });
     }
 }
+
+// POST Create Journal Entry (Manual or AI)
+router.post('/journal-entry', auth, async (req, res) => {
+    try {
+        const JournalEntry = require('../models/JournalEntry');
+        const { date, description, lines, reference, createdBy, aiReasoning } = req.body;
+
+        if (!date || !description || !lines || lines.length === 0) {
+            return res.status(400).json({ message: 'Invalid Journal Entry Data' });
+        }
+
+        // Validate Balance (Dr == Cr) - Strict Accounting Check
+        const totalDr = lines.reduce((sum, l) => sum + (l.debit || 0), 0);
+        const totalCr = lines.reduce((sum, l) => sum + (l.credit || 0), 0);
+
+        if (Math.abs(totalDr - totalCr) > 0.01) {
+            return res.status(400).json({ message: `Journal Entry does not balance. Dr: ${totalDr}, Cr: ${totalCr}` });
+        }
+
+        const entry = new JournalEntry({
+            user: req.user.id,
+            companyCode: req.user.companyCode,
+            date,
+            description,
+            reference,
+            lines,
+            createdBy: createdBy || 'Manual',
+            aiReasoning,
+            status: 'Posted'
+        });
+
+        await entry.save();
+        res.json({ message: 'Journal Entry Posted', entry });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error posting journal entry' });
+    }
+});
 
 // DELETE File (Soft Delete from Drive) - For Unsaved Files
 router.post('/delete-file', auth, async (req, res) => {
