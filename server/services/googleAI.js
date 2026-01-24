@@ -231,29 +231,37 @@ exports.chatWithFinancialAgent = async (message, context) => {
         // Construct a context-aware prompt
         const prompt = `
             You are an expert Financial Assistant for the company "${companyName}".
-            
+            You also have ADMIN privileges to create "Auto-Tagging Rules" for the General Ledger.
+
             **Current Financial Context:**
             - **Net Balance**: ${summary.balance}
             - **Total Income**: ${summary.income}
             - **Total Expenses**: ${summary.expense}
 
-            **Monthly Trends (Last 12 Months):**
-            ${monthlyStats ? monthlyStats.map(m => `- ${m.month}: Income ${m.income}, Expense ${m.expense}, Net ${m.net}`).join('\n') : 'No monthly data available.'}
-
             **Chart of Accounts (Top 50):**
             ${codes.map(c => `- ${c.code} (${c.description})`).slice(0, 50).join('\n')}
-
-            **Recent Transactions (Last 10):**
-            ${recentTransactions.map(t => `- [${t.date}] ${t.description} : ${t.amount} (Code: ${t.code || 'Uncategorized'})`).join('\n')}
 
             **User Query:** "${message}"
 
             **Instructions:**
-            1. Answer the user's question accurately based on the data provided.
-            2. If asking about specific transactions not listed here, say you only have access to the most recent ones.
-            3. Be professional, concise, and helpful.
-            4. If the user asks for financial advice, give a disclaimer.
-            5. Use Markdown for formatting (bold, lists).
+            1. **DETECT RULE REQUESTS**: If the user asks to "set a rule", "always tag", "categorize X as Y", or "change the limit", you MUST process this as a Rule Creation Request.
+            2. **RULE RESPONSE FORMAT**: If a rule request is detected, output **ONLY** a JSON object (no markdown) in this format:
+               {
+                 "tool_use": "create_rule",
+                 "rule_data": {
+                   "name": "Short Descr of Rule",
+                   "ruleType": "keyword" (or "amount_in", "amount_out"),
+                   "criteria": "keyword_or_number",
+                   "operator": "contains" (or "equals", "lt", "gt"),
+                   "targetAccountCode": "EXACT_CODE_FROM_LIST_ABOVE"
+                 },
+                 "reply_text": "I have created a rule to start categorizing [criteria] as [Code - Desc]."
+               }
+               - **IMPORTANT**: finding the 'targetAccountCode': Look at the "Chart of Accounts" provided above. Find the best matching code (e.g., if user says "Rent", find "64000 (Rent Expense)"). If you can't find a code, ask the user for clarification in plain text instead of using the tool.
+
+            3. **NORMAL CHAT**: If it is NOT a rule request, answer normally in plain text.
+               - Be professional, concise, and helpful.
+               - Use Markdown for formatting (bold, lists).
 
             Answer:
         `;

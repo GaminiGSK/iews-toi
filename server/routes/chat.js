@@ -91,8 +91,58 @@ router.post('/message', auth, async (req, res) => {
 
         const aiResponse = await googleAI.chatWithFinancialAgent(message, context);
 
-        // 3. Return Response
-        res.json({ text: aiResponse });
+        // 3. Handle Potential Tool Use (Rule Creation)
+        let finalText = aiResponse;
+
+        // Try to parse JSON output from AI (it might wrap in markdown ```json ... ```)
+        try {
+            const cleanJson = aiResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+            if (cleanJson.startsWith('{') && cleanJson.includes('"tool_use"')) {
+                const toolPayload = JSON.parse(cleanJson);
+
+                if (toolPayload.tool_use === 'create_rule') {
+                    const ruleData = toolPayload.rule_data;
+                    
+                    // Validate basic rule data
+                    if (ruleData.targetAccountCode && ruleData.criteria) {
+                        const ClassificationRule = require('../models/ClassificationRule');
+                        
+                        // Check availability
+                        const existingRule = await ClassificationRule.findOne({ 
+                            companyCode, 
+                            ruleType: ruleData.ruleType, 
+                            criteria: ruleData.criteria 
+                        });
+
+                        if (existingRule) {
+                            existingRule.targetAccountCode = ruleData.targetAccountCode;
+                            existingRule.name = ruleData.name; // Update name
+                            await existingRule.save();
+                            finalText = `Use Updated Rule: ${toolPayload.reply_text}`;
+                        } else {
+                            await ClassificationRule.create({
+                                companyCode,
+                                name: ruleData.name,
+                                ruleType: ruleData.ruleType,
+                                criteria: ruleData.criteria,
+                                operator: ruleData.operator || 'contains',
+                                targetAccountCode: ruleData.targetAccountCode,
+                                priority: 8 // Default user rules high priority
+                            });
+                            finalText = toolPayload.reply_text;
+                        }
+                    } else {
+                        finalText = "I understood you want to create a rule, but I couldn't identify the specific code or criteria. Please try again.";
+                    }
+                }
+            }
+        } catch (e) {
+            // Not JSON or parse error, just return raw text
+            // console.log("Not a tool response", e);
+        }
+
+        // 4. Return Response
+        res.json({ text: finalText });
 
     } catch (err) {
         console.error("Chat API Error:", err);

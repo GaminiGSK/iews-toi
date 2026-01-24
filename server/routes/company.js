@@ -1023,8 +1023,42 @@ router.post('/transactions/auto-tag', auth, async (req, res) => {
 
         let updatedCount = 0;
 
-        // 3. Process Transactions (Strict Rules)
+        // 3. Fetch User-Defined Rules from DB
+        const ClassificationRule = require('../models/ClassificationRule');
+        const dbRules = await ClassificationRule.find({ companyCode: req.user.companyCode, isActive: true })
+            .sort({ priority: -1 }); // High priority first
+
+        // 3. Process Transactions (User Rules + Strict Defaults)
         for (const tx of transactions) {
+            let ruleApplied = false;
+
+            // A. Check Custom DB Rules First
+            for (const rule of dbRules) {
+                let match = false;
+
+                // Keyword Match (Case Insensitive)
+                if (rule.ruleType === 'keyword') {
+                    const desc = (tx.description || "").toLowerCase();
+                    const keyword = String(rule.criteria).toLowerCase();
+                    if (rule.operator === 'contains' && desc.includes(keyword)) match = true;
+                    if (rule.operator === 'equals' && desc === keyword) match = true;
+                }
+
+                // Amount Match
+                // To implement detailed amount logic if needed... generally keyword is primary for users.
+
+                if (match) {
+                    tx.accountCode = rule.targetAccountCode;
+                    await tx.save();
+                    updatedCount++;
+                    ruleApplied = true;
+                    break; // Stop after first matching high-priority rule
+                }
+            }
+
+            if (ruleApplied) continue; // Skip default logic if custom rule hit
+
+            // B. Default Strict Rules (Fallbacks)
             // RULE 1: Money In -> Cash On Hand
             if (tx.amount > 0) {
                 if (cashCode) {
