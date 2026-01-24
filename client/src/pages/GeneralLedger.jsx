@@ -109,6 +109,41 @@ const GeneralLedger = ({ onBack }) => {
         }
     };
 
+    // Unassign all ABA (10130) transactions (Undo/Reset)
+    const handleUnassignABA = async () => {
+        const abaCode = codes.find(c => c.code === '10130' || c.description.toUpperCase().includes('ABA'));
+        if (!abaCode) return;
+
+        const candidates = transactions.filter(t => t.accountCode === abaCode._id);
+
+        if (candidates.length === 0) {
+            alert('No ABA transactions found to reset.');
+            return;
+        }
+
+        if (!window.confirm(`RESET: Unassign ${candidates.length} ABA transactions?\n\nThey will revert to 'Uncategorized'.`)) return;
+
+        try {
+            setTagging(true);
+            const token = localStorage.getItem('token');
+            const promises = candidates.map(t =>
+                axios.post('/api/company/transactions/tag', {
+                    transactionId: t._id,
+                    accountCodeId: null // Clear tag
+                }, { headers: { 'Authorization': `Bearer ${token}` } })
+            );
+
+            await Promise.all(promises);
+            alert('ABA transactions reset to Uncategorized.');
+            fetchLedger();
+        } catch (err) {
+            console.error(err);
+            alert('Reset failed.');
+        } finally {
+            setTagging(false);
+        }
+    };
+
     const handleSafeBulkTag = async () => {
         if (!bulkTargetCode) return;
 
@@ -402,16 +437,23 @@ const GeneralLedger = ({ onBack }) => {
                                                     disabled={tagging}
                                                     className="flex-1 py-1.5 bg-white border border-green-600 text-green-700 hover:bg-green-50 rounded text-xs font-bold transition shadow-sm"
                                                 >
-                                                    Assign to Money IN
+                                                    Tag All IN as ABA
                                                 </button>
                                                 <button
                                                     onClick={() => handleQuickAssign('out')}
                                                     disabled={tagging}
                                                     className="flex-1 py-1.5 bg-white border border-blue-600 text-blue-700 hover:bg-blue-50 rounded text-xs font-bold transition shadow-sm"
                                                 >
-                                                    Assign to Money Out
+                                                    Tag All OUT as ABA
                                                 </button>
                                             </div>
+                                            <button
+                                                onClick={handleUnassignABA}
+                                                disabled={tagging}
+                                                className="w-full py-1.5 bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 border border-gray-200 hover:border-red-200 rounded text-xs font-bold transition"
+                                            >
+                                                Reset ABA Tags (Undo)
+                                            </button>
                                         </div>
                                     )}
 
