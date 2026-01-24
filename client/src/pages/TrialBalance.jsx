@@ -49,7 +49,7 @@ const TrialBalance = ({ onBack }) => {
     // Prepare Visual Data
     // Filter out zero balances for cleaner charts
     const activeAccounts = report.filter(r => r.drUSD > 0 || r.crUSD > 0);
-    
+
     // Group for Treemap (Assets/Liabilities vs Income/Expense logic is complex without explicit types, 
     // so we'll visualize based on Debit vs Credit prominence)
     const debitData = activeAccounts.filter(r => r.drUSD > r.crUSD).map(r => ({
@@ -67,9 +67,9 @@ const TrialBalance = ({ onBack }) => {
     // AI Insight Generator (Mock Logic for now, effectively "dynamic")
     const generateInsight = () => {
         if (report.length === 0) return "No data available yet.";
-        
-        const biggestExpense = debitData.sort((a,b) => b.size - a.size)[0];
-        const biggestIncome = creditData.sort((a,b) => b.size - a.size)[0];
+
+        const biggestExpense = debitData.sort((a, b) => b.size - a.size)[0];
+        const biggestIncome = creditData.sort((a, b) => b.size - a.size)[0];
 
         return (
             <div className="space-y-2">
@@ -83,13 +83,13 @@ const TrialBalance = ({ onBack }) => {
         );
     };
 
-    const CustomTooltip = ({ active, payload }) => {
+    const CustomTooltip = ({ active, payload, dark }) => {
         if (active && payload && payload.length) {
             return (
-                <div className="bg-white p-3 border border-gray-200 shadow-lg rounded-lg text-xs">
-                    <p className="font-bold text-gray-800">{payload[0].payload.name}</p>
+                <div className={`${dark ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-900'} p-3 border shadow-lg rounded-lg text-xs`}>
+                    <p className={`font-bold ${dark ? 'text-gray-200' : 'text-gray-800'}`}>{payload[0].payload.name}</p>
                     <p className="text-gray-500">{payload[0].payload.code}</p>
-                    <p className="text-blue-600 font-bold mt-1">${(payload[0].value).toLocaleString()}</p>
+                    <p className={`${dark ? 'text-teal-400' : 'text-blue-600'} font-bold mt-1`}>${(payload[0].value).toLocaleString()}</p>
                 </div>
             );
         }
@@ -149,80 +149,129 @@ const TrialBalance = ({ onBack }) => {
 
                 {viewMode === 'visual' && !loading && (
                     <div className="max-w-7xl mx-auto space-y-6 animate-fade-in">
-                        
-                        {/* AI Insight Card */}
-                        <div className="bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 p-6 rounded-2xl relative overflow-hidden">
-                            <div className="absolute top-0 right-0 p-4 opacity-10">
-                                <Brain size={120} />
-                            </div>
-                            <h3 className="text-indigo-900 font-bold flex items-center gap-2 mb-2">
-                                <Brain size={18} /> AI Financial Summary
-                            </h3>
-                            <div className="text-sm text-indigo-800 leading-relaxed max-w-2xl relative z-10">
-                                {generateInsight()}
+
+                        {/* Bloomberg-style Financial Header */}
+                        <div className="bg-gray-900 rounded-2xl p-6 text-white shadow-xl border border-gray-800">
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 divide-y md:divide-y-0 md:divide-x divide-gray-800">
+                                <div className="px-4 py-2">
+                                    <p className="text-gray-400 text-xs font-mono uppercase tracking-widest">Net Profit (Est)</p>
+                                    <p className="text-3xl font-mono font-bold text-teal-400 mt-2">
+                                        ${(
+                                            activeAccounts.filter(r => r.code.startsWith('4')).reduce((sum, r) => sum + r.crUSD, 0) -
+                                            activeAccounts.filter(r => r.code.startsWith('6')).reduce((sum, r) => sum + r.drUSD, 0)
+                                        ).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                    </p>
+                                    <p className="text-[10px] text-gray-500 mt-1">Income (4xxx) - Expense (6xxx)</p>
+                                </div>
+                                <div className="px-4 py-2">
+                                    <p className="text-gray-400 text-xs font-mono uppercase tracking-widest">Total Assets</p>
+                                    <p className="text-2xl font-mono font-bold text-blue-400 mt-2">
+                                        ${activeAccounts.filter(r => r.code.startsWith('1')).reduce((sum, r) => sum + r.drUSD, 0).toLocaleString()}
+                                    </p>
+                                    <p className="text-[10px] text-gray-500 mt-1">Class 1xxx (Debits)</p>
+                                </div>
+                                <div className="px-4 py-2">
+                                    <p className="text-gray-400 text-xs font-mono uppercase tracking-widest">Total Liabilities</p>
+                                    <p className="text-2xl font-mono font-bold text-red-400 mt-2">
+                                        ${activeAccounts.filter(r => r.code.startsWith('2')).reduce((sum, r) => sum + r.crUSD, 0).toLocaleString()}
+                                    </p>
+                                    <p className="text-[10px] text-gray-500 mt-1">Class 2xxx (Credits)</p>
+                                </div>
+                                <div className="px-4 py-2">
+                                    <p className="text-gray-400 text-xs font-mono uppercase tracking-widest">Ledger Balance</p>
+                                    <div className={`mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-sm border ${isBalancedUSD ? 'border-green-500/30 bg-green-900/20 text-green-400' : 'border-red-500/30 bg-red-900/20 text-red-400'}`}>
+                                        <span className={`w-2 h-2 rounded-full ${isBalancedUSD ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></span>
+                                        <span className="font-mono text-sm font-bold">{isBalancedUSD ? 'BALANCED' : 'UNBALANCED'}</span>
+                                    </div>
+                                    <p className="text-[10px] text-gray-500 mt-1 font-mono">Diff: ${Math.abs(totals.drUSD - totals.crUSD).toFixed(5)}</p>
+                                </div>
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Debits Visualization */}
-                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 h-[400px] flex flex-col">
-                                <h3 className="font-bold text-gray-700 mb-4 flex justify-between items-center">
-                                    <span>Debit Composition</span>
-                                    <span className="text-xs font-normal text-gray-400">Assets / Expenses</span>
+                            {/* Debits Visualization (Dark) */}
+                            <div className="bg-gray-900 p-6 rounded-2xl shadow-xl border border-gray-800 h-[450px] flex flex-col">
+                                <h3 className="font-bold text-gray-300 mb-4 flex justify-between items-center font-mono">
+                                    <span>DEBIT COMPOSITION</span>
+                                    <span className="text-xs text-blue-400 bg-blue-900/20 px-2 py-1 rounded border border-blue-900">Total: ${totals.drUSD.toLocaleString()}</span>
                                 </h3>
-                                <div className="flex-1">
+                                <div className="flex-1 bg-gray-900/50 rounded-xl overflow-hidden border border-gray-800">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <Treemap
                                             data={debitData}
                                             dataKey="size"
-                                            stroke="#fff"
-                                            fill="#8884d8"
-                                            content={<CustomizedContent colors={['#60A5FA', '#3B82F6', '#2563EB', '#1D4ED8', '#93C5FD']} />}
+                                            stroke="#111827"
+                                            fill="#3B82F6"
+                                            content={<CustomizedContent colors={['#3B82F6', '#2563EB', '#1D4ED8', '#60A5FA', '#93C5FD']} dark={true} />}
                                         >
-                                            <Tooltip content={<CustomTooltip />} />
+                                            <Tooltip content={<CustomTooltip dark={true} />} />
                                         </Treemap>
                                     </ResponsiveContainer>
                                 </div>
                             </div>
 
-                            {/* Credits Visualization */}
-                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 h-[400px] flex flex-col">
-                                <h3 className="font-bold text-gray-700 mb-4 flex justify-between items-center">
-                                    <span>Credit Composition</span>
-                                    <span className="text-xs font-normal text-gray-400">Liabilities / Income</span>
+                            {/* Credits Visualization (Dark) */}
+                            <div className="bg-gray-900 p-6 rounded-2xl shadow-xl border border-gray-800 h-[450px] flex flex-col">
+                                <h3 className="font-bold text-gray-300 mb-4 flex justify-between items-center font-mono">
+                                    <span>CREDIT COMPOSITION</span>
+                                    <span className="text-xs text-emerald-400 bg-emerald-900/20 px-2 py-1 rounded border border-emerald-900">Total: ${totals.crUSD.toLocaleString()}</span>
                                 </h3>
-                                <div className="flex-1">
+                                <div className="flex-1 bg-gray-900/50 rounded-xl overflow-hidden border border-gray-800">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <Treemap
                                             data={creditData}
                                             dataKey="size"
-                                            stroke="#fff"
-                                            fill="#82ca9d"
-                                            content={<CustomizedContent colors={['#34D399', '#10B981', '#059669', '#047857', '#6EE7B7']} />}
+                                            stroke="#111827"
+                                            fill="#10B981"
+                                            content={<CustomizedContent colors={['#10B981', '#059669', '#34D399', '#047857', '#6EE7B7']} dark={true} />}
                                         >
-                                            <Tooltip content={<CustomTooltip />} />
+                                            <Tooltip content={<CustomTooltip dark={true} />} />
                                         </Treemap>
                                     </ResponsiveContainer>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Totals Summary */}
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex justify-between items-center">
-                             <div>
-                                <p className="text-xs text-gray-400 uppercase font-bold">Total Debits</p>
-                                <p className="text-2xl font-bold text-gray-800">${totals.drUSD.toLocaleString()}</p>
-                             </div>
-                             <div className="text-center">
-                                <div className={`inline-flex items-center gap-2 px-4 py-1 rounded-full text-xs font-bold ${isBalancedUSD ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                    {isBalancedUSD ? 'BALANCED' : 'UNBALANCED'}
-                                </div>
-                                <p className="text-[10px] text-gray-400 mt-1">Difference: ${Math.abs(totals.drUSD - totals.crUSD).toFixed(2)}</p>
-                             </div>
-                             <div className="text-right">
-                                <p className="text-xs text-gray-400 uppercase font-bold">Total Credits</p>
-                                <p className="text-2xl font-bold text-gray-800">${totals.crUSD.toLocaleString()}</p>
-                             </div>
+                        {/* Top Movers Table */}
+                        <div className="bg-gray-900 rounded-2xl shadow-xl border border-gray-800 overflow-hidden">
+                            <div className="px-6 py-4 border-b border-gray-800 flex justify-between items-center">
+                                <h3 className="text-gray-300 font-bold font-mono">TOP ACTIVE ACCOUNTS</h3>
+                                <span className="text-xs text-gray-500 font-mono">SORTED BY MAGNITUDE</span>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left text-sm text-gray-400 font-mono">
+                                    <thead className="bg-gray-800/50 text-gray-500 text-xs uppercase">
+                                        <tr>
+                                            <th className="px-6 py-3">Code</th>
+                                            <th className="px-6 py-3">Description</th>
+                                            <th className="px-6 py-3 text-right">Debit ($)</th>
+                                            <th className="px-6 py-3 text-right">Credit ($)</th>
+                                            <th className="px-6 py-3 text-right">Impact</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-800">
+                                        {activeAccounts
+                                            .sort((a, b) => (b.drUSD + b.crUSD) - (a.drUSD + a.crUSD))
+                                            .slice(0, 5)
+                                            .map((row, idx) => (
+                                                <tr key={idx} className="hover:bg-gray-800 transition">
+                                                    <td className="px-6 py-3 text-teal-500">{row.code}</td>
+                                                    <td className="px-6 py-3 text-gray-300">{row.description}</td>
+                                                    <td className="px-6 py-3 text-right text-gray-400">{row.drUSD ? row.drUSD.toLocaleString() : '-'}</td>
+                                                    <td className="px-6 py-3 text-right text-gray-400">{row.crUSD ? row.crUSD.toLocaleString() : '-'}</td>
+                                                    <td className="px-6 py-3 text-right">
+                                                        <div className="w-24 bg-gray-700 h-1.5 rounded-full ml-auto overflow-hidden">
+                                                            <div
+                                                                className="h-full bg-blue-500"
+                                                                style={{ width: `${Math.min(((row.drUSD + row.crUSD) / totals.drUSD) * 100, 100)}%` }}
+                                                            ></div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 )}
