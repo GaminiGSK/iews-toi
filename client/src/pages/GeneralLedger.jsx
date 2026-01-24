@@ -324,111 +324,119 @@ const GeneralLedger = ({ onBack }) => {
                                 ).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                             </p>
                         </div>
-                        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                {filterCode ? 'Total Money Out' : 'Unassigned Money Out'}
-                            </p>
-                            <p className="text-2xl font-bold text-red-600 mt-1">
-                                ${Math.abs(filterCode
-                                    ? filteredTransactions.reduce((acc, tx) => acc + (tx.amount < 0 ? tx.amount : 0), 0)
-                                    : transactions.filter(t => !t.accountCode || t.accountCode === 'uncategorized').reduce((acc, tx) => acc + (tx.amount < 0 ? tx.amount : 0), 0)
-                                ).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                            </p>
-                        </div>
-                        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 ring-2 ring-blue-50 relative">
-                            <div className="flex justify-between items-start">
-                                <div>
+                        {/* Summary Cards */}
+                        {!loading && (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 text-center">
+                                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
                                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                        {filterCode ? 'Net Balance' : 'Unassigned Balance'}
+                                        {filterCode === 'uncategorized' ? 'Unassigned Money In' : 'Total Money In'}
                                     </p>
-                                    <p className={`text-2xl font-bold mt-1 ${(filterCode
-                                        ? filteredTransactions.reduce((acc, tx) => acc + (tx.amount || 0), 0)
-                                        : transactions.filter(t => !t.accountCode || t.accountCode === 'uncategorized').reduce((acc, tx) => acc + (tx.amount || 0), 0)
-                                    ) === 0 ? 'text-green-600' : 'text-blue-900'
-                                        }`}>
-                                        ${(filterCode
-                                            ? filteredTransactions.reduce((acc, tx) => acc + (tx.amount || 0), 0)
-                                            : transactions.filter(t => !t.accountCode || t.accountCode === 'uncategorized').reduce((acc, tx) => acc + (tx.amount || 0), 0)
+                                    <p className="text-2xl font-bold text-green-600 mt-1">
+                                        ${filteredTransactions
+                                            .reduce((acc, tx) => acc + (tx.amount > 0 ? tx.amount : 0), 0)
+                                            .toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                    </p>
+                                </div>
+                                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                                        {filterCode === 'uncategorized' ? 'Unassigned Money Out' : 'Total Money Out'}
+                                    </p>
+                                    <p className="text-2xl font-bold text-red-600 mt-1">
+                                        ${Math.abs(filteredTransactions
+                                            .reduce((acc, tx) => acc + (tx.amount < 0 ? tx.amount : 0), 0)
                                         ).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                                     </p>
+                                </div>
+                                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 ring-2 ring-blue-50 relative">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                                                {filterCode === 'uncategorized' ? 'Unassigned Balance' : 'Net Balance'}
+                                            </p>
+                                            <p className={`text-2xl font-bold mt-1 ${filteredTransactions.reduce((acc, tx) => acc + (tx.amount || 0), 0) === 0 ? 'text-green-600' : 'text-blue-900'
+                                                }`}>
+                                                ${filteredTransactions
+                                                    .reduce((acc, tx) => acc + (tx.amount || 0), 0)
+                                                    .toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                            </p>
 
-                                    {/* Safe Bulk Assign Tool */}
-                                    {!filterCode && transactions.some(t => !t.accountCode || t.accountCode === 'uncategorized') && (
-                                        <div className="mt-3 pt-3 border-t border-blue-100 flex flex-col gap-2">
-                                            <p className="text-[10px] font-bold text-blue-400 uppercase">RE-ASSIGN ONLY UNBALANCE</p>
-                                            <div className="flex items-center gap-2">
-                                                <select
-                                                    value={bulkTargetCode}
-                                                    onChange={(e) => setBulkTargetCode(e.target.value)}
-                                                    className="flex-1 text-xs border border-gray-200 rounded px-2 py-1 outline-none bg-white font-medium text-gray-700"
-                                                >
-                                                    <option value="">Assign as Bank Balance...</option>
-                                                    {codes.map(c => (
-                                                        <option key={c._id} value={c._id}>
-                                                            {c.code} - {c.description}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                                <button
-                                                    onClick={handleSafeBulkTag}
-                                                    disabled={!bulkTargetCode || tagging}
-                                                    className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-bold transition disabled:opacity-50"
-                                                >
-                                                    Apply
-                                                </button>
+                                            {/* Safe Bulk Assign Tool */}
+                                            {!filterCode && transactions.some(t => !t.accountCode || t.accountCode === 'uncategorized') && (
+                                                <div className="mt-3 pt-3 border-t border-blue-100 flex flex-col gap-2">
+                                                    <p className="text-[10px] font-bold text-blue-400 uppercase">RE-ASSIGN ONLY UNBALANCE</p>
+                                                    <div className="flex items-center gap-2">
+                                                        <select
+                                                            value={bulkTargetCode}
+                                                            onChange={(e) => setBulkTargetCode(e.target.value)}
+                                                            className="flex-1 text-xs border border-gray-200 rounded px-2 py-1 outline-none bg-white font-medium text-gray-700"
+                                                        >
+                                                            <option value="">Assign as Bank Balance...</option>
+                                                            {codes.map(c => (
+                                                                <option key={c._id} value={c._id}>
+                                                                    {c.code} - {c.description}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                        <button
+                                                            onClick={handleSafeBulkTag}
+                                                            disabled={!bulkTargetCode || tagging}
+                                                            className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-bold transition disabled:opacity-50"
+                                                        >
+                                                            Apply
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        <div className="max-w-7xl mx-auto space-y-8">
+                            {loading ? (
+                                <div className="bg-white p-12 text-center text-gray-500 rounded-xl border border-gray-200">Loading Ledger...</div>
+                            ) : error ? (
+                                <div className="bg-white p-12 text-center text-red-500 rounded-xl border border-gray-200">Error: {error}</div>
+                            ) : filteredTransactions.length === 0 ? (
+                                <div className="bg-white p-12 text-center text-gray-500 rounded-xl border border-gray-200">No transactions found for this selection.</div>
+                            ) : viewMode === 'date' ? (
+                                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                                    {renderTable(filteredTransactions)}
+                                </div>
+                            ) : (
+                                // CODE VIEW RENDER
+                                getGroupedTransactions().map((group, idx) => (
+                                    <div key={idx} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden animate-fade-in">
+                                        <div className={`px-6 py-4 border-b border-gray-200 flex justify-between items-center ${group.codeInfo._id === 'uncategorized' ? 'bg-red-50' : 'bg-gray-50'}`}>
+                                            <div className="flex items-center gap-3">
+                                                <div className={`p-2 rounded-lg ${group.codeInfo._id === 'uncategorized' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
+                                                    <Tag size={18} />
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-bold text-gray-800 text-lg flex items-center gap-2">
+                                                        <span className="font-mono text-blue-600">{group.codeInfo.code}</span>
+                                                        <span>{group.codeInfo.description}</span>
+                                                    </h3>
+                                                    <p className="text-xs text-gray-500">{group.items.length} transactions</p>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-xs font-bold text-gray-400 uppercase">Group Total</p>
+                                                <p className={`font-bold font-mono text-lg ${group.items.reduce((sum, t) => sum + t.amount, 0) >= 0 ? 'text-green-600' : 'text-red-500'
+                                                    }`}>
+                                                    ${group.items.reduce((sum, t) => sum + t.amount, 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                                </p>
                                             </div>
                                         </div>
-                                    )}
-                                </div>
-                            </div>
+                                        {renderTable(group.items, true)}
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </div>
-                )}
-                <div className="max-w-7xl mx-auto space-y-8">
-                    {loading ? (
-                        <div className="bg-white p-12 text-center text-gray-500 rounded-xl border border-gray-200">Loading Ledger...</div>
-                    ) : error ? (
-                        <div className="bg-white p-12 text-center text-red-500 rounded-xl border border-gray-200">Error: {error}</div>
-                    ) : filteredTransactions.length === 0 ? (
-                        <div className="bg-white p-12 text-center text-gray-500 rounded-xl border border-gray-200">No transactions found for this selection.</div>
-                    ) : viewMode === 'date' ? (
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                            {renderTable(filteredTransactions)}
-                        </div>
-                    ) : (
-                        // CODE VIEW RENDER
-                        getGroupedTransactions().map((group, idx) => (
-                            <div key={idx} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden animate-fade-in">
-                                <div className={`px-6 py-4 border-b border-gray-200 flex justify-between items-center ${group.codeInfo._id === 'uncategorized' ? 'bg-red-50' : 'bg-gray-50'}`}>
-                                    <div className="flex items-center gap-3">
-                                        <div className={`p-2 rounded-lg ${group.codeInfo._id === 'uncategorized' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
-                                            <Tag size={18} />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-bold text-gray-800 text-lg flex items-center gap-2">
-                                                <span className="font-mono text-blue-600">{group.codeInfo.code}</span>
-                                                <span>{group.codeInfo.description}</span>
-                                            </h3>
-                                            <p className="text-xs text-gray-500">{group.items.length} transactions</p>
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="text-xs font-bold text-gray-400 uppercase">Group Total</p>
-                                        <p className={`font-bold font-mono text-lg ${group.items.reduce((sum, t) => sum + t.amount, 0) >= 0 ? 'text-green-600' : 'text-red-500'
-                                            }`}>
-                                            ${group.items.reduce((sum, t) => sum + t.amount, 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                                        </p>
-                                    </div>
-                                </div>
-                                {renderTable(group.items, true)}
-                            </div>
-                        ))
-                    )}
-                </div>
-            </div >
-        </div >
-    );
+        </div>
+            );
 };
 
-export default GeneralLedger;
+            export default GeneralLedger;
 
