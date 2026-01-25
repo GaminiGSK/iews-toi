@@ -45,48 +45,16 @@ const ToiAcar = ({ onBack }) => {
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 bg-slate-800/30 border border-white/5 rounded-2xl p-8 backdrop-blur-xl animate-fade-in">
+            <div className="flex-1 bg-slate-800/30 border border-white/5 rounded-2xl p-8 backdrop-blur-xl animate-fade-in relative min-h-[500px]">
                 {activeTab === 'TOI' && (
-                    <div className="space-y-6">
-                        <div className="bg-rose-500/10 border border-rose-500/20 p-6 rounded-xl">
-                            <h3 className="text-xl font-bold text-rose-300 mb-2">TOI Declaration</h3>
-                            <p className="text-gray-300">Annual Tax on Income declaration interface will appear here.</p>
-                        </div>
-                        {/* Placeholder Content */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="bg-slate-900/50 p-6 rounded-xl border border-white/5 hover:border-rose-500/30 transition">
-                                <h4 className="font-bold text-white mb-2">Revenue Calculation</h4>
-                                <p className="text-xs text-gray-500">Based on reconciled bank statements.</p>
-                            </div>
-                            <div className="bg-slate-900/50 p-6 rounded-xl border border-white/5 hover:border-rose-500/30 transition">
-                                <h4 className="font-bold text-white mb-2">Expense Deductibility</h4>
-                                <p className="text-xs text-gray-500">Classify expenses as deductible/non-deductible.</p>
-                            </div>
-                            <div className="bg-slate-900/50 p-6 rounded-xl border border-white/5 hover:border-rose-500/30 transition">
-                                <h4 className="font-bold text-white mb-2">Final Tax Payable</h4>
-                                <p className="text-xs text-gray-500">Automated calculation (20%).</p>
-                            </div>
-                        </div>
+                    <div>
+                        {/* Empty Interface for New Setup */}
                     </div>
                 )}
 
                 {activeTab === 'ACAR' && (
-                    <div className="space-y-6">
-                        <div className="bg-rose-500/10 border border-rose-500/20 p-6 rounded-xl">
-                            <h3 className="text-xl font-bold text-rose-300 mb-2">ACAR Reporting</h3>
-                            <p className="text-gray-300">Accounting and Auditing Regulator compliance forms.</p>
-                        </div>
-                        {/* Placeholder Content */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="bg-slate-900/50 p-6 rounded-xl border border-white/5 hover:border-rose-500/30 transition">
-                                <h4 className="font-bold text-white mb-2">Financial Position</h4>
-                                <p className="text-xs text-gray-500">Statement of Financial Position for ACAR.</p>
-                            </div>
-                            <div className="bg-slate-900/50 p-6 rounded-xl border border-white/5 hover:border-rose-500/30 transition">
-                                <h4 className="font-bold text-white mb-2">Comprehensive Income</h4>
-                                <p className="text-xs text-gray-500">Statement of Comprehensive Income for ACAR.</p>
-                            </div>
-                        </div>
+                    <div>
+                        {/* Empty Interface for New Setup */}
                     </div>
                 )}
             </div>
