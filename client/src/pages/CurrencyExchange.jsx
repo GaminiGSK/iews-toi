@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { DollarSign, Save, AlertCircle } from 'lucide-react';
+import { DollarSign, Save, AlertCircle, ArrowLeft } from 'lucide-react';
 
 const CurrencyExchange = ({ onBack }) => {
     const [rates, setRates] = useState([]);
@@ -67,20 +67,20 @@ const CurrencyExchange = ({ onBack }) => {
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900">
-            {/* Header */}
-            <div className="bg-white border-b border-gray-200 px-8 py-5 flex justify-between items-center sticky top-0 z-20 shadow-sm">
-                <div>
+            {/* Header - Left Aligned */}
+            <div className="bg-white border-b border-gray-200 px-8 py-5 flex items-center gap-6 sticky top-0 z-20 shadow-sm overflow-x-auto">
+                <button
+                    onClick={onBack}
+                    className="p-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-sm font-medium transition shrink-0"
+                >
+                    <ArrowLeft size={20} />
+                </button>
+                <div className="shrink-0">
                     <h1 className="text-2xl font-bold text-teal-600 flex items-center gap-2">
                         <DollarSign className="w-6 h-6" /> Currency Exchange
                     </h1>
                     <p className="text-xs text-gray-500 mt-1">Manage Annual Exchange Rates (USD to KHR).</p>
                 </div>
-                <button
-                    onClick={onBack}
-                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition"
-                >
-                    ← Back to Dashboard
-                </button>
             </div>
 
             <div className="flex-1 p-8 overflow-auto">

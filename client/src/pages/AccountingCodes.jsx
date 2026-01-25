@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Plus, Trash2, Tag, AlertCircle, Edit2, Sparkles, Save, X } from 'lucide-react';
+import { Plus, Trash2, Tag, AlertCircle, Edit2, Sparkles, Save, X, ArrowLeft } from 'lucide-react';
 
 const AccountingCodes = ({ onBack }) => {
     const [codes, setCodes] = useState([]);
@@ -109,20 +109,20 @@ const AccountingCodes = ({ onBack }) => {
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900">
-            {/* Header */}
-            <div className="bg-white border-b border-gray-200 px-8 py-5 flex justify-between items-center sticky top-0 z-20 shadow-sm">
-                <div>
+            {/* Header - Left Aligned */}
+            <div className="bg-white border-b border-gray-200 px-8 py-5 flex items-center gap-6 sticky top-0 z-20 shadow-sm overflow-x-auto">
+                <button
+                    onClick={onBack}
+                    className="p-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-sm font-medium transition shrink-0"
+                >
+                    <ArrowLeft size={20} />
+                </button>
+                <div className="shrink-0">
                     <h1 className="text-2xl font-bold text-orange-600 flex items-center gap-2">
                         <Tag className="w-6 h-6" /> Accounting Codes <span className="text-sm font-normal text-gray-400">(Ai Enhanced)</span>
                     </h1>
                     <p className="text-xs text-gray-500 mt-1">Manage Chart of Accounts & AI Rules.</p>
                 </div>
-                <button
-                    onClick={onBack}
-                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition"
-                >
-                    ← Back to Dashboard
-                </button>
             </div>
 
             <div className="flex-1 p-8 overflow-auto">

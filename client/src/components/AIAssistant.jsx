@@ -106,8 +106,8 @@ const AIAssistant = () => {
     const GK_LOGO = "/gk-logo.png"; // Placeholder for user asset
 
     return (
-        // KEY CHANGE: Fixed Left-6 (was Right-6), Items-Start (was Items-End)
-        <div className="fixed bottom-6 left-6 z-50 flex flex-col items-start pointer-events-none">
+        // KEY CHANGE: Reverted to Right-6, Items-End (standard chatbot position)
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none">
             {/* Chat Window */}
             {isOpen && (
                 <div
@@ -146,10 +146,10 @@ const AIAssistant = () => {
 
                                 {/* Message Bubble - Larger Font */}
                                 <div className={`max-w-[85%] rounded-3xl px-6 py-4 text-lg shadow-sm mb-1 leading-relaxed ${msg.role === 'user'
-                                        ? 'bg-blue-600 text-white rounded-tr-sm shadow-blue-900/20'
-                                        : msg.isSystem
-                                            ? 'bg-blue-900/30 text-blue-100 border border-blue-800'
-                                            : 'bg-slate-800 text-gray-100 border border-slate-700 rounded-tl-sm shadow-lg'
+                                    ? 'bg-blue-600 text-white rounded-tr-sm shadow-blue-900/20'
+                                    : msg.isSystem
+                                        ? 'bg-blue-900/30 text-blue-100 border border-blue-800'
+                                        : 'bg-slate-800 text-gray-100 border border-slate-700 rounded-tl-sm shadow-lg'
                                     }`}>
 
                                     {/* Image Attachment (User) */}
