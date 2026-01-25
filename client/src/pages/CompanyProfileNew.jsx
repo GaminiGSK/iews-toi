@@ -267,84 +267,78 @@ export default function CompanyProfile() {
                 </button>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Main Grid Layout - Sleek Design */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
-                {/* 1. Profile */}
-                <div onClick={() => setView('profile')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-blue-500/50 backdrop-blur-xl p-8 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-blue-900/20">
-                    <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                        <TrendingUp className="text-blue-500/20 w-32 h-32 -mr-8 -mt-8" />
+                {/* --- ROW 1: OPERATIONS & REPORTS --- */}
+
+                {/* 1. Bank Statements (Data Entry) */}
+                <div onClick={() => setView('bank')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-green-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-green-900/20">
+                    <div className="w-12 h-12 bg-green-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-green-500/20">
+                        <Table className="text-green-400 w-6 h-6" />
                     </div>
-                    <div className="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-300 border border-blue-500/20">
-                        <FileText className="text-blue-400 w-7 h-7" />
-                    </div>
-                    <h3 className="text-xl font-bold text-white mb-2 group-hover:text-blue-300 transition-colors">Company Profile</h3>
-                    <p className="text-gray-400 text-sm leading-relaxed">Update official registration details, MOC certificates, and shareholders.</p>
+                    <h3 className="text-lg font-bold text-white mb-2 group-hover:text-green-300 transition-colors">Bank Statements</h3>
+                    <p className="text-gray-400 text-xs leading-relaxed">Upload monthly statements, parse transactions via AI, and sync data.</p>
                 </div>
 
-                {/* 2. Bank */}
-                <div onClick={() => setView('bank')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-green-500/50 backdrop-blur-xl p-8 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-green-900/20">
-                    <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                        <Table className="text-green-500/20 w-32 h-32 -mr-8 -mt-8" />
+                {/* 2. General Ledger (Report) */}
+                <div onClick={() => setView('ledger')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-purple-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-purple-900/20">
+                    <div className="w-12 h-12 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-purple-500/20">
+                        <Book className="text-purple-400 w-6 h-6" />
                     </div>
-                    <div className="w-14 h-14 bg-green-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-300 border border-green-500/20">
-                        <Table className="text-green-400 w-7 h-7" />
-                    </div>
-                    <h3 className="text-xl font-bold text-white mb-2 group-hover:text-green-300 transition-colors">Bank Statements</h3>
-                    <p className="text-gray-400 text-sm leading-relaxed">Upload monthly statements, parse transactions via AI, and sync data.</p>
+                    <h3 className="text-lg font-bold text-white mb-2 group-hover:text-purple-300 transition-colors">General Ledger</h3>
+                    <p className="text-gray-400 text-xs leading-relaxed">View chronological financial history of all audited transactions.</p>
                 </div>
 
-                {/* 3. Ledger */}
-                <div onClick={() => setView('ledger')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-purple-500/50 backdrop-blur-xl p-8 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-purple-900/20">
-                    <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                        <Book className="text-purple-500/20 w-32 h-32 -mr-8 -mt-8" />
+                {/* 3. Trial Balance (Report) */}
+                <div onClick={() => setView('report')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-cyan-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-cyan-900/20">
+                    <div className="w-12 h-12 bg-cyan-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-cyan-500/20">
+                        <Scale className="text-cyan-400 w-6 h-6" />
                     </div>
-                    <div className="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-300 border border-purple-500/20">
-                        <Book className="text-purple-400 w-7 h-7" />
-                    </div>
-                    <h3 className="text-xl font-bold text-white mb-2 group-hover:text-purple-300 transition-colors">General Ledger</h3>
-                    <p className="text-gray-400 text-sm leading-relaxed">View chronological financial history of all audited transactions.</p>
+                    <h3 className="text-lg font-bold text-white mb-2 group-hover:text-cyan-300 transition-colors">Trial Balance</h3>
+                    <p className="text-gray-400 text-xs leading-relaxed">View Unadjusted & Adjusted Trial Balance reports.</p>
                 </div>
 
-                {/* 4. Codes */}
-                <div onClick={() => setView('codes')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-orange-500/50 backdrop-blur-xl p-8 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-orange-900/20">
-                    <div className="w-14 h-14 bg-orange-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-300 border border-orange-500/20">
-                        <Tag className="text-orange-400 w-7 h-7" />
+                {/* 4. Financial Statements (TOI & ACAR - Wrapper/Standard Card) */}
+                <div onClick={() => setView('financials')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-indigo-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-indigo-900/20">
+                    <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-indigo-500/20">
+                        <TrendingUp className="text-indigo-400 w-6 h-6" />
                     </div>
-                    <h3 className="text-xl font-bold text-white mb-2 group-hover:text-orange-300 transition-colors">Accounting Codes</h3>
-                    <p className="text-gray-400 text-sm leading-relaxed">Manage Chart of Accounts codes and standard descriptions.</p>
+                    {/* Compliance Label */}
+                    <div className="absolute top-4 right-4">
+                        <span className="text-[10px] font-bold bg-indigo-500/20 text-indigo-300 px-2 py-1 rounded border border-indigo-500/30">TOI & ACAR</span>
+                    </div>
+                    <h3 className="text-lg font-bold text-white mb-2 group-hover:text-indigo-300 transition-colors">Financial Stmts</h3>
+                    <p className="text-gray-400 text-xs leading-relaxed">Generate final audited reports (Income, Balance Sheet, Cash Flow).</p>
                 </div>
 
-                {/* 5. Currency */}
-                <div onClick={() => setView('currency')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-teal-500/50 backdrop-blur-xl p-8 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-teal-900/20">
-                    <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-300 border border-teal-500/20">
-                        <DollarSign className="text-teal-400 w-7 h-7" />
+                {/* --- ROW 2: SETTINGS & CONFIG --- */}
+
+                {/* 5. Company Profile */}
+                <div onClick={() => setView('profile')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-blue-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-blue-900/20">
+                    <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-blue-500/20">
+                        <FileText className="text-blue-400 w-6 h-6" />
                     </div>
-                    <h3 className="text-xl font-bold text-white mb-2 group-hover:text-teal-300 transition-colors">Currency Exchange</h3>
-                    <p className="text-gray-400 text-sm leading-relaxed">Set Annual Exchange Rates (USD to KHR) for compliance.</p>
+                    <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-300 transition-colors">Company Profile</h3>
+                    <p className="text-gray-400 text-xs leading-relaxed">Update official registration details, MOC certificates, and shareholders.</p>
                 </div>
 
-                {/* 6. Trial Balance */}
-                <div onClick={() => setView('report')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-cyan-500/50 backdrop-blur-xl p-8 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-cyan-900/20">
-                    <div className="w-14 h-14 bg-cyan-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-300 border border-cyan-500/20">
-                        <Scale className="text-cyan-400 w-7 h-7" />
+                {/* 6. Accounting Codes */}
+                <div onClick={() => setView('codes')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-orange-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-orange-900/20">
+                    <div className="w-12 h-12 bg-orange-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-orange-500/20">
+                        <Tag className="text-orange-400 w-6 h-6" />
                     </div>
-                    <h3 className="text-xl font-bold text-white mb-2 group-hover:text-cyan-300 transition-colors">Trial Balance</h3>
-                    <p className="text-gray-400 text-sm leading-relaxed">View Unadjusted & Adjusted Trial Balance reports.</p>
+                    <h3 className="text-lg font-bold text-white mb-2 group-hover:text-orange-300 transition-colors">Accounting Codes</h3>
+                    <p className="text-gray-400 text-xs leading-relaxed">Manage Chart of Accounts codes and standard descriptions.</p>
                 </div>
 
-                {/* 7. Financial Statements (Hero Card) */}
-                <div onClick={() => setView('financials')} className="col-span-full md:col-span-2 lg:col-span-3 group relative bg-gradient-to-br from-indigo-900/40 to-slate-800/50 border border-indigo-500/30 hover:border-indigo-400/50 backdrop-blur-xl p-8 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-2xl hover:shadow-indigo-500/20 flex items-center gap-8">
-                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/10 to-transparent opacity-0 group-hover:opacity-100 transition duration-500"></div>
-                    <div className="w-20 h-20 bg-indigo-500/20 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-110 transition duration-300 border border-indigo-500/30 ring-1 ring-indigo-500/20">
-                        <TrendingUp className="text-indigo-300 w-10 h-10" />
+                {/* 7. Currency Exchange */}
+                <div onClick={() => setView('currency')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-teal-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-teal-900/20">
+                    <div className="w-12 h-12 bg-teal-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-teal-500/20">
+                        <DollarSign className="text-teal-400 w-6 h-6" />
                     </div>
-                    <div className="relative z-10">
-                        <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-indigo-300 transition-colors">Financial Statements</h3>
-                        <p className="text-indigo-200 text-sm leading-relaxed max-w-2xl">Generate final audited reports including Income Statement, Balance Sheet, and Cash Flow Statement powered by Blue AI.</p>
-                    </div>
-                    <div className="ml-auto opacity-50 group-hover:opacity-100 transition-opacity hidden md:block">
-                        <ArrowLeft className="rotate-180 text-indigo-300 w-6 h-6" />
-                    </div>
+                    <h3 className="text-lg font-bold text-white mb-2 group-hover:text-teal-300 transition-colors">Currency Exchange</h3>
+                    <p className="text-gray-400 text-xs leading-relaxed">Set Annual Exchange Rates (USD to KHR) for compliance.</p>
                 </div>
 
             </div>
