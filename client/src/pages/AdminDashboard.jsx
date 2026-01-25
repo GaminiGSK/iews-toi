@@ -17,6 +17,7 @@ export default function AdminDashboard() {
     // Tax Forms State
     const [templates, setTemplates] = useState([]);
     const [activeTemplateId, setActiveTemplateId] = useState(null);
+    const [savingLibrary, setSavingLibrary] = useState(false);
     const navigate = useNavigate();
 
     // Fetch users on mount
@@ -29,10 +30,77 @@ export default function AdminDashboard() {
         }
     };
 
+    const fetchTemplates = async () => {
+        try {
+            const res = await axios.get('/api/tax/templates');
+            // Merge backend templates
+            const apiTemplates = res.data.map(t => ({
+                ...t,
+                id: t._id,
+                status: t.status || 'Saved',
+                // For saved templates, we might need a way to view them if previewUrl is missing.
+                // For now, if no previewUrl, we rely on the file upload logic rendering. 
+                // Note: Real persistence requires serving specific routes.
+            }));
+            setTemplates(apiTemplates);
+        } catch (err) {
+            console.error("Error fetching templates", err);
+        }
+    };
+
     useEffect(() => {
         fetchUsers();
+        fetchTemplates();
     }, []);
 
+    // Tax Form Handlers
+    const handleSaveLibrary = async () => {
+        const newTemplates = templates.filter(t => t.status === 'New' && t.file);
+        if (newTemplates.length === 0) return alert('No new templates to save.');
+
+        setSavingLibrary(true);
+        const formData = new FormData();
+        newTemplates.forEach(t => {
+            formData.append('files', t.file);
+        });
+
+        try {
+            const res = await axios.post('/api/tax/templates', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            alert(`Successfully saved ${res.data.templates.length} templates!`);
+            fetchTemplates();
+        } catch (err) {
+            console.error(err);
+            alert('Failed to save templates.');
+        } finally {
+            setSavingLibrary(false);
+        }
+    };
+
+    const handleSaveMappings = async () => {
+        if (!activeTemplateId) return;
+        const template = templates.find(t => t.id === activeTemplateId);
+        if (!template) return;
+
+        try {
+            // If template is New, it must be saved to library first
+            if (template.status === 'New') {
+                return alert('Please Save the Template to the Library (Center Panel) first.');
+            }
+
+            await axios.put(`/api/tax/templates/${activeTemplateId}`, {
+                mappings: template.mappings
+            });
+            alert('Mappings saved successfully!');
+            fetchTemplates();
+        } catch (err) {
+            console.error(err);
+            alert('Error saving mappings.');
+        }
+    };
+
+    // User Handlers
     const resetForm = () => {
         setFormData({ companyName: '', password: '' });
         setIsCreating(false);
@@ -282,13 +350,21 @@ export default function AdminDashboard() {
                     {/* COLUMN 2: TEMPLATE LIBRARY */}
                     <div className="w-80 shrink-0 flex flex-col space-y-4">
                         <div className="bg-gray-900 rounded-xl border border-gray-800 flex flex-col h-full overflow-hidden">
-                            <div className="p-4 bg-gray-900/50 border-b border-gray-800 font-bold text-white flex flex-col gap-3 shrink-0">
+                            <div className="p-4 bg-gray-900/50 border-b border-gray-800 font-bold text-white flex flex-col shrink-0 gap-3">
                                 <div className="flex justify-between items-center">
                                     <span>Form Library ({templates.length})</span>
                                     <span className="text-xs text-gray-500 bg-gray-800 px-2 py-1 rounded">
                                         Total Pages
                                     </span>
                                 </div>
+                                <button
+                                    onClick={handleSaveLibrary}
+                                    disabled={savingLibrary || templates.filter(t => t.status === 'New').length === 0}
+                                    className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-800 disabled:text-gray-500 text-white text-xs font-bold py-2 rounded transition flex items-center justify-center gap-2"
+                                >
+                                    {savingLibrary ? <Loader2 className="animate-spin h-3 w-3" /> : <Save size={14} />}
+                                    {savingLibrary ? 'SAVING...' : `SAVE ALL (${templates.filter(t => t.status === 'New').length})`}
+                                </button>
                             </div>
                             <div className="divide-y divide-gray-800 overflow-y-auto flex-1 p-2">
                                 {templates.map((template) => (
@@ -300,27 +376,39 @@ export default function AdminDashboard() {
                                         <div className="flex-1 min-w-0 mr-2 flex items-center gap-3">
                                             {/* Thumbnail */}
                                             <div className="w-8 h-10 bg-gray-800 rounded flex-shrink-0 overflow-hidden border border-gray-700">
-                                                <img src={template.previewUrl} alt="" className="w-full h-full object-cover opacity-80" />
+                                                {/* Use previewUrl if available (New/Loaded). Using path directly won't work without a route. */}
+                                                <img
+                                                    src={template.previewUrl || '/placeholder.png'}
+                                                    alt=""
+                                                    className="w-full h-full object-cover opacity-80"
+                                                    onError={(e) => {
+                                                        // Fallback for broken images (e.g. saved ones we can't load yet)
+                                                        e.target.style.display = 'none';
+                                                        e.target.parentNode.innerHTML = '📄';
+                                                    }}
+                                                />
                                             </div>
                                             <div className="min-w-0">
                                                 <p className="font-bold text-white text-xs truncate mb-0.5" title={template.name}>
                                                     {template.name}
                                                 </p>
                                                 <p className="text-[10px] text-gray-400">
-                                                    {template.size} • {template.type ? template.type.split('/')[1] : 'UNK'}
+                                                    {template.status === 'New' ? (template.size || 'Pending') : 'Saved'} • {template.status}
                                                 </p>
                                             </div>
                                         </div>
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setTemplates(prev => prev.filter(t => t.id !== template.id));
-                                                if (activeTemplateId === template.id) setActiveTemplateId(null);
-                                            }}
-                                            className="p-1.5 rounded-full hover:bg-red-500/20 text-gray-500 hover:text-red-400 transition"
-                                        >
-                                            <X size={14} />
-                                        </button>
+                                        {template.status === 'New' && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setTemplates(prev => prev.filter(t => t.id !== template.id));
+                                                    if (activeTemplateId === template.id) setActiveTemplateId(null);
+                                                }}
+                                                className="p-1.5 rounded-full hover:bg-red-500/20 text-gray-500 hover:text-red-400 transition"
+                                            >
+                                                <X size={14} />
+                                            </button>
+                                        )}
                                     </div>
                                 ))}
                                 {templates.length === 0 && (
@@ -349,7 +437,10 @@ export default function AdminDashboard() {
                                     <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
                                     Draw Mode Active
                                 </div>
-                                <button className="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded font-bold transition">
+                                <button
+                                    onClick={handleSaveMappings}
+                                    className="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded font-bold transition"
+                                >
                                     Save Mappings
                                 </button>
                             </div>
@@ -365,12 +456,6 @@ export default function AdminDashboard() {
                                         const x = ((e.clientX - rect.left) / rect.width) * 100;
                                         const y = ((e.clientY - rect.top) / rect.height) * 100;
 
-                                        // Store temporary drawing state in a data attribute or separate state ref effectively
-                                        // For simplicity in this one-file setup, we'll use a local handler approach if possible
-                                        // But we need to update 'templates' state.
-
-                                        // Start Drawing Logic:
-                                        // We'll add a 'temporaryBox' to the active template
                                         setTemplates(prev => prev.map(t => {
                                             if (t.id === activeTemplateId) {
                                                 return {
@@ -408,7 +493,6 @@ export default function AdminDashboard() {
                                     onMouseUp={() => {
                                         setTemplates(prev => prev.map(t => {
                                             if (t.id === activeTemplateId && t.drawing) {
-                                                // Commit the new box
                                                 const newMapping = {
                                                     id: Date.now(),
                                                     x: t.currentBox.x,
@@ -417,7 +501,6 @@ export default function AdminDashboard() {
                                                     h: t.currentBox.h,
                                                     label: `Field ${(t.mappings || []).length + 1}`
                                                 };
-                                                // Only add if it has size
                                                 const mappings = (newMapping.w > 1 && newMapping.h > 1)
                                                     ? [...(t.mappings || []), newMapping]
                                                     : (t.mappings || []);
@@ -429,10 +512,11 @@ export default function AdminDashboard() {
                                     }}
                                 >
                                     <img
-                                        src={templates.find(t => t.id === activeTemplateId)?.previewUrl}
+                                        src={templates.find(t => t.id === activeTemplateId)?.previewUrl || '/placeholder.png'}
                                         alt="Form Template"
                                         className="h-[80vh] w-auto object-contain block pointer-events-none"
                                         draggable="false"
+                                        onError={(e) => { e.target.style.display = 'none'; e.target.parentNode.innerHTML = '<div class="text-white">Image Not Loaded (Save & Refresh)</div>'; }}
                                     />
 
                                     {/* Render Mappings */}
@@ -451,7 +535,6 @@ export default function AdminDashboard() {
                                             <span className="text-[10px] font-bold text-white bg-blue-600 px-1 rounded shadow-sm">
                                                 {m.label}
                                             </span>
-                                            {/* Delete Button */}
                                             <button
                                                 className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover/box:opacity-100 hover:scale-110 transition"
                                                 onClick={(e) => {
