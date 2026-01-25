@@ -420,8 +420,12 @@ const TrialBalance = ({ onBack }) => {
                                             <td className="border-r border-gray-400 p-3 text-right text-gray-900">
                                                 {(totals.crKHR / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                                             </td>
-                                            <td className="border-r border-gray-400"></td>
-                                            <td className="border-r border-gray-400"></td>
+                                            <td className="border-r border-gray-400 p-3 text-right text-gray-600">
+                                                {(totals.priorDrKHR ? (totals.priorDrKHR / (inThousands ? 1000 : 1)) : 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                                            </td>
+                                            <td className="border-r border-gray-400 p-3 text-right text-gray-600">
+                                                {(totals.priorCrKHR ? (totals.priorCrKHR / (inThousands ? 1000 : 1)) : 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                                            </td>
                                             <td></td>
                                         </tr>
                                     </tbody>
