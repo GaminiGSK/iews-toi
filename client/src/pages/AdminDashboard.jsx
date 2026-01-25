@@ -219,16 +219,23 @@ export default function AdminDashboard() {
                                 e.preventDefault(); e.stopPropagation();
                                 const files = Array.from(e.dataTransfer.files);
                                 if (files.length > 0) {
-                                    // Handle Upload (Mock for now)
-                                    const newTemplates = files.map(file => ({
-                                        id: Date.now() + Math.random(),
-                                        name: file.name,
-                                        file: file,
-                                        previewUrl: URL.createObjectURL(file),
-                                        status: 'New'
-                                    }));
-                                    setTemplates(prev => [...prev, ...newTemplates]);
-                                    if (!activeTemplateId && newTemplates.length > 0) setActiveTemplateId(newTemplates[0].id);
+                                    files.forEach(file => {
+                                        const reader = new FileReader();
+                                        reader.onload = (ev) => {
+                                            const newTemplate = {
+                                                id: Date.now() + Math.random(),
+                                                name: file.name,
+                                                file: file,
+                                                type: file.type,
+                                                size: (file.size / 1024).toFixed(2) + ' KB',
+                                                previewUrl: ev.target.result, // Base64
+                                                status: 'New'
+                                            };
+                                            setTemplates(prev => [...prev, newTemplate]);
+                                            if (!activeTemplateId) setActiveTemplateId(newTemplate.id);
+                                        };
+                                        reader.readAsDataURL(file);
+                                    });
                                 }
                             }}
                         >
@@ -239,15 +246,23 @@ export default function AdminDashboard() {
                                 onChange={(e) => {
                                     if (e.target.files?.length > 0) {
                                         const files = Array.from(e.target.files);
-                                        const newTemplates = files.map(file => ({
-                                            id: Date.now() + Math.random(),
-                                            name: file.name,
-                                            file: file,
-                                            previewUrl: URL.createObjectURL(file),
-                                            status: 'New'
-                                        }));
-                                        setTemplates(prev => [...prev, ...newTemplates]);
-                                        if (!activeTemplateId && newTemplates.length > 0) setActiveTemplateId(newTemplates[0].id);
+                                        files.forEach(file => {
+                                            const reader = new FileReader();
+                                            reader.onload = (ev) => {
+                                                const newTemplate = {
+                                                    id: Date.now() + Math.random(),
+                                                    name: file.name,
+                                                    file: file,
+                                                    type: file.type,
+                                                    size: (file.size / 1024).toFixed(2) + ' KB',
+                                                    previewUrl: ev.target.result, // Base64
+                                                    status: 'New'
+                                                };
+                                                setTemplates(prev => [...prev, newTemplate]);
+                                                if (!activeTemplateId) setActiveTemplateId(newTemplate.id);
+                                            };
+                                            reader.readAsDataURL(file);
+                                        });
                                     }
                                 }}
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
@@ -292,7 +307,7 @@ export default function AdminDashboard() {
                                                     {template.name}
                                                 </p>
                                                 <p className="text-[10px] text-gray-400">
-                                                    {template.status} • 0 Mappings
+                                                    {template.size} • {template.type ? template.type.split('/')[1] : 'UNK'}
                                                 </p>
                                             </div>
                                         </div>
