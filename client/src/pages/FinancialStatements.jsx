@@ -141,13 +141,19 @@ const FinancialStatements = ({ onBack }) => {
                         onClick={() => setActiveTab('pl')}
                         className={`px-6 py-3 rounded-t-xl font-medium text-sm transition-all ${activeTab === 'pl' ? 'bg-white text-blue-700 shadow-sm border-t border-x border-gray-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
                     >
-                        Profit & Loss (P&L)
+                        Income Statement
                     </button>
                     <button
                         onClick={() => setActiveTab('bs')}
                         className={`px-6 py-3 rounded-t-xl font-medium text-sm transition-all ${activeTab === 'bs' ? 'bg-white text-blue-700 shadow-sm border-t border-x border-gray-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
                     >
                         Balance Sheet
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('cf')}
+                        className={`px-6 py-3 rounded-t-xl font-medium text-sm transition-all ${activeTab === 'cf' ? 'bg-white text-blue-700 shadow-sm border-t border-x border-gray-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                    >
+                        Cash Flow Statement
                     </button>
                 </div>
 
@@ -161,7 +167,7 @@ const FinancialStatements = ({ onBack }) => {
                     <div className="text-center mb-8">
                         <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-widest mb-2">Company Name Here</h2>
                         <h3 className="text-lg font-bold text-gray-600 mb-1">
-                            {activeTab === 'pl' ? 'STATEMENT OF PROFIT OR LOSS' : 'STATEMENT OF FINANCIAL POSITION'}
+                            {activeTab === 'pl' ? 'INCOME STATEMENT' : activeTab === 'bs' ? 'STATEMENT OF FINANCIAL POSITION' : 'STATEMENT OF CASH FLOWS'}
                         </h3>
                         <p className="text-sm text-gray-500 italic">For the year ended 31 December {new Date().getFullYear()}</p>
                         <p className="text-xs text-gray-400 mt-2 uppercase font-sans">
@@ -221,6 +227,58 @@ const FinancialStatements = ({ onBack }) => {
                                 </tr>
                             </tbody>
                         )}
+
+                        {/* CASH FLOW STATEMENT */}
+                        {activeTab === 'cf' && (
+                            <tbody>
+                                {renderSectionHeader("CASH FLOWS FROM OPERATING ACTIVITIES")}
+                                {renderRow("Net Profit for the Year", netProfit, true, true)}
+                                {/* Simplified Adjustments */}
+                                {renderRow("Depreciation & Amortization", 0, false, true)}
+                                {renderRow("Change in Receivables", 0, false, true)}
+                                {renderRow("Change in Payables", 0, false, true)}
+                                <tr className="border-t border-gray-300"><td colSpan="2"></td></tr>
+                                {renderRow("Net Cash from Operating Activities", netProfit, true)}
+
+                                <tr className="h-6"></tr>
+
+                                {renderSectionHeader("CASH FLOWS FROM INVESTING ACTIVITIES")}
+                                {assets.filter(a => a.description.toLowerCase().includes('fixed') || a.description.toLowerCase().includes('equipment')).map(r =>
+                                    renderRow(`Purchase of ${r.description}`, -(r.drKHR - r.crKHR) / scale, false, true)
+                                )}
+                                <tr className="border-t border-gray-300"><td colSpan="2"></td></tr>
+                                {renderRow("Net Cash used in Investing Activities", assets.filter(a => a.description.toLowerCase().includes('fixed') || a.description.toLowerCase().includes('equipment')).reduce((sum, r) => sum - ((r.drKHR - r.crKHR) / scale), 0), true)}
+
+                                <tr className="h-6"></tr>
+
+                                {renderSectionHeader("CASH FLOWS FROM FINANCING ACTIVITIES")}
+                                {equity.filter(e => e.description.toLowerCase().includes('capital')).map(r =>
+                                    renderRow(`Proceeds from ${r.description}`, (r.crKHR - r.drKHR) / scale, false, true)
+                                )}
+                                <tr className="border-t border-gray-300"><td colSpan="2"></td></tr>
+                                {renderRow("Net Cash from Financing Activities", equity.filter(e => e.description.toLowerCase().includes('capital')).reduce((sum, r) => sum + ((r.crKHR - r.drKHR) / scale), 0), true)}
+
+                                <tr className="h-6"></tr>
+                                <tr className="border-t-2 border-black border-b-2 border-double">
+                                    <td className="p-4 font-bold text-lg">NET INCREASE/(DECREASE) IN CASH</td>
+                                    {/* Formula: Operating + Investing + Financing */}
+                                    <td className="p-4 text-right font-bold font-mono text-lg">
+                                        {(
+                                            netProfit +
+                                            assets.filter(a => a.description.toLowerCase().includes('fixed') || a.description.toLowerCase().includes('equipment')).reduce((sum, r) => sum - ((r.drKHR - r.crKHR) / scale), 0) +
+                                            equity.filter(e => e.description.toLowerCase().includes('capital')).reduce((sum, r) => sum + ((r.crKHR - r.drKHR) / scale), 0)
+                                        ).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                    </td>
+                                </tr>
+                                {renderRow("Cash at Beginning of Year", 0, false, true)}
+                                {renderRow("Cash at End of Year", (
+                                    netProfit +
+                                    assets.filter(a => a.description.toLowerCase().includes('fixed') || a.description.toLowerCase().includes('equipment')).reduce((sum, r) => sum - ((r.drKHR - r.crKHR) / scale), 0) +
+                                    equity.filter(e => e.description.toLowerCase().includes('capital')).reduce((sum, r) => sum + ((r.crKHR - r.drKHR) / scale), 0)
+                                ), true)}
+                            </tbody>
+                        )}
+
                     </table>
 
                     <div className="mt-12 pt-8 border-t border-gray-300 flex justify-between text-xs text-center text-gray-500 font-sans">
