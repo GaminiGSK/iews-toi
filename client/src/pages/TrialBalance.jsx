@@ -44,12 +44,7 @@ const TrialBalance = ({ onBack }) => {
     };
 
     // Calculate Totals
-    const totals = report.reduce((acc, row) => ({
-        drUSD: acc.drUSD + row.drUSD,
-        crUSD: acc.crUSD + row.crUSD,
-        drKHR: acc.drKHR + row.drKHR,
-        crKHR: acc.crKHR + row.crKHR,
-    }), { drUSD: 0, crUSD: 0, drKHR: 0, crKHR: 0 });
+
 
     const isBalancedUSD = Math.abs(totals.drUSD - totals.crUSD) < 0.01;
     const isBalancedKHR = Math.abs(totals.drKHR - totals.crKHR) < 1.0;
