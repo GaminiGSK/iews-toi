@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Loader2, CheckCircle, AlertCircle, Table, Save, X, Eye, FileText, CloudUpload, Calendar, Book, Tag, DollarSign, Scale, TrendingUp } from 'lucide-react';
+import { Loader2, CheckCircle, AlertCircle, Table, Save, X, Eye, FileText, CloudUpload, Calendar, Book, Tag, DollarSign, Scale, TrendingUp, ArrowLeft } from 'lucide-react';
 import GeneralLedger from './GeneralLedger';
 import AccountingCodes from './AccountingCodes';
 import CurrencyExchange from './CurrencyExchange';
@@ -244,98 +244,109 @@ export default function CompanyProfile() {
     // --- Sub-Components ---
 
     const renderHome = () => (
-        <div className="max-w-4xl mx-auto pt-20 px-6 animate-fade-in relative">
-            <div className="flex justify-between items-start mb-2">
-                <h1 className="text-3xl font-bold text-gray-800">Welcome, {formData.companyNameEn || formData.companyCode || 'Admin'}</h1>
+        <div className="max-w-6xl mx-auto pt-12 px-6 animate-fade-in relative z-10">
+            {/* Background Gradients */}
+            <div className="absolute top-0 left-0 w-full h-96 bg-blue-600/10 rounded-full blur-[128px] pointer-events-none -z-10" />
+            <div className="absolute bottom-0 right-0 w-full h-96 bg-purple-600/10 rounded-full blur-[128px] pointer-events-none -z-10" />
+
+            <div className="flex justify-between items-end mb-12">
+                <div>
+                    <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 mb-2">
+                        Welcome, {formData.companyNameEn || formData.companyCode || 'Admin'}
+                    </h1>
+                    <p className="text-gray-400 text-lg">Manage your entity and financial data with AI precision. <span className="text-xs bg-white/10 text-white px-2 py-0.5 rounded ml-2 border border-white/10">v2.3 Night</span></p>
+                </div>
                 <button
                     onClick={() => {
                         localStorage.removeItem('token');
                         window.location.href = '/login';
                     }}
-                    className="text-sm text-red-500 font-medium hover:text-red-700 hover:bg-red-50 px-3 py-1 rounded-lg transition"
+                    className="text-sm text-red-400 hover:text-red-300 font-medium hover:bg-red-500/10 px-4 py-2 rounded-lg transition border border-transparent hover:border-red-500/20"
                 >
                     Log Out
                 </button>
             </div>
-            <p className="text-gray-500 mb-12">Manage your company entity and financial data. <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded ml-2">v2.3 (Verbose Error)</span></p>
 
-            <div className="grid md:grid-cols-2 gap-6">
-                <div
-                    onClick={() => setView('profile')}
-                    className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition group"
-                >
-                    <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
-                        <FileText className="text-blue-600" />
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                {/* 1. Profile */}
+                <div onClick={() => setView('profile')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-blue-500/50 backdrop-blur-xl p-8 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-blue-900/20">
+                    <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                        <TrendingUp className="text-blue-500/20 w-32 h-32 -mr-8 -mt-8" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">Company Profile</h3>
-                    <p className="text-gray-500 text-sm">Update official registration details, MOC certificates, and shareholders.</p>
+                    <div className="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-300 border border-blue-500/20">
+                        <FileText className="text-blue-400 w-7 h-7" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2 group-hover:text-blue-300 transition-colors">Company Profile</h3>
+                    <p className="text-gray-400 text-sm leading-relaxed">Update official registration details, MOC certificates, and shareholders.</p>
                 </div>
 
-                <div
-                    onClick={() => setView('bank')}
-                    className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition group"
-                >
-                    <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
-                        <Table className="text-green-600" />
+                {/* 2. Bank */}
+                <div onClick={() => setView('bank')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-green-500/50 backdrop-blur-xl p-8 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-green-900/20">
+                    <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                        <Table className="text-green-500/20 w-32 h-32 -mr-8 -mt-8" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">Bank Statements</h3>
-                    <p className="text-gray-500 text-sm">Upload monthly statements, parse transactions via AI, and sync data.</p>
+                    <div className="w-14 h-14 bg-green-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-300 border border-green-500/20">
+                        <Table className="text-green-400 w-7 h-7" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2 group-hover:text-green-300 transition-colors">Bank Statements</h3>
+                    <p className="text-gray-400 text-sm leading-relaxed">Upload monthly statements, parse transactions via AI, and sync data.</p>
                 </div>
 
-                <div
-                    onClick={() => setView('ledger')}
-                    className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition group"
-                >
-                    <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
-                        <Book className="text-purple-600" />
+                {/* 3. Ledger */}
+                <div onClick={() => setView('ledger')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-purple-500/50 backdrop-blur-xl p-8 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-purple-900/20">
+                    <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                        <Book className="text-purple-500/20 w-32 h-32 -mr-8 -mt-8" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">General Ledger</h3>
-                    <p className="text-gray-500 text-sm">View chronological financial history of all transactions.</p>
+                    <div className="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-300 border border-purple-500/20">
+                        <Book className="text-purple-400 w-7 h-7" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2 group-hover:text-purple-300 transition-colors">General Ledger</h3>
+                    <p className="text-gray-400 text-sm leading-relaxed">View chronological financial history of all audited transactions.</p>
                 </div>
 
-                <div
-                    onClick={() => setView('codes')}
-                    className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition group"
-                >
-                    <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
-                        <Tag className="text-orange-600" />
+                {/* 4. Codes */}
+                <div onClick={() => setView('codes')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-orange-500/50 backdrop-blur-xl p-8 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-orange-900/20">
+                    <div className="w-14 h-14 bg-orange-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-300 border border-orange-500/20">
+                        <Tag className="text-orange-400 w-7 h-7" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">Accounting Codes</h3>
-                    <p className="text-gray-500 text-sm">Manage Chart of Accounts codes and descriptions.</p>
+                    <h3 className="text-xl font-bold text-white mb-2 group-hover:text-orange-300 transition-colors">Accounting Codes</h3>
+                    <p className="text-gray-400 text-sm leading-relaxed">Manage Chart of Accounts codes and standard descriptions.</p>
                 </div>
 
-                <div
-                    onClick={() => setView('currency')}
-                    className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition group"
-                >
-                    <div className="w-12 h-12 bg-teal-50 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
-                        <DollarSign className="text-teal-600" />
+                {/* 5. Currency */}
+                <div onClick={() => setView('currency')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-teal-500/50 backdrop-blur-xl p-8 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-teal-900/20">
+                    <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-300 border border-teal-500/20">
+                        <DollarSign className="text-teal-400 w-7 h-7" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">Currency Exchange</h3>
-                    <p className="text-gray-500 text-sm">Set Annual Exchange Rates (USD to KHR).</p>
+                    <h3 className="text-xl font-bold text-white mb-2 group-hover:text-teal-300 transition-colors">Currency Exchange</h3>
+                    <p className="text-gray-400 text-sm leading-relaxed">Set Annual Exchange Rates (USD to KHR) for compliance.</p>
                 </div>
 
-                <div
-                    onClick={() => setView('report')}
-                    className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition group"
-                >
-                    <div className="w-12 h-12 bg-teal-50 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
-                        <Scale className="text-teal-800" />
+                {/* 6. Trial Balance */}
+                <div onClick={() => setView('report')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-cyan-500/50 backdrop-blur-xl p-8 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-cyan-900/20">
+                    <div className="w-14 h-14 bg-cyan-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-300 border border-cyan-500/20">
+                        <Scale className="text-cyan-400 w-7 h-7" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">Trial Balance</h3>
-                    <p className="text-gray-500 text-sm">Step 4-6: Unadjusted & Adjusted Trial Balance.</p>
+                    <h3 className="text-xl font-bold text-white mb-2 group-hover:text-cyan-300 transition-colors">Trial Balance</h3>
+                    <p className="text-gray-400 text-sm leading-relaxed">View Unadjusted & Adjusted Trial Balance reports.</p>
                 </div>
 
-                <div
-                    onClick={() => setView('financials')}
-                    className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition group border-l-4 border-l-indigo-600 ring-1 ring-indigo-50"
-                >
-                    <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
-                        <TrendingUp className="text-indigo-800" />
+                {/* 7. Financial Statements (Hero Card) */}
+                <div onClick={() => setView('financials')} className="col-span-full md:col-span-2 lg:col-span-3 group relative bg-gradient-to-br from-indigo-900/40 to-slate-800/50 border border-indigo-500/30 hover:border-indigo-400/50 backdrop-blur-xl p-8 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-2xl hover:shadow-indigo-500/20 flex items-center gap-8">
+                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/10 to-transparent opacity-0 group-hover:opacity-100 transition duration-500"></div>
+                    <div className="w-20 h-20 bg-indigo-500/20 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-110 transition duration-300 border border-indigo-500/30 ring-1 ring-indigo-500/20">
+                        <TrendingUp className="text-indigo-300 w-10 h-10" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">Financial Statements</h3>
-                    <p className="text-gray-500 text-sm">Step 7: Final P&L and Balance Sheet (Blue AI).</p>
+                    <div className="relative z-10">
+                        <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-indigo-300 transition-colors">Financial Statements</h3>
+                        <p className="text-indigo-200 text-sm leading-relaxed max-w-2xl">Generate final audited reports including Income Statement, Balance Sheet, and Cash Flow Statement powered by Blue AI.</p>
+                    </div>
+                    <div className="ml-auto opacity-50 group-hover:opacity-100 transition-opacity hidden md:block">
+                        <ArrowLeft className="rotate-180 text-indigo-300 w-6 h-6" />
+                    </div>
                 </div>
+
             </div>
         </div>
     );
@@ -1042,14 +1053,14 @@ export default function CompanyProfile() {
 
     // RENDER LOGIC
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900">
+        <div className="min-h-screen bg-slate-900 flex flex-col font-sans text-white">
             {/* Header */}
-            <header className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm h-16 flex items-center px-6 justify-between">
-                <div className="flex items-center gap-3 cursor-pointer" onClick={() => setView('home')}>
-                    <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold shadow-sm text-sm tracking-tighter">
+            <header className="bg-slate-900/80 backdrop-blur-md border-b border-white/10 sticky top-0 z-30 shadow-lg h-16 flex items-center px-6 justify-between">
+                <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setView('home')}>
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/20 text-sm tracking-tighter group-hover:scale-105 transition-transform">
                         GK
                     </div>
-                    <span className="font-bold text-lg tracking-tight text-gray-800">GK SMART <span className="text-gray-400 font-normal">& Ai</span></span>
+                    <span className="font-bold text-lg tracking-tight text-white group-hover:text-blue-400 transition-colors">GK SMART <span className="text-gray-500 font-normal">& Ai</span></span>
                 </div>
                 {/* Quick Actions or User Menu could go here */}
             </header>
