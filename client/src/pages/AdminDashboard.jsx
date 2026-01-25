@@ -13,7 +13,7 @@ export default function AdminDashboard() {
     const [newAdminCode, setNewAdminCode] = useState('');
     const [message, setMessage] = useState('');
     const [activeTab, setActiveTab] = useState('users'); // 'users' or 'tax_forms'
-    
+
     // Tax Forms State
     const [templates, setTemplates] = useState([]);
     const [activeTemplateId, setActiveTemplateId] = useState(null);
@@ -330,27 +330,143 @@ export default function AdminDashboard() {
                                 )}
                             </div>
                             <div className="flex gap-2">
+                                <div className="text-xs text-gray-500 flex items-center gap-2 mr-4">
+                                    <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+                                    Draw Mode Active
+                                </div>
                                 <button className="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded font-bold transition">
-                                    Save Configuration
+                                    Save Mappings
                                 </button>
                             </div>
                         </div>
 
-                        {/* Canvas Area */}
-                        <div className="flex-1 bg-black/50 overflow-auto p-8 flex items-center justify-center relative">
+                        {/* Canvas Area with Drawing Logic */}
+                        <div className="flex-1 bg-black/50 overflow-auto p-8 flex items-center justify-center relative select-none">
                             {activeTemplateId ? (
-                                <div className="relative shadow-2xl border border-gray-700 max-w-full">
+                                <div
+                                    className="relative shadow-2xl border border-gray-700 max-w-full cursor-crosshair group"
+                                    onMouseDown={(e) => {
+                                        const rect = e.currentTarget.getBoundingClientRect();
+                                        const x = ((e.clientX - rect.left) / rect.width) * 100;
+                                        const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+                                        // Store temporary drawing state in a data attribute or separate state ref effectively
+                                        // For simplicity in this one-file setup, we'll use a local handler approach if possible
+                                        // But we need to update 'templates' state.
+
+                                        // Start Drawing Logic:
+                                        // We'll add a 'temporaryBox' to the active template
+                                        setTemplates(prev => prev.map(t => {
+                                            if (t.id === activeTemplateId) {
+                                                return {
+                                                    ...t,
+                                                    drawing: true,
+                                                    currentBox: { startX: x, startY: y, x, y, w: 0, h: 0 }
+                                                };
+                                            }
+                                            return t;
+                                        }));
+                                    }}
+                                    onMouseMove={(e) => {
+                                        const active = templates.find(t => t.id === activeTemplateId);
+                                        if (active?.drawing) {
+                                            const rect = e.currentTarget.getBoundingClientRect();
+                                            const currentX = ((e.clientX - rect.left) / rect.width) * 100;
+                                            const currentY = ((e.clientY - rect.top) / rect.height) * 100;
+
+                                            const startX = active.currentBox.startX;
+                                            const startY = active.currentBox.startY;
+
+                                            const x = Math.min(startX, currentX);
+                                            const y = Math.min(startY, currentY);
+                                            const w = Math.abs(currentX - startX);
+                                            const h = Math.abs(currentY - startY);
+
+                                            setTemplates(prev => prev.map(t => {
+                                                if (t.id === activeTemplateId) {
+                                                    return { ...t, currentBox: { ...t.currentBox, x, y, w, h } };
+                                                }
+                                                return t;
+                                            }));
+                                        }
+                                    }}
+                                    onMouseUp={() => {
+                                        setTemplates(prev => prev.map(t => {
+                                            if (t.id === activeTemplateId && t.drawing) {
+                                                // Commit the new box
+                                                const newMapping = {
+                                                    id: Date.now(),
+                                                    x: t.currentBox.x,
+                                                    y: t.currentBox.y,
+                                                    w: t.currentBox.w,
+                                                    h: t.currentBox.h,
+                                                    label: `Field ${(t.mappings || []).length + 1}`
+                                                };
+                                                // Only add if it has size
+                                                const mappings = (newMapping.w > 1 && newMapping.h > 1)
+                                                    ? [...(t.mappings || []), newMapping]
+                                                    : (t.mappings || []);
+
+                                                return { ...t, drawing: false, currentBox: null, mappings };
+                                            }
+                                            return t;
+                                        }));
+                                    }}
+                                >
                                     <img
                                         src={templates.find(t => t.id === activeTemplateId)?.previewUrl}
                                         alt="Form Template"
-                                        className="max-h-[70vh] w-auto block select-none"
+                                        className="h-[80vh] w-auto object-contain block pointer-events-none"
+                                        draggable="false"
                                     />
-                                    {/* Overlay Layer (Simulation) */}
-                                    <div className="absolute inset-0 group">
-                                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/60 text-white px-4 py-2 rounded-full text-xs pointer-events-none opacity-0 group-hover:opacity-100 transition">
-                                            Click and Drag to map fields (Coming Soon)
+
+                                    {/* Render Mappings */}
+                                    {templates.find(t => t.id === activeTemplateId)?.mappings?.map(m => (
+                                        <div
+                                            key={m.id}
+                                            className="absolute border-2 border-blue-500 bg-blue-500/20 hover:bg-blue-500/30 transition flex items-center justify-center cursor-pointer"
+                                            style={{
+                                                left: `${m.x}%`,
+                                                top: `${m.y}%`,
+                                                width: `${m.w}%`,
+                                                height: `${m.h}%`
+                                            }}
+                                            title={m.label}
+                                        >
+                                            <span className="text-[10px] font-bold text-white bg-blue-600 px-1 rounded shadow-sm">
+                                                {m.label}
+                                            </span>
+                                            {/* Delete Button */}
+                                            <button
+                                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover/box:opacity-100 hover:scale-110 transition"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setTemplates(prev => prev.map(t => {
+                                                        if (t.id === activeTemplateId) {
+                                                            return { ...t, mappings: t.mappings.filter(map => map.id !== m.id) };
+                                                        }
+                                                        return t;
+                                                    }));
+                                                }}
+                                            >
+                                                <X size={8} />
+                                            </button>
                                         </div>
-                                    </div>
+                                    ))}
+
+                                    {/* Render Box Being Drawn */}
+                                    {templates.find(t => t.id === activeTemplateId)?.drawing && templates.find(t => t.id === activeTemplateId)?.currentBox && (
+                                        <div
+                                            className="absolute border-2 border-green-400 bg-green-400/20"
+                                            style={{
+                                                left: `${templates.find(t => t.id === activeTemplateId).currentBox.x}%`,
+                                                top: `${templates.find(t => t.id === activeTemplateId).currentBox.y}%`,
+                                                width: `${templates.find(t => t.id === activeTemplateId).currentBox.w}%`,
+                                                height: `${templates.find(t => t.id === activeTemplateId).currentBox.h}%`
+                                            }}
+                                        />
+                                    )}
+
                                 </div>
                             ) : (
                                 <div className="text-center text-gray-600">
