@@ -438,9 +438,16 @@ export default function CompanyProfile() {
 
     const renderProfile = () => (
         <div className="w-full h-[calc(100vh-80px)] pt-6 px-4 animate-fade-in flex flex-col">
-            <button onClick={() => setView('home')} className="text-gray-400 hover:text-gray-600 mb-4 flex items-center text-sm font-medium transition shrink-0">
-                ← Back to Dashboard
-            </button>
+            <div className="mb-4 flex items-center gap-4">
+                <button
+                    onClick={() => setView('home')}
+                    className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-sm font-medium transition shrink-0 shadow-md"
+                    title="Back to Dashboard"
+                >
+                    <ArrowLeft size={20} />
+                </button>
+                <span className="text-gray-500 text-sm font-medium">Back to Dashboard</span>
+            </div>
 
             <div className="flex flex-1 gap-6 min-h-0">
 
@@ -770,9 +777,16 @@ export default function CompanyProfile() {
 
     const renderBank = () => (
         <div className="w-full h-[calc(100vh-80px)] pt-6 px-4 animate-fade-in flex flex-col">
-            <button onClick={() => setView('home')} className="text-gray-400 hover:text-gray-600 mb-4 flex items-center text-sm font-medium transition shrink-0">
-                ← Back to Dashboard
-            </button>
+            <div className="mb-4 flex items-center gap-4">
+                <button
+                    onClick={() => setView('home')}
+                    className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-sm font-medium transition shrink-0 shadow-md"
+                    title="Back to Dashboard"
+                >
+                    <ArrowLeft size={20} />
+                </button>
+                <span className="text-gray-500 text-sm font-medium">Back to Dashboard</span>
+            </div>
 
             <div className="flex flex-1 gap-6 min-h-0">
 
