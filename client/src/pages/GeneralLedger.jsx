@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Wand2, Calendar, Tag, Layers } from 'lucide-react';
+import { Wand2, Calendar, Tag, Layers, ArrowLeft } from 'lucide-react';
 
 const GeneralLedger = ({ onBack }) => {
     const [transactions, setTransactions] = useState([]);
@@ -284,7 +284,7 @@ const GeneralLedger = ({ onBack }) => {
                 <div className="flex items-center gap-4 shrink-0">
                     <button
                         onClick={onBack}
-                        className="p-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-sm font-medium transition"
+                        className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-sm font-medium transition shrink-0 shadow-md"
                     >
                         <ArrowLeft size={20} />
                     </button>

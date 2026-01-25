@@ -113,7 +113,7 @@ const AccountingCodes = ({ onBack }) => {
             <div className="bg-white border-b border-gray-200 px-8 py-5 flex items-center gap-6 sticky top-0 z-20 shadow-sm overflow-x-auto">
                 <button
                     onClick={onBack}
-                    className="p-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-sm font-medium transition shrink-0"
+                    className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-sm font-medium transition shrink-0 shadow-md"
                 >
                     <ArrowLeft size={20} />
                 </button>
