@@ -6,6 +6,7 @@ import AccountingCodes from './AccountingCodes';
 import CurrencyExchange from './CurrencyExchange';
 import TrialBalance from './TrialBalance';
 import FinancialStatements from './FinancialStatements';
+import ToiAcar from './ToiAcar';
 import MOCCertificate from '../components/MOCCertificate';
 
 export default function CompanyProfile() {
@@ -300,7 +301,7 @@ export default function CompanyProfile() {
                 </div>
 
                 {/* 4. TOI & ACAR (New Topic) */}
-                <div onClick={() => alert('TOI & ACAR Module coming soon!')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-rose-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-rose-900/20">
+                <div onClick={() => setView('toi_acar')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-rose-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-rose-900/20">
                     <div className="w-12 h-12 bg-rose-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-rose-500/20">
                         <ShieldCheck className="text-rose-400 w-6 h-6" />
                     </div>
@@ -1088,6 +1089,7 @@ export default function CompanyProfile() {
                 {view === 'currency' && <CurrencyExchange onBack={() => setView('home')} />}
                 {view === 'report' && <TrialBalance onBack={() => setView('home')} />}
                 {view === 'financials' && <FinancialStatements onBack={() => setView('home')} />}
+                {view === 'toi_acar' && <ToiAcar onBack={() => setView('home')} />}
             </main>
 
             {/* DOCUMENT INSPECTOR MODAL */}
