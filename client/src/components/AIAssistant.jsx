@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquare, X, Send, Sparkles, Bot, Paperclip, Image as ImageIcon } from 'lucide-react';
+import { MessageSquare, X, Send, Sparkles, Bot, Paperclip } from 'lucide-react';
 
 const AIAssistant = () => {
     // STATE
@@ -106,14 +106,15 @@ const AIAssistant = () => {
     const GK_LOGO = "/gk-logo.png"; // Placeholder for user asset
 
     return (
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none">
+        // KEY CHANGE: Fixed Left-6 (was Right-6), Items-Start (was Items-End)
+        <div className="fixed bottom-6 left-6 z-50 flex flex-col items-start pointer-events-none">
             {/* Chat Window */}
             {isOpen && (
                 <div
                     className="bg-slate-900 pointer-events-auto rounded-2xl shadow-2xl border border-blue-500/30 w-[650px] flex flex-col mb-4 overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-200"
                     style={{ height: '85vh', maxHeight: '950px' }}
                 >
-                    {/* Header */}
+                    {/* Header - Enforce Blue Gradient */}
                     <div className="bg-gradient-to-r from-blue-700 via-blue-800 to-blue-900 p-6 shrink-0 flex justify-between items-center text-white shadow-lg border-b border-blue-500/30">
                         <div className="flex items-center gap-5">
                             {/* Logo - Doubled Size */}
@@ -239,7 +240,7 @@ const AIAssistant = () => {
                                 ref={textareaRef}
                                 className="flex-1 bg-transparent border-none outline-none text-lg text-white placeholder-gray-500 resize-none max-h-60 py-2 leading-relaxed"
                                 placeholder="Type your request or Paste Image (Ctrl+V)..."
-                                rows={1}
+                                rows={2} /* Increased default height */
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyDown={handleKeyDown}
@@ -263,7 +264,7 @@ const AIAssistant = () => {
                 </div>
             )}
 
-            {/* Toggle Button (Collapsed State) */}
+            {/* Toggle Button (Collapsed State) - Left Side */}
             {!isOpen && (
                 <button
                     onClick={() => setIsOpen(true)}
