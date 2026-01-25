@@ -10,6 +10,7 @@ const FinancialStatements = ({ onBack }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [inThousands, setInThousands] = useState(false); // Tax Mode
+    const [companyName, setCompanyName] = useState('Company Name');
 
     useEffect(() => {
         fetchReport();
@@ -23,6 +24,7 @@ const FinancialStatements = ({ onBack }) => {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             setReport(res.data.report || []);
+            if (res.data.companyName) setCompanyName(res.data.companyName);
         } catch (err) {
             setError("Failed to load financial data.");
             console.error(err);
@@ -63,8 +65,9 @@ const FinancialStatements = ({ onBack }) => {
         doc.text(activeTab === 'pl' ? "Statement of Profit or Loss" : "Statement of Financial Position", 14, 20);
         doc.setFontSize(10);
         doc.text(`As of ${new Date().toLocaleDateString()}`, 14, 28);
+        doc.text(companyName, 14, 34);
 
-        // Use autoTable based on active view... (Simplified for now)
+        // Simple text dump for now (Full PDF generator needs autoTable logic matching rendered HTML)
         doc.save("Financial_Statement.pdf");
     };
 
@@ -165,7 +168,7 @@ const FinancialStatements = ({ onBack }) => {
                     </div>
 
                     <div className="text-center mb-8">
-                        <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-widest mb-2">Company Name Here</h2>
+                        <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-widest mb-2">{companyName}</h2>
                         <h3 className="text-lg font-bold text-gray-600 mb-1">
                             {activeTab === 'pl' ? 'INCOME STATEMENT' : activeTab === 'bs' ? 'STATEMENT OF FINANCIAL POSITION' : 'STATEMENT OF CASH FLOWS'}
                         </h3>
@@ -298,9 +301,9 @@ const FinancialStatements = ({ onBack }) => {
                             <p className="font-bold">Director</p>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
+                </div >
+            </div >
+        </div >
     );
 };
 

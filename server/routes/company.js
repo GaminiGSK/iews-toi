@@ -1042,10 +1042,15 @@ router.get('/trial-balance', auth, async (req, res) => {
             priorDrUSD: 0, priorCrUSD: 0, priorDrKHR: 0, priorCrKHR: 0
         });
 
+        // Fetch Company Profile for Name
+        const CompanyProfile = require('../models/CompanyProfile');
+        const profile = await CompanyProfile.findOne({ companyCode: req.user.companyCode });
+
         res.json({
             report: report,
             totals: totals,
-            currentYear: currentYear
+            currentYear: currentYear,
+            companyName: profile ? profile.companyNameEn : req.user.companyCode
         });
 
     } catch (err) {
