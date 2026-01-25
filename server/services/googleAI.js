@@ -286,17 +286,71 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
     }
 };
 
+
+exports.analyzeTaxForm = async (filePath) => {
+    console.log(`[GeminiAI] Analyzing Tax Form Layout: ${filePath}`);
+    try {
+        const prompt = `
+            You are a Computer Vision Expert specializing in Digitizing Government Tax Forms.
+            Task: Analyze this Form Image and identify ALL interactive input fields (Text Boxes and Checkboxes/Squares).
+            
+            Return a JSON Array of Mappings:
+            [
+              {
+                "label": "Brief descriptive label close to the box",
+                "x": 10.5, // X-position as Percentage (0-100) of image width (Left edge of box)
+                "y": 20.0, // Y-position as Percentage (0-100) of image height (Top edge of box)
+                "w": 15.0, // Width as Percentage (0-100)
+                "h": 5.0,   // Height as Percentage (0-100)
+                "type": "text" // or "checkbox"
+              }
+            ]
+
+            Guidelines:
+            - **Coordinates**: Must be PERCENTAGE (0-100), not pixels. Estimate based on image dimensions.
+            - **Accuracy**: Try to cover the empty whitespace where a user would write.
+            - **Labels**: Look for surrounding text (Left or Top) to name the field. e.g. "TIN", "Name of Enterprise", "Month".
+            - **Coverage**: Catch all major fields.
+            - **Output**: JSON Only. No Markdown.
+        `;
+
+        const ext = path.extname(filePath).toLowerCase();
+        let mimeType = 'image/jpeg';
+        if (ext === '.png') mimeType = 'image/png';
+        if (ext === '.jpg' || ext === '.jpeg') mimeType = 'image/jpeg';
+
+        const filePart = fileToGenerativePart(filePath, mimeType);
+
+        const result = await model.generateContent([prompt, filePart]);
+        const response = await result.response;
+        const text = response.text();
+
+        const data = cleanAndParseJSON(text);
+        if (!data || !Array.isArray(data)) {
+            // Fallback for non-array response
+            if (data && data.mappings) return data.mappings;
+            return [];
+        }
+        return data;
+
+    } catch (e) {
+        console.error("Gemini Tax Analysis Error:", e);
+        return [];
+    }
+};
+
 // Utilities
 function cleanAndParseJSON(text) {
     try {
         // 1. Attempt strict clean
         let clean = text.replace(/```json/g, '').replace(/```/g, '').trim();
 
-        // 2. Regex fallback: Find the first '[' and last ']' to ignore preamble
-        const match = clean.match(/\[[\s\S]*\]/);
-        if (match) {
-            clean = match[0];
-        }
+        // 2. Regex fallback: Find the first '[' and last ']' OR '{' and '}' if object
+        const matchArray = clean.match(/\[[\s\S]*\]/);
+        const matchObj = clean.match(/\{[\s\S]*\}/);
+
+        if (matchArray) clean = matchArray[0];
+        else if (matchObj) clean = matchObj[0];
 
         return JSON.parse(clean);
     } catch (e) {

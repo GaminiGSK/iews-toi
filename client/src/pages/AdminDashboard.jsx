@@ -38,9 +38,8 @@ export default function AdminDashboard() {
                 ...t,
                 id: t._id,
                 status: t.status || 'Saved',
-                // For saved templates, we might need a way to view them if previewUrl is missing.
-                // For now, if no previewUrl, we rely on the file upload logic rendering. 
-                // Note: Real persistence requires serving specific routes.
+                // Construct preview URL for saved files
+                previewUrl: `/api/tax/file/${t.filename}`
             }));
             setTemplates(apiTemplates);
         } catch (err) {
@@ -164,6 +163,42 @@ export default function AdminDashboard() {
         } catch (err) {
             console.error(err);
             alert('Error updating code');
+        }
+    };
+
+    const handleAnalyze = async () => {
+        if (!activeTemplateId) return;
+        const template = templates.find(t => t.id === activeTemplateId);
+        // Only allow analysis if Saved
+        if (template.status === 'New') {
+            return alert('Please Save the Template to the Library first before analyzing.');
+        }
+
+        if (!window.confirm('Blue Agent will scan this image to auto-detect fields. Existing mappings will be overwritten. Continue?')) return;
+
+        try {
+            // Show loading state... we can leverage 'savingLibrary' or a new state.
+            // For simplicity, using alert flow or setSavingLibrary(true) temporarily?
+            // Let's create a local loading indicator for this button? 
+            // Reuse savingLibrary is confusing.
+            const btn = document.getElementById('analyze-btn');
+            if (btn) btn.innerText = 'Scanning...';
+
+            const res = await axios.post(`/api/tax/templates/${activeTemplateId}/analyze`);
+            alert(`Analysis Complete! Found ${res.data.mappings.length} fields.`);
+
+            // Update local state
+            setTemplates(prev => prev.map(t => {
+                if (t.id === activeTemplateId) return { ...t, mappings: res.data.mappings };
+                return t;
+            }));
+
+            if (btn) btn.innerText = 'Auto-Scan';
+        } catch (err) {
+            console.error(err);
+            alert('AI Analysis Failed. Check server logs.');
+            const btn = document.getElementById('analyze-btn');
+            if (btn) btn.innerText = 'Auto-Scan';
         }
     };
 
@@ -433,6 +468,15 @@ export default function AdminDashboard() {
                                 )}
                             </div>
                             <div className="flex gap-2">
+                                <button
+                                    id="analyze-btn"
+                                    onClick={handleAnalyze}
+                                    className="text-xs bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded font-bold transition mr-2 flex items-center gap-1"
+                                    title="Use AI to detect fields"
+                                >
+                                    <CloudUpload size={12} className="animate-bounce" />
+                                    Auto-Scan
+                                </button>
                                 <div className="text-xs text-gray-500 flex items-center gap-2 mr-4">
                                     <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
                                     Draw Mode Active
