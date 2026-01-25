@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { UserPlus, LogOut, Building, Mail, Lock, Edit2, Trash2 } from 'lucide-react';
+import { UserPlus, LogOut, Building, Mail, Lock, Edit2, Trash2, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function AdminDashboard() {
@@ -12,6 +12,7 @@ export default function AdminDashboard() {
     const [isChangingCode, setIsChangingCode] = useState(false);
     const [newAdminCode, setNewAdminCode] = useState('');
     const [message, setMessage] = useState('');
+    const [activeTab, setActiveTab] = useState('users'); // 'users' or 'tax_forms'
     const navigate = useNavigate();
 
     // Fetch users on mount
@@ -102,35 +103,122 @@ export default function AdminDashboard() {
 
     return (
         <div className="min-h-screen bg-black text-white p-10 font-sans">
-            {/* Header / Top Bar - Left Aligned */}
-            <div className="max-w-6xl mx-auto flex items-center gap-12 mb-12">
+            {/* Header / Top Bar */}
+            <div className="max-w-6xl mx-auto flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3 shrink-0">
                     <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold shadow-sm text-sm tracking-tighter">
                         GK
                     </div>
                     <span className="font-bold text-lg tracking-tight text-white">GK SMART <span className="text-gray-400 font-normal">& Ai</span></span>
                 </div>
-                <div className="flex gap-4 shrink-0 overflow-x-auto">
+                <div className="flex gap-4">
                     <button
                         onClick={() => setIsChangingCode(true)}
-                        className="border border-white px-4 py-3 text-lg font-medium hover:bg-gray-900 transition text-white whitespace-nowrap"
+                        className="text-gray-400 hover:text-white transition text-sm font-medium px-4 py-2"
                     >
                         Change Admin Code
                     </button>
                     <button
-                        onClick={() => { resetForm(); setIsCreating(true); }}
-                        className="border-2 border-white px-8 py-3 text-lg font-medium hover:bg-white hover:text-black transition text-white whitespace-nowrap"
-                    >
-                        Create TOI
-                    </button>
-                    <button
                         onClick={handleLogout}
-                        className="bg-white text-black px-8 py-3 text-lg font-medium hover:bg-gray-200 transition whitespace-nowrap"
+                        className="bg-white/10 text-white border border-white/20 px-6 py-2 rounded-lg text-sm font-medium hover:bg-white/20 transition whitespace-nowrap"
                     >
                         Log Out
                     </button>
                 </div>
             </div>
+
+            {/* Tabs */}
+            <div className="max-w-6xl mx-auto mb-10 border-b border-gray-800 flex gap-8">
+                <button
+                    onClick={() => setActiveTab('users')}
+                    className={`pb-4 text-lg font-bold flex items-center gap-2 border-b-2 transition-colors ${activeTab === 'users' ? 'border-blue-500 text-blue-500' : 'border-transparent text-gray-400 hover:text-gray-200'}`}
+                >
+                    <UserPlus size={20} />
+                    User Management
+                </button>
+                <button
+                    onClick={() => setActiveTab('tax_forms')}
+                    className={`pb-4 text-lg font-bold flex items-center gap-2 border-b-2 transition-colors ${activeTab === 'tax_forms' ? 'border-blue-500 text-blue-500' : 'border-transparent text-gray-400 hover:text-gray-200'}`}
+                >
+                    <FileText size={20} />
+                    Tax Forms Configuration
+                </button>
+            </div>
+
+            {/* TAB 1: USER MANAGEMENT */}
+            {activeTab === 'users' && (
+                <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
+                    <div className="flex justify-between items-center bg-gray-900/50 p-6 rounded-2xl border border-gray-800">
+                        <div>
+                            <h2 className="text-2xl font-bold text-white mb-1">Registered Companies</h2>
+                            <p className="text-gray-400">Manage client access and company profiles.</p>
+                        </div>
+                        <button
+                            onClick={() => { resetForm(); setIsCreating(true); }}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-blue-900/20 transition flex items-center gap-2"
+                        >
+                            <UserPlus size={18} />
+                            Create New User
+                        </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {users.map((user) => (
+                            <div key={user._id} className="bg-gray-900 border border-gray-800 rounded-xl p-6 flex justify-between items-center group hover:border-blue-500/50 transition duration-300">
+                                <div className="space-y-1">
+                                    <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors">
+                                        {user.companyName || user.companyCode}
+                                    </h3>
+                                    <div className="flex items-center gap-2 text-sm text-gray-500 font-mono">
+                                        <Lock size={12} />
+                                        {user.loginCode || '******'}
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={() => startEdit(user)}
+                                        className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition"
+                                        title="Edit User"
+                                    >
+                                        <Edit2 size={18} />
+                                    </button>
+                                    <button
+                                        onClick={() => deleteUser(user._id)}
+                                        className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition"
+                                        title="Delete User"
+                                    >
+                                        <Trash2 size={18} />
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+
+                        {users.length === 0 && (
+                            <div className="col-span-full py-20 text-center text-gray-500 bg-gray-900/50 rounded-2xl border border-gray-800 border-dashed">
+                                No companies found. Create one to get started.
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* TAB 2: TAX FORMS (Placeholder) */}
+            {activeTab === 'tax_forms' && (
+                <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
+                    <div className="bg-gray-900/50 p-8 rounded-2xl border border-gray-800 text-center">
+                        <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-500/20">
+                            <FileText className="text-blue-400 w-8 h-8" />
+                        </div>
+                        <h2 className="text-2xl font-bold text-white mb-2">Tax Forms Library</h2>
+                        <p className="text-gray-400 max-w-xl mx-auto mb-8">
+                            Upload standard tax form templates (JPG) and configure reactive fields for automated calculation.
+                        </p>
+                        <button disabled className="bg-gray-800 text-gray-500 px-6 py-3 rounded-xl font-bold cursor-not-allowed border border-gray-700">
+                            Upload New Template (Coming Soon)
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Modal for Change Admin Code */}
             {isChangingCode && (
@@ -216,44 +304,6 @@ export default function AdminDashboard() {
                     </div>
                 </div>
             )}
-
-            {/* List */}
-            <div className="max-w-3xl mx-auto">
-                <div className="space-y-8">
-                    {users.map((user) => (
-                        <div key={user._id} className="flex justify-between items-center text-xl border-b border-gray-800 pb-4">
-                            <div className="flex gap-20 items-center">
-                                <span className="text-red-500 font-medium tracking-wide min-w-[200px]">
-                                    {user.companyName || user.companyCode}
-                                </span>
-                                <span className="text-red-500 font-medium tracking-wide">
-                                    {user.loginCode || '******'}
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-6">
-                                <button
-                                    onClick={() => startEdit(user)}
-                                    className="text-white hover:text-blue-400 transition flex items-center gap-2 text-sm"
-                                >
-                                    <Edit2 className="h-4 w-4" />
-                                    Edit
-                                </button>
-                                <button
-                                    onClick={() => deleteUser(user._id)}
-                                    className="text-white hover:text-red-500 transition flex items-center gap-2 text-sm"
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                    Delete
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-
-                    {users.length === 0 && (
-                        <div className="text-center text-gray-500 mt-20">No companies found. Create one!</div>
-                    )}
-                </div>
-            </div>
         </div>
     );
 }
