@@ -169,9 +169,9 @@ const FinancialStatements = ({ onBack }) => {
 
     return (
         <div className="flex flex-col h-full bg-gray-50/50 animate-fade-in text-gray-900">
-            {/* Header / Toolbar */}
-            <div className="bg-white border-b border-gray-200 px-8 py-5 flex justify-between items-center shadow-sm">
-                <div className="flex items-center gap-4">
+            {/* Header / Toolbar - Left Aligned */}
+            <div className="bg-white border-b border-gray-200 px-8 py-5 flex items-center gap-8 shadow-sm overflow-x-auto">
+                <div className="flex items-center gap-4 shrink-0">
                     <button onClick={onBack} className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition">
                         <ArrowLeft size={20} />
                     </button>
@@ -183,7 +183,11 @@ const FinancialStatements = ({ onBack }) => {
                         </p>
                     </div>
                 </div>
-                <div className="flex items-center gap-4">
+
+                {/* Vertical Divider */}
+                <div className="h-10 w-px bg-gray-200 shrink-0"></div>
+
+                <div className="flex items-center gap-4 shrink-0">
                     {/* View Mode Toggle */}
                     <div className="bg-gray-100 p-1 rounded-lg flex border border-gray-200">
                         <button

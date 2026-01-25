@@ -136,16 +136,27 @@ const TrialBalance = ({ onBack }) => {
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900">
-            {/* Header */}
-            <div className="bg-white border-b border-gray-200 px-8 py-5 flex justify-between items-center sticky top-0 z-20 shadow-sm">
-                <div>
-                    <h1 className="text-2xl font-bold text-teal-800 flex items-center gap-2">
-                        <Scale className="w-6 h-6" /> Trial Balance <span className="text-sm font-normal text-gray-400 bg-gray-100 px-2 py-1 rounded-full">AI Enhanced</span>
-                    </h1>
-                    <p className="text-xs text-gray-500 mt-1">Dynamic financial visualization.</p>
+            {/* Header - Left Aligned */}
+            <div className="bg-white border-b border-gray-200 px-8 py-5 flex items-center gap-8 sticky top-0 z-20 shadow-sm overflow-x-auto">
+                <div className="flex items-center gap-4 shrink-0">
+                    <button
+                        onClick={onBack}
+                        className="p-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-sm font-medium transition"
+                    >
+                        <ArrowLeft size={20} />
+                    </button>
+                    <div>
+                        <h1 className="text-2xl font-bold text-teal-800 flex items-center gap-2">
+                            <Scale className="w-6 h-6" /> Trial Balance <span className="text-sm font-normal text-gray-400 bg-gray-100 px-2 py-1 rounded-full">AI Enhanced</span>
+                        </h1>
+                        <p className="text-xs text-gray-500 mt-1">Dynamic financial visualization.</p>
+                    </div>
                 </div>
-                <div className="flex items-center gap-3">
-                    <div className="bg-gray-100 p-1 rounded-lg flex gap-1">
+
+                <div className="h-10 w-px bg-gray-200 shrink-0"></div>
+
+                <div className="flex items-center gap-3 shrink-0">
+                    <div className="bg-gray-100 p-1 rounded-lg flex gap-1 border border-gray-200">
                         <button
                             onClick={() => setViewMode('visual')}
                             className={`px-3 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-2 ${viewMode === 'visual' ? 'bg-white text-teal-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
@@ -175,12 +186,6 @@ const TrialBalance = ({ onBack }) => {
                         title="Refresh Report"
                     >
                         <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-                    </button>
-                    <button
-                        onClick={onBack}
-                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition flex items-center gap-2"
-                    >
-                        <ArrowLeft className="w-4 h-4" /> Back
                     </button>
                 </div>
             </div>

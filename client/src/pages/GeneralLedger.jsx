@@ -279,17 +279,28 @@ const GeneralLedger = ({ onBack }) => {
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900">
-            {/* Header */}
-            <div className="bg-white border-b border-gray-200 px-8 py-5 flex justify-between items-center sticky top-0 z-20 shadow-sm">
-                <div>
-                    <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-700 to-blue-900 bg-clip-text text-transparent">
-                        General Ledger
-                    </h1>
-                    <p className="text-xs text-gray-500 mt-1">Full chronological financial history.</p>
+            {/* Header - Left Aligned */}
+            <div className="bg-white border-b border-gray-200 px-8 py-5 flex items-center gap-8 sticky top-0 z-20 shadow-sm overflow-x-auto">
+                <div className="flex items-center gap-4 shrink-0">
+                    <button
+                        onClick={onBack}
+                        className="p-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-sm font-medium transition"
+                    >
+                        <ArrowLeft size={20} />
+                    </button>
+                    <div>
+                        <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-700 to-blue-900 bg-clip-text text-transparent">
+                            General Ledger
+                        </h1>
+                        <p className="text-xs text-gray-500 mt-1">Full chronological financial history.</p>
+                    </div>
                 </div>
-                <div className="flex gap-3">
+
+                <div className="h-10 w-px bg-gray-200 shrink-0"></div>
+
+                <div className="flex items-center gap-4 shrink-0">
                     {/* View Toggle */}
-                    <div className="bg-gray-100 p-1 rounded-lg flex gap-1">
+                    <div className="bg-gray-100 p-1 rounded-lg flex gap-1 border border-gray-200">
                         <button
                             onClick={() => setViewMode('date')}
                             className={`px-3 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-2 ${viewMode === 'date' ? 'bg-white text-blue-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
@@ -303,8 +314,6 @@ const GeneralLedger = ({ onBack }) => {
                             <Layers size={14} /> Code View
                         </button>
                     </div>
-
-                    <div className="h-8 w-px bg-gray-200 mx-2"></div>
 
                     {/* Filter Dropdown */}
                     <div className="relative">
@@ -336,12 +345,6 @@ const GeneralLedger = ({ onBack }) => {
                     >
                         <Wand2 className={`w-4 h-4 ${tagging ? 'animate-spin' : ''}`} />
                         {tagging ? 'AI Analyzing...' : 'Auto-Tag with AI'}
-                    </button>
-                    <button
-                        onClick={onBack}
-                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition"
-                    >
-                        ← Back
                     </button>
                 </div>
             </div>

@@ -102,30 +102,30 @@ export default function AdminDashboard() {
 
     return (
         <div className="min-h-screen bg-black text-white p-10 font-sans">
-            {/* Header / Top Bar */}
-            <div className="max-w-4xl mx-auto flex justify-between items-center mb-12">
-                <div className="flex items-center gap-3">
+            {/* Header / Top Bar - Left Aligned */}
+            <div className="max-w-6xl mx-auto flex items-center gap-12 mb-12">
+                <div className="flex items-center gap-3 shrink-0">
                     <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold shadow-sm text-sm tracking-tighter">
                         GK
                     </div>
                     <span className="font-bold text-lg tracking-tight text-white">GK SMART <span className="text-gray-400 font-normal">& Ai</span></span>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex gap-4 shrink-0 overflow-x-auto">
                     <button
                         onClick={() => setIsChangingCode(true)}
-                        className="border border-white px-4 py-3 text-lg font-medium hover:bg-gray-900 transition text-white"
+                        className="border border-white px-4 py-3 text-lg font-medium hover:bg-gray-900 transition text-white whitespace-nowrap"
                     >
                         Change Admin Code
                     </button>
                     <button
                         onClick={() => { resetForm(); setIsCreating(true); }}
-                        className="border-2 border-white px-8 py-3 text-lg font-medium hover:bg-white hover:text-black transition text-white"
+                        className="border-2 border-white px-8 py-3 text-lg font-medium hover:bg-white hover:text-black transition text-white whitespace-nowrap"
                     >
                         Create TOI
                     </button>
                     <button
                         onClick={handleLogout}
-                        className="bg-white text-black px-8 py-3 text-lg font-medium hover:bg-gray-200 transition"
+                        className="bg-white text-black px-8 py-3 text-lg font-medium hover:bg-gray-200 transition whitespace-nowrap"
                     >
                         Log Out
                     </button>

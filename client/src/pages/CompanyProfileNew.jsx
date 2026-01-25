@@ -249,7 +249,7 @@ export default function CompanyProfile() {
             <div className="absolute top-0 left-0 w-full h-96 bg-blue-600/10 rounded-full blur-[128px] pointer-events-none -z-10" />
             <div className="absolute bottom-0 right-0 w-full h-96 bg-purple-600/10 rounded-full blur-[128px] pointer-events-none -z-10" />
 
-            <div className="flex justify-between items-end mb-12">
+            <div className="flex items-center gap-12 mb-12">
                 <div>
                     <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 mb-2">
                         Welcome, {formData.companyNameEn || formData.companyCode || 'Admin'}
@@ -261,7 +261,7 @@ export default function CompanyProfile() {
                         localStorage.removeItem('token');
                         window.location.href = '/login';
                     }}
-                    className="text-sm text-red-400 hover:text-red-300 font-medium hover:bg-red-500/10 px-4 py-2 rounded-lg transition border border-transparent hover:border-red-500/20"
+                    className="text-sm text-red-400 hover:text-red-300 font-medium hover:bg-red-500/10 px-6 py-3 rounded-lg transition border border-red-500/20 hover:border-red-500/40 shrink-0"
                 >
                     Log Out
                 </button>
