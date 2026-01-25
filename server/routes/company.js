@@ -1027,9 +1027,25 @@ router.get('/trial-balance', auth, async (req, res) => {
 
         const report = Object.values(reportMap).sort((a, b) => a.code.localeCompare(b.code));
 
+        // Calculate Grand Totals
+        const totals = report.reduce((acc, row) => ({
+            drUSD: acc.drUSD + row.drUSD,
+            crUSD: acc.crUSD + row.crUSD,
+            drKHR: acc.drKHR + row.drKHR,
+            crKHR: acc.crKHR + row.crKHR,
+            priorDrUSD: acc.priorDrUSD + (row.priorDrUSD || 0),
+            priorCrUSD: acc.priorCrUSD + (row.priorCrUSD || 0),
+            priorDrKHR: acc.priorDrKHR + (row.priorDrKHR || 0),
+            priorCrKHR: acc.priorCrKHR + (row.priorCrKHR || 0),
+        }), {
+            drUSD: 0, crUSD: 0, drKHR: 0, crKHR: 0,
+            priorDrUSD: 0, priorCrUSD: 0, priorDrKHR: 0, priorCrKHR: 0
+        });
+
         res.json({
             report: report,
-            currentYear: currentYear // Pass derived year to UI
+            totals: totals,
+            currentYear: currentYear
         });
 
     } catch (err) {
