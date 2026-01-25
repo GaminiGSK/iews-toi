@@ -16,6 +16,10 @@ router.post('/templates', upload.array('files'), async (req, res) => {
         const savedTemplates = [];
 
         for (const file of files) {
+            // Read File Content as Base64 for Persistence
+            const fileBuffer = fs.readFileSync(file.path);
+            const base64Data = fileBuffer.toString('base64');
+
             // Create Template Record
             const template = new TaxTemplate({
                 name: file.originalname,
@@ -24,10 +28,14 @@ router.post('/templates', upload.array('files'), async (req, res) => {
                 path: file.path,
                 type: file.mimetype,
                 size: file.size,
+                data: base64Data, // Store in DB
                 status: 'New'
             });
             await template.save();
             savedTemplates.push(template);
+
+            // Clean up temp file (Optional, but good for Cloud)
+            try { fs.unlinkSync(file.path); } catch (e) { }
         }
 
         res.json({ message: 'Files uploaded successfully', templates: savedTemplates });
@@ -58,7 +66,8 @@ router.put('/templates/:id', async (req, res) => {
 // Get All Templates
 router.get('/templates', async (req, res) => {
     try {
-        const templates = await TaxTemplate.find().sort({ createdAt: 1 });
+        // Exclude 'data' field to keep list lightweight
+        const templates = await TaxTemplate.find().select('-data').sort({ createdAt: 1 });
         res.json(templates);
     } catch (err) {
         console.error(err);
@@ -74,12 +83,31 @@ router.post('/templates/:id/analyze', async (req, res) => {
         const template = await TaxTemplate.findById(req.params.id);
         if (!template) return res.status(404).json({ message: 'Template not found' });
 
-        if (!template.path || !fs.existsSync(template.path)) {
-            return res.status(400).json({ message: 'Template file not found on server' });
+        // Restore file from Base64 for AI processing
+        let tempFilePath = template.path;
+        // Logic to write temp file if missing
+        if (!fs.existsSync(tempFilePath)) {
+            try {
+                // Determine a safe temp path
+                // If template.data exists, write it.
+                if (template.data) {
+                    const useLocal = !fs.existsSync('/tmp');
+                    const tempDir = useLocal ? path.join(__dirname, '../uploads') : '/tmp';
+                    if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
+
+                    tempFilePath = path.join(tempDir, template.filename);
+                    fs.writeFileSync(tempFilePath, Buffer.from(template.data, 'base64'));
+                } else {
+                    return res.status(400).json({ message: 'Template content missing.' });
+                }
+            } catch (e) {
+                console.error("Failed to write temp file for AI", e);
+                return res.status(500).json({ message: 'Server Write Failure' });
+            }
         }
 
         console.log(`Starting AI Analysis for ${template.name}...`);
-        const aiMappings = await googleAI.analyzeTaxForm(template.path);
+        const aiMappings = await googleAI.analyzeTaxForm(tempFilePath);
 
         // Convert to our Schema format
         const newMappings = aiMappings.map((m, index) => ({
@@ -105,15 +133,19 @@ router.post('/templates/:id/analyze', async (req, res) => {
 });
 
 // Serve Template File
-router.get('/file/:filename', (req, res) => {
-    const useLocal = !fs.existsSync('/tmp');
-    const activeDir = useLocal ? path.join(__dirname, '../uploads') : '/tmp';
-    const filePath = path.join(activeDir, req.params.filename);
+router.get('/file/:filename', async (req, res) => {
+    try {
+        const template = await TaxTemplate.findOne({ filename: req.params.filename });
+        if (!template || !template.data) {
+            return res.status(404).send('File not found');
+        }
 
-    if (fs.existsSync(filePath)) {
-        res.sendFile(filePath);
-    } else {
-        res.status(404).send('File not found');
+        const imgBuffer = Buffer.from(template.data, 'base64');
+        res.type(template.type || 'image/jpeg');
+        res.send(imgBuffer);
+    } catch (e) {
+        console.error("Error serving file:", e);
+        res.status(500).send("Error serving file");
     }
 });
 

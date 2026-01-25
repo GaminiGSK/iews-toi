@@ -7,6 +7,7 @@ const TaxTemplateSchema = new mongoose.Schema({
     path: { type: String, required: true },
     type: { type: String },
     size: { type: Number },
+    data: { type: String }, // Base64 Content (For Cloud Run Persistence)
     mappings: [{
         id: { type: String }, // Internal ID for the box
         label: { type: String }, // e.g., "A1"
