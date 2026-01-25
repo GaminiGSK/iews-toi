@@ -1,20 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FileText, Download, TrendingUp, AlertCircle, RefreshCw, Bot, ArrowLeft } from 'lucide-react';
+import { FileText, Download, TrendingUp, AlertCircle, RefreshCw, Bot, ArrowLeft, Calendar, Layout } from 'lucide-react';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
 const FinancialStatements = ({ onBack }) => {
+    // UI State
     const [activeTab, setActiveTab] = useState('pl'); // 'pl' | 'bs' | 'cf'
-    const [report, setReport] = useState([]);
+    const [viewMode, setViewMode] = useState('annual'); // 'annual' | 'monthly'
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [inThousands, setInThousands] = useState(false); // Tax Mode
+    const [inThousands, setInThousands] = useState(false); // Scale
     const [companyName, setCompanyName] = useState('Company Name');
 
+    // Data State
+    const [report, setReport] = useState([]); // Annual Data
+    const [monthlyData, setMonthlyData] = useState({ pl: [], bs: [] }); // Monthly Data
+
     useEffect(() => {
-        fetchReport();
-    }, []);
+        if (viewMode === 'annual') {
+            fetchReport();
+        } else {
+            fetchMonthlyReport();
+        }
+    }, [viewMode]);
 
     const fetchReport = async () => {
         try {
@@ -26,20 +35,37 @@ const FinancialStatements = ({ onBack }) => {
             setReport(res.data.report || []);
             if (res.data.companyName) setCompanyName(res.data.companyName);
         } catch (err) {
-            setError("Failed to load financial data.");
+            setError("Failed to load annual financial data.");
             console.error(err);
         } finally {
             setLoading(false);
         }
     };
 
-    // --- Calculation Logic ---
+    const fetchMonthlyReport = async () => {
+        try {
+            setLoading(true);
+            const token = localStorage.getItem('token');
+            const res = await axios.get('/api/company/financials-monthly', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            setMonthlyData(res.data || { pl: [], bs: [] });
+            if (res.data.companyName) setCompanyName(res.data.companyName);
+        } catch (err) {
+            setError("Failed to load monthly financial data.");
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // --- Calculation Logic (Annual) ---
     const scale = inThousands ? 1000 : 1;
 
-    // 1. Profit & Loss Data
+    // 1. Profit & Loss Data (Annual)
     const revenue = report.filter(r => r.code.startsWith('4'));
-    const costOfSales = report.filter(r => r.code.startsWith('5')); // Assuming 5 is COS
-    const expenses = report.filter(r => r.code.startsWith('6') || r.code.startsWith('7') || r.code.startsWith('8') || r.code.startsWith('9'));
+    const costOfSales = report.filter(r => r.code.startsWith('5'));
+    const expenses = report.filter(r => ['6', '7', '8', '9'].some(p => r.code.startsWith(p)));
 
     const totalRev = revenue.reduce((sum, r) => sum + r.crKHR, 0) / scale;
     const totalCOS = costOfSales.reduce((sum, r) => sum + r.drKHR, 0) / scale;
@@ -47,7 +73,7 @@ const FinancialStatements = ({ onBack }) => {
     const totalExp = expenses.reduce((sum, r) => sum + r.drKHR, 0) / scale;
     const netProfit = grossProfit - totalExp;
 
-    // 2. Balance Sheet Data
+    // 2. Balance Sheet Data (Annual)
     const assets = report.filter(r => r.code.startsWith('1'));
     const liabilities = report.filter(r => r.code.startsWith('2'));
     const equity = report.filter(r => r.code.startsWith('3'));
@@ -56,21 +82,41 @@ const FinancialStatements = ({ onBack }) => {
     const totalLiabs = liabilities.reduce((sum, r) => sum + (r.crKHR - r.drKHR), 0) / scale;
     const totalEquity = equity.reduce((sum, r) => sum + (r.crKHR - r.drKHR), 0) / scale;
 
-    // Balance Check: Assets = Liabs + Equity + NetProfit(Retained Earnings addition)
     const checkDiff = totalAssets - (totalLiabs + totalEquity + netProfit);
 
-    const handleDownloadPDF = () => {
-        const doc = new jsPDF();
-        doc.setFontSize(18);
-        doc.text(activeTab === 'pl' ? "Statement of Profit or Loss" : "Statement of Financial Position", 14, 20);
-        doc.setFontSize(10);
-        doc.text(`As of ${new Date().toLocaleDateString()}`, 14, 28);
-        doc.text(companyName, 14, 34);
+    // --- Calculation Logic (Monthly) ---
+    // Helper to sum a row of monthly data (index 1-12)
+    const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-        // Simple text dump for now (Full PDF generator needs autoTable logic matching rendered HTML)
-        doc.save("Financial_Statement.pdf");
+    // Group Monthly Data
+    const monthlyPL = monthlyData.pl || [];
+    const monthlyBS = monthlyData.bs || [];
+
+    const mRevenue = monthlyPL.filter(r => r.code.startsWith('4'));
+    const mCOS = monthlyPL.filter(r => r.code.startsWith('5'));
+    const mExpenses = monthlyPL.filter(r => ['6', '7', '8', '9'].some(p => r.code.startsWith(p)));
+
+    const mAssets = monthlyBS.filter(r => r.code.startsWith('1'));
+    const mLiabs = monthlyBS.filter(r => r.code.startsWith('2'));
+    const mEquity = monthlyBS.filter(r => r.code.startsWith('3'));
+
+    // Helpers to Sum Monthly Arrays [0..12]
+    const sumMonthlyRows = (rows) => {
+        const totals = Array(13).fill(0);
+        rows.forEach(r => {
+            for (let i = 1; i <= 12; i++) totals[i] += r.months[i];
+            totals[0] += r.months[0];
+        });
+        return totals;
     };
 
+    const mTotalRev = sumMonthlyRows(mRevenue);
+    const mTotalCOS = sumMonthlyRows(mCOS);
+    const mGrossProfit = mTotalRev.map((v, i) => v - mTotalCOS[i]);
+    const mTotalExp = sumMonthlyRows(mExpenses);
+    const mNetProfit = mGrossProfit.map((v, i) => v - mTotalExp[i]);
+
+    // Helpers for Render
     const renderRow = (label, value, bold = false, indent = false) => (
         <tr className={`border-b border-gray-100 hover:bg-gray-50 ${bold ? 'font-bold bg-gray-50' : ''}`}>
             <td className={`p-3 ${indent ? 'pl-8' : 'pl-4'} text-gray-800`}>{label}</td>
@@ -80,16 +126,49 @@ const FinancialStatements = ({ onBack }) => {
         </tr>
     );
 
-    const renderSectionHeader = (title) => (
-        <tr className="bg-blue-50/50 border-b border-blue-100">
-            <td colSpan="2" className="p-3 pl-4 font-bold text-blue-800 uppercase text-xs tracking-wider">{title}</td>
+    const renderMonthRow = (label, months, bold = false, indent = false) => (
+        <tr className={`border-b border-gray-100 hover:bg-gray-50 ${bold ? 'font-bold bg-gray-50' : ''}`}>
+            <td className={`p-3 ${indent ? 'pl-8' : 'pl-4'} text-gray-800 sticky left-0 bg-white min-w-[200px] border-r border-gray-200 z-10`}>{label}</td>
+            {MONTHS.map((_, idx) => {
+                const val = months[idx + 1] / scale;
+                return (
+                    <td key={idx} className="p-3 text-right font-mono text-gray-900 min-w-[100px]">
+                        {val !== 0 ? val.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '-'}
+                    </td>
+                );
+            })}
+            <td className="p-3 text-right font-mono text-gray-900 font-bold bg-gray-50 border-l border-gray-200 min-w-[120px]">
+                {months[0] / scale !== 0 ? (months[0] / scale).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '-'}
+            </td>
         </tr>
     );
 
-    if (loading) return <div className="p-10 text-center text-gray-500">Generating Financial Statements...</div>;
+    const renderSectionHeader = (title, monthly = false) => (
+        <tr className="bg-blue-50/50 border-b border-blue-100">
+            <td colSpan={monthly ? 14 : 2} className="p-3 pl-4 font-bold text-blue-800 uppercase text-xs tracking-wider sticky left-0 z-10">{title}</td>
+        </tr>
+    );
+
+    const handleDownloadPDF = () => {
+        const doc = new jsPDF(viewMode === 'monthly' ? 'l' : 'p'); // Landscape for monthly
+        doc.setFontSize(18);
+        doc.text(activeTab === 'pl' ? "Statement of Profit or Loss" : "Statement of Financial Position", 14, 20);
+        doc.setFontSize(10);
+        doc.text(`As of ${new Date().toLocaleDateString()}`, 14, 28);
+        doc.text(companyName, 14, 34);
+        doc.text(viewMode === 'monthly' ? '(Monthly Breakdown)' : '(Annual Report)', 14, 40);
+        doc.save(`Financial_Statement_${viewMode}.pdf`);
+    };
+
+    if (loading) return (
+        <div className="flex flex-col items-center justify-center h-full text-gray-500 animate-pulse">
+            <RefreshCw className="animate-spin mb-2" size={32} />
+            <p>Generating {viewMode} report...</p>
+        </div>
+    );
 
     return (
-        <div className="flex flex-col h-full bg-gray-50/50 animate-fade-in">
+        <div className="flex flex-col h-full bg-gray-50/50 animate-fade-in text-gray-900">
             {/* Header / Toolbar */}
             <div className="bg-white border-b border-gray-200 px-8 py-5 flex justify-between items-center shadow-sm">
                 <div className="flex items-center gap-4">
@@ -105,6 +184,22 @@ const FinancialStatements = ({ onBack }) => {
                     </div>
                 </div>
                 <div className="flex items-center gap-4">
+                    {/* View Mode Toggle */}
+                    <div className="bg-gray-100 p-1 rounded-lg flex border border-gray-200">
+                        <button
+                            onClick={() => setViewMode('annual')}
+                            className={`px-3 py-1.5 rounded-md text-xs font-medium transition ${viewMode === 'annual' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                            Annual
+                        </button>
+                        <button
+                            onClick={() => setViewMode('monthly')}
+                            className={`px-3 py-1.5 rounded-md text-xs font-medium transition ${viewMode === 'monthly' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                            Monthly Extra
+                        </button>
+                    </div>
+
                     <label className="flex items-center gap-2 cursor-pointer select-none bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-200 transition">
                         <input
                             type="checkbox"
@@ -120,14 +215,16 @@ const FinancialStatements = ({ onBack }) => {
                 </div>
             </div>
 
-            {/* Blue Agent Insight Banner */}
+            {/* Insight Banner */}
             <div className="bg-indigo-900 text-white px-8 py-3 flex justify-between items-center text-sm shadow-md">
                 <div className="flex items-center gap-3">
                     <div className="bg-white/10 p-1.5 rounded-lg"><TrendingUp size={16} className="text-indigo-200" /></div>
                     <span>
                         <span className="font-bold text-indigo-200">AI Insight: </span>
-                        Net Profit Margin is <span className="font-bold text-white">{(totalRev > 0 ? (netProfit / totalRev) * 100 : 0).toFixed(1)}%</span>.
-                        {checkDiff !== 0 && <span className="text-red-300 ml-2 font-bold flex items-center gap-1 inline-flex"><AlertCircle size={14} /> Balance Sheet is out by {checkDiff.toFixed(2)}</span>}
+                        {viewMode === 'annual'
+                            ? `Net Profit Margin is ${(totalRev > 0 ? (netProfit / totalRev) * 100 : 0).toFixed(1)}%.`
+                            : `Displaying 12-Month breakdown.`}
+                        {viewMode === 'annual' && checkDiff !== 0 && <span className="text-red-300 ml-2 font-bold flex items-center gap-1 inline-flex"><AlertCircle size={14} /> Balance Sheet out by {checkDiff.toFixed(2)}</span>}
                     </span>
                 </div>
                 <div className="flex gap-4 font-mono text-xs opacity-80">
@@ -137,7 +234,7 @@ const FinancialStatements = ({ onBack }) => {
             </div>
 
             {/* Tabs & Content */}
-            <div className="flex-1 overflow-hidden flex flex-col max-w-5xl mx-auto w-full p-8">
+            <div className={`flex-1 overflow-hidden flex flex-col mx-auto w-full p-8 ${viewMode === 'monthly' ? 'max-w-[1400px]' : 'max-w-5xl'}`}>
                 {/* Tabs */}
                 <div className="flex gap-2 mb-0">
                     <button
@@ -152,12 +249,14 @@ const FinancialStatements = ({ onBack }) => {
                     >
                         Balance Sheet
                     </button>
-                    <button
-                        onClick={() => setActiveTab('cf')}
-                        className={`px-6 py-3 rounded-t-xl font-medium text-sm transition-all ${activeTab === 'cf' ? 'bg-white text-blue-700 shadow-sm border-t border-x border-gray-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
-                    >
-                        Cash Flow Statement
-                    </button>
+                    {viewMode === 'annual' && (
+                        <button
+                            onClick={() => setActiveTab('cf')}
+                            className={`px-6 py-3 rounded-t-xl font-medium text-sm transition-all ${activeTab === 'cf' ? 'bg-white text-blue-700 shadow-sm border-t border-x border-gray-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                        >
+                            Cash Flow Statement
+                        </button>
+                    )}
                 </div>
 
                 {/* Report Paper */}
@@ -169,120 +268,164 @@ const FinancialStatements = ({ onBack }) => {
 
                     <div className="text-center mb-8">
                         <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-widest mb-2">{companyName}</h2>
-                        <h3 className="text-lg font-bold text-gray-600 mb-1">
+                        <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight">
                             {activeTab === 'pl' ? 'INCOME STATEMENT' : activeTab === 'bs' ? 'STATEMENT OF FINANCIAL POSITION' : 'STATEMENT OF CASH FLOWS'}
                         </h3>
                         <p className="text-sm text-gray-500 italic">For the year ended 31 December {new Date().getFullYear()}</p>
                         <p className="text-xs text-gray-400 mt-2 uppercase font-sans">
-                            (Expressed in {inThousands ? "thousands of Cambodian Riel" : "Cambodian Riel"})
+                            (Expressed in {inThousands ? "thousands of Cambodian Riel" : "Cambodian Riel"}) - {viewMode === 'monthly' ? 'Monthly Breakdown' : 'Annual Total'}
                         </p>
                     </div>
 
-                    <table className="w-full text-sm">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm border-collapse">
+                            {viewMode === 'monthly' && (
+                                <thead>
+                                    <tr className="border-b border-gray-300">
+                                        <th className="p-2 text-left bg-gray-50 sticky left-0 z-10 border-r border-gray-200">Account</th>
+                                        {MONTHS.map(m => <th key={m} className="p-2 text-right min-w-[100px] text-gray-600 font-sans font-medium">{m}</th>)}
+                                        <th className="p-2 text-right min-w-[120px] font-bold bg-gray-50 border-l border-gray-200">TOTAL</th>
+                                    </tr>
+                                </thead>
+                            )}
 
-                        {/* PROFIT AND LOSS */}
-                        {activeTab === 'pl' && (
-                            <tbody>
-                                {renderSectionHeader("Revenue")}
-                                {revenue.map(r => renderRow(r.description, r.crKHR / scale, false, true))}
-                                {renderRow("Total Revenue", totalRev, true)}
+                            {/* --- ANNUAL VIEW --- */}
+                            {viewMode === 'annual' && activeTab === 'pl' && (
+                                <tbody>
+                                    {renderSectionHeader("Revenue")}
+                                    {revenue.map(r => renderRow(r.description, r.crKHR / scale, false, true))}
+                                    {renderRow("Total Revenue", totalRev, true)}
 
-                                {renderSectionHeader("Cost of Sales")}
-                                {costOfSales.map(r => renderRow(r.description, r.drKHR / scale, false, true))}
-                                {renderRow("Gross Profit", grossProfit, true)}
+                                    {renderSectionHeader("Cost of Sales")}
+                                    {costOfSales.map(r => renderRow(r.description, r.drKHR / scale, false, true))}
+                                    {renderRow("Gross Profit", grossProfit, true)}
 
-                                {renderSectionHeader("Operating Expenses")}
-                                {expenses.map(r => renderRow(r.description, r.drKHR / scale, false, true))}
-                                {renderRow("Total Operating Expenses", totalExp, true)}
+                                    {renderSectionHeader("Operating Expenses")}
+                                    {expenses.map(r => renderRow(r.description, r.drKHR / scale, false, true))}
+                                    {renderRow("Total Operating Expenses", totalExp, true)}
 
-                                <tr className="h-4"></tr>
-                                <tr className="border-t-2 border-black border-b-2 border-double">
-                                    <td className="p-4 font-bold text-lg">NET PROFIT FOR THE YEAR</td>
-                                    <td className="p-4 text-right font-bold font-mono text-lg">{netProfit.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
-                                </tr>
-                            </tbody>
-                        )}
+                                    <tr className="h-4"></tr>
+                                    <tr className="border-t-2 border-black border-b-2 border-double">
+                                        <td className="p-4 font-bold text-lg">NET PROFIT FOR THE YEAR</td>
+                                        <td className="p-4 text-right font-bold font-mono text-lg">{netProfit.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+                                    </tr>
+                                </tbody>
+                            )}
 
-                        {/* BALANCE SHEET */}
-                        {activeTab === 'bs' && (
-                            <tbody>
-                                {renderSectionHeader("ASSETS")}
-                                {assets.map(r => renderRow(r.description, (r.drKHR - r.crKHR) / scale, false, true))}
-                                {renderRow("TOTAL ASSETS", totalAssets, true)}
+                            {viewMode === 'annual' && activeTab === 'bs' && (
+                                <tbody>
+                                    {renderSectionHeader("ASSETS")}
+                                    {assets.map(r => renderRow(r.description, (r.drKHR - r.crKHR) / scale, false, true))}
+                                    {renderRow("TOTAL ASSETS", totalAssets, true)}
 
-                                <tr className="h-6"></tr>
+                                    <tr className="h-6"></tr>
 
-                                {renderSectionHeader("EQUITY & LIABILITIES")}
+                                    {renderSectionHeader("EQUITY & LIABILITIES")}
 
-                                {renderSectionHeader("Equity")}
-                                {equity.map(r => renderRow(r.description, (r.crKHR - r.drKHR) / scale, false, true))}
-                                {renderRow("Current Year Earnings", netProfit, false, true)} {/* Auto Inserted */}
-                                {renderRow("Total Equity", totalEquity + netProfit, true)}
+                                    {renderSectionHeader("Equity")}
+                                    {equity.map(r => renderRow(r.description, (r.crKHR - r.drKHR) / scale, false, true))}
+                                    {renderRow("Current Year Earnings", netProfit, false, true)} {/* Auto Inserted */}
+                                    {renderRow("Total Equity", totalEquity + netProfit, true)}
 
-                                {renderSectionHeader("Liabilities")}
-                                {liabilities.map(r => renderRow(r.description, (r.crKHR - r.drKHR) / scale, false, true))}
-                                {renderRow("Total Liabilities", totalLiabs, true)}
+                                    {renderSectionHeader("Liabilities")}
+                                    {liabilities.map(r => renderRow(r.description, (r.crKHR - r.drKHR) / scale, false, true))}
+                                    {renderRow("Total Liabilities", totalLiabs, true)}
 
-                                <tr className="h-4"></tr>
-                                <tr className="border-t-2 border-black border-b-2 border-double">
-                                    <td className="p-4 font-bold text-lg">TOTAL EQUITY & LIABILITIES</td>
-                                    <td className="p-4 text-right font-bold font-mono text-lg">{(totalLiabs + totalEquity + netProfit).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
-                                </tr>
-                            </tbody>
-                        )}
+                                    <tr className="h-4"></tr>
+                                    <tr className="border-t-2 border-black border-b-2 border-double">
+                                        <td className="p-4 font-bold text-lg">TOTAL EQUITY & LIABILITIES</td>
+                                        <td className="p-4 text-right font-bold font-mono text-lg">{(totalLiabs + totalEquity + netProfit).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+                                    </tr>
+                                </tbody>
+                            )}
 
-                        {/* CASH FLOW STATEMENT */}
-                        {activeTab === 'cf' && (
-                            <tbody>
-                                {renderSectionHeader("CASH FLOWS FROM OPERATING ACTIVITIES")}
-                                {renderRow("Net Profit for the Year", netProfit, true, true)}
-                                {/* Simplified Adjustments */}
-                                {renderRow("Depreciation & Amortization", 0, false, true)}
-                                {renderRow("Change in Receivables", 0, false, true)}
-                                {renderRow("Change in Payables", 0, false, true)}
-                                <tr className="border-t border-gray-300"><td colSpan="2"></td></tr>
-                                {renderRow("Net Cash from Operating Activities", netProfit, true)}
+                            {viewMode === 'annual' && activeTab === 'cf' && (
+                                <tbody>
+                                    {renderSectionHeader("CASH FLOWS FROM OPERATING ACTIVITIES")}
+                                    {renderRow("Net Profit for the Year", netProfit, true, true)}
+                                    {/* Simplified Adjustments */}
+                                    {renderRow("Depreciation & Amortization", 0, false, true)}
+                                    {renderRow("Change in Receivables", 0, false, true)}
+                                    {renderRow("Change in Payables", 0, false, true)}
+                                    <tr className="border-t border-gray-300"><td colSpan="2"></td></tr>
+                                    {renderRow("Net Cash from Operating Activities", netProfit, true)}
 
-                                <tr className="h-6"></tr>
+                                    <tr className="h-6"></tr>
 
-                                {renderSectionHeader("CASH FLOWS FROM INVESTING ACTIVITIES")}
-                                {assets.filter(a => a.description.toLowerCase().includes('fixed') || a.description.toLowerCase().includes('equipment')).map(r =>
-                                    renderRow(`Purchase of ${r.description}`, -(r.drKHR - r.crKHR) / scale, false, true)
-                                )}
-                                <tr className="border-t border-gray-300"><td colSpan="2"></td></tr>
-                                {renderRow("Net Cash used in Investing Activities", assets.filter(a => a.description.toLowerCase().includes('fixed') || a.description.toLowerCase().includes('equipment')).reduce((sum, r) => sum - ((r.drKHR - r.crKHR) / scale), 0), true)}
+                                    {renderSectionHeader("CASH FLOWS FROM INVESTING ACTIVITIES")}
+                                    {assets.filter(a => a.description.toLowerCase().includes('fixed') || a.description.toLowerCase().includes('equipment')).map(r =>
+                                        renderRow(`Purchase of ${r.description}`, -(r.drKHR - r.crKHR) / scale, false, true)
+                                    )}
+                                    <tr className="border-t border-gray-300"><td colSpan="2"></td></tr>
+                                    {renderRow("Net Cash used in Investing Activities", assets.filter(a => a.description.toLowerCase().includes('fixed') || a.description.toLowerCase().includes('equipment')).reduce((sum, r) => sum - ((r.drKHR - r.crKHR) / scale), 0), true)}
 
-                                <tr className="h-6"></tr>
+                                    <tr className="h-6"></tr>
 
-                                {renderSectionHeader("CASH FLOWS FROM FINANCING ACTIVITIES")}
-                                {equity.filter(e => e.description.toLowerCase().includes('capital')).map(r =>
-                                    renderRow(`Proceeds from ${r.description}`, (r.crKHR - r.drKHR) / scale, false, true)
-                                )}
-                                <tr className="border-t border-gray-300"><td colSpan="2"></td></tr>
-                                {renderRow("Net Cash from Financing Activities", equity.filter(e => e.description.toLowerCase().includes('capital')).reduce((sum, r) => sum + ((r.crKHR - r.drKHR) / scale), 0), true)}
+                                    {renderSectionHeader("CASH FLOWS FROM FINANCING ACTIVITIES")}
+                                    {equity.filter(e => e.description.toLowerCase().includes('capital')).map(r =>
+                                        renderRow(`Proceeds from ${r.description}`, (r.crKHR - r.drKHR) / scale, false, true)
+                                    )}
+                                    <tr className="border-t border-gray-300"><td colSpan="2"></td></tr>
+                                    {renderRow("Net Cash from Financing Activities", equity.filter(e => e.description.toLowerCase().includes('capital')).reduce((sum, r) => sum + ((r.crKHR - r.drKHR) / scale), 0), true)}
 
-                                <tr className="h-6"></tr>
-                                <tr className="border-t-2 border-black border-b-2 border-double">
-                                    <td className="p-4 font-bold text-lg">NET INCREASE/(DECREASE) IN CASH</td>
-                                    {/* Formula: Operating + Investing + Financing */}
-                                    <td className="p-4 text-right font-bold font-mono text-lg">
-                                        {(
-                                            netProfit +
-                                            assets.filter(a => a.description.toLowerCase().includes('fixed') || a.description.toLowerCase().includes('equipment')).reduce((sum, r) => sum - ((r.drKHR - r.crKHR) / scale), 0) +
-                                            equity.filter(e => e.description.toLowerCase().includes('capital')).reduce((sum, r) => sum + ((r.crKHR - r.drKHR) / scale), 0)
-                                        ).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                                    </td>
-                                </tr>
-                                {renderRow("Cash at Beginning of Year", 0, false, true)}
-                                {renderRow("Cash at End of Year", (
-                                    netProfit +
-                                    assets.filter(a => a.description.toLowerCase().includes('fixed') || a.description.toLowerCase().includes('equipment')).reduce((sum, r) => sum - ((r.drKHR - r.crKHR) / scale), 0) +
-                                    equity.filter(e => e.description.toLowerCase().includes('capital')).reduce((sum, r) => sum + ((r.crKHR - r.drKHR) / scale), 0)
-                                ), true)}
-                            </tbody>
-                        )}
+                                    <tr className="h-6"></tr>
+                                    <tr className="border-t-2 border-black border-b-2 border-double">
+                                        <td className="p-4 font-bold text-lg">NET INCREASE/(DECREASE) IN CASH</td>
+                                        <td className="p-4 text-right font-bold font-mono text-lg">
+                                            {(
+                                                netProfit +
+                                                assets.filter(a => a.description.toLowerCase().includes('fixed') || a.description.toLowerCase().includes('equipment')).reduce((sum, r) => sum - ((r.drKHR - r.crKHR) / scale), 0) +
+                                                equity.filter(e => e.description.toLowerCase().includes('capital')).reduce((sum, r) => sum + ((r.crKHR - r.drKHR) / scale), 0)
+                                            ).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                        </td>
+                                    </tr>
+                                    {renderRow("Cash at Beginning of Year", 0, false, true)}
+                                    {renderRow("Cash at End of Year", (
+                                        netProfit +
+                                        assets.filter(a => a.description.toLowerCase().includes('fixed') || a.description.toLowerCase().includes('equipment')).reduce((sum, r) => sum - ((r.drKHR - r.crKHR) / scale), 0) +
+                                        equity.filter(e => e.description.toLowerCase().includes('capital')).reduce((sum, r) => sum + ((r.crKHR - r.drKHR) / scale), 0)
+                                    ), true)}
+                                </tbody>
+                            )}
 
-                    </table>
+                            {/* --- MONTHLY VIEW --- */}
+                            {viewMode === 'monthly' && activeTab === 'pl' && (
+                                <tbody>
+                                    {renderSectionHeader("Revenue", true)}
+                                    {mRevenue.map(r => renderMonthRow(r.description, r.months, false, true))}
+                                    {renderMonthRow("Total Revenue", mTotalRev, true)}
+
+                                    {renderSectionHeader("Cost of Sales", true)}
+                                    {mCOS.map(r => renderMonthRow(r.description, r.months, false, true))}
+                                    {renderMonthRow("Gross Profit", mGrossProfit, true)}
+
+                                    {renderSectionHeader("Operating Expenses", true)}
+                                    {mExpenses.map(r => renderMonthRow(r.description, r.months, false, true))}
+                                    {renderMonthRow("Total Operating Expenses", mTotalExp, true)}
+
+                                    <tr className="h-4"></tr>
+                                    {renderMonthRow("NET PROFIT", mNetProfit, true)}
+                                </tbody>
+                            )}
+
+                            {viewMode === 'monthly' && activeTab === 'bs' && (
+                                <tbody>
+                                    {renderSectionHeader("ASSETS", true)}
+                                    {mAssets.map(r => renderMonthRow(r.description, r.months, false, true))}
+
+                                    <tr className="h-6"></tr>
+                                    {renderSectionHeader("EQUITY & LIABILITIES", true)}
+                                    {renderSectionHeader("Equity", true)}
+                                    {mEquity.map(r => renderMonthRow(r.description, r.months, false, true))}
+
+                                    {renderSectionHeader("Liabilities", true)}
+                                    {mLiabs.map(r => renderMonthRow(r.description, r.months, false, true))}
+                                </tbody>
+                            )}
+
+                        </table>
+                    </div>
+
 
                     <div className="mt-12 pt-8 border-t border-gray-300 flex justify-between text-xs text-center text-gray-500 font-sans">
                         <div className="w-1/3">

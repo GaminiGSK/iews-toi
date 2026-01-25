@@ -1059,6 +1059,124 @@ router.get('/trial-balance', auth, async (req, res) => {
     }
 });
 
+
+// GET Monthly Financial Statements (New)
+router.get('/financials-monthly', auth, async (req, res) => {
+    try {
+        const companyCode = req.user.companyCode;
+        const currentYear = new Date().getFullYear();
+
+        const AccountCode = require('../models/AccountCode');
+        const Transaction = require('../models/Transaction');
+        const JournalEntry = require('../models/JournalEntry');
+
+        // 1. Fetch ALL Codes
+        const codes = await AccountCode.find({ companyCode }).lean();
+        const codeMap = {};
+        codes.forEach(c => codeMap[c.code] = c);
+
+        // 2. Fetch Transactions (Current Year)
+        // Note: For Balance Sheet, we also need Prior Year Closing Balances (Opening Balances)
+        // For Proof of Concept, we will calculate Opening Balance from Prior Years
+
+        const allTransactions = await Transaction.find({ companyCode }).lean();
+        const allJournals = await JournalEntry.find({ companyCode }).lean();
+
+        // Data Models
+        // plData[code] = { 1: val, 2: val ... 12: val }
+        // bsData[code] = { 1: val ... 12: val }
+        const plData = {};
+        const bsData = {};
+        const openingBalances = {};
+
+        // 3. Initialize Rows for all codes
+        codes.forEach(c => {
+            if (['4', '5', '6', '7', '8', '9'].some(p => c.code.startsWith(p))) {
+                plData[c.code] = { description: c.description, code: c.code, months: Array(13).fill(0) }; // 0=Total, 1-12=Months
+            } else {
+                bsData[c.code] = { description: c.description, code: c.code, months: Array(13).fill(0) };
+                openingBalances[c.code] = 0;
+            }
+        });
+
+        // 4. Process Transactions
+        allTransactions.forEach(tx => {
+            const date = new Date(tx.date);
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1; // 1-12
+
+            // Resolve Account Code
+            let acId = tx.accountCode;
+            if (!acId) return; // Skip untagged
+
+            // We need to map _id back to Code String to find it in our Data Maps
+            const acObj = codes.find(c => String(c._id) === String(acId));
+            if (!acObj) return;
+
+            const code = acObj.code;
+            const amount = parseFloat(tx.amount || 0);
+
+            // Logic:
+            // If Year < CurrentYear => Add to Opening Balance (BS Only)
+            // If Year == CurrentYear => 
+            //    If BS => Add to Month Activity (to be summed cumulatively later)
+            //    If PL => Add to Month Activity
+
+            if (year < currentYear) {
+                if (bsData[code]) {
+                    openingBalances[code] += amount;
+                }
+                // P&L resets every year, so prior year P&L doesn't affect this year's specific month columns,
+                // BUT it affects Retained Earnings (Equity) in BS. 
+                // Simplified: We assume Retained Earnings is calculated as Diff.
+            } else if (year === currentYear) {
+                if (plData[code]) {
+                    // In P&L, Money In = Credit (+), Money Out = Debit (-) usually?
+                    // Actually, Revenue (4xxx) is Credit. Expense (6xxx) is Debit.
+                    // My Transaction amount: +ve is In, -ve is Out.
+                    // Revenue: +ve amount -> Increases Credit (Good).
+                    // Expense: -ve amount -> Increases Debit (Good).
+                    // So simply adding `amount` works for "Net Impact". 
+                    // But for display, usually Exp are positive numbers in list.
+                    // We will store raw signed amounts and format on frontend.
+                    plData[code].months[month] += amount;
+                    plData[code].months[0] += amount; // Total
+                } else if (bsData[code]) {
+                    bsData[code].months[month] += amount;
+                }
+            }
+        });
+
+        // 5. Calculate Running Balance for BS
+        // Month N Balance = Opening + (Activity 1..N)
+        Object.keys(bsData).forEach(code => {
+            let running = openingBalances[code];
+            // Set Opening Balance as "Month 0"? No, usually reports show "Ending Balance" per month.
+            // Jan End = Opening + Jan Activity
+            for (let m = 1; m <= 12; m++) {
+                running += bsData[code].months[m];
+                bsData[code].months[m] = running; // Replace Activity with Balance
+            }
+            bsData[code].months[0] = running; // Total/Ending Balance
+        });
+
+        // Fetch Company Profile Name too
+        const CompanyProfile = require('../models/CompanyProfile');
+        const profile = await CompanyProfile.findOne({ companyCode });
+
+        res.json({
+            pl: Object.values(plData).filter(r => r.months[0] !== 0), // Filter rows with activity
+            bs: Object.values(bsData).filter(r => r.months[0] !== 0 && r.months[12] !== 0), // Simplified Filter
+            currentYear,
+            companyName: profile ? profile.companyNameEn : companyCode
+        });
+
+    } catch (err) {
+        console.error("Monthly Financials Error:", err);
+        res.status(500).json({ message: 'Error generating monthly financials' });
+    }
+});
+
 // POST Delete Transactions (Robust Alternative)
 router.post('/delete-transactions', auth, async (req, res) => {
     try {
