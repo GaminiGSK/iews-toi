@@ -912,71 +912,116 @@ router.get('/trial-balance', auth, async (req, res) => {
         });
 
         // Sum Transactions and Calculate Control Total (Implicit Bank Balance)
+        // Sum Transactions and Calculate Control Total (Implicit Bank Balance)
         let netControlUSD = 0;
         let netControlKHR = 0;
+        let netControlPriorUSD = 0;
+        let netControlPriorKHR = 0;
 
         transactions.forEach(tx => {
             const amtUSD = tx.amount;
-            // Accumulate Control Total (Source Side Logic)
-            // Money In (+) increases Bank (Debit)
-            // Money Out (-) decreases Bank (Credit)
-            if (amtUSD !== undefined) {
-                const rate = getRate(tx.date);
+            if (amtUSD === undefined) return;
+
+            const txYear = new Date(tx.date).getFullYear();
+            const rate = getRate(tx.date);
+
+            // 1. Handle Bank Control (10130) Accumulation
+            if (txYear === currentYear) {
                 netControlUSD += amtUSD;
                 netControlKHR += (amtUSD * rate);
+            } else if (txYear === currentYear - 1) {
+                netControlPriorUSD += amtUSD;
+                netControlPriorKHR += (amtUSD * rate);
             }
 
+            // 2. Handle Account Code Aggregation
             if (!tx.accountCode) return;
             const codeId = tx.accountCode._id;
 
-            // If code was deleted but tx still has ref, skip or handle safely
+            // Safety check
             if (!reportMap[codeId]) return;
 
-            const rate = getRate(tx.date);
             const amtKHR = amtUSD * rate;
+
+            // Determine Target Buckets
+            let targetDr = 'drUSD';
+            let targetCr = 'crUSD';
+            let targetDrKHR = 'drKHR';
+            let targetCrKHR = 'crKHR';
+
+            if (txYear === currentYear - 1) {
+                targetDr = 'priorDrUSD';
+                targetCr = 'priorCrUSD';
+                targetDrKHR = 'priorDrKHR';
+                targetCrKHR = 'priorCrKHR';
+            } else if (txYear !== currentYear) {
+                return; // Ignore years outside of Current & Prior Scope
+            }
 
             if (amtUSD > 0) {
                 // Money In -> Tag is Credit
-                reportMap[codeId].crUSD += Math.abs(amtUSD);
-                reportMap[codeId].crKHR += Math.abs(amtKHR);
+                reportMap[codeId][targetCr] += Math.abs(amtUSD);
+                reportMap[codeId][targetCrKHR] += Math.abs(amtKHR);
             } else {
                 // Money Out -> Tag is Debit
-                reportMap[codeId].drUSD += Math.abs(amtUSD);
-                reportMap[codeId].drKHR += Math.abs(amtKHR);
+                reportMap[codeId][targetDr] += Math.abs(amtUSD);
+                reportMap[codeId][targetDrKHR] += Math.abs(amtKHR);
             }
         });
 
         // Sum Journal Entries (Adjustments)
-        // This makes the Trial Balance "Live" and "Adjustable"
         journalEntries.forEach(je => {
+            const jeYear = new Date(je.date).getFullYear();
             const rate = getRate(je.date);
+
+            // Target Buckets
+            let targetDr = 'drUSD';
+            let targetCr = 'crUSD';
+            let targetDrKHR = 'drKHR';
+            let targetCrKHR = 'crKHR';
+
+            if (jeYear === currentYear - 1) {
+                targetDr = 'priorDrUSD';
+                targetCr = 'priorCrUSD';
+                targetDrKHR = 'priorDrKHR';
+                targetCrKHR = 'priorCrKHR';
+            } else if (jeYear !== currentYear) {
+                return;
+            }
+
             je.lines.forEach(line => {
                 const codeId = line.accountCode;
-                if (!reportMap[codeId]) return; // Skip if code not found
+                if (!reportMap[codeId]) return;
 
                 if (line.debit > 0) {
-                    reportMap[codeId].drUSD += line.debit;
-                    reportMap[codeId].drKHR += (line.debit * rate);
+                    reportMap[codeId][targetDr] += line.debit;
+                    reportMap[codeId][targetDrKHR] += (line.debit * rate);
                 }
                 if (line.credit > 0) {
-                    reportMap[codeId].crUSD += line.credit;
-                    reportMap[codeId].crKHR += (line.credit * rate);
+                    reportMap[codeId][targetCr] += line.credit;
+                    reportMap[codeId][targetCrKHR] += (line.credit * rate);
                 }
             });
         });
 
         // Apply Control Total to Bank Account (10130 ABA)
-        // This forces the "Net Balance" to appear in the Trial Balance
         const bankCode = codes.find(c => c.code === '10130');
         if (bankCode && reportMap[bankCode._id]) {
+            // Current Year
             if (netControlUSD > 0) {
-                // Net In -> Debit Bank
                 reportMap[bankCode._id].drUSD += netControlUSD;
                 reportMap[bankCode._id].drKHR += netControlKHR;
             } else {
-                // Net Out -> Credit Bank
                 reportMap[bankCode._id].crUSD += Math.abs(netControlUSD);
                 reportMap[bankCode._id].crKHR += Math.abs(netControlKHR);
+            }
+            // Prior Year
+            if (netControlPriorUSD > 0) {
+                reportMap[bankCode._id].priorDrUSD += netControlPriorUSD;
+                reportMap[bankCode._id].priorDrKHR += netControlPriorKHR;
+            } else {
+                reportMap[bankCode._id].priorCrUSD += Math.abs(netControlPriorUSD);
+                reportMap[bankCode._id].priorCrKHR += Math.abs(netControlPriorKHR);
             }
         }
 
