@@ -9,8 +9,8 @@ const User = require('../models/User');
 // POST /api/chat/message
 router.post('/message', auth, async (req, res) => {
     try {
-        const { message } = req.body;
-        if (!message) return res.status(400).json({ message: "Message is required" });
+        const { message, image } = req.body;
+        if (!message && !image) return res.status(400).json({ message: "Message or Image is required" });
 
         // 1. Fetch Context Data
         const companyCode = req.user.companyCode;
@@ -25,8 +25,6 @@ router.post('/message', auth, async (req, res) => {
             .limit(15)
             .populate('accountCode')
             .lean();
-
-        console.log(`[Chat Debug] User: ${req.user.companyCode} | Txs Found: ${transactions.length}`);
 
         // Fetch Chart of Accounts
         const rawCodes = await AccountCode.find({ companyCode }).sort({ code: 1 }).lean();
@@ -48,8 +46,6 @@ router.post('/message', auth, async (req, res) => {
                 }
             }
         ]);
-
-        console.log('[Chat Debug] Summary Data:', JSON.stringify(summaryStats));
 
         // Calculate Monthly Trends (Last 12 Months)
         const monthlyStatsRaw = await Transaction.aggregate([
@@ -83,13 +79,8 @@ router.post('/message', auth, async (req, res) => {
             date: t.date ? t.date.toISOString().split('T')[0] : 'No Date',
             description: t.description,
             amount: t.amount,
-            code: t.accountCode ? t.accountCode.code : 'Uncategorized' // Use Code string if populated, else 'Uncategorized'
+            code: t.accountCode ? t.accountCode.code : 'Uncategorized'
         }));
-
-        // Debug Context
-        if (transactions.length === 0) {
-            console.warn(`[Chat Warning] No transactions found for company ${companyCode}`);
-        }
 
         // 2. Call AI Service
         const context = {
@@ -100,39 +91,32 @@ router.post('/message', auth, async (req, res) => {
             monthlyStats
         };
 
-        const aiResponse = await googleAI.chatWithFinancialAgent(message, context);
+        // Pass 'image' (Base64) to the AI service
+        const aiResponse = await googleAI.chatWithFinancialAgent(message || "Analyze this image", context, image);
 
         // 3. Handle Potential Tool Use (Rule Creation)
         let finalText = aiResponse;
         let toolAction = null;
 
-        // Try to parse JSON output from AI (it might wrap in markdown ```json ... ```)
         try {
             const cleanJson = aiResponse.replace(/```json/g, '').replace(/```/g, '').trim();
             if (cleanJson.startsWith('{') && cleanJson.includes('"tool_use"')) {
                 const toolPayload = JSON.parse(cleanJson);
-
-                // Store payload to send to frontend
                 toolAction = toolPayload;
                 finalText = toolPayload.reply_text; // Default reply
 
                 if (toolPayload.tool_use === 'create_rule') {
                     const ruleData = toolPayload.rule_data;
-
-                    // Validate basic rule data
                     if (ruleData.targetAccountCode && ruleData.criteria) {
                         const ClassificationRule = require('../models/ClassificationRule');
-
-                        // Check availability
                         const existingRule = await ClassificationRule.findOne({
                             companyCode,
                             ruleType: ruleData.ruleType,
                             criteria: ruleData.criteria
                         });
-
                         if (existingRule) {
                             existingRule.targetAccountCode = ruleData.targetAccountCode;
-                            existingRule.name = ruleData.name; // Update name
+                            existingRule.name = ruleData.name;
                             await existingRule.save();
                             finalText = `Use Updated Rule: ${toolPayload.reply_text}`;
                         } else {
@@ -143,7 +127,7 @@ router.post('/message', auth, async (req, res) => {
                                 criteria: ruleData.criteria,
                                 operator: ruleData.operator || 'contains',
                                 targetAccountCode: ruleData.targetAccountCode,
-                                priority: 8 // Default user rules high priority
+                                priority: 8
                             });
                             finalText = toolPayload.reply_text;
                         }
@@ -151,11 +135,9 @@ router.post('/message', auth, async (req, res) => {
                         finalText = "I understood you want to create a rule, but I couldn't identify the specific code or criteria. Please try again.";
                     }
                 }
-                // For 'propose_journal_entry', we do nothing here. We just pass 'toolAction' to frontend.
             }
         } catch (e) {
             // Not JSON or parse error, just return raw text
-            // console.log("Not a tool response", e);
         }
 
         // 4. Return Response

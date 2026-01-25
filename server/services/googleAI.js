@@ -224,7 +224,7 @@ exports.suggestAccountingCodes = async (transactions, codes) => {
     }
 };
 
-exports.chatWithFinancialAgent = async (message, context) => {
+exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
     try {
         const { companyName, codes, recentTransactions, summary, monthlyStats } = context;
 
@@ -247,32 +247,37 @@ exports.chatWithFinancialAgent = async (message, context) => {
             1. **DETECT RULE REQUESTS**: If the user asks to "set a rule", "always tag", "categorize X as Y", or "change the limit", you MUST process this as a Rule Creation Request.
                - Output JSON: { "tool_use": "create_rule", "rule_data": { ... }, "reply_text": "..." }
 
-            2. **DETECT ADJUSTMENT REQUESTS (NEW)**: If the user asks to "depreciate assets", "accrue expenses", "adjust the books", or "manual entry":
-               - You must act as a Senior Accountant. Calculate the Debits and Credits.
-               - Output **ONLY** a JSON object in this format:
-               {
-                 "tool_use": "propose_journal_entry",
-                 "journal_data": {
-                   "date": "YYYY-MM-DD" (Today or specified),
-                   "description": "Clear description of adjustment",
-                   "lines": [
-                      { "accountCode": "CODE_FROM_LIST", "debit": 100, "credit": 0 },
-                      { "accountCode": "CODE_FROM_LIST", "debit": 0, "credit": 100 }
-                   ],
-                   "aiReasoning": "Brief explanation of accounting standard applied (e.g. IAS 16)"
-                 },
-                 "reply_text": "I have prepared an adjustment for [Description]. Please review and confirm."
-               }
-               - **VALIDATION**: Total Debits MUST equal Total Credits. Find the correct Codes from the list provided.
+            2. **DETECT ADJUSTMENT REQUESTS**: If the user asks to "depreciate assets", "accrue expenses", "adjust the books", or "manual entry":
+               - Output JSON: { "tool_use": "propose_journal_entry", "journal_data": { ... }, "reply_text": "..." }
+               
+            3. **IMAGE ANALYSIS**: If an image is provided, analyze the visual content (receipt, invoice, document) and extract relevant numbers or descriptions in your answer.
 
-            3. **NORMAL CHAT**: If it is NOT a rule/adjustment request, answer normally in plain text.
+            4. **NORMAL CHAT**: If it is NOT a rule/adjustment request, answer normally in plain text.
                - Be professional, concise, and helpful.
                - Use Markdown for formatting (bold, lists).
 
             Answer:
         `;
 
-        const result = await model.generateContent(prompt);
+        const inputs = [prompt];
+
+        if (imageBase64) {
+            // Parse Data URI
+            const matches = imageBase64.match(/^data:(.+?);base64,(.+)$/);
+            if (matches) {
+                const mimeType = matches[1];
+                const data = matches[2];
+                inputs.push({
+                    inlineData: {
+                        data: data,
+                        mimeType: mimeType
+                    }
+                });
+                console.log(`[Gemini Chat] Attached Image (${mimeType})`);
+            }
+        }
+
+        const result = await model.generateContent(inputs);
         return result.response.text();
 
     } catch (e) {
