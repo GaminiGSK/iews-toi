@@ -202,6 +202,26 @@ export default function AdminDashboard() {
         }
     };
 
+    const handleDeleteTemplate = async (e, template) => {
+        e.stopPropagation();
+        if (!window.confirm(`Delete ${template.name}?`)) return;
+
+        if (template.status === 'New') {
+            setTemplates(prev => prev.filter(t => t.id !== template.id));
+            if (activeTemplateId === template.id) setActiveTemplateId(null);
+        } else {
+            // Saved Template
+            try {
+                await axios.delete(`/api/tax/templates/${template.id}`);
+                setTemplates(prev => prev.filter(t => t.id !== template.id));
+                if (activeTemplateId === template.id) setActiveTemplateId(null);
+            } catch (err) {
+                console.error(err);
+                alert('Failed to delete template');
+            }
+        }
+    };
+
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
@@ -422,18 +442,12 @@ export default function AdminDashboard() {
                                                 </p>
                                             </div>
                                         </div>
-                                        {template.status === 'New' && (
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setTemplates(prev => prev.filter(t => t.id !== template.id));
-                                                    if (activeTemplateId === template.id) setActiveTemplateId(null);
-                                                }}
-                                                className="p-1.5 rounded-full hover:bg-red-500/20 text-gray-500 hover:text-red-400 transition"
-                                            >
-                                                <X size={14} />
-                                            </button>
-                                        )}
+                                        <button
+                                            onClick={(e) => handleDeleteTemplate(e, template)}
+                                            className="p-1.5 rounded-full hover:bg-red-500/20 text-gray-500 hover:text-red-400 transition"
+                                        >
+                                            <X size={14} />
+                                        </button>
                                     </div>
                                 ))}
                                 {templates.length === 0 && (

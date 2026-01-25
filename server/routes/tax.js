@@ -149,4 +149,18 @@ router.get('/file/:filename', async (req, res) => {
     }
 });
 
+// Delete Template
+router.delete('/templates/:id', async (req, res) => {
+    try {
+        const template = await TaxTemplate.findById(req.params.id);
+        if (!template) return res.status(404).send('Template not found');
+
+        await TaxTemplate.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Template deleted' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+});
+
 module.exports = router;
