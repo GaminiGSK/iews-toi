@@ -158,8 +158,8 @@ const ToiAcar = ({ onBack }) => {
                         {/* Interactive Form Area */}
                         <div className="flex-1 bg-gray-950 relative overflow-hidden flex flex-col">
                             {activeTemplate ? (
-                                <div className="flex-1 overflow-auto p-8 flex justify-center bg-gray-900">
-                                    <div className="relative shadow-2xl bg-white min-w-[800px] min-h-[1100px]" style={{ width: '800px' }}>
+                                <div className="flex-1 overflow-auto p-4 flex justify-start bg-gray-900">
+                                    <div className="relative shadow-2xl bg-white min-w-[800px] min-h-[1100px] ml-4" style={{ width: '800px' }}>
                                         {/* Background Image */}
                                         <img
                                             src={activeTemplate.previewUrl}
