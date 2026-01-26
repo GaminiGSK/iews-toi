@@ -353,15 +353,24 @@ export default function AdminDashboard() {
                                 e.preventDefault(); e.stopPropagation();
                                 const files = Array.from(e.dataTransfer.files);
                                 if (files.length > 0) {
-                                    const newTemplates = files.map(file => ({
-                                        id: Date.now() + Math.random(),
-                                        name: file.name,
-                                        file: file,
-                                        type: file.type,
-                                        size: (file.size / 1024).toFixed(2) + ' KB',
-                                        previewUrl: URL.createObjectURL(file),
-                                        status: 'New'
-                                    }));
+                                    const newTemplates = [];
+
+                                    files.forEach(file => {
+                                        // Check for duplicates (by name)
+                                        const exists = templates.some(t => t.name === file.name || t.originalName === file.name);
+                                        if (exists) return; // Skip duplicate
+
+                                        newTemplates.push({
+                                            id: Date.now() + Math.random(),
+                                            name: file.name,
+                                            file: file,
+                                            type: file.type,
+                                            size: (file.size / 1024).toFixed(2) + ' KB',
+                                            previewUrl: URL.createObjectURL(file), // Helper for local preview
+                                            status: 'New'
+                                        });
+                                    });
+
                                     setTemplates(prev => [...prev, ...newTemplates]);
                                     if (!activeTemplateId && newTemplates.length > 0) setActiveTemplateId(newTemplates[0].id);
                                 }
