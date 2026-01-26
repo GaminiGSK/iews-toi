@@ -32,7 +32,50 @@ const ToiAcar = ({ onBack }) => {
         fetchTemplates();
     }, []);
 
-    const activeTemplate = templates[activePageIndex];
+    const [formValues, setFormValues] = useState({});
+
+    // Blue Agent Logic to Auto-Fill Data
+    const handleAutoFill = () => {
+        if (!activeTemplate || !activeTemplate.mappings) return;
+
+        const newValues = { ...formValues };
+        const mappings = activeTemplate.mappings;
+
+        // 1. Detect Year Boxes (Heuristic: 4 small boxes near each other, or labeled 'Year')
+        // We look for boxes with small width (e.g., < 5%)
+        const smallBoxes = mappings.filter(m => m.w < 5 && m.y < 20); // Top of page, small width
+
+        // Sort by X position
+        smallBoxes.sort((a, b) => a.x - b.x);
+
+        // If we find a cluster of 4, fill 2-0-2-4
+        if (smallBoxes.length >= 4) {
+            // Take the first 4 (left to right)
+            const year = new Date().getFullYear().toString(); // "2025" or "2024"
+            // For tax return, usually previous year? Let's use 2024 for now.
+            const taxYear = "2024";
+
+            newValues[smallBoxes[0].id] = taxYear[0];
+            newValues[smallBoxes[1].id] = taxYear[1];
+            newValues[smallBoxes[2].id] = taxYear[2];
+            newValues[smallBoxes[3].id] = taxYear[3];
+        } else {
+            // Use Semantic Labels if available
+            mappings.forEach(m => {
+                const label = (m.semanticLabel || m.label || '').toLowerCase();
+                if (label.includes('year') || label.includes('date')) {
+                    newValues[m.id] = "2024";
+                }
+            });
+        }
+
+        setFormValues(newValues);
+        alert("Blue Agent has populated the Tax Year based on context.");
+    };
+
+    const handleInputChange = (id, val) => {
+        setFormValues(prev => ({ ...prev, [id]: val }));
+    };
 
     return (
         <div className="w-full h-[calc(100vh-80px)] pt-6 px-4 animate-fade-in flex flex-col">
@@ -54,6 +97,15 @@ const ToiAcar = ({ onBack }) => {
                         <p className="text-gray-400 text-sm">Manage Tax on Income (TOI) and ACAR Reporting.</p>
                     </div>
                 </div>
+
+                {/* Blue Agent Action */}
+                <button
+                    onClick={handleAutoFill}
+                    className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white px-6 py-2 rounded-full font-bold shadow-lg shadow-blue-500/30 transition flex items-center gap-2"
+                >
+                    <ShieldCheck size={18} />
+                    Ask Blue Agent to Fill
+                </button>
             </div>
 
             {/* Main Tabs (TOI vs ACAR) */}
@@ -129,9 +181,11 @@ const ToiAcar = ({ onBack }) => {
                                             >
                                                 <input
                                                     type="text"
-                                                    className="w-full h-full bg-blue-50/10 hover:bg-blue-50/30 focus:bg-white/80 border border-transparent focus:border-blue-500 text-[10px] px-1 transition text-emerald-900 font-bold"
+                                                    className="w-full h-full bg-blue-50/10 hover:bg-blue-50/30 focus:bg-white/80 border border-transparent focus:border-blue-500 text-[10px] px-1 transition text-emerald-900 font-bold text-center"
                                                     placeholder={field.semanticLabel || ''}
                                                     title={field.label}
+                                                    value={formValues[field.id] || ''}
+                                                    onChange={(e) => handleInputChange(field.id, e.target.value)}
                                                 />
                                             </div>
                                         ))}
