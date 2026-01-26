@@ -37,7 +37,7 @@ export default function AdminDashboard() {
             const apiTemplates = res.data.map(t => ({
                 ...t,
                 id: t._id,
-                status: t.status || 'Saved',
+                status: 'Saved', // Force Saved status for anything from DB
                 // Construct preview URL for saved files
                 previewUrl: `/api/tax/file/${t.filename}`
             }));
