@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, ShieldCheck, FileText, Table, ChevronRight, Loader } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, FileText, Table, ChevronRight, Loader2 } from 'lucide-react';
 import axios from 'axios';
 
 const ToiAcar = ({ onBack }) => {
@@ -131,7 +131,7 @@ const ToiAcar = ({ onBack }) => {
 
                 {isLoading ? (
                     <div className="flex-1 flex items-center justify-center text-gray-400 gap-2">
-                        <Loader className="animate-spin" /> Loading Forms...
+                        <Loader2 className="animate-spin" /> Loading Forms...
                     </div>
                 ) : activeTab === 'TOI' ? (
                     <div className="flex h-full">
