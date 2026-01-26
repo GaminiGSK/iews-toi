@@ -52,6 +52,13 @@ export default function AdminDashboard() {
         fetchTemplates();
     }, []);
 
+    // Safety: Reset active selection if template disappears (e.g. deleted)
+    useEffect(() => {
+        if (activeTemplateId && !templates.find(t => t.id === activeTemplateId)) {
+            setActiveTemplateId(null);
+        }
+    }, [templates, activeTemplateId]);
+
     // Tax Form Handlers
     const handleSaveLibrary = async () => {
         // Find New templates (remove file check here, verify later)
@@ -625,10 +632,10 @@ export default function AdminDashboard() {
                                         <div
                                             className="absolute border-2 border-green-400 bg-green-400/20"
                                             style={{
-                                                left: `${templates.find(t => t.id === activeTemplateId).currentBox.x}%`,
-                                                top: `${templates.find(t => t.id === activeTemplateId).currentBox.y}%`,
-                                                width: `${templates.find(t => t.id === activeTemplateId).currentBox.w}%`,
-                                                height: `${templates.find(t => t.id === activeTemplateId).currentBox.h}%`
+                                                left: `${templates.find(t => t.id === activeTemplateId)?.currentBox?.x}%`,
+                                                top: `${templates.find(t => t.id === activeTemplateId)?.currentBox?.y}%`,
+                                                width: `${templates.find(t => t.id === activeTemplateId)?.currentBox?.w}%`,
+                                                height: `${templates.find(t => t.id === activeTemplateId)?.currentBox?.h}%`
                                             }}
                                         />
                                     )}
