@@ -182,8 +182,7 @@ const ToiAcar = ({ onBack }) => {
                                                 <input
                                                     type="text"
                                                     className="w-full h-full bg-blue-50/10 hover:bg-blue-50/30 focus:bg-white/80 border border-transparent focus:border-blue-500 text-[10px] px-1 transition text-emerald-900 font-bold text-center"
-                                                    placeholder={field.semanticLabel || ''}
-                                                    title={field.label}
+                                                    title={field.label || field.semanticLabel}
                                                     value={formValues[field.id] || ''}
                                                     onChange={(e) => handleInputChange(field.id, e.target.value)}
                                                 />
