@@ -184,6 +184,8 @@ export default function AdminDashboard() {
         }
     };
 
+    const [isScanning, setIsScanning] = useState(false);
+
     const handleAnalyze = async () => {
         if (!activeTemplateId) {
             return alert("Please click on a template in the list (left) to select it first.");
@@ -197,13 +199,7 @@ export default function AdminDashboard() {
         if (!window.confirm('Blue Agent will scan this image to auto-detect fields. Existing mappings will be overwritten. Continue?')) return;
 
         try {
-            // Show loading state... we can leverage 'savingLibrary' or a new state.
-            // For simplicity, using alert flow or setSavingLibrary(true) temporarily?
-            // Let's create a local loading indicator for this button? 
-            // Reuse savingLibrary is confusing.
-            const btn = document.getElementById('analyze-btn');
-            if (btn) btn.innerText = 'Scanning...';
-
+            setIsScanning(true);
             const res = await axios.post(`/api/tax/templates/${activeTemplateId}/analyze`);
             alert(`Analysis Complete! Found ${res.data.mappings.length} fields.`);
 
@@ -212,13 +208,11 @@ export default function AdminDashboard() {
                 if (t.id === activeTemplateId) return { ...t, mappings: res.data.mappings };
                 return t;
             }));
-
-            if (btn) btn.innerText = 'Auto-Scan';
         } catch (err) {
             console.error(err);
             alert('AI Analysis Failed. Check server logs.');
-            const btn = document.getElementById('analyze-btn');
-            if (btn) btn.innerText = 'Auto-Scan';
+        } finally {
+            setIsScanning(false);
         }
     };
 
@@ -504,11 +498,21 @@ export default function AdminDashboard() {
                                 <button
                                     id="analyze-btn"
                                     onClick={handleAnalyze}
-                                    className="text-xs bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded font-bold transition mr-2 flex items-center gap-1"
+                                    disabled={isScanning}
+                                    className={`text-xs ${isScanning ? 'bg-purple-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-500'} text-white px-3 py-1.5 rounded font-bold transition mr-2 flex items-center gap-1`}
                                     title="Use AI to detect fields"
                                 >
-                                    <CloudUpload size={12} className="animate-bounce" />
-                                    Auto-Scan
+                                    {isScanning ? (
+                                        <>
+                                            <Loader size={12} className="animate-spin" />
+                                            Scanning...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <CloudUpload size={12} className="animate-bounce" />
+                                            Auto-Scan
+                                        </>
+                                    )}
                                 </button>
                                 <div className="text-xs text-gray-500 flex items-center gap-2 mr-4">
                                     <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
