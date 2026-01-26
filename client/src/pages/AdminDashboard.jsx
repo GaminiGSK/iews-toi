@@ -54,14 +54,25 @@ export default function AdminDashboard() {
 
     // Tax Form Handlers
     const handleSaveLibrary = async () => {
-        const newTemplates = templates.filter(t => t.status === 'New' && t.file);
+        // Find New templates (remove file check here, verify later)
+        const newTemplates = templates.filter(t => t.status === 'New');
         if (newTemplates.length === 0) return alert('No new templates to save.');
 
         setSavingLibrary(true);
         const formData = new FormData();
+        let appendedCount = 0;
+
         newTemplates.forEach(t => {
-            formData.append('files', t.file);
+            if (t.file) {
+                formData.append('files', t.file);
+                appendedCount++;
+            }
         });
+
+        if (appendedCount === 0) {
+            setSavingLibrary(false);
+            return alert('Critical Error: The file data is missing from memory. Please delete these items and re-upload.');
+        }
 
         try {
             const res = await axios.post('/api/tax/templates', formData, {
