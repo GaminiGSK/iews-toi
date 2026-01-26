@@ -185,7 +185,9 @@ export default function AdminDashboard() {
     };
 
     const handleAnalyze = async () => {
-        if (!activeTemplateId) return;
+        if (!activeTemplateId) {
+            return alert("Please click on a template in the list (left) to select it first.");
+        }
         const template = templates.find(t => t.id === activeTemplateId);
         // Only allow analysis if Saved
         if (template.status === 'New') {
