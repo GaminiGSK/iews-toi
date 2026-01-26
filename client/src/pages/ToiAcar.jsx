@@ -1,28 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, ShieldCheck, FileText, Table, ChevronRight, Loader2 } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, FileText, Table, ChevronRight } from 'lucide-react';
 import axios from 'axios';
 
+// Simplified Version to Debug White Screen
 const ToiAcar = ({ onBack }) => {
-    const [activeTab, setActiveTab] = useState('TOI'); // 'TOI' or 'ACAR'
     const [templates, setTemplates] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [activePageIndex, setActivePageIndex] = useState(0);
+    const [activeTab, setActiveTab] = useState('TOI');
 
-    // Fetch Templates on Mount
+    // Minimal Fetch
     useEffect(() => {
         const fetchTemplates = async () => {
             setIsLoading(true);
             try {
+                // Defensive check
                 const res = await axios.get('/api/tax/templates');
-                // Ensure Sorted by Filename or Name to keep page order
-                const sorted = res.data.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
-
-                // Enhance with Mappings for safety (though backend provides them)
-                setTemplates(sorted.map(t => ({
-                    ...t,
-                    status: 'Saved', // Force 'Saved' as these are from DB
-                    previewUrl: `/api/tax/file/${t.filename}`
-                })));
+                if (Array.isArray(res.data)) {
+                    setTemplates(res.data);
+                } else {
+                    console.error("API returned non-array", res.data);
+                }
             } catch (err) {
                 console.error("Failed to load tax templates", err);
             } finally {
@@ -32,171 +29,29 @@ const ToiAcar = ({ onBack }) => {
         fetchTemplates();
     }, []);
 
-    const [formValues, setFormValues] = useState({});
-
-    // Blue Agent Logic to Auto-Fill Data
-    const handleAutoFill = () => {
-        if (!activeTemplate || !activeTemplate.mappings) return;
-
-        const newValues = { ...formValues };
-        const mappings = activeTemplate.mappings;
-
-        // 1. Detect Year Boxes (Heuristic: 4 small boxes near each other, or labeled 'Year')
-        // We look for boxes with small width (e.g., < 5%)
-        const smallBoxes = mappings.filter(m => m.w < 5 && m.y < 20); // Top of page, small width
-
-        // Sort by X position
-        smallBoxes.sort((a, b) => a.x - b.x);
-
-        // If we find a cluster of 4, fill 2-0-2-4
-        if (smallBoxes.length >= 4) {
-            // Take the first 4 (left to right)
-            const year = new Date().getFullYear().toString(); // "2025" or "2024"
-            // For tax return, usually previous year? Let's use 2024 for now.
-            const taxYear = "2024";
-
-            newValues[smallBoxes[0].id] = taxYear[0];
-            newValues[smallBoxes[1].id] = taxYear[1];
-            newValues[smallBoxes[2].id] = taxYear[2];
-            newValues[smallBoxes[3].id] = taxYear[3];
-        } else {
-            // Use Semantic Labels if available
-            mappings.forEach(m => {
-                const label = (m.semanticLabel || m.label || '').toLowerCase();
-                if (label.includes('year') || label.includes('date')) {
-                    newValues[m.id] = "2024";
-                }
-            });
-        }
-
-        setFormValues(newValues);
-        alert("Blue Agent has populated the Tax Year based on context.");
-    };
-
-    const handleInputChange = (id, val) => {
-        setFormValues(prev => ({ ...prev, [id]: val }));
-    };
-
     return (
-        <div className="w-full h-[calc(100vh-80px)] pt-6 px-4 animate-fade-in flex flex-col">
-            {/* Header / Back */}
+        <div className="w-full h-screen p-8 text-white flex flex-col">
             <div className="mb-6 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <button
-                        onClick={onBack}
-                        className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-sm font-medium transition shrink-0 shadow-md"
-                        title="Back to Dashboard"
-                    >
-                        <ArrowLeft size={20} />
-                    </button>
-                    <div>
-                        <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-                            <ShieldCheck className="text-rose-400" />
-                            TOI & ACAR Compliance
-                        </h1>
-                        <p className="text-gray-400 text-sm">Manage Tax on Income (TOI) and ACAR Reporting.</p>
-                    </div>
-                </div>
-
-                {/* Blue Agent Action */}
-                <button
-                    onClick={handleAutoFill}
-                    className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white px-6 py-2 rounded-full font-bold shadow-lg shadow-blue-500/30 transition flex items-center gap-2"
-                >
-                    <ShieldCheck size={18} />
-                    Ask Blue Agent to Fill
-                </button>
+                <button onClick={onBack} className="bg-blue-600 p-2 rounded text-white font-bold">Back</button>
+                <h1 className="text-2xl font-bold">TOI & ACAR (Debug Mode)</h1>
             </div>
 
-            {/* Main Tabs (TOI vs ACAR) */}
-            <div className="flex bg-slate-800/50 p-1 rounded-xl w-fit mb-4 border border-white/5 backdrop-blur-sm">
-                <button
-                    onClick={() => setActiveTab('TOI')}
-                    className={`px-8 py-3 rounded-lg text-sm font-bold transition-all duration-300 flex items-center gap-2 ${activeTab === 'TOI' ? 'bg-rose-500 text-white shadow-lg shadow-rose-900/20' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
-                >
-                    <FileText size={16} />
-                    TOI Form
-                </button>
-                <button
-                    onClick={() => setActiveTab('ACAR')}
-                    className={`px-8 py-3 rounded-lg text-sm font-bold transition-all duration-300 flex items-center gap-2 ${activeTab === 'ACAR' ? 'bg-rose-500 text-white shadow-lg shadow-rose-900/20' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
-                >
-                    <Table size={16} />
-                    ACAR
-                </button>
+            <div className="flex bg-slate-800 p-4 rounded mb-4 gap-4">
+                <button className="text-white font-bold">TOI Form</button>
             </div>
 
-            {/* Content Area */}
-            <div className="flex-1 bg-slate-900/50 border border-white/5 rounded-2xl overflow-hidden backdrop-blur-xl animate-fade-in relative flex flex-col">
-
+            <div className="bg-slate-900 p-8 border rounded flex-1">
                 {isLoading ? (
-                    <div className="flex-1 flex items-center justify-center text-gray-400 gap-2">
-                        <Loader2 className="animate-spin" /> Loading Forms...
-                    </div>
-                ) : activeTab === 'TOI' ? (
-                    <div className="flex h-full">
-                        {/* Page Tabs Sidebar */}
-                        <div className="w-64 bg-slate-900 border-r border-white/10 overflow-y-auto p-4">
-                            <h3 className="text-xs font-bold text-gray-500 uppercase mb-4 tracking-wider">Form Sections</h3>
-                            <div className="flex flex-col gap-2">
-                                {templates.map((t, idx) => (
-                                    <button
-                                        key={t._id}
-                                        onClick={() => setActivePageIndex(idx)}
-                                        className={`text-left px-4 py-3 rounded-lg text-sm font-medium transition-all ${idx === activePageIndex ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'text-gray-400 hover:bg-white/5'}`}
-                                    >
-                                        <div className="flex justify-between items-center">
-                                            <span>{t.name.replace('.jpg', '').replace('.png', '') || `Page ${idx + 1}`}</span>
-                                            {idx === activePageIndex && <ChevronRight size={14} />}
-                                        </div>
-                                    </button>
-                                ))}
-                                {templates.length === 0 && <p className="text-gray-600 text-xs italic">No templates configured.</p>}
-                            </div>
-                        </div>
-
-                        {/* Interactive Form Area */}
-                        <div className="flex-1 bg-gray-950 relative overflow-hidden flex flex-col">
-                            {activeTemplate ? (
-                                <div className="flex-1 overflow-auto p-4 flex justify-start bg-gray-900">
-                                    <div className="relative shadow-2xl bg-white min-w-[800px] min-h-[1100px] ml-4" style={{ width: '800px' }}>
-                                        {/* Background Image */}
-                                        <img
-                                            src={activeTemplate.previewUrl}
-                                            alt="Form Page"
-                                            className="absolute inset-0 w-full h-full object-contain pointer-events-none opacity-90"
-                                        />
-
-                                        {/* Input Overlays */}
-                                        {activeTemplate.mappings?.map(field => (
-                                            <div
-                                                key={field.id}
-                                                className="absolute"
-                                                style={{
-                                                    left: `${field.x}%`,
-                                                    top: `${field.y}%`,
-                                                    width: `${field.w}%`,
-                                                    height: `${field.h}%`,
-                                                }}
-                                            >
-                                                <input
-                                                    type="text"
-                                                    className="w-full h-full bg-blue-50/10 hover:bg-blue-50/30 focus:bg-white/80 border border-transparent focus:border-blue-500 text-[10px] px-1 transition text-emerald-900 font-bold text-center"
-                                                    title={field.label || field.semanticLabel}
-                                                    value={formValues[field.id] || ''}
-                                                    onChange={(e) => handleInputChange(field.id, e.target.value)}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="flex-1 flex items-center justify-center text-gray-500">Select a page to start.</div>
-                            )}
-                        </div>
-                    </div>
+                    <div>Loading...</div>
                 ) : (
-                    <div className="p-8 text-gray-400">ACAR Module Coming Soon...</div>
+                    <div>
+                        <h2>Templates Found: {templates.length}</h2>
+                        <ul>
+                            {templates.map(t => (
+                                <li key={t._id || t.id} className="text-gray-300">{t.name}</li>
+                            ))}
+                        </ul>
+                    </div>
                 )}
             </div>
         </div>
