@@ -34,6 +34,7 @@
     - `AnalystAgent` (Backend) updated to recognize `/tax-live` context.
     - Agent can now "see" the active form and offer specific assistance.
     - **Split View Layout**: Workspace shifted left to accommodate the Chat Window side-by-side with the form.
+    - **IEWS Management**: New Dashboard Tab for managing Year-Based TOI Packages (e.g. 2025). Creates empty document sets for the Agent to fill.
     - **Real-Time Filling**: Agent pushes data to the form live.
     - **Self-Healing**: Agent detects "Export Sales" and *changes the form structure* (Schema) on the fly to add new tax sections.
 
