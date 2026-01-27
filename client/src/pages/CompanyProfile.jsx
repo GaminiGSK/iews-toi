@@ -3,7 +3,8 @@ import axios from 'axios';
 import {
     Loader2, CheckCircle, Table, Save, X, Eye, FileText, CloudUpload,
     LayoutDashboard, PieChart, Users, Receipt, RefreshCw, BarChart3,
-    FileSpreadsheet, Landmark, ChevronRight, Calculator
+    FileSpreadsheet, Landmark, ChevronRight, Calculator, Shield,
+    ShieldCheck, TrendingUp, Scale, Tag, DollarSign, LogOut, BookOpen
 } from 'lucide-react';
 import DigitalCertificate from '../components/DigitalCertificate';
 
@@ -126,31 +127,161 @@ export default function CompanyProfile() {
 
     // --- Sub-Components ---
 
-    const renderHome = () => (
-        <div className="max-w-4xl mx-auto pt-20 px-6 animate-fade-in text-white">
-            <h1 className="text-3xl font-bold mb-2">Welcome, <span className="text-blue-400">{formData.companyNameEn || formData.companyCode || 'Admin'}</span></h1>
-            <p className="text-blue-200 mb-12">Manage your company entity and financial data with AI precision.</p>
+    const renderHome = () => {
+        const cards = [
+            {
+                id: 'iews',
+                title: 'IEWS',
+                desc: 'Enterprise Work System. Manage workflow packages.',
+                icon: Shield,
+                color: 'blue',
+                badge: 'NEW'
+            },
+            {
+                id: 'bank',
+                title: 'Bank Statements',
+                desc: 'Upload monthly statements, parse transactions via AI, and sync data.',
+                icon: PieChart,
+                color: 'green'
+            },
+            {
+                id: 'ledger',
+                title: 'General Ledger',
+                desc: 'View chronological financial history of all audited transactions.',
+                icon: BookOpen,
+                color: 'purple'
+            },
+            {
+                id: 'trial',
+                title: 'Trial Balance',
+                desc: 'View Unadjusted & Adjusted Trial Balance reports.',
+                icon: Scale,
+                color: 'cyan'
+            },
+            {
+                id: 'financial',
+                title: 'Financial Stmts',
+                desc: 'Generate final audited reports (Income, Balance Sheet, Cash Flow).',
+                icon: TrendingUp,
+                color: 'indigo'
+            },
+            {
+                id: 'toi',
+                title: 'TOI & ACAR',
+                desc: 'Live Tax Form, Tax on Income & ACAR Compliance.',
+                icon: ShieldCheck,
+                color: 'red'
+            },
+            {
+                id: 'profile',
+                title: 'Company Profile',
+                desc: 'Update official registration details, MOC certificates, and shareholders.',
+                icon: FileText,
+                color: 'blue'
+            },
+            {
+                id: 'codes',
+                title: 'Accounting Codes',
+                desc: 'Manage Chart of Accounts codes and standard descriptions.',
+                icon: Tag,
+                color: 'orange'
+            },
+            {
+                id: 'currency',
+                title: 'Currency Exchange',
+                desc: 'Set Annual Exchange Rates (USD to KHR) for compliance.',
+                icon: DollarSign,
+                color: 'teal'
+            },
+        ];
 
-            <div className="grid md:grid-cols-2 gap-6">
-
-
-                <div
-                    onClick={() => setView('bank')}
-                    className="bg-[#1e293b] p-8 rounded-2xl shadow-xl border border-blue-900/50 cursor-pointer hover:border-green-500 transition group relative overflow-hidden"
-                >
-                    <div className="absolute top-4 right-4 bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg animate-pulse z-20">
-                        NEW
+        return (
+            <div className="min-h-screen bg-[#0f172a] text-white animate-fade-in overflow-x-hidden">
+                {/* TOP HEADER */}
+                <header className="px-8 py-4 border-b border-gray-800/50 flex items-center justify-between backdrop-blur-md sticky top-0 z-[100] bg-[#0f172a]/80">
+                    <div className="flex items-center gap-2">
+                        <div className="bg-blue-600 p-1.5 rounded-lg shadow-lg shadow-blue-900/40">
+                            <Users size={18} className="text-white" />
+                        </div>
+                        <h1 className="text-lg font-bold tracking-tight">GK SMART <span className="text-gray-500 font-normal">& Ai</span></h1>
                     </div>
-                    <div className="absolute inset-0 bg-gradient-to-br from-green-600/5 to-transparent opacity-0 group-hover:opacity-100 transition"></div>
-                    <div className="w-12 h-12 bg-green-900/50 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition border border-green-800">
-                        <Table className="text-green-400" />
+                </header>
+
+                <main className="max-w-7xl mx-auto px-8 py-16">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-16">
+                        <div>
+                            <h2 className="text-4xl md:text-5xl font-bold mb-3 tracking-tight">Welcome, <span className="text-white">{formData.companyNameEn || 'GK SMART'}</span></h2>
+                            <div className="flex items-center flex-wrap gap-3">
+                                <p className="text-gray-400 text-lg">Manage your entity and financial data with AI precision.</p>
+                                <span className="bg-gray-800/80 text-[10px] font-bold text-gray-400 px-2 py-0.5 rounded ring-1 ring-gray-700/50 backdrop-blur-sm">v2.3 Night</span>
+                            </div>
+                        </div>
+                        <button className="self-start md:self-center flex items-center gap-2 px-6 py-2.5 rounded-xl border border-gray-800 bg-[#1e293b]/50 text-red-500/90 font-bold text-sm hover:bg-red-500/10 transition-all active:scale-95 shadow-lg">
+                            Log Out
+                        </button>
                     </div>
-                    <h3 className="text-xl font-bold text-white mb-2 relative z-10">Income, Expenses, Withholding, Salaries</h3>
-                    <p className="text-gray-400 text-sm relative z-10">Manage monthly financial records, expenses, and salaries.</p>
-                </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {cards.map((card) => {
+                            const Icon = card.icon;
+                            const colors = {
+                                blue: 'from-blue-600/15 hover:border-blue-500/40 icon:bg-blue-500/20 text:text-blue-400',
+                                green: 'from-green-600/15 hover:border-green-500/40 icon:bg-green-500/20 text:text-green-400',
+                                purple: 'from-purple-600/15 hover:border-purple-500/40 icon:bg-purple-500/20 text:text-purple-400',
+                                cyan: 'from-cyan-600/15 hover:border-cyan-500/40 icon:bg-cyan-500/20 text:text-cyan-400',
+                                indigo: 'from-indigo-600/15 hover:border-indigo-500/40 icon:bg-indigo-500/20 text:text-indigo-400',
+                                red: 'from-red-600/15 hover:border-red-500/40 icon:bg-red-500/20 text:text-red-400',
+                                orange: 'from-orange-600/15 hover:border-orange-500/40 icon:bg-orange-500/20 text:text-orange-400',
+                                teal: 'from-teal-600/15 hover:border-teal-500/40 icon:bg-teal-500/20 text:text-teal-400',
+                            };
+
+                            const theme = colors[card.color] || colors.blue;
+                            const [glowBase, borderHover, iconBg, iconText] = theme.split(' ');
+
+                            return (
+                                <div
+                                    key={card.id}
+                                    onClick={() => {
+                                        if (card.id === 'bank' || card.id === 'iews') setView('bank');
+                                        else if (card.id === 'profile') setView('profile');
+                                    }}
+                                    className={`group relative bg-[#1e293b]/30 border border-gray-800/50 p-8 rounded-[2rem] cursor-pointer transition-all duration-500 hover:scale-[1.02] ${borderHover} overflow-hidden flex flex-col h-[280px] hover:shadow-2xl hover:shadow-black/50`}
+                                >
+                                    {/* Glassmorphic Gradient Glow */}
+                                    <div className={`absolute inset-0 bg-gradient-to-br ${glowBase} to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700`}></div>
+
+                                    {/* Badge */}
+                                    {card.badge && (
+                                        <div className="absolute top-6 right-6 z-20">
+                                            <span className="bg-blue-600 text-[10px] font-bold px-3 py-1 rounded-full text-white shadow-lg shadow-blue-900/50 ring-1 ring-blue-400/40 animate-pulse">
+                                                {card.badge}
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    {/* Icon Container */}
+                                    <div className={`w-14 h-14 rounded-2xl ${iconBg.split(':')[1]} border border-gray-700/30 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500 relative z-10 shadow-inner`}>
+                                        <Icon className={`${iconText.split(':')[1]} w-7 h-7`} />
+                                    </div>
+
+                                    {/* Text Content */}
+                                    <div className="relative z-10">
+                                        <h3 className="text-2xl font-bold mb-3 tracking-tight group-hover:text-white transition-colors duration-300">
+                                            {card.title}
+                                        </h3>
+                                        <p className="text-gray-400 text-sm leading-relaxed font-medium">
+                                            {card.desc}
+                                        </p>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </main>
             </div>
-        </div>
-    );
+        );
+    };
+
 
     const renderProfile = () => {
         // Mode 1: No file uploaded yet (Show Upload Box)
@@ -438,8 +569,8 @@ export default function CompanyProfile() {
                                         key={item.id}
                                         onClick={() => setSubView(item.id)}
                                         className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isActive
-                                                ? 'bg-blue-50 text-blue-600 shadow-sm'
-                                                : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                                            ? 'bg-blue-50 text-blue-600 shadow-sm'
+                                            : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
                                             }`}
                                     >
                                         <Icon size={18} />
