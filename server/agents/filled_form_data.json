@@ -1,0 +1,99 @@
+{
+  "filled_fields": [
+    {
+      "id": "tax_identification_number",
+      "value": null,
+      "reasoning": "The company's VAT/TIN is not provided in the context, so I cannot populate this field."
+    },
+    {
+      "id": "shareholder_name_1",
+      "value": null,
+      "reasoning": "Shareholder information is not provided in the context. I cannot populate this field."
+    },
+    {
+      "id": "shareholder_current_address_1",
+      "value": null,
+      "reasoning": "Shareholder information is not provided in the context. I cannot populate this field."
+    },
+    {
+      "id": "shareholder_position_1",
+      "value": null,
+      "reasoning": "Shareholder information is not provided in the context. I cannot populate this field."
+    },
+    {
+      "id": "shares_held_beginning_percentage_1",
+      "value": null,
+      "reasoning": "Shareholder information is not provided in the context. I cannot populate this field."
+    },
+    {
+      "id": "shares_held_beginning_amount_1",
+      "value": null,
+      "reasoning": "Shareholder information is not provided in the context. I cannot populate this field."
+    },
+    {
+      "id": "shares_held_end_percentage_1",
+      "value": null,
+      "reasoning": "Shareholder information is not provided in the context. I cannot populate this field."
+    },
+    {
+      "id": "shares_held_end_amount_1",
+      "value": null,
+      "reasoning": "Shareholder information is not provided in the context. I cannot populate this field."
+    },
+    {
+      "id": "registered_capital_1_1",
+      "value": null,
+      "reasoning": "Shareholder information is not provided in the context. I cannot populate this field."
+    },
+    {
+      "id": "registered_capital_total",
+      "value": null,
+      "reasoning": "Shareholder information is not provided in the context, and it depends on shareholder information. I cannot populate this field."
+    },
+    {
+      "id": "paid_up_capital_1_1",
+      "value": null,
+      "reasoning": "Shareholder information is not provided in the context. I cannot populate this field."
+    },
+    {
+      "id": "paid_up_capital_total",
+      "value": null,
+      "reasoning": "Shareholder information is not provided in the context, and it depends on shareholder information. I cannot populate this field."
+    },
+    {
+      "id": "employee_description_1",
+      "value": null,
+      "reasoning": "Employee information is not provided in the context. I cannot populate this field."
+    },
+    {
+      "id": "employee_position_1",
+      "value": null,
+      "reasoning": "Employee information is not provided in the context. I cannot populate this field."
+    },
+    {
+      "id": "employee_number_1",
+      "value": null,
+      "reasoning": "Employee information is not provided in the context. I cannot populate this field."
+    },
+    {
+      "id": "employee_salary_1",
+      "value": null,
+      "reasoning": "Employee information is not provided in the context. I cannot populate this field."
+    },
+    {
+      "id": "employee_fringe_benefits_1",
+      "value": null,
+      "reasoning": "Employee information is not provided in the context. I cannot populate this field."
+    },
+    {
+      "id": "total_employees_workers",
+      "value": null,
+      "reasoning": "Employee information is not provided in the context. I cannot populate this field."
+    },
+    {
+      "id": "taxable_salary_employees_workers",
+      "value": null,
+      "reasoning": "Employee information is not provided in the context. I cannot populate this field."
+    }
+  ]
+}

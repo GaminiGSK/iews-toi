@@ -2,7 +2,13 @@ import axios from 'axios';
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, X, Send, Sparkles, Bot, Paperclip } from 'lucide-react';
 
+import { useSocket } from '../context/SocketContext'; // Import Context
+
 const AIAssistant = () => {
+    // SOCKET
+    const socket = useSocket();
+    const [isConnected, setIsConnected] = useState(false);
+
     // STATE
     const [isOpen, setIsOpen] = useState(true); // Default Open
     const [messages, setMessages] = useState([
@@ -23,6 +29,35 @@ const AIAssistant = () => {
     useEffect(() => {
         scrollToBottom();
     }, [messages, isOpen, isThinking]);
+
+    // Socket Listeners
+    useEffect(() => {
+        if (!socket) return;
+
+        setIsConnected(socket.connected);
+
+        const onConnect = () => setIsConnected(true);
+        const onDisconnect = () => setIsConnected(false);
+        const onAgentMessage = (data) => {
+            setMessages(prev => [...prev, {
+                role: 'assistant',
+                text: data.text || "Update received.",
+                isSystem: data.isSystem,
+                toolAction: data.toolAction
+            }]);
+            if (!isOpen) setIsOpen(true); // Auto-open on message
+        };
+
+        socket.on('connect', onConnect);
+        socket.on('disconnect', onDisconnect);
+        socket.on('agent:message', onAgentMessage);
+
+        return () => {
+            socket.off('connect', onConnect);
+            socket.off('disconnect', onDisconnect);
+            socket.off('agent:message', onAgentMessage);
+        };
+    }, [socket, isOpen]);
 
     // HANDLERS
     const handleSend = async () => {
@@ -126,8 +161,8 @@ const AIAssistant = () => {
                             <div>
                                 <h3 className="font-extrabold text-2xl tracking-wide text-white drop-shadow-sm">GK BLUE AGENT</h3>
                                 <div className="flex items-center gap-2 opacity-90 mt-1">
-                                    <span className="w-3 h-3 rounded-full bg-blue-400 animate-pulse box-shadow-glow"></span>
-                                    <span className="text-sm font-bold uppercase tracking-wider text-blue-200">Online</span>
+                                    <span className={`w-3 h-3 rounded-full ${isConnected ? 'bg-emerald-400' : 'bg-red-500'} animate-pulse box-shadow-glow`}></span>
+                                    <span className={`text-sm font-bold uppercase tracking-wider ${isConnected ? 'text-blue-200' : 'text-red-400'}`}>{isConnected ? 'Online' : 'Offline'}</span>
                                 </div>
                             </div>
                         </div>

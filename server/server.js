@@ -77,9 +77,32 @@ const startServer = async () => {
             console.error("Auth init error", e);
         }
 
+        // Initialize Socket.io (Phase 4: Neural Link)
+        const http = require('http');
+        const { Server } = require('socket.io');
+        const server = http.createServer(app);
+
+        // Export io for Agents to use
+        const io = new Server(server, {
+            cors: {
+                origin: "*", // allow all for dev/demo
+                methods: ["GET", "POST"]
+            }
+        });
+
+        global.io = io; // Make accessible to Agents
+
+        io.on('connection', (socket) => {
+            console.log(`[Neural Link] Client Connected: ${socket.id}`);
+
+            socket.on('disconnect', () => {
+                console.log(`[Neural Link] Client Disconnected: ${socket.id}`);
+            });
+        });
+
         // Start Server ONLY after DB is ready
-        app.listen(PORT, () => {
-            console.log(`Server running on port ${PORT}`);
+        server.listen(PORT, () => {
+            console.log(`Server running on port ${PORT} (with Neural Link active)`);
         });
 
     } catch (err) {

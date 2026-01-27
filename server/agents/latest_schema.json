@@ -1,0 +1,156 @@
+{
+  "schema": [
+    {
+      "id": "tax_identification_number",
+      "label": "លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖ Tax Identification Number (TIN):",
+      "type": "number",
+      "intent": "To identify the taxpayer's tax identification number.",
+      "logic": null,
+      "visual_anchor": "Right side of the header section, below CAPITAL CONTRIBUTIONS AS AT."
+    },
+    {
+      "id": "shareholder_name_1",
+      "label": "Shareholder's Name\n(Name of Individual/Legal Entity)",
+      "type": "text",
+      "intent": "To record the name of the shareholder.",
+      "logic": null,
+      "visual_anchor": "Left column of the Capital Contributions table, below the table header."
+    },
+    {
+      "id": "shareholder_current_address_1",
+      "label": "Current Address\nof Shareholder",
+      "type": "text",
+      "intent": "To record the current address of the shareholder.",
+      "logic": null,
+      "visual_anchor": "Column next to 'Shareholder's Name', in the Capital Contributions table."
+    },
+    {
+      "id": "shareholder_position_1",
+      "label": "Position in\nthe Enterprise",
+      "type": "text",
+      "intent": "To record the position of the shareholder in the enterprise.",
+      "logic": null,
+      "visual_anchor": "Column next to 'Current Address of Shareholder', in the Capital Contributions table."
+    },
+    {
+      "id": "shares_held_beginning_percentage_1",
+      "label": "Beginning of the Period\n%",
+      "type": "number",
+      "intent": "To record the percentage of shares held at the beginning of the period.",
+      "logic": null,
+      "visual_anchor": "Column under 'Beginning of the Period', in the 'Shares Held' section of the Capital Contributions table."
+    },
+    {
+      "id": "shares_held_beginning_amount_1",
+      "label": "Beginning of the Period\nAmount",
+      "type": "currency",
+      "intent": "To record the amount of shares held at the beginning of the period.",
+      "logic": null,
+      "visual_anchor": "Column next to the percentage column under 'Beginning of the Period', in the 'Shares Held' section of the Capital Contributions table."
+    },
+    {
+      "id": "shares_held_end_percentage_1",
+      "label": "End of the Period\n%",
+      "type": "number",
+      "intent": "To record the percentage of shares held at the end of the period.",
+      "logic": null,
+      "visual_anchor": "Column under 'End of the Period', in the 'Shares Held' section of the Capital Contributions table."
+    },
+    {
+      "id": "shares_held_end_amount_1",
+      "label": "End of the Period\nAmount",
+      "type": "currency",
+      "intent": "To record the amount of shares held at the end of the period.",
+      "logic": null,
+      "visual_anchor": "Column next to the percentage column under 'End of the Period', in the 'Shares Held' section of the Capital Contributions table."
+    },
+    {
+      "id": "registered_capital_1_1",
+      "label": "A. Registered Capital / Share Capital",
+      "type": "text",
+      "intent": "Record the registered capital for shareholder 1",
+      "logic": null,
+      "visual_anchor": "Below the 'Shareholder's Name' section."
+    },
+    {
+      "id": "registered_capital_total",
+      "label": "Total",
+      "type": "text",
+      "intent": "To store the total registered capital.",
+      "logic": "Sum of all registered capital entries.",
+      "visual_anchor": "Below the registered capital entries."
+    },
+    {
+      "id": "paid_up_capital_1_1",
+      "label": "B. Paid up Capital / Share Capital",
+      "type": "text",
+      "intent": "Record the paid up capital for shareholder 1",
+      "logic": null,
+      "visual_anchor": "Below the 'Registered Capital' section."
+    },
+    {
+      "id": "paid_up_capital_total",
+      "label": "Total",
+      "type": "text",
+      "intent": "To store the total paid up capital.",
+      "logic": "Sum of all paid up capital entries.",
+      "visual_anchor": "Below the paid up capital entries."
+    },
+    {
+      "id": "employee_description_1",
+      "label": "Description",
+      "type": "text",
+      "intent": "To describe the employee category.",
+      "logic": null,
+      "visual_anchor": "Left column of the 'INFORMATION ABOUT EMPLOYEES DURING THE PERIOD' table."
+    },
+    {
+      "id": "employee_position_1",
+      "label": "Position",
+      "type": "text",
+      "intent": "To record the position of the employee.",
+      "logic": null,
+      "visual_anchor": "Column next to 'Description' in the employee information table."
+    },
+    {
+      "id": "employee_number_1",
+      "label": "Number",
+      "type": "number",
+      "intent": "To record the number of employees in that category.",
+      "logic": null,
+      "visual_anchor": "Column next to 'Position' in the employee information table."
+    },
+    {
+      "id": "employee_salary_1",
+      "label": "Salary Excluding Fringe Benefits",
+      "type": "currency",
+      "intent": "To record the salary excluding fringe benefits.",
+      "logic": null,
+      "visual_anchor": "Column next to 'Number' in the employee information table."
+    },
+    {
+      "id": "employee_fringe_benefits_1",
+      "label": "Fringe Benefits",
+      "type": "currency",
+      "intent": "To record the fringe benefits.",
+      "logic": null,
+      "visual_anchor": "Column next to 'Salary Excluding Fringe Benefits' in the employee information table."
+    },
+    {
+      "id": "total_employees_workers",
+      "label": "Total Employees and Workers",
+      "type": "number",
+      "intent": "To record the total number of employees and workers.",
+      "logic": null,
+      "visual_anchor": "Bottom section of the employee information table."
+    },
+    {
+      "id": "taxable_salary_employees_workers",
+      "label": "Taxable Salary for Employees and Workers",
+      "type": "currency",
+      "intent": "To record the taxable salary for employees and workers.",
+      "logic": null,
+      "visual_anchor": "Bottom row of the employee information table."
+    }
+  ]
+}
