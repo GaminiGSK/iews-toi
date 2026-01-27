@@ -33,6 +33,7 @@
     - `AIAssistant.jsx` now tracks user navigation (Route-Awareness).
     - `AnalystAgent` (Backend) updated to recognize `/tax-live` context.
     - Agent can now "see" the active form and offer specific assistance.
+    - **Split View Layout**: Workspace shifted left to accommodate the Chat Window side-by-side with the form.
     - **Real-Time Filling**: Agent pushes data to the form live.
     - **Self-Healing**: Agent detects "Export Sales" and *changes the form structure* (Schema) on the fly to add new tax sections.
 
