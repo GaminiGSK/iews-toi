@@ -442,7 +442,7 @@ export default function CompanyProfile() {
                 {/* --- ROW 1: CORE WORKFLOW --- */}
 
                 {/* 1. IEWS (Integrity & Enterprise Work System) */}
-                <div onClick={() => setView('iews')} className="group relative bg-gradient-to-br from-indigo-900/40 to-slate-800/50 hover:bg-slate-800/80 border border-indigo-500/30 hover:border-indigo-400 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-indigo-900/30">
+                <div onClick={() => window.open('https://iews-toi-standalone-588941282431.europe-west1.run.app/dashboard', '_blank')} className="group relative bg-gradient-to-br from-indigo-900/40 to-slate-800/50 hover:bg-slate-800/80 border border-indigo-500/30 hover:border-indigo-400 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-indigo-900/30">
                     <div className="absolute top-0 right-0 p-3">
                         <span className="bg-indigo-500 text-white text-[10px] uppercase font-bold px-2 py-1 rounded-full animate-pulse shadow-lg shadow-indigo-500/50">New</span>
                     </div>
