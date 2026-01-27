@@ -100,47 +100,47 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                 {/* Form Code Top Left - Larger Font */}
                 <div className="absolute -top-6 -left-2 font-bold text-2xl tracking-wide font-serif text-black">TOI 01 / I</div>
 
-                <div className="flex justify-between items-start mt-8">
+                <div className="flex justify-between items-start mt-10 px-4">
                     {/* Left Column: Ministry & Dept */}
                     <div className="flex flex-col items-center w-[35%] text-center">
-                        <h3 className="font-khmer font-bold text-xs mb-1">ក្រសួងសេដ្ឋកិច្ចនិងហិរញ្ញវត្ថុ</h3>
-                        <h4 className="font-bold text-[11px] uppercase border-b-2 border-black pb-0.5 mb-1 w-full max-w-[240px] tracking-wide">MINISTRY OF ECONOMY AND FINANCE</h4>
+                        <h3 className="font-khmer font-bold text-xs mb-1.5 leading-relaxed">ក្រសួងសេដ្ឋកិច្ចនិងហិរញ្ញវត្ថុ</h3>
+                        <h4 className="font-serif font-bold text-[12px] uppercase border-b border-black pb-1 mb-2 w-full max-w-[260px] tracking-wide leading-none">MINISTRY OF ECONOMY AND FINANCE</h4>
 
-                        <h3 className="font-khmer font-bold text-xs mb-1">អគ្គនាយកដ្ឋានពន្ធដារ</h3>
-                        <h4 className="font-bold text-[11px] uppercase mb-4 w-full max-w-[240px] tracking-wide">GENERAL DEPARTMENT OF TAXATION</h4>
+                        <h3 className="font-khmer font-bold text-xs mb-1.5 leading-relaxed">អគ្គនាយកដ្ឋានពន្ធដារ</h3>
+                        <h4 className="font-serif font-bold text-[12px] uppercase mb-5 w-full max-w-[260px] tracking-wide leading-none">GENERAL DEPARTMENT OF TAXATION</h4>
 
-                        {/* Form Name Box - Straight (Removed Rotation) */}
-                        <div className="border-2 border-black p-1 bg-slate-100 text-center w-full max-w-[260px] shadow-[3px_3px_0px_rgba(0,0,0,0.15)]">
-                            <h3 className="font-khmer font-bold text-sm leading-tight text-black">ទម្រង់ ពបច ០១ / FORM TOI 01</h3>
+                        {/* Form Name Box */}
+                        <div className="border border-black px-2 py-1.5 bg-slate-50/50 text-center w-full max-w-[280px] shadow-[2px_2px_0px_rgba(0,0,0,0.1)]">
+                            <h3 className="font-khmer font-bold text-sm text-black">ទម្រង់ ពបច ០១ / FORM TOI 01</h3>
                         </div>
-                        <p className="font-khmer text-[9px] mt-2 leading-tight text-slate-600">(មាត្រា ២៩ ថ្មី នៃច្បាប់ស្តីពីសារពើពន្ធ )</p>
-                        <p className="text-[9px] leading-tight text-slate-600">(Article 29 New of the Law on Taxation)</p>
+                        <p className="font-khmer text-[9px] mt-2.5 leading-none text-slate-700">(មាត្រា ២៩ ថ្មី នៃច្បាប់ស្តីពីសារពើពន្ធ )</p>
+                        <p className="font-serif text-[10px] italic leading-none text-slate-700 mt-1">(Article 29 New of the Law on Taxation)</p>
                     </div>
 
-                    {/* Center Column: Logo - Increased 25% (w-40 h-40) */}
-                    <div className="w-[30%] flex flex-col items-center justify-start pt-0">
-                        <div className="w-40 h-40 relative mb-2">
-                            {/* Use the Replica Image with Multiply Blend for 'Ink' effect */}
+                    {/* Center Column: Logo */}
+                    <div className="w-[30%] flex flex-col items-center justify-start -mt-2">
+                        <div className="w-44 h-44 relative mb-2 transition-transform hover:scale-105 duration-500">
                             <img
                                 src="/assets/gdt_seal.png"
                                 alt="GDT Seal"
-                                className="w-full h-full object-contain mix-blend-multiply opacity-90"
+                                className="w-full h-full object-contain mix-blend-multiply opacity-90 drop-shadow-sm"
                             />
                         </div>
                     </div>
 
                     {/* Right Column: Kingdom */}
                     <div className="flex flex-col items-center w-[35%] text-center pt-2">
-                        <h3 className="font-khmer font-bold text-sm mb-1 text-black">ព្រះរាជាណាចក្រកម្ពុជា</h3>
-                        <h4 className="font-bold text-sm uppercase mb-2 text-black tracking-widest">KINGDOM OF CAMBODIA</h4>
-                        <h3 className="font-khmer font-bold text-xs mb-1 text-black">ជាតិ សាសនា ព្រះមហាក្សត្រ</h3>
-                        <h4 className="font-bold text-[10px] uppercase mb-1 text-black tracking-widest">NATION RELIGION KING</h4>
+                        <h3 className="font-khmer font-bold text-sm mb-1.5 text-black">ព្រះរាជាណាចក្រកម្ពុជា</h3>
+                        <h4 className="font-serif font-bold text-sm uppercase mb-3 text-black tracking-[0.2em]">KINGDOM OF CAMBODIA</h4>
 
-                        {/* Fancy Divider */}
-                        <div className="flex items-center gap-1 opacity-100 mt-1">
-                            <div className="h-[2px] bg-black w-16"></div>
-                            <div className="text-sm font-bold">✤</div>
-                            <div className="h-[2px] bg-black w-16"></div>
+                        <h3 className="font-khmer font-bold text-xs mb-1.5 text-black">ជាតិ សាសនា ព្រះមហាក្សត្រ</h3>
+                        <h4 className="font-serif font-bold text-[10px] uppercase mb-2 text-black tracking-[0.2em]">NATION RELIGION KING</h4>
+
+                        {/* Decorative Divider */}
+                        <div className="flex items-center gap-2 opacity-80 mt-1">
+                            <div className="h-[1px] bg-black w-12 icon-line"></div>
+                            <div className="text-xs font-serif min-w-[30px] text-center">✤ ✤</div>
+                            <div className="h-[1px] bg-black w-12 icon-line"></div>
                         </div>
                     </div>
                 </div>
