@@ -354,7 +354,7 @@ export default function CompanyProfile() {
                 <div className="md:col-span-2 space-y-6 overflow-y-auto pr-2 pb-20">
                     <div className="bg-slate-800/50 border border-slate-700 rounded-3xl p-6 backdrop-blur-xl">
                         <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
-                            <Book className="text-rose-400" /> Tax Document Packages
+                            <Book className="text-rose-400" /> TOI Document Packages
                         </h2>
 
                         <div className="space-y-4">
