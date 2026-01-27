@@ -51,13 +51,36 @@ const FieldInput = ({ field, value, onChange, error }) => {
         );
     }
 
+    if (field.type === 'checkbox-group') {
+        return (
+            <div className="flex flex-wrap gap-4 mt-2">
+                {field.options?.map(opt => (
+                    <label key={opt.value} className="flex items-center gap-2 cursor-pointer group">
+                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${value === opt.value ? 'bg-blue-500 border-blue-500' : 'border-slate-600 group-hover:border-slate-400'}`}>
+                            {value === opt.value && <CheckCircle2 size={14} className="text-white" />}
+                        </div>
+                        <input
+                            type="radio"
+                            name={field.key}
+                            value={opt.value}
+                            checked={value === opt.value}
+                            onChange={() => onChange(field.key, opt.value)} // Single select for now like Radio
+                            className="hidden"
+                        />
+                        <span className={`text-sm font-medium ${value === opt.value ? 'text-blue-300' : 'text-slate-400'}`}>{opt.label}</span>
+                    </label>
+                ))}
+            </div>
+        );
+    }
+
     // Default Text
     return (
         <input
             type={field.type || 'text'}
             value={value || ''}
             onChange={(e) => onChange(field.key, e.target.value)}
-            className={baseClasses}
+            className={`${baseClasses} ${field.className || ''}`}
             placeholder={field.placeholder}
             readOnly={field.readOnly}
         />
@@ -68,56 +91,54 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
     if (!schema) return <div className="p-8 text-center text-slate-500 animate-pulse">Waiting for Schema...</div>;
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8 animate-in slide-in-from-bottom-5 fade-in duration-500">
+        <div className="max-w-5xl mx-auto space-y-4 animate-in slide-in-from-bottom-5 fade-in duration-500">
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-slate-700/50 pb-6">
-                <div>
-                    <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">
-                        {schema.title}
-                    </h1>
-                    <p className="text-slate-400 mt-2 text-lg">{schema.description}</p>
+            <div className="flex items-center justify-between border-b2 border-slate-700 pb-4 mb-8">
+                {/* Simplified Header for print-like feel */}
+                <div className="text-center w-full">
+                    <h1 className="text-xl font-bold text-white uppercase tracking-widest">{schema.title}</h1>
+                    <p className="text-slate-400 text-sm font-serif italic">{schema.description}</p>
                 </div>
-                {schema.status === 'draft' && (
-                    <span className="bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-3 py-1 rounded-full text-sm font-bold uppercase tracking-wider animate-pulse">
-                        Draft Mode
-                    </span>
-                )}
             </div>
 
             {/* Sections */}
             {schema.sections?.map((section) => (
-                <div key={section.id} className="bg-slate-900/50 border border-slate-800 rounded-3xl p-8 shadow-xl backdrop-blur-sm relative overflow-hidden group hover:border-slate-700/80 transition-all">
-                    {/* Section Decorator */}
-                    <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-blue-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    
-                    <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
-                        <span className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400">
-                            {section.icon === 'calc' ? <Calculator size={18} /> : 
-                             section.icon === 'check' ? <CheckCircle2 size={18} /> : 
-                             <div className="w-2 h-2 rounded-full bg-blue-400"></div>}
-                        </span>
-                        {section.title}
-                    </h2>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {section.fields?.map((field) => (
-                            <div key={field.key} className={field.fullWidth ? "md:col-span-2" : ""}>
-                                <label className="block text-sm font-semibold text-slate-400 mb-2 ml-1">
-                                    {field.label}
-                                    {field.required && <span className="text-red-400 ml-1">*</span>}
-                                </label>
-                                <FieldInput
-                                    field={field}
-                                    value={data[field.key]}
-                                    onChange={onChange}
-                                />
-                                {field.help && (
-                                    <p className="text-xs text-slate-500 mt-2 ml-1 flex items-center gap-1">
-                                        <AlertCircle size={12} /> {field.help}
-                                    </p>
-                                )}
-                            </div>
-                        ))}
+                <div key={section.id} className="bg-slate-900 border border-slate-700/50 p-6 rounded-xl shadow-lg relative print:shadow-none print:border-black print:bg-white text-left">
+
+                    {section.title && (
+                        <h2 className="text-sm font-bold text-blue-400 uppercase tracking-wider mb-4 border-b border-slate-800 pb-2">
+                            {section.title}
+                        </h2>
+                    )}
+
+                    {/* 12 Column Grid System for Exact Form Layout */}
+                    <div className="grid grid-cols-12 gap-x-4 gap-y-6">
+                        {section.fields?.map((field) => {
+                            // Calculate colSpan class specifically
+                            const spanClass = field.colSpan ? `col-span-${field.colSpan}` : 'col-span-12';
+                            // Start Col class
+                            const startClass = field.colStart ? `col-start-${field.colStart}` : '';
+
+                            return (
+                                <div key={field.key} className={`${spanClass} ${startClass}`}>
+                                    {/* Traditional Form Label Look */}
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">
+                                        {field.label}
+                                        {field.required && <span className="text-red-400 ml-1">*</span>}
+                                    </label>
+                                    <FieldInput
+                                        field={field}
+                                        value={data[field.key]}
+                                        onChange={onChange}
+                                    />
+                                    {field.help && (
+                                        <p className="text-[10px] text-slate-500 mt-1 italic">
+                                            {field.help}
+                                        </p>
+                                    )}
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             ))}
