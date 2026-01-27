@@ -2,16 +2,18 @@ import React from 'react';
 import { Calculator, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 const BoxGridInput = ({ length, value, onChange, format }) => {
-    const chars = (value || '').toString().split('');
+    // Filter out non-alphanumeric chars for display in boxes
+    const cleanValue = (value || '').toString().replace(/[^a-zA-Z0-9]/g, '');
+    const chars = cleanValue.split('');
 
     const handleChange = (index, char) => {
+        // Find existing non-box chars to preserve them if needed? 
+        // For simplicity, we just treat boxes as the source of truth for the clean string.
         const newVal = [...chars];
-        // Ensure newVal has enough length
         while (newVal.length < length) newVal.push('');
         newVal[index] = char.slice(-1);
         onChange(newVal.join(''));
 
-        // Auto focus next box
         if (char && index < length - 1) {
             const nextInput = document.getElementById(`box-${index + 1}`);
             if (nextInput) nextInput.focus();
@@ -25,7 +27,6 @@ const BoxGridInput = ({ length, value, onChange, format }) => {
         }
     };
 
-    // Split length into segments if format exists (e.g. "3-9" for TIN)
     let renderedBoxes = [];
     let currentIdx = 0;
 
@@ -44,13 +45,13 @@ const BoxGridInput = ({ length, value, onChange, format }) => {
                         value={chars[idx] || ''}
                         onChange={(e) => handleChange(idx, e.target.value)}
                         onKeyDown={(e) => handleKeyDown(idx, e)}
-                        className="w-7 h-8 border border-black text-center font-serif font-bold text-lg bg-white focus:bg-blue-50 outline-none"
+                        className="w-6 h-7 border border-black text-center font-serif font-bold text-[14px] bg-white focus:bg-blue-50 outline-none"
                     />
                 );
             }
-            renderedBoxes.push(<div key={`seg-${pIdx}`} className="flex gap-[-1px]">{segment}</div>);
+            renderedBoxes.push(<div key={`seg-${pIdx}`} className="flex">{segment}</div>);
             if (pIdx < parts.length - 1) {
-                renderedBoxes.push(<span key={`dash-${pIdx}`} className="mx-1 font-bold">-</span>);
+                renderedBoxes.push(<span key={`dash-${pIdx}`} className="mx-0.5 font-bold text-xs">-</span>);
             }
         });
     } else {
@@ -65,7 +66,7 @@ const BoxGridInput = ({ length, value, onChange, format }) => {
                     value={chars[idx] || ''}
                     onChange={(e) => handleChange(idx, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(idx, e)}
-                    className="w-7 h-8 border border-black text-center font-serif font-bold text-lg bg-white focus:bg-blue-50 outline-none"
+                    className="w-6 h-7 border border-black text-center font-serif font-bold text-[14px] bg-white focus:bg-blue-50 outline-none"
                 />
             );
         }
@@ -79,11 +80,16 @@ const BoxGridInput = ({ length, value, onChange, format }) => {
 };
 
 const FieldInput = ({ field, value, onChange, error }) => {
-    // Official Paper Input Style (Transparent with bottom border or box)
-    const baseClasses = "w-full bg-transparent border-b border-dotted border-slate-400 focus:border-blue-600 outline-none transition-all font-mono text-blue-900 font-bold px-1";
+    const baseClasses = "w-full bg-transparent border-b border-dotted border-slate-400 focus:border-black outline-none transition-all font-mono text-blue-900 font-bold px-1 text-sm";
 
     if (field.type === 'boxes') {
-        return <BoxGridInput length={field.length} value={value} onChange={(val) => onChange(field.key, val)} format={field.format} />;
+        return (
+            <div className="flex items-center gap-2">
+                {field.labelKh === "ចាប់ពីថ្ងៃទី" && <span className="text-black font-bold text-sm">▶</span>}
+                <BoxGridInput length={field.length} value={value} onChange={(val) => onChange(field.key, val)} format={field.format} />
+                {field.labelKh === "ដល់ថ្ងៃទី" && <span className="text-black px-2 font-khmer text-[10px] font-bold"></span>}
+            </div>
+        );
     }
 
     if (field.type === 'currency') {
@@ -225,32 +231,26 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                     </div>
                 </div>
 
-                {/* Main Title Area */}
-                <div className="text-center mt-10">
-                    <h1 className="font-khmer font-bold text-xl mb-2 text-black tracking-wide">{schema.title || "លិខិតប្រកាសពន្ធលើប្រាក់ចំណូលប្រចាំឆ្នាំ"}</h1>
-                    <div className="flex items-end justify-center gap-4 relative">
-                        <h2 className="font-bold text-lg uppercase translate-y-1 text-black text-shadow-sm">{schema.titleKh || "ANNUAL INCOME TAX RETURN FOR THE YEAR ENDED"}</h2>
+                {/* Main Title Area - Paper Density */}
+                <div className="text-center mt-12 mb-6">
+                    <div className="flex flex-col items-center justify-center gap-1">
+                        <h1 className="font-khmer font-bold text-lg text-black leading-none">{schema.title || "លិខិតប្រកាសពន្ធលើប្រាក់ចំណូលប្រចាំឆ្នាំ"}</h1>
+                        <div className="flex items-center gap-4">
+                            <h2 className="font-serif font-bold text-[14px] uppercase text-black">{schema.titleKh || "ANNUAL INCOME TAX RETURN FOR THE YEAR ENDED"}</h2>
 
-                        {/* The 4 Year Boxes Replica - Dynamic Fill */}
-                        <div className="flex gap-1 ml-2 mb-0.5">
-                            {(() => {
-                                // Extract Year from taxYear string (Assuming DD-MM-YYYY or YYYY)
-                                let yearChars = ['', '', '', ''];
-                                if (data.taxYear) {
-                                    const match = data.taxYear.match(/(\d{4})/);
-                                    if (match) {
-                                        yearChars = match[0].split('');
-                                    } else if (data.taxYear.length === 4) {
-                                        yearChars = data.taxYear.split('');
-                                    }
-                                }
-
-                                return yearChars.map((char, i) => (
-                                    <div key={i} className="w-8 h-9 border-2 border-black bg-white shadow-sm flex items-center justify-center font-mono font-bold text-xl">
-                                        {char}
-                                    </div>
-                                ));
-                            })()}
+                            {/* The 4 Year Boxes Replica */}
+                            <div className="flex gap-1">
+                                {(() => {
+                                    const yearStr = (data.taxYear || '2023').toString().replace(/[^0-9]/g, '').slice(-4);
+                                    let yearChars = yearStr.split('');
+                                    while (yearChars.length < 4) yearChars.unshift('0');
+                                    return yearChars.map((char, i) => (
+                                        <div key={i} className="w-6 h-8 border-[1.5px] border-black bg-white flex items-center justify-center font-serif font-bold text-lg">
+                                            {char}
+                                        </div>
+                                    ));
+                                })()}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -273,32 +273,31 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                         )}
 
                         {/* Fields Grid */}
-                        <div className="grid grid-cols-12 border-b border-black last:border-0">
+                        <div className="grid grid-cols-12 border-b border-black last:border-0 divide-x divide-black">
                             {section.fields?.map((field) => {
                                 const spanClass = field.colSpan ? `col-span-${field.colSpan}` : 'col-span-12';
 
                                 return (
                                     <div
                                         key={field.key}
-                                        className={`${spanClass} border-r border-black last:border-r-0 flex flex-col min-h-[40px] relative`}
-                                        style={{ gridColumn: field.colStart ? `span ${field.colSpan} / span ${field.colSpan}` : undefined }}
+                                        className={`${spanClass} flex flex-col min-h-[48px] relative bg-white`}
                                     >
-                                        {/* Serial Number in a tiny Box if present */}
+                                        {/* Serial Number Box - Official Style */}
                                         {field.number && (
-                                            <div className="absolute top-0 left-0 w-6 h-full border-r border-black font-bold text-xs flex items-center justify-center bg-slate-50">
+                                            <div className="absolute top-0 left-0 w-7 h-full border-r border-black font-bold text-[11px] flex items-center justify-center bg-slate-50">
                                                 {field.number}
                                             </div>
                                         )}
 
-                                        <div className={`${field.number ? 'ml-7' : 'ml-1'} p-1 h-full flex flex-col justify-between`}>
-                                            {/* Label Area */}
-                                            <div className="leading-[1.1]">
-                                                {field.labelKh && <span className="font-khmer text-[10px] block font-bold">{field.labelKh}</span>}
-                                                {field.label && <span className="text-[9px] block uppercase font-medium">{field.label}</span>}
+                                        <div className={`${field.number ? 'ml-8' : 'ml-1.5'} p-1.5 h-full flex flex-col`}>
+                                            {/* Label Area - Prevent Overlap */}
+                                            <div className="flex flex-col mb-1.5 leading-tight">
+                                                {field.labelKh && <span className="font-khmer text-[11px] block font-bold text-black">{field.labelKh}</span>}
+                                                {field.label && <span className="text-[9px] block uppercase font-bold text-slate-700">{field.label}</span>}
                                             </div>
 
                                             {/* Input Area */}
-                                            <div className="mt-1">
+                                            <div className="mt-auto">
                                                 <FieldInput
                                                     field={field}
                                                     value={data[field.key]}
