@@ -163,4 +163,41 @@ router.delete('/templates/:id', async (req, res) => {
     }
 });
 
+// --- Tax Packages (TOI) Persistence ---
+const TaxPackage = require('../models/TaxPackage');
+
+// Get All Packages
+router.get('/packages', async (req, res) => {
+    try {
+        const packages = await TaxPackage.find().sort({ year: -1 });
+        res.json(packages);
+    } catch (err) {
+        console.error("Error fetching packages:", err);
+        res.status(500).send("Server Error");
+    }
+});
+
+// Create Package
+router.post('/packages', async (req, res) => {
+    try {
+        const { year } = req.body;
+        if (!year) return res.status(400).json({ message: 'Year is required' });
+
+        const existing = await TaxPackage.findOne({ year });
+        if (existing) return res.status(400).json({ message: 'Package for this year already exists' });
+
+        const newPackage = new TaxPackage({
+            year,
+            status: 'Draft',
+            progress: 0
+        });
+
+        await newPackage.save();
+        res.json(newPackage);
+    } catch (err) {
+        console.error("Error creating package:", err);
+        res.status(500).send("Server Error");
+    }
+});
+
 module.exports = router;

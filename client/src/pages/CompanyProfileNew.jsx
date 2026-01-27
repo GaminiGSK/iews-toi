@@ -13,10 +13,23 @@ export default function CompanyProfile() {
     const [view, setView] = useState('home'); // home, profile, bank, iews
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
-    const [toiPackages, setToiPackages] = useState([
-        { id: 'toi_2024', year: '2024', status: 'Draft', progress: 0 },
-        { id: 'toi_2023', year: '2023', status: 'Filed', progress: 100 },
-    ]);
+    const [toiPackages, setToiPackages] = useState([]);
+
+    // Fetch stored packages
+    const fetchToiPackages = async () => {
+        try {
+            const res = await axios.get('/api/tax/packages');
+            setToiPackages(res.data);
+        } catch (err) {
+            console.error("Failed to fetch TOI packages", err);
+        }
+    };
+
+    useEffect(() => {
+        if (view === 'tax_packages') {
+            fetchToiPackages();
+        }
+    }, [view]);
     const [createYear, setCreateYear] = useState('');
     const [uploadingBank, setUploadingBank] = useState(false);
     const [savingBank, setSavingBank] = useState(false);
@@ -250,7 +263,7 @@ export default function CompanyProfile() {
     // --- Sub-Components ---
 
     // --- IEWS View Logic (Tax Document Packages) ---
-    const handleCreatePackage = () => {
+    const handleCreatePackage = async () => {
         if (!createYear || createYear.length !== 4) {
             alert("Please enter a valid 4-digit year (e.g. 2025).");
             return;
@@ -259,9 +272,16 @@ export default function CompanyProfile() {
             alert("Package for this year already exists.");
             return;
         }
-        setToiPackages(prev => [{ id: `toi_${createYear}`, year: createYear, status: 'Draft', progress: 0 }, ...prev]);
-        setCreateYear('');
-        setMessage(`Created TOI Package for ${createYear}`);
+
+        try {
+            const res = await axios.post('/api/tax/packages', { year: createYear });
+            setToiPackages(prev => [res.data, ...prev]);
+            setCreateYear('');
+            setMessage(`Created TOI Package for ${createYear}`);
+        } catch (err) {
+            console.error(err);
+            alert(err.response?.data?.message || "Failed to create package.");
+        }
     };
 
     // --- IEWS Placeholder ---
