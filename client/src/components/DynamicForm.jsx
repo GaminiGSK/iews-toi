@@ -98,28 +98,28 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
             {/* --- OFFICIAL HEADER (REPLICA) --- */}
             <div className="relative mb-8 font-serif">
                 {/* Form Code Top Left - Larger Font */}
-                <div className="absolute -top-6 -left-2 font-bold text-2xl tracking-wide font-serif text-black">TOI 01 / I</div>
+                <div className="absolute top-0 left-0 font-bold text-2xl tracking-wide font-serif text-black">TOI 01 / I</div>
 
-                <div className="flex justify-between items-start mt-10 px-4">
+                <div className="flex justify-between items-start mt-12 px-0">
                     {/* Left Column: Ministry & Dept */}
                     <div className="flex flex-col items-center w-[35%] text-center">
                         <h3 className="font-khmer font-bold text-xs mb-1.5 leading-relaxed">ក្រសួងសេដ្ឋកិច្ចនិងហិរញ្ញវត្ថុ</h3>
-                        <h4 className="font-serif font-bold text-[12px] uppercase border-b border-black pb-1 mb-2 w-full max-w-[260px] tracking-wide leading-none">MINISTRY OF ECONOMY AND FINANCE</h4>
+                        <h4 className="font-serif font-bold text-[11px] uppercase border-b-2 border-black pb-1 mb-2 w-full max-w-[260px] tracking-wide leading-none">MINISTRY OF ECONOMY AND FINANCE</h4>
 
                         <h3 className="font-khmer font-bold text-xs mb-1.5 leading-relaxed">អគ្គនាយកដ្ឋានពន្ធដារ</h3>
-                        <h4 className="font-serif font-bold text-[12px] uppercase mb-5 w-full max-w-[260px] tracking-wide leading-none">GENERAL DEPARTMENT OF TAXATION</h4>
+                        <h4 className="font-serif font-bold text-[11px] uppercase mb-6 w-full max-w-[260px] tracking-wide leading-none">GENERAL DEPARTMENT OF TAXATION</h4>
 
                         {/* Form Name Box */}
-                        <div className="border border-black px-2 py-1.5 bg-slate-50/50 text-center w-full max-w-[280px] shadow-[2px_2px_0px_rgba(0,0,0,0.1)]">
-                            <h3 className="font-khmer font-bold text-sm text-black">ទម្រង់ ពបច ០១ / FORM TOI 01</h3>
+                        <div className="border-[2.5px] border-black px-4 py-2 bg-slate-50 relative ml-4 shadow-[4px_4px_0_black]">
+                            <h3 className="font-khmer font-bold text-sm text-black leading-none mb-1">ទម្រង់ ពបច ០១ / FORM TOI 01</h3>
                         </div>
-                        <p className="font-khmer text-[9px] mt-2.5 leading-none text-slate-700">(មាត្រា ២៩ ថ្មី នៃច្បាប់ស្តីពីសារពើពន្ធ )</p>
-                        <p className="font-serif text-[10px] italic leading-none text-slate-700 mt-1">(Article 29 New of the Law on Taxation)</p>
+                        <p className="font-khmer text-[9px] mt-4 leading-none text-slate-800">(មាត្រា ២៩ ថ្មី នៃច្បាប់ស្តីពីសារពើពន្ធ )</p>
+                        <p className="font-serif text-[10px] italic leading-none text-slate-800 mt-1">(Article 29 New of the Law on Taxation)</p>
                     </div>
 
                     {/* Center Column: Logo */}
-                    <div className="w-[30%] flex flex-col items-center justify-start -mt-2">
-                        <div className="w-44 h-44 relative mb-2 transition-transform hover:scale-105 duration-500">
+                    <div className="w-[30%] flex flex-col items-center justify-start -mt-4">
+                        <div className="w-48 h-48 relative mb-2">
                             <img
                                 src="/assets/gdt_seal.png"
                                 alt="GDT Seal"
@@ -136,11 +136,12 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                         <h3 className="font-khmer font-bold text-xs mb-1.5 text-black">ជាតិ សាសនា ព្រះមហាក្សត្រ</h3>
                         <h4 className="font-serif font-bold text-[10px] uppercase mb-2 text-black tracking-[0.2em]">NATION RELIGION KING</h4>
 
-                        {/* Decorative Divider */}
-                        <div className="flex items-center gap-2 opacity-80 mt-1">
-                            <div className="h-[1px] bg-black w-12 icon-line"></div>
-                            <div className="text-xs font-serif min-w-[30px] text-center">✤ ✤</div>
-                            <div className="h-[1px] bg-black w-12 icon-line"></div>
+                        {/* Decorative Divider - Classical Style */}
+                        <div className="flex items-center gap-2 opacity-90 mt-2">
+                            {/* Using text-based classic divider replication */}
+                            <div className="text-black font-serif tracking-tighter text-xs">
+                                ══════ ❖ ══════
+                            </div>
                         </div>
                     </div>
                 </div>
