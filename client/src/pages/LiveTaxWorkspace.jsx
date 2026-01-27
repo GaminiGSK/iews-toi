@@ -161,6 +161,68 @@ const INITIAL_SCHEMA = {
                         { value: "subsidary", label: "Foreign Company Branch", labelKh: "សាខាក្រុមហ៊ុនបរទេស" },
                         { value: "ngo", label: "NGO / Association", labelKh: "អង្គការមិនមែនរដ្ឋាភិបាល / សមាគម" }
                     ]
+                },
+                {
+                    key: "taxExemptionInfo",
+                    number: "15",
+                    label: "Income Tax Exemption QIP Info",
+                    labelKh: "លើកលែងពន្ធលើប្រាក់ចំណូល (QIP)",
+                    type: "text",
+                    readOnly: true,
+                    colSpan: 12,
+                    className: "bg-gray-50/50 font-bold italic"
+                },
+                {
+                    key: "firstRevenueYear",
+                    label: "Year of First Revenue",
+                    labelKh: "ឆ្នាំមានចំណូលដំបូង",
+                    type: "text",
+                    colSpan: 3
+                },
+                {
+                    key: "firstProfitYear",
+                    label: "Year of First Profit",
+                    labelKh: "ឆ្នាំមានចំណេញដំបូង",
+                    type: "text",
+                    colSpan: 3
+                },
+                {
+                    key: "priorityPeriod",
+                    label: "Priority Period (Years)",
+                    labelKh: "រយៈបេលអាទិភាព",
+                    type: "text",
+                    colSpan: 3
+                },
+                {
+                    key: "exemptionYear",
+                    label: "Duration",
+                    labelKh: "ថេរវេលា",
+                    type: "text",
+                    colSpan: 3
+                },
+                {
+                    key: "taxRate",
+                    number: "16",
+                    label: "Income Tax Rate",
+                    labelKh: "អត្រាពន្ធលើប្រាក់ចំណូល",
+                    type: "checkbox-group",
+                    colSpan: 12,
+                    options: [
+                        { value: "30", label: "30%" },
+                        { value: "20", label: "20%" },
+                        { value: "5", label: "5%" },
+                        { value: "0", label: "0%" },
+                        { value: "0_20", label: "0-20%" },
+                        { value: "progressive", label: "Progressive Rate", labelKh: "អត្រាកំណើនតាមថ្នាក់" }
+                    ]
+                },
+                {
+                    key: "taxDue",
+                    number: "17",
+                    label: "Income Tax Due",
+                    labelKh: "ពន្ធលើប្រាក់ចំណូលត្រូវបង់",
+                    type: "currency",
+                    colSpan: 12
                 }
             ]
         }

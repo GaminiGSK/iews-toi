@@ -97,8 +97,8 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
 
             {/* --- OFFICIAL HEADER (REPLICA) --- */}
             <div className="relative mb-8 font-serif">
-                {/* Form Code Top Left - Larger Font */}
-                <div className="absolute top-0 left-0 font-bold text-2xl tracking-wide font-serif text-black">TOI 01 / I</div>
+                {/* Form Code Top Left - Moved outside flow to prevent overlap */}
+                <div className="absolute -top-10 -left-6 font-bold text-xl tracking-wide font-serif text-black">TOI 01 / I</div>
 
                 <div className="flex justify-between items-start mt-12 px-0">
                     {/* Left Column: Ministry & Dept */}
@@ -109,8 +109,8 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                         <h3 className="font-khmer font-bold text-xs mb-1.5 leading-relaxed">អគ្គនាយកដ្ឋានពន្ធដារ</h3>
                         <h4 className="font-serif font-bold text-[11px] uppercase mb-6 w-full max-w-[260px] tracking-wide leading-none">GENERAL DEPARTMENT OF TAXATION</h4>
 
-                        {/* Form Name Box */}
-                        <div className="border-[2.5px] border-black px-4 py-2 bg-slate-50 relative ml-4 shadow-[4px_4px_0_black]">
+                        {/* Form Name Box - No Shadow */}
+                        <div className="border-[2.5px] border-black px-4 py-2 bg-slate-50 relative ml-4">
                             <h3 className="font-khmer font-bold text-sm text-black leading-none mb-1">ទម្រង់ ពបច ០១ / FORM TOI 01</h3>
                         </div>
                         <p className="font-khmer text-[9px] mt-4 leading-none text-slate-800">(មាត្រា ២៩ ថ្មី នៃច្បាប់ស្តីពីសារពើពន្ធ )</p>
@@ -118,8 +118,8 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                     </div>
 
                     {/* Center Column: Logo */}
-                    <div className="w-[30%] flex flex-col items-center justify-start -mt-4">
-                        <div className="w-48 h-48 relative mb-2">
+                    <div className="w-[30%] flex flex-col items-center justify-start -mt-6">
+                        <div className="w-56 h-56 relative mb-2">
                             <img
                                 src="/assets/gdt_seal.png"
                                 alt="GDT Seal"
