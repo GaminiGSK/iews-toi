@@ -26,7 +26,21 @@ function fileToGenerativePart(path, mimeType) {
 exports.extractDocumentData = async (filePath) => {
     console.log(`[GeminiAI] Processing Document: ${filePath}`);
     try {
-        const prompt = "Extract the following details from this Company Registration certificate (MOC) as JSON: companyNameEn, companyNameKh, registrationNumber, incorporationDate, address (province/city). Return ONLY raw JSON, no markdown.";
+        const prompt = `
+            Analyze this image of a "Certificate of Incorporation" from the Kingdom of Cambodia Ministry of Commerce.
+            Extract the following details textually. Returns JSON only.
+            
+            Fields:
+            - companyNameEn: The full Company Name in English (usually uppercase).
+            - companyNameKh: The full Company Name in Khmer.
+            - registrationNumber: The generic registration number / ID (e.g., 00012345).
+            - incorporationDate: The date of registration (Format: DD/MM/YYYY).
+            - address: The Registered Office Address.
+            - businessActivity: The "Business Objective" or Main Activity if visible.
+
+            If a field is not visible, use null.
+            Output purely valid JSON.
+        `;
         // Vision Model supports JPEG/PNG directly
         const imagePart = fileToGenerativePart(filePath, "image/jpeg");
 

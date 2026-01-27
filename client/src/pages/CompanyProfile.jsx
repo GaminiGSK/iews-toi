@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Loader2, CheckCircle, Table, Save, X, Eye, FileText, CloudUpload } from 'lucide-react';
+import DigitalCertificate from '../components/DigitalCertificate';
 
 export default function CompanyProfile() {
     const [view, setView] = useState('home'); // home, profile, bank
@@ -151,29 +152,179 @@ export default function CompanyProfile() {
         </div>
     );
 
-    const renderProfile = () => (
-        <div className="max-w-3xl mx-auto pt-10 px-6 animate-fade-in">
-            <button onClick={() => setView('home')} className="text-gray-400 hover:text-gray-600 mb-6 flex items-center text-sm font-medium transition">
-                ← Back to Dashboard
-            </button>
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-                <h2 className="text-2xl font-bold text-gray-800 mb-6">Company Profile</h2>
-                <div className="space-y-4">
-                    <p className="text-sm text-gray-500">Profile editing is currently read-only in this demo version.</p>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="p-4 bg-gray-50 rounded-lg">
-                            <label className="text-xs text-gray-400 uppercase font-bold">Company Name (KH)</label>
-                            <p className="font-medium text-gray-800">{formData.companyNameKh || '-'}</p>
+    const renderProfile = () => {
+        // Mode 1: No file uploaded yet (Show Upload Box)
+        if (!formData.registrationFile && !formData.companyNameEn) {
+            return (
+                <div className="max-w-3xl mx-auto pt-10 px-6 animate-fade-in">
+                    <button onClick={() => setView('home')} className="text-gray-400 hover:text-gray-600 mb-6 flex items-center text-sm font-medium transition">
+                        ← Back to Dashboard
+                    </button>
+                    <div className="bg-white p-10 rounded-2xl shadow-sm border border-gray-100 text-center">
+                        <h2 className="text-2xl font-bold text-gray-800 mb-2">Company Registration</h2>
+                        <p className="text-gray-500 mb-8">Upload your MOC Certificate to auto-fill details.</p>
+
+                        <div className="border-2 border-dashed border-blue-100 rounded-xl p-10 hover:bg-blue-50/50 transition relative group cursor-pointer">
+                            <input
+                                type="file"
+                                accept="image/*,.pdf"
+                                onChange={async (e) => {
+                                    if (e.target.files?.[0]) {
+                                        setLoading(true);
+                                        setMessage("Scanning Document with AI...");
+                                        try {
+                                            const file = e.target.files[0];
+                                            const fd = new FormData();
+                                            fd.append('file', file);
+
+                                            const token = localStorage.getItem('token');
+                                            const res = await axios.post('/api/company/upload-registration', fd, {
+                                                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
+                                            });
+
+                                            // Auto-fill form
+                                            setFormData(prev => ({
+                                                ...prev,
+                                                ...res.data.data,
+                                                registrationFile: URL.createObjectURL(file) // Preview
+                                            }));
+                                            setMessage("Data Extracted! Please verify.");
+                                        } catch (err) {
+                                            console.error(err);
+                                            setMessage("Error scanning document.");
+                                        } finally {
+                                            setLoading(false);
+                                        }
+                                    }
+                                }}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                            />
+                            <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-500">
+                                <CloudUpload size={32} />
+                            </div>
+                            <h3 className="font-bold text-gray-700">Upload MOC Certificate</h3>
+                            <p className="text-xs text-gray-400 mt-1">Supports JPG, PNG, PDF</p>
                         </div>
-                        <div className="p-4 bg-gray-50 rounded-lg">
-                            <label className="text-xs text-gray-400 uppercase font-bold">Company Name (EN)</label>
-                            <p className="font-medium text-gray-800">{formData.companyNameEn || '-'}</p>
+                    </div>
+                    {loading && (
+                        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center">
+                            <div className="bg-white p-6 rounded-xl shadow-2xl flex flex-col items-center">
+                                <Loader2 className="animate-spin text-blue-600 h-8 w-8 mb-3" />
+                                <p className="font-bold text-gray-800">Analyzing Document...</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // Mode 2: File Uploaded (Split Screen: Image Left | Form Right)
+        return (
+            <div className="w-full h-[calc(100vh-80px)] pt-4 px-4 flex gap-6 animate-fade-in">
+
+                {/* LEFT COLUMN: DOCUMENT VIEWER */}
+                <div className="w-1/2 bg-gray-900 rounded-2xl overflow-hidden shadow-lg flex flex-col relative">
+                    <div className="bg-gray-800 px-4 py-3 flex justify-between items-center z-10">
+                        <span className="text-white text-xs font-bold flex items-center">
+                            <FileText size={14} className="mr-2" /> Original Document
+                        </span>
+                        <button onClick={() => setFormData(prev => ({ ...prev, registrationFile: null }))} className="text-gray-400 hover:text-white text-xs underline">
+                            Reset Image
+                        </button>
+                    </div>
+                    <div className="flex-1 overflow-auto flex items-center justify-center bg-gray-900 p-4 relative">
+                        {formData.registrationFile ? (
+                            <img src={formData.registrationFile} alt="Certificate" className="max-w-full h-auto shadow-2xl rounded-lg" />
+                        ) : (
+                            <div className="text-center w-full h-full flex flex-col items-center justify-center border-2 border-dashed border-gray-700 rounded-xl hover:bg-gray-800/50 transition cursor-pointer relative group">
+                                <input
+                                    type="file"
+                                    accept="image/*,.pdf"
+                                    onChange={async (e) => {
+                                        if (e.target.files?.[0]) {
+                                            setLoading(true);
+                                            setMessage("Scanning Document...");
+                                            try {
+                                                const file = e.target.files[0];
+                                                const fd = new FormData();
+                                                fd.append('file', file);
+
+                                                const token = localStorage.getItem('token');
+                                                const res = await axios.post('/api/company/upload-registration', fd, {
+                                                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
+                                                });
+
+                                                // Update state but keep existing form data if user has edited it, or overwrite?
+                                                // Let's overwrite fields that are found new, but keep others? 
+                                                // Actually, usually we want to see the new data.
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    ...res.data.data, // Merge extracted details
+                                                    registrationFile: URL.createObjectURL(file)
+                                                }));
+                                                setMessage("Document Analyzed.");
+                                            } catch (err) {
+                                                console.error(err);
+                                                setMessage("Error uploading.");
+                                            } finally {
+                                                setLoading(false);
+                                            }
+                                        }
+                                    }}
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                />
+                                <CloudUpload size={48} className="text-gray-600 mb-4 group-hover:text-blue-400 transition" />
+                                <p className="text-gray-400 font-medium group-hover:text-white">Upload Certificate</p>
+                                <p className="text-gray-600 text-xs mt-2">to view side-by-side</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* RIGHT COLUMN: DIGITAL CERTIFICATE TWIN */}
+                <div className="w-1/2 flex flex-col h-full">
+                    <div className="bg-white rounded-t-2xl p-4 border-b border-gray-100 flex justify-between items-center shadow-sm z-10 shrink-0">
+                        <div>
+                            <h2 className="text-lg font-bold text-gray-800 flex items-center">
+                                <span className="w-2 h-6 bg-[#b8860b] mr-2 rounded-sm"></span>
+                                Digital Certificate Twin
+                            </h2>
+                            <p className="text-xs text-gray-400 pl-4">Review and edit directly on the certificate</p>
+                        </div>
+                        <button
+                            onClick={async () => {
+                                setLoading(true);
+                                try {
+                                    const token = localStorage.getItem('token');
+                                    await axios.post('/api/company/update-profile', formData, {
+                                        headers: { 'Authorization': `Bearer ${token}` }
+                                    });
+                                    setMessage("Profile Verified & Saved!");
+                                    setTimeout(() => setView('home'), 1500);
+                                } catch (err) {
+                                    setMessage("Error saving profile.");
+                                } finally {
+                                    setLoading(false);
+                                }
+                            }}
+                            className="bg-[#1a365d] hover:bg-[#2c5282] text-white px-6 py-2 rounded-lg font-bold text-sm shadow-md transition flex items-center"
+                        >
+                            <CheckCircle size={16} className="mr-2" /> Verify & Save
+                        </button>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto bg-gray-100 p-6 flex justify-center">
+                        <div className="transform scale-90 origin-top">
+                            <DigitalCertificate
+                                data={formData}
+                                onUpdate={(field, val) => setFormData(prev => ({ ...prev, [field]: val }))}
+                            />
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    );
+        );
+    };
 
     const handleFiles = async (fileList) => {
         if (fileList.length === 0) return;

@@ -124,7 +124,7 @@ router.post('/upload-bank-statement', auth, upload.array('files'), async (req, r
     }
 });
 
-// Save Transactions (Bulk)
+// Save Transactions (Bulk) with Deduplication
 router.post('/save-transactions', auth, async (req, res) => {
     try {
         const { transactions } = req.body;
@@ -134,69 +134,113 @@ router.post('/save-transactions', auth, async (req, res) => {
 
         const Transaction = require('../models/Transaction');
 
-        const savedDocs = [];
-        for (const tx of transactions) {
-            // Helper to clean currency strings
-            const parseCurrency = (val) => {
-                if (!val) return 0;
-                // Remove everything except digits, dot, and minus
-                const clean = String(val).replace(/[^0-9.-]/g, '');
-                return parseFloat(clean) || 0;
-            };
+        // 1. Process Incoming Data to Normalized Format
+        const processedDocs = [];
 
+        // Helper to cleaning currency
+        const parseCurrency = (val) => {
+            if (!val) return 0;
+            const clean = String(val).replace(/[^0-9.-]/g, '');
+            return parseFloat(clean) || 0;
+        };
+
+        // Helper to parse Date
+        const parseDate = (dateStr) => {
+            if (!dateStr) return new Date();
+            if (dateStr instanceof Date) return dateStr;
+            const parts = String(dateStr).split('/');
+            if (parts.length === 3) {
+                const day = parseInt(parts[0], 10);
+                const month = parseInt(parts[1], 10) - 1;
+                const year = parseInt(parts[2], 10);
+                if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+                    return new Date(Date.UTC(year, month, day));
+                }
+            }
+            const parsed = new Date(dateStr);
+            return isNaN(parsed.getTime()) ? new Date() : parsed;
+        };
+
+        for (const tx of transactions) {
             // Determine signed amount
             let amount = 0;
             const inVal = parseCurrency(tx.moneyIn);
             const outVal = parseCurrency(tx.moneyOut);
-
             if (inVal > 0) amount = inVal;
             if (outVal > 0) amount = -outVal;
 
-            // Clean Balance
-            let balance = parseCurrency(tx.balance);
+            const balance = parseCurrency(tx.balance);
+            const dateObj = parseDate(tx.date);
 
-            // Helper to parse DD/MM/YYYY safely
-            const parseDate = (dateStr) => {
-                if (!dateStr) return new Date(); // Fallback to now
-                if (dateStr instanceof Date) return dateStr;
-
-                // Try parsing DD/MM/YYYY
-                const parts = String(dateStr).split('/');
-                if (parts.length === 3) {
-                    const day = parseInt(parts[0], 10);
-                    const month = parseInt(parts[1], 10) - 1; // Months are 0-indexed
-                    const year = parseInt(parts[2], 10);
-                    if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
-                        return new Date(Date.UTC(year, month, day));
-                    }
-                }
-                // Fallback for ISO strings or other formats
-                const parsed = new Date(dateStr);
-                return isNaN(parsed.getTime()) ? new Date() : parsed;
-            };
-
-            savedDocs.push({
+            processedDocs.push({
                 user: req.user.id,
                 companyCode: req.user.companyCode,
-                date: parseDate(tx.date),
+                date: dateObj,
                 description: tx.description,
-                amount: amount,
-                balance: balance,
+                amount: amount, // Signed Number
+                balance: balance, // Number
                 currency: 'USD',
                 originalData: tx
             });
         }
 
-        await Transaction.insertMany(savedDocs);
+        // 2. Fetch Existing Transactions for this Company (Optimization: Filter by Date Range?)
+        // For now, let's fetch all or a relevant subset. Since we have dates, let's find min/max date.
+        if (processedDocs.length === 0) return res.json({ message: 'No valid transactions to process.' });
 
-        res.json({ message: `Successfully saved ${savedDocs.length} transactions!` });
+        const dates = processedDocs.map(d => d.date.getTime());
+        const minDate = new Date(Math.min(...dates));
+        const maxDate = new Date(Math.max(...dates));
+
+        // Buffer the date range slightly (e.g. +/- 1 day) to be safe with timezones
+        minDate.setDate(minDate.getDate() - 2);
+        maxDate.setDate(maxDate.getDate() + 2);
+
+        const existingTxs = await Transaction.find({
+            companyCode: req.user.companyCode,
+            date: { $gte: minDate, $lte: maxDate }
+        }).lean();
+
+        // 3. Create Signatures for Deduplication
+        // Signature: Date(YYYY-MM-DD)_Amount_Description_Balance
+        const createSig = (t) => {
+            const d = new Date(t.date).toISOString().split('T')[0];
+            // Use fuzzy description check? No, strict for now.
+            // Balance is good for differentiating same-day same-amount txs.
+            return `${d}|${t.amount}|${t.description.trim()}|${t.balance}`;
+        };
+
+        const existingSigs = new Set(existingTxs.map(t => createSig(t)));
+
+        // 4. Filter & Insert
+        const toInsert = processedDocs.filter(doc => {
+            const sig = createSig(doc);
+            if (existingSigs.has(sig)) {
+                return false; // Duplicate
+            }
+            // Add to Set to prevent duplicates WITHIN the current batch too!
+            existingSigs.add(sig);
+            return true;
+        });
+
+        if (toInsert.length > 0) {
+            await Transaction.insertMany(toInsert);
+        }
+
+        const skippedCount = processedDocs.length - toInsert.length;
+        let msg = `Saved ${toInsert.length} new transactions.`;
+        if (skippedCount > 0) {
+            msg += ` (${skippedCount} duplicates skipped)`;
+        }
+
+        res.json({
+            message: msg,
+            added: toInsert.length,
+            skipped: skippedCount
+        });
 
     } catch (err) {
         console.error('Save Transaction Error:', err);
-        if (err.name === 'ValidationError') {
-            console.error('Validation Details:', JSON.stringify(err.errors, null, 2));
-        }
-        // Return specific error to client for debugging
         res.status(500).json({ message: 'Error saving: ' + (err.message || 'Unknown DB Error') });
     }
 });
