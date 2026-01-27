@@ -10,11 +10,32 @@ const INITIAL_SCHEMA = {
     status: "active",
     sections: [
         {
-            id: "header",
+            id: "header_period",
             fields: [
-                { key: "taxYear", label: "Tax Period (Number of Month)", labelKh: "ការបរិច្ឆេទសារពើពន្ធ (ចំនួនខែ)", type: "text", colSpan: 4 },
-                { key: "periodFrom", label: "From (DD-MM-YYYY)", labelKh: "ចាប់ពីថ្ងៃទី", type: "text", colSpan: 4, colStart: 6 },
-                { key: "periodTo", label: "Until (DD-MM-YYYY)", labelKh: "ដល់ថ្ងៃទី", type: "text", colSpan: 3 }
+                {
+                    key: "taxYear",
+                    label: "Tax Period (Number of Month)",
+                    labelKh: "ការបរិច្ឆេទសារពើពន្ធ (ចំនួនខែ)",
+                    type: "boxes",
+                    length: 2,
+                    colSpan: 4
+                },
+                {
+                    key: "periodFrom",
+                    label: "From",
+                    labelKh: "ចាប់ពីថ្ងៃទី",
+                    type: "boxes",
+                    length: 8,
+                    colSpan: 4
+                },
+                {
+                    key: "periodTo",
+                    label: "Until",
+                    labelKh: "ដល់ថ្ងៃទី",
+                    type: "boxes",
+                    length: 8,
+                    colSpan: 4
+                }
             ]
         },
         {
@@ -24,10 +45,11 @@ const INITIAL_SCHEMA = {
                     key: "tin",
                     number: "1",
                     label: "Tax Identification Number (TIN)",
-                    labelKh: "លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (VATTIN)",
-                    type: "text",
-                    readOnly: true,
-                    colSpan: 4
+                    labelKh: "លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN)",
+                    type: "boxes",
+                    length: 12,
+                    format: "3-9",
+                    colSpan: 12
                 },
                 {
                     key: "enterpriseName",
@@ -36,15 +58,15 @@ const INITIAL_SCHEMA = {
                     labelKh: "ឈ្មោះសហគ្រាស",
                     type: "text",
                     readOnly: true,
-                    colSpan: 8
+                    colSpan: 12
                 },
                 {
-                    key: "vat_id",
+                    key: "numberLocalBranch",
                     number: "3",
-                    label: "VAT TIN (if different)",
-                    labelKh: "លេខអត្តសញ្ញាណកម្ម អតប (VATTIN) បើខុសពីខាងលើ",
+                    label: "Number of Local Branch",
+                    labelKh: "ចំនួនសាខាសហគ្រាស",
                     type: "text",
-                    colSpan: 6
+                    colSpan: 12
                 },
                 {
                     key: "registrationDate",
@@ -52,7 +74,7 @@ const INITIAL_SCHEMA = {
                     label: "Date of Tax Registration",
                     labelKh: "កាលបរិច្ឆេទចុះបញ្ជីពន្ធដារ",
                     type: "text",
-                    colSpan: 6
+                    colSpan: 12
                 },
                 {
                     key: "directorName",

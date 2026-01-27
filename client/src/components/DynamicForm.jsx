@@ -1,9 +1,90 @@
 import React from 'react';
 import { Calculator, AlertCircle, CheckCircle2 } from 'lucide-react';
 
+const BoxGridInput = ({ length, value, onChange, format }) => {
+    const chars = (value || '').toString().split('');
+
+    const handleChange = (index, char) => {
+        const newVal = [...chars];
+        // Ensure newVal has enough length
+        while (newVal.length < length) newVal.push('');
+        newVal[index] = char.slice(-1);
+        onChange(newVal.join(''));
+
+        // Auto focus next box
+        if (char && index < length - 1) {
+            const nextInput = document.getElementById(`box-${index + 1}`);
+            if (nextInput) nextInput.focus();
+        }
+    };
+
+    const handleKeyDown = (index, e) => {
+        if (e.key === 'Backspace' && !chars[index] && index > 0) {
+            const prevInput = document.getElementById(`box-${index - 1}`);
+            if (prevInput) prevInput.focus();
+        }
+    };
+
+    // Split length into segments if format exists (e.g. "3-9" for TIN)
+    let renderedBoxes = [];
+    let currentIdx = 0;
+
+    if (format) {
+        const parts = format.split('-').map(Number);
+        parts.forEach((partLen, pIdx) => {
+            let segment = [];
+            for (let i = 0; i < partLen; i++) {
+                const idx = currentIdx++;
+                segment.push(
+                    <input
+                        key={idx}
+                        id={`box-${idx}`}
+                        type="text"
+                        maxLength={1}
+                        value={chars[idx] || ''}
+                        onChange={(e) => handleChange(idx, e.target.value)}
+                        onKeyDown={(e) => handleKeyDown(idx, e)}
+                        className="w-7 h-8 border border-black text-center font-serif font-bold text-lg bg-white focus:bg-blue-50 outline-none"
+                    />
+                );
+            }
+            renderedBoxes.push(<div key={`seg-${pIdx}`} className="flex gap-[-1px]">{segment}</div>);
+            if (pIdx < parts.length - 1) {
+                renderedBoxes.push(<span key={`dash-${pIdx}`} className="mx-1 font-bold">-</span>);
+            }
+        });
+    } else {
+        for (let i = 0; i < length; i++) {
+            const idx = i;
+            renderedBoxes.push(
+                <input
+                    key={idx}
+                    id={`box-${idx}`}
+                    type="text"
+                    maxLength={1}
+                    value={chars[idx] || ''}
+                    onChange={(e) => handleChange(idx, e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(idx, e)}
+                    className="w-7 h-8 border border-black text-center font-serif font-bold text-lg bg-white focus:bg-blue-50 outline-none"
+                />
+            );
+        }
+    }
+
+    return (
+        <div className="flex items-center gap-0.5">
+            {renderedBoxes}
+        </div>
+    );
+};
+
 const FieldInput = ({ field, value, onChange, error }) => {
     // Official Paper Input Style (Transparent with bottom border or box)
     const baseClasses = "w-full bg-transparent border-b border-dotted border-slate-400 focus:border-blue-600 outline-none transition-all font-mono text-blue-900 font-bold px-1";
+
+    if (field.type === 'boxes') {
+        return <BoxGridInput length={field.length} value={value} onChange={(val) => onChange(field.key, val)} format={field.format} />;
+    }
 
     if (field.type === 'currency') {
         return (
