@@ -12,7 +12,7 @@ const INITIAL_SCHEMA = {
         {
             id: "header",
             fields: [
-                { key: "taxYear", label: "For The Year Ended (DD-MM-YYYY)", labelKh: "សម្រាប់ឆ្នាំ", type: "text", colSpan: 4 },
+                { key: "taxYear", label: "Tax Period (Number of Month)", labelKh: "ការបរិច្ឆេទសារពើពន្ធ (ចំនួនខែ)", type: "text", colSpan: 4 },
                 { key: "periodFrom", label: "From (DD-MM-YYYY)", labelKh: "ចាប់ពីថ្ងៃទី", type: "text", colSpan: 4, colStart: 6 },
                 { key: "periodTo", label: "Until (DD-MM-YYYY)", labelKh: "ដល់ថ្ងៃទី", type: "text", colSpan: 3 }
             ]
@@ -211,29 +211,29 @@ const LiveTaxWorkspace = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-950 text-white font-sans selection:bg-blue-500/30 print:bg-white print:text-black">
+        <div className="min-h-screen bg-slate-100 text-slate-800 font-sans selection:bg-blue-200">
             {/* Top Bar */}
-            <div className="fixed top-0 left-0 right-0 bg-slate-900/80 backdrop-blur-md border-b border-white/5 z-40 px-6 py-4 flex justify-between items-center print:hidden">
+            <div className="fixed top-0 left-0 right-0 bg-white border-b border-slate-200 shadow-sm z-40 px-6 py-4 flex justify-between items-center print:hidden">
                 <div className="flex items-center gap-4">
-                    <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-white/10 rounded-full transition">
-                        <ArrowLeft size={24} className="text-slate-400" />
+                    <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-slate-100 rounded-full transition">
+                        <ArrowLeft size={24} className="text-slate-600" />
                     </button>
                     <div className="flex flex-col">
-                        <h1 className="font-bold text-lg tracking-wide">Live Form Workspace</h1>
-                        <div className="flex items-center gap-2 text-xs font-mono text-emerald-400">
-                            <Radio size={12} className="animate-pulse" /> Real-Time Neural Link Active
+                        <h1 className="font-bold text-lg tracking-wide text-slate-900">Live Form Workspace</h1>
+                        <div className="flex items-center gap-2 text-xs font-mono text-emerald-600">
+                            <Radio size={12} className="animate-pulse" /> TOI 01 Replica Mode (Beta)
                         </div>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-4">
                     <span className="text-slate-500 text-sm font-mono">{status}</span>
-                    <button onClick={() => window.print()} className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition">
+                    <button onClick={() => window.print()} className="bg-slate-200 hover:bg-slate-300 text-slate-800 px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition">
                         Print / PDF
                     </button>
                     <button
                         onClick={handleSimulateAgent}
-                        className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition"
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition shadow-blue-200 shadow-lg"
                     >
                         <RefreshCw size={16} /> Auto-Fill (AI)
                     </button>
@@ -241,7 +241,8 @@ const LiveTaxWorkspace = () => {
             </div>
 
             {/* Main Canvas */}
-            <div className="pt-28 pb-20 px-6 max-w-[1200px] mx-auto print:pt-0 print:px-0 print:max-w-full">
+            <div className="pt-28 pb-20 px-6 flex justify-center print:pt-0 print:px-0">
+                {/* Paper Shadow Effect */}
                 <DynamicForm
                     schema={schema}
                     data={formData}

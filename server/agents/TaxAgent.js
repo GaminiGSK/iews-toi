@@ -17,7 +17,7 @@ const TaxAgent = {
                 {
                     id: "header",
                     fields: [
-                        { key: "taxYear", label: "For The Year Ended (DD-MM-YYYY)", labelKh: "សម្រាប់ឆ្នាំ", type: "text", colSpan: 4 },
+                        { key: "taxYear", label: "Tax Period (Number of Month)", labelKh: "ការបរិច្ឆេទសារពើពន្ធ (ចំនួនខែ)", type: "text", colSpan: 4 },
                         { key: "periodFrom", label: "From (DD-MM-YYYY)", labelKh: "ចាប់ពីថ្ងៃទី", type: "text", colSpan: 4, colStart: 6 },
                         { key: "periodTo", label: "Until (DD-MM-YYYY)", labelKh: "ដល់ថ្ងៃទី", type: "text", colSpan: 3 }
                     ]
