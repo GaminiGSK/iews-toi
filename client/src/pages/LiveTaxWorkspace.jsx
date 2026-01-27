@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import DynamicForm from '../components/DynamicForm';
 import { useSocket } from '../context/SocketContext';
 import { ArrowLeft, RefreshCw, Radio } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const INITIAL_SCHEMA = {
     title: "លិខិតប្រកាសពន្ធលើប្រាក់ចំណូលប្រចាំឆ្នាំ",
@@ -169,11 +169,26 @@ const INITIAL_SCHEMA = {
 
 const LiveTaxWorkspace = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const yearParam = searchParams.get('year');
     const socket = useSocket();
 
     const [schema, setSchema] = useState(INITIAL_SCHEMA);
     const [formData, setFormData] = useState({});
     const [status, setStatus] = useState('Idle');
+
+    // Auto-Fill Year Logic
+    useEffect(() => {
+        if (yearParam) {
+            setFormData(prev => ({
+                ...prev,
+                taxYear: yearParam,
+                periodFrom: `01-01-${yearParam}`,
+                periodTo: `31-12-${yearParam}`
+            }));
+            if (status === 'Idle') setStatus('Agent Applied Fiscal Context');
+        }
+    }, [yearParam]);
 
     useEffect(() => {
         if (!socket) return;
