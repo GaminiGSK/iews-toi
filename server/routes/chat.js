@@ -88,7 +88,8 @@ router.post('/message', auth, async (req, res) => {
             codes,
             recentTransactions: recentTxContext,
             summary,
-            monthlyStats
+            monthlyStats,
+            ui: req.body.context || {} // Pass UI Context (Route, etc.)
         };
 
         // Pass 'image' (Base64) to the AI service

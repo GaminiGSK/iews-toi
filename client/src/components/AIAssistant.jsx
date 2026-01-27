@@ -2,9 +2,13 @@ import axios from 'axios';
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, X, Send, Sparkles, Bot, Paperclip } from 'lucide-react';
 
+import { useLocation } from 'react-router-dom';
 import { useSocket } from '../context/SocketContext'; // Import Context
 
 const AIAssistant = () => {
+    // LOCATION
+    const location = useLocation();
+
     // SOCKET
     const socket = useSocket();
     const [isConnected, setIsConnected] = useState(false);
@@ -76,7 +80,11 @@ const AIAssistant = () => {
         try {
             const token = localStorage.getItem('token');
             const res = await axios.post('/api/chat/message',
-                { message: userMsg.text, image: userMsg.image },
+                {
+                    message: userMsg.text,
+                    image: userMsg.image,
+                    context: { route: location.pathname } // <--- Send Context
+                },
                 { headers: { 'Authorization': `Bearer ${token}` } }
             );
 

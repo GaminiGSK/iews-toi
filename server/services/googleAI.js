@@ -226,7 +226,7 @@ exports.suggestAccountingCodes = async (transactions, codes) => {
 
 exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
     try {
-        const { companyName, codes, recentTransactions, summary, monthlyStats } = context;
+        const { companyName, codes, recentTransactions, summary, monthlyStats, ui } = context;
 
         // Construct a context-aware prompt
         const prompt = `
@@ -237,6 +237,15 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
             - **Net Balance**: ${summary.balance}
             - **Total Income**: ${summary.income}
             - **Total Expenses**: ${summary.expense}
+
+            **App Context (User UI):**
+            - **Current Page**: ${ui?.route || "Dashboard"}
+            
+            **Special Instructions for "/tax-live" Route:**
+            If the user is on "/tax-live", this is the "Living Tax Form Workspace".
+            - If they ask "Can you see the form?" or "Can you see the workspace?", say **YES**.
+            - Explain that you are connected via the Neural Link (Socket.io) and can see the active TOI 01 Replica.
+            - Offer to "Auto-Fill" the form using the button in the header.
 
             **Chart of Accounts (Top 50):**
             ${codes.map(c => `- ${c.code} (${c.description})`).slice(0, 50).join('\n')}
