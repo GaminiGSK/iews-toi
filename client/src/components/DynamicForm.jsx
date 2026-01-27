@@ -118,14 +118,12 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                     </div>
 
                     {/* Center Column: Logo */}
-                    <div className="w-[30%] flex flex-col items-center justify-start -mt-6">
-                        <div className="w-56 h-56 relative mb-2">
-                            <img
-                                src="/assets/gdt_seal.png"
-                                alt="GDT Seal"
-                                className="w-full h-full object-contain mix-blend-multiply opacity-90 drop-shadow-sm"
-                            />
-                        </div>
+                    <div className="w-[30%] flex flex-col items-center justify-start -mt-4">
+                        <img
+                            src="/assets/gdt_seal.png"
+                            alt="GDT Seal"
+                            className="w-60 h-60 object-contain mix-blend-multiply"
+                        />
                     </div>
 
                     {/* Right Column: Kingdom */}
