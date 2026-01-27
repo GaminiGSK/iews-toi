@@ -20,13 +20,14 @@
 
 ---
 
-## Recently Completed Work
-
 ### 1. **"Living Form" Engine (Beta)**
-- **Route**: `/tax-live` (Added to Dashboard).
-- **Core Component**: `DynamicForm.jsx` (Renders generic JSON schemas).
-- **Agent Simulation**: `Simulate Auto-Fill` button triggers `TaxAgent.js` on backend.
-- **Capabilities**:
+- [x] **Living Tax Form (Beta)**:
+    - Dedicated workspace at `/tax-live`.
+    - Real-time bi-directional communication with AI Agent (`TaxAgent.js`).
+    - **Visual Replica Engine**: `DynamicForm.jsx` upgraded to support "Government Official" layout (White Paper Mode).
+    - **High-Fidelity Header**: Implemented exact replica of TOI 01 header including GDT Seal and correct box positioning.
+    - **Bilingual Support**: Full schema support for Khmer and English labels.
+    - **Agent Simulation**: "Auto-Fill" feature demonstrates dynamic data population into the official structure.
     - **Real-Time Filling**: Agent pushes data to the form live.
     - **Self-Healing**: Agent detects "Export Sales" and *changes the form structure* (Schema) on the fly to add new tax sections.
 
