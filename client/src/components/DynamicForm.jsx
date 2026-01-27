@@ -98,64 +98,63 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
             {/* --- OFFICIAL HEADER (REPLICA) --- */}
             <div className="relative mb-8 font-serif">
                 {/* Form Code Top Left */}
-                <div className="absolute -top-4 -left-2 font-bold text-sm tracking-wide">TOI 01 / I</div>
+                <div className="absolute -top-6 -left-2 font-bold text-lg tracking-wide font-serif text-black">TOI 01 / I</div>
 
-                <div className="flex justify-between items-start mt-6">
+                <div className="flex justify-between items-start mt-8">
                     {/* Left Column: Ministry & Dept */}
                     <div className="flex flex-col items-center w-[35%] text-center">
                         <h3 className="font-khmer font-bold text-xs mb-1">ក្រសួងសេដ្ឋកិច្ចនិងហិរញ្ញវត្ថុ</h3>
-                        <h4 className="font-bold text-[10px] uppercase border-b border-black pb-0.5 mb-1 w-full max-w-[220px]">MINISTRY OF ECONOMY AND FINANCE</h4>
+                        <h4 className="font-bold text-[11px] uppercase border-b-2 border-black pb-0.5 mb-1 w-full max-w-[240px] tracking-wide">MINISTRY OF ECONOMY AND FINANCE</h4>
 
                         <h3 className="font-khmer font-bold text-xs mb-1">អគ្គនាយកដ្ឋានពន្ធដារ</h3>
-                        <h4 className="font-bold text-[10px] uppercase mb-3 w-full max-w-[220px]">GENERAL DEPARTMENT OF TAXATION</h4>
+                        <h4 className="font-bold text-[11px] uppercase mb-4 w-full max-w-[240px] tracking-wide">GENERAL DEPARTMENT OF TAXATION</h4>
 
                         {/* Form Name Box */}
-                        <div className="border-2 border-black p-1.5 bg-slate-100 text-center w-full shadow-[2px_2px_0px_rgba(0,0,0,0.1)]">
-                            <h3 className="font-khmer font-bold text-sm leading-tight">ទម្រង់ ពបច ០១ / FORM TOI 01</h3>
+                        <div className="border-2 border-black p-1 bg-slate-100 text-center w-full max-w-[260px] shadow-[3px_3px_0px_rgba(0,0,0,0.15)] transform -rotate-1">
+                            <h3 className="font-khmer font-bold text-sm leading-tight text-black">ទម្រង់ ពបច ០១ / FORM TOI 01</h3>
                         </div>
-                        <p className="font-khmer text-[9px] mt-1.5 leading-tight">(មាត្រា ២៩ ថ្មី នៃច្បាប់ស្តីពីសារពើពន្ធ )</p>
-                        <p className="text-[9px] leading-tight">(Article 29 New of the Law on Taxation)</p>
+                        <p className="font-khmer text-[9px] mt-2 leading-tight text-slate-600">(មាត្រា ២៩ ថ្មី នៃច្បាប់ស្តីពីសារពើពន្ធ )</p>
+                        <p className="text-[9px] leading-tight text-slate-600">(Article 29 New of the Law on Taxation)</p>
                     </div>
 
                     {/* Center Column: Logo */}
-                    <div className="w-[30%] flex flex-col items-center justify-start pt-2">
-                        <div className="w-24 h-24 rounded-full border border-green-600 flex items-center justify-center bg-white shadow-sm mb-2 relative overflow-hidden group">
-                            {/* Simulated GDT Seal */}
-                            <div className="absolute inset-1 border border-dotted border-green-600 rounded-full"></div>
-                            <div className="text-center">
-                                <div className="font-khmer text-[8px] text-green-700">អគ្គនាយកដ្ឋានពន្ធដារ</div>
-                                <div className="text-2xl pt-1">🏛️</div>
-                                <div className="text-[6px] font-bold text-green-700 uppercase mt-0.5">G.D.T</div>
-                            </div>
+                    <div className="w-[30%] flex flex-col items-center justify-start pt-0">
+                        <div className="w-32 h-32 relative mb-2">
+                            {/* Use the Replica Image */}
+                            <img
+                                src="/assets/gdt_seal.png"
+                                alt="GDT Seal"
+                                className="w-full h-full object-contain filter drop-shadow-lg contrast-125"
+                            />
                         </div>
                     </div>
 
                     {/* Right Column: Kingdom */}
-                    <div className="flex flex-col items-center w-[35%] text-center">
-                        <h3 className="font-khmer font-bold text-sm mb-1">ព្រះរាជាណាចក្រកម្ពុជា</h3>
-                        <h4 className="font-bold text-xs uppercase mb-2">KINGDOM OF CAMBODIA</h4>
-                        <h3 className="font-khmer font-bold text-xs mb-1">ជាតិ សាសនា ព្រះមហាក្សត្រ</h3>
-                        <h4 className="font-bold text-[10px] uppercase mb-1">NATION RELIGION KING</h4>
+                    <div className="flex flex-col items-center w-[35%] text-center pt-2">
+                        <h3 className="font-khmer font-bold text-sm mb-1 text-black">ព្រះរាជាណាចក្រកម្ពុជា</h3>
+                        <h4 className="font-bold text-sm uppercase mb-2 text-black tracking-widest">KINGDOM OF CAMBODIA</h4>
+                        <h3 className="font-khmer font-bold text-xs mb-1 text-black">ជាតិ សាសនា ព្រះមហាក្សត្រ</h3>
+                        <h4 className="font-bold text-[10px] uppercase mb-1 text-black tracking-widest">NATION RELIGION KING</h4>
 
                         {/* Fancy Divider */}
-                        <div className="flex items-center gap-2 opacity-80 mt-1">
-                            <div className="h-px bg-black w-12"></div>
-                            <div className="text-xs">✤</div>
-                            <div className="h-px bg-black w-12"></div>
+                        <div className="flex items-center gap-1 opacity-100 mt-1">
+                            <div className="h-[2px] bg-black w-16"></div>
+                            <div className="text-sm font-bold">✤</div>
+                            <div className="h-[2px] bg-black w-16"></div>
                         </div>
                     </div>
                 </div>
 
                 {/* Main Title Area */}
-                <div className="text-center mt-6">
-                    <h1 className="font-khmer font-bold text-xl mb-1 text-black">{schema.title || "លិខិតប្រកាសពន្ធលើប្រាក់ចំណូលប្រចាំឆ្នាំ"}</h1>
-                    <div className="flex items-end justify-center gap-3">
-                        <h2 className="font-bold text-sm uppercase translate-y-1">{schema.titleKh || "ANNUAL INCOME TAX RETURN FOR THE YEAR ENDED"}</h2>
+                <div className="text-center mt-10">
+                    <h1 className="font-khmer font-bold text-xl mb-2 text-black tracking-wide">{schema.title || "លិខិតប្រកាសពន្ធលើប្រាក់ចំណូលប្រចាំឆ្នាំ"}</h1>
+                    <div className="flex items-end justify-center gap-4 relative">
+                        <h2 className="font-bold text-lg uppercase translate-y-1 text-black text-shadow-sm">{schema.titleKh || "ANNUAL INCOME TAX RETURN FOR THE YEAR ENDED"}</h2>
 
-                        {/* The 4 Year Boxes Replica */}
-                        <div className="flex gap-1 ml-2">
+                        {/* The 4 Year Boxes Replica - Larger and Distinct */}
+                        <div className="flex gap-1 ml-2 mb-0.5">
                             {[1, 2, 3, 4].map(i => (
-                                <div key={i} className="w-6 h-7 border border-black bg-white"></div>
+                                <div key={i} className="w-8 h-9 border-2 border-black bg-white shadow-sm"></div>
                             ))}
                         </div>
                     </div>
