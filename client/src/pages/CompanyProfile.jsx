@@ -122,34 +122,36 @@ export default function CompanyProfile() {
     // --- Sub-Components ---
 
     const renderHome = () => (
-        <div className="max-w-4xl mx-auto pt-20 px-6 animate-fade-in">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome, {formData.companyNameEn || formData.companyCode || 'Admin'}</h1>
-            <p className="text-gray-500 mb-12">Manage your company entity and financial data.</p>
+        <div className="max-w-4xl mx-auto pt-20 px-6 animate-fade-in text-white">
+            <h1 className="text-3xl font-bold mb-2">Welcome, <span className="text-blue-400">{formData.companyNameEn || formData.companyCode || 'Admin'}</span></h1>
+            <p className="text-blue-200 mb-12">Manage your company entity and financial data with AI precision.</p>
 
             <div className="grid md:grid-cols-2 gap-6">
                 <div
                     onClick={() => setView('profile')}
-                    className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition group"
+                    className="bg-[#1e293b] p-8 rounded-2xl shadow-xl border border-blue-900/50 cursor-pointer hover:border-blue-500 transition group relative overflow-hidden"
                 >
-                    <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
-                        <FileText className="text-blue-600" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-transparent opacity-0 group-hover:opacity-100 transition"></div>
+                    <div className="w-12 h-12 bg-blue-900/50 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition border border-blue-800">
+                        <FileText className="text-blue-400" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">Digital Certificate (MOC)</h3>
-                    <p className="text-gray-500 text-sm">View and manage your Digital Certificate Twin.</p>
+                    <h3 className="text-xl font-bold text-white mb-2 relative z-10">Digital Certificate (MOC)</h3>
+                    <p className="text-gray-400 text-sm relative z-10">View and manage your Digital Certificate Twin.</p>
                 </div>
 
                 <div
                     onClick={() => setView('bank')}
-                    className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition group relative overflow-hidden"
+                    className="bg-[#1e293b] p-8 rounded-2xl shadow-xl border border-blue-900/50 cursor-pointer hover:border-green-500 transition group relative overflow-hidden"
                 >
-                    <div className="absolute top-4 right-4 bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg animate-pulse">
+                    <div className="absolute top-4 right-4 bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg animate-pulse z-20">
                         NEW
                     </div>
-                    <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
-                        <Table className="text-green-600" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-green-600/5 to-transparent opacity-0 group-hover:opacity-100 transition"></div>
+                    <div className="w-12 h-12 bg-green-900/50 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition border border-green-800">
+                        <Table className="text-green-400" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">Income, Expenses, Withholding, Salaries</h3>
-                    <p className="text-gray-500 text-sm">Manage monthly financial records, expenses, and salaries.</p>
+                    <h3 className="text-xl font-bold text-white mb-2 relative z-10">Income, Expenses, Withholding, Salaries</h3>
+                    <p className="text-gray-400 text-sm relative z-10">Manage monthly financial records, expenses, and salaries.</p>
                 </div>
             </div>
         </div>
@@ -583,7 +585,7 @@ export default function CompanyProfile() {
     );
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-[#0f172a]">
             {view === 'home' && renderHome()}
             {view === 'profile' && renderProfile()}
             {view === 'bank' && renderBank()}
