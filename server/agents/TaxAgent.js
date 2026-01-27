@@ -2,103 +2,116 @@ const TaxAgent = {
     simulateFormFill: async (socket) => {
         // Step 1: Analysis
         socket.emit('agent:message', {
-            text: "🔍 I'm analyzing your General Ledger for June 2024 to prepare the Prepayment of Profit Tax...",
+            text: "🔍 Identifying Form Type... Detected request for 'Annual Income Tax Return (TOI 01)'. Analyzing Company Profile...",
             isSystem: true
         });
 
         await new Promise(r => setTimeout(r, 1500));
 
-        // Step 2: Initial Data Fill
-        const initialData = {
-            companyName: "GAMINI SOLAR KHMER",
-            taxId: "K002-901830101",
-            period: "June 2024",
-            turnover: 0,
-            taxDue: 0
-        };
-        socket.emit('form:data', initialData);
-        socket.emit('agent:message', {
-            text: "I've loaded the taxpayer details. Now calculating turnover from Account Class 4...",
-            isSystem: false
-        });
-
-        await new Promise(r => setTimeout(r, 2000));
-
-        // Step 3: Populate Financials
-        const calculatedData = {
-            turnover: 15420.50,
-            taxableBase: 15420.50,
-            taxDue: 154.21
-        };
-        socket.emit('form:data', calculatedData);
-        socket.emit('agent:message', {
-            text: "✅ Found $15,420.50 in taxable turnover. The calculation is complete.",
-            isSystem: false
-        });
-
-        await new Promise(r => setTimeout(r, 3000));
-
-        // Step 4: Self-Healing / Living Form Event
-        socket.emit('agent:message', {
-            text: "⚠️ Wait, I detected 'Zero-Rated Sales' (Exports) in the ledger. The current form layout is insufficient.",
-            isSystem: true
-        });
-
-        await new Promise(r => setTimeout(r, 2000));
-
-        socket.emit('agent:message', {
-            text: "🛠️ Adapting Form Schema: Adding 'Export Revenue' section...",
-            isSystem: true
-        });
-
-        // Evolve Schema
-        const EVOLVED_SCHEMA = {
-            title: "Monthly Tax Return (Prepayment of Profit Tax) v2",
-            description: "Form T-01: Corrected for Export Activities",
+        // Step 2: Define the Structure of Page 1 (TOI)
+        const TOI_SCHEMA_PAGE_1 = {
+            title: "ANNUAL INCOME TAX RETURN FOR THE YEAR ENDED",
+            description: "Form TOI 01 / I (General Information)",
             status: "active",
             sections: [
                 {
-                    id: "company_info",
-                    title: "Taxpayer Information",
+                    id: "header",
+                    title: "Tax Period",
                     fields: [
-                        { key: "companyName", label: "Company Name", type: "text", readOnly: true },
-                        { key: "taxId", label: "TIN", type: "text", readOnly: true },
-                        { key: "period", label: "Tax Period", type: "text" }
+                        { key: "taxYear", label: "For The Year Ended", type: "text", placeholder: "DD-MM-YYYY", fullWidth: false },
+                        { key: "periodFrom", label: "Tax Period From", type: "text", placeholder: "DD-MM-YYYY" },
+                        { key: "periodTo", label: "Tax Period To", type: "text", placeholder: "DD-MM-YYYY" }
                     ]
                 },
                 {
-                    id: "revenue_breakdown",
-                    title: "Revenue Breakdown",
+                    id: "identification_1",
+                    title: "1. Enterprise Identification",
                     icon: "list",
                     fields: [
-                        { key: "local_sales", label: "Local Sales (Standard Rate)", type: "currency", required: true },
-                        { key: "export_sales", label: "Export Sales (VAT 0%)", type: "currency", required: true, help: "Detected from Account 41002" },
-                        { key: "turnover", label: "Total Turnover", type: "currency", readOnly: true }
+                        { key: "tin", label: "1. Tax Identification Number (TIN)", type: "text", readOnly: true },
+                        { key: "enterpriseName", label: "2. Name of Enterprise", type: "text", readOnly: true, fullWidth: true },
+                        { key: "vat_id", label: "3. VAT TIN (if different)", type: "text" },
+                        { key: "registrationDate", label: "4. Date of Tax Registration", type: "text" }
                     ]
                 },
                 {
-                    id: "calculation",
-                    title: "Tax Calculation",
-                    icon: "calc",
+                    id: "identification_2",
+                    title: "Management & Activity",
                     fields: [
-                        { key: "turnover", label: "Total Turnover", type: "currency", readOnly: true },
-                        { key: "taxDue", label: "Prepayment of Profit Tax (1%)", type: "currency", readOnly: true, fullWidth: true }
+                        { key: "directorName", label: "5. Name of Director/Manager/Owner", type: "text", fullWidth: true },
+                        { key: "mainActivity", label: "6. Main Business Activities", type: "text", fullWidth: true },
+                        { key: "accountantName", label: "7. Name of Accountant / Tax Service Agent", type: "text", fullWidth: true },
+                    ]
+                },
+                {
+                    id: "address",
+                    title: "Location Details",
+                    fields: [
+                        { key: "registeredAddress", label: "8. Current Registered Office Address", type: "textarea", fullWidth: true },
+                        { key: "warehouseAddress", label: "10. Warehouse Address", type: "textarea", fullWidth: true }
+                    ]
+                },
+                {
+                    id: "compliance",
+                    title: "Compliance Status",
+                    icon: "check",
+                    fields: [
+                        {
+                            key: "complianceStatus",
+                            label: "12. Status of Tax Compliance",
+                            type: "select",
+                            options: [
+                                { value: "gold", label: "Gold" },
+                                { value: "silver", label: "Silver" },
+                                { value: "bronze", label: "Bronze" }
+                            ]
+                        },
+                        {
+                            key: "legalForm",
+                            label: "14. Legal Form of Business",
+                            type: "select",
+                            options: [
+                                { value: "sole_prop", label: "Sole Proprietorship" },
+                                { value: "partnership", label: "General Partnership" },
+                                { value: "private_limited", label: "Private Limited Company" },
+                                { value: "public_limited", label: "Public Limited Company" },
+                                { value: "subsidary", label: "Foreign Company Branch" }
+                            ]
+                        }
                     ]
                 }
             ]
         };
 
-        socket.emit('form:schema', EVOLVED_SCHEMA);
-
-        // Fill new fields
-        socket.emit('form:data', {
-            local_sales: 10420.50,
-            export_sales: 5000.00,
-            turnover: 15420.50
+        // Send Structure
+        socket.emit('form:schema', TOI_SCHEMA_PAGE_1);
+        socket.emit('agent:message', {
+            text: "✅ Generated Schema for TOI 01 Page 1 based on GDT Template.",
+            isSystem: false
         });
 
+        await new Promise(r => setTimeout(r, 2000));
+
+        // Step 3: Auto-Fill Data
+        const companyData = {
+            taxYear: "31-12-2024",
+            periodFrom: "01-01-2024",
+            periodTo: "31-12-2024",
+            tin: "K002-901830101",
+            enterpriseName: "GAMINI SOLAR KHMER CO., LTD",
+            registrationDate: "15-06-2022",
+            directorName: "CHENG LY",
+            mainActivity: "Solar Panel Installation & Engineering",
+            accountantName: "INTERNAL",
+            registeredAddress: "#123, Street 456, Tuol Kork, Phnom Penh, Cambodia",
+            warehouseAddress: "Same as Request",
+            complianceStatus: "silver",
+            legalForm: "private_limited"
+        };
+
+        socket.emit('form:data', companyData);
         socket.emit('agent:message', {
-            text: "✅ Form Adapted. I've separated Local vs Export sales as required by Law.",
+            text: "✍️ Filled ID, Address, and Legal Status from your Company Profile.",
             isSystem: false
         });
     }

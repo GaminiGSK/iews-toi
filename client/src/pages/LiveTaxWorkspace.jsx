@@ -5,27 +5,59 @@ import { ArrowLeft, RefreshCw, Radio } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const INITIAL_SCHEMA = {
-    title: "Monthly Tax Return (Prepayment of Profit Tax)",
-    description: "Form T-01: Declaration for the Prepayment of Profit Tax",
+    title: "ANNUAL INCOME TAX RETURN",
+    description: "Form TOI 01 / I (General Information)",
     status: "draft",
     sections: [
         {
-            id: "company_info",
-            title: "Taxpayer Information",
+            id: "header",
+            title: "Tax Period",
             fields: [
-                { key: "companyName", label: "Company Name", type: "text", readOnly: true, placeholder: "Loading..." },
-                { key: "taxId", label: "Tax Identification Number (TIN)", type: "text", readOnly: true, placeholder: "Loading..." },
-                { key: "period", label: "Tax Period", type: "text", placeholder: "e.g. June 2024" }
+                { key: "taxYear", label: "For The Year Ended", type: "text", placeholder: "DD-MM-YYYY", fullWidth: false },
+                { key: "periodFrom", label: "Tax Period From", type: "text", placeholder: "DD-MM-YYYY" },
+                { key: "periodTo", label: "Tax Period To", type: "text", placeholder: "DD-MM-YYYY" }
             ]
         },
         {
-            id: "calculation",
-            title: "Tax Calculation",
-            icon: "calc",
+            id: "identification_1",
+            title: "1. Enterprise Identification",
+            icon: "list",
             fields: [
-                { key: "turnover", label: "Total Turnover (Inclusive of Taxes)", type: "currency", required: true },
-                { key: "taxableBase", label: "Taxable Turnover", type: "currency", readOnly: true, help: "Calculated from Ledger" },
-                { key: "taxDue", label: "Prepayment of Profit Tax (1%)", type: "currency", readOnly: true, fullWidth: true }
+                { key: "tin", label: "1. Tax Identification Number (TIN)", type: "text", readOnly: true },
+                { key: "enterpriseName", label: "2. Name of Enterprise", type: "text", readOnly: true, fullWidth: true },
+                { key: "registrationDate", label: "4. Date of Tax Registration", type: "text" }
+            ]
+        },
+        {
+            id: "identification_2",
+            title: "Management & Activity",
+            fields: [
+                { key: "directorName", label: "5. Name of Director/Manager/Owner", type: "text", fullWidth: true },
+                { key: "mainActivity", label: "6. Main Business Activities", type: "text", fullWidth: true },
+            ]
+        },
+        {
+            id: "address",
+            title: "Location Details",
+            fields: [
+                { key: "registeredAddress", label: "8. Registered Address", type: "textarea", fullWidth: true },
+            ]
+        },
+        {
+            id: "compliance",
+            title: "Compliance Status",
+            icon: "check",
+            fields: [
+                {
+                    key: "complianceStatus",
+                    label: "12. Status of Tax Compliance",
+                    type: "select",
+                    options: [
+                        { value: "gold", label: "Gold" },
+                        { value: "silver", label: "Silver" },
+                        { value: "bronze", label: "Bronze" }
+                    ]
+                }
             ]
         }
     ]
