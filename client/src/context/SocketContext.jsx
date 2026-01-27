@@ -8,7 +8,7 @@ export const useSocket = () => useContext(SocketContext);
 // In production, this should be the URL of your backend.
 // For now, we default to localhost:5000 if not set.
 // If deployed, ensure VITE_API_URL is set in your build environment.
-const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const SOCKET_URL = import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:5000' : window.location.origin);
 
 export const SocketProvider = ({ children }) => {
     const [socket, setSocket] = useState(null);

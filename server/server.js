@@ -17,6 +17,7 @@ app.use(helmet({
         directives: {
             ...helmet.contentSecurityPolicy.getDefaultDirectives(),
             "img-src": ["'self'", "data:", "blob:", "https:", "http:"],
+            "connect-src": ["'self'", "ws:", "wss:", "https:", "http:"],
         },
     },
     crossOriginResourcePolicy: { policy: "cross-origin" }
