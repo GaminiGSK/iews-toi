@@ -120,11 +120,11 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                     {/* Center Column: Logo */}
                     <div className="w-[30%] flex flex-col items-center justify-start pt-0">
                         <div className="w-32 h-32 relative mb-2">
-                            {/* Use the Replica Image */}
+                            {/* Use the Replica Image with Multiply Blend for 'Ink' effect */}
                             <img
                                 src="/assets/gdt_seal.png"
                                 alt="GDT Seal"
-                                className="w-full h-full object-contain filter drop-shadow-lg contrast-125"
+                                className="w-full h-full object-contain mix-blend-multiply opacity-90"
                             />
                         </div>
                     </div>
@@ -151,11 +151,26 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                     <div className="flex items-end justify-center gap-4 relative">
                         <h2 className="font-bold text-lg uppercase translate-y-1 text-black text-shadow-sm">{schema.titleKh || "ANNUAL INCOME TAX RETURN FOR THE YEAR ENDED"}</h2>
 
-                        {/* The 4 Year Boxes Replica - Larger and Distinct */}
+                        {/* The 4 Year Boxes Replica - Dynamic Fill */}
                         <div className="flex gap-1 ml-2 mb-0.5">
-                            {[1, 2, 3, 4].map(i => (
-                                <div key={i} className="w-8 h-9 border-2 border-black bg-white shadow-sm"></div>
-                            ))}
+                            {(() => {
+                                // Extract Year from taxYear string (Assuming DD-MM-YYYY or YYYY)
+                                let yearChars = ['', '', '', ''];
+                                if (data.taxYear) {
+                                    const match = data.taxYear.match(/(\d{4})/);
+                                    if (match) {
+                                        yearChars = match[0].split('');
+                                    } else if (data.taxYear.length === 4) {
+                                        yearChars = data.taxYear.split('');
+                                    }
+                                }
+
+                                return yearChars.map((char, i) => (
+                                    <div key={i} className="w-8 h-9 border-2 border-black bg-white shadow-sm flex items-center justify-center font-mono font-bold text-xl">
+                                        {char}
+                                    </div>
+                                ));
+                            })()}
                         </div>
                     </div>
                 </div>
