@@ -134,19 +134,22 @@ export default function CompanyProfile() {
                     <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
                         <FileText className="text-blue-600" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">Company Profile</h3>
-                    <p className="text-gray-500 text-sm">Update official registration details, MOC certificates, and shareholders.</p>
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">Digital Certificate (MOC)</h3>
+                    <p className="text-gray-500 text-sm">View and manage your Digital Certificate Twin.</p>
                 </div>
 
                 <div
                     onClick={() => setView('bank')}
-                    className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition group"
+                    className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition group relative overflow-hidden"
                 >
+                    <div className="absolute top-4 right-4 bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg animate-pulse">
+                        NEW
+                    </div>
                     <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
                         <Table className="text-green-600" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">Bank Statements</h3>
-                    <p className="text-gray-500 text-sm">Upload monthly statements, parse transactions via AI, and sync data.</p>
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">Income, Expenses, Withholding, Salaries</h3>
+                    <p className="text-gray-500 text-sm">Manage monthly financial records, expenses, and salaries.</p>
                 </div>
             </div>
         </div>
