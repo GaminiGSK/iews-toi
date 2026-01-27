@@ -10,9 +10,14 @@ import ToiAcar from './ToiAcar';
 import MOCCertificate from '../components/MOCCertificate';
 
 export default function CompanyProfile() {
-    const [view, setView] = useState('home'); // home, profile, bank
+    const [view, setView] = useState('home'); // home, profile, bank, iews
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
+    const [toiPackages, setToiPackages] = useState([
+        { id: 'toi_2024', year: '2024', status: 'Draft', progress: 0 },
+        { id: 'toi_2023', year: '2023', status: 'Filed', progress: 100 },
+    ]);
+    const [createYear, setCreateYear] = useState('');
     const [uploadingBank, setUploadingBank] = useState(false);
     const [savingBank, setSavingBank] = useState(false);
 
@@ -244,6 +249,127 @@ export default function CompanyProfile() {
 
     // --- Sub-Components ---
 
+    // --- IEWS View Logic (Tax Document Packages) ---
+    const handleCreatePackage = () => {
+        if (!createYear || createYear.length !== 4) {
+            alert("Please enter a valid 4-digit year (e.g. 2025).");
+            return;
+        }
+        if (toiPackages.find(p => p.year === createYear)) {
+            alert("Package for this year already exists.");
+            return;
+        }
+        setToiPackages(prev => [{ id: `toi_${createYear}`, year: createYear, status: 'Draft', progress: 0 }, ...prev]);
+        setCreateYear('');
+        setMessage(`Created TOI Package for ${createYear}`);
+    };
+
+    const renderIEWS = () => (
+        <div className="max-w-6xl mx-auto pt-8 px-6 animate-fade-in relative z-10 w-full h-[calc(100vh-80px)] flex flex-col">
+            {/* Header / Back */}
+            <div className="mb-8 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={() => setView('home')}
+                        className="p-2 bg-slate-800 hover:bg-slate-700 text-white rounded-full transition shadow-md border border-slate-700"
+                    >
+                        <ArrowLeft size={20} />
+                    </button>
+                    <div>
+                        <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-blue-400">
+                            IEWS Workspace
+                        </h1>
+                        <p className="text-gray-400 text-sm">Integrity & Enterprise Work System / TOI Management</p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 flex-1 min-h-0">
+                {/* Left: Package List */}
+                <div className="md:col-span-2 space-y-6 overflow-y-auto pr-2 pb-20">
+                    <div className="bg-slate-800/50 border border-slate-700 rounded-3xl p-6 backdrop-blur-xl">
+                        <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                            <Book className="text-indigo-400" /> Tax Document Packages
+                        </h2>
+
+                        <div className="space-y-4">
+                            {toiPackages.map(pkg => (
+                                <div key={pkg.id} className="bg-slate-900 border border-slate-700 hover:border-indigo-500/50 p-5 rounded-2xl flex items-center justify-between transition-all group shadow-lg">
+                                    <div className="flex items-center gap-4">
+                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg
+                                            ${pkg.status === 'Filed' ? 'bg-green-500/20 text-green-400' : 'bg-indigo-500/20 text-indigo-400'}
+                                        `}>
+                                            TOI
+                                        </div>
+                                        <div>
+                                            <h3 className="text-white font-bold text-lg">Fiscal Year {pkg.year}</h3>
+                                            <div className="flex items-center gap-3 text-sm text-gray-500 mt-1">
+                                                <span className={`px-2 py-0.5 rounded textxs font-bold ${pkg.status === 'Filed' ? 'bg-green-900/30 text-green-400' : 'bg-yellow-900/30 text-yellow-500'}`}>
+                                                    {pkg.status}
+                                                </span>
+                                                <span>• 25 Pages</span>
+                                                <span>• {pkg.progress}% Complete</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => window.location.href = `/tax-live?year=${pkg.year}`}
+                                        className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-indigo-900/40 transition-transform active:scale-95 flex items-center gap-2"
+                                    >
+                                        Open Workspace <ArrowLeft className="rotate-180" size={16} />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right: Create New */}
+                <div className="md:col-span-1">
+                    <div className="bg-gradient-to-br from-indigo-900/40 to-slate-900 border border-indigo-500/30 rounded-3xl p-6 sticky top-6">
+                        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                            <ShieldCheck size={20} className="text-indigo-400" /> New Declaration
+                        </h3>
+                        <p className="text-gray-400 text-sm mb-6 leading-relaxed">
+                            Start a new Annual Tax on Income declaration. This will create a 25-page document package for the selected fiscal year.
+                        </p>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Fiscal Year</label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g. 2025"
+                                    value={createYear}
+                                    onChange={(e) => setCreateYear(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none font-mono text-lg tracking-widest placeholder-slate-600"
+                                />
+                            </div>
+                            <button
+                                onClick={handleCreatePackage}
+                                disabled={!createYear}
+                                className="w-full bg-white text-slate-900 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed font-bold py-3.5 rounded-xl transition shadow-xl"
+                            >
+                                Create TOI Package
+                            </button>
+                        </div>
+
+                        <div className="mt-8 pt-6 border-t border-white/10">
+                            <h4 className="text-xs font-bold text-gray-500 uppercase mb-3">Assistants Ready</h4>
+                            <div className="flex items-center gap-3 bg-slate-800/50 p-3 rounded-xl border border-white/5">
+                                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center font-bold text-xs">GK</div>
+                                <div className="flex-1">
+                                    <div className="text-sm font-bold text-blue-200">GK Blue Agent</div>
+                                    <div className="text-[10px] text-green-400 flex items-center gap-1">● Online - Ready to File</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+
     const renderHome = () => (
         <div className="max-w-6xl mx-auto pt-12 px-6 animate-fade-in relative z-10">
             {/* Background Gradients */}
@@ -273,7 +399,19 @@ export default function CompanyProfile() {
 
                 {/* --- ROW 1: CORE OPERATIONS & COMPLIANCE --- */}
 
-                {/* 1. Bank Statements */}
+                {/* 1. IEWS (Integrity & Enterprise Work System) - TOI Packages */}
+                <div onClick={() => setView('iews')} className="group relative bg-gradient-to-br from-indigo-900/40 to-slate-800/50 hover:bg-slate-800/80 border border-indigo-500/30 hover:border-indigo-400 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-indigo-900/30">
+                    <div className="absolute top-0 right-0 p-3">
+                        <span className="bg-indigo-500 text-white text-[10px] uppercase font-bold px-2 py-1 rounded-full animate-pulse shadow-lg shadow-indigo-500/50">New</span>
+                    </div>
+                    <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-indigo-500/20">
+                        <ShieldCheck className="text-indigo-400 w-6 h-6" />
+                    </div>
+                    <h3 className="text-lg font-bold text-white mb-2 group-hover:text-indigo-300 transition-colors">IEWS / TOI</h3>
+                    <p className="text-gray-400 text-xs leading-relaxed">Manage TOI Document Packages (2025 onwards). Living Form & Compliance.</p>
+                </div>
+
+                {/* 2. Bank Statements */}
                 <div onClick={() => setView('bank')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-green-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-green-900/20">
                     <div className="w-12 h-12 bg-green-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-green-500/20">
                         <Table className="text-green-400 w-6 h-6" />
@@ -282,7 +420,7 @@ export default function CompanyProfile() {
                     <p className="text-gray-400 text-xs leading-relaxed">Upload monthly statements, parse transactions via AI, and sync data.</p>
                 </div>
 
-                {/* 2. General Ledger */}
+                {/* 3. General Ledger */}
                 <div onClick={() => setView('ledger')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-purple-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-purple-900/20">
                     <div className="w-12 h-12 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-purple-500/20">
                         <Book className="text-purple-400 w-6 h-6" />
@@ -291,34 +429,13 @@ export default function CompanyProfile() {
                     <p className="text-gray-400 text-xs leading-relaxed">View chronological financial history of all audited transactions.</p>
                 </div>
 
-                {/* 3. Financial Statements (Standard Card) */}
+                {/* 4. Financial Statements (Standard Card) */}
                 <div onClick={() => setView('financials')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-indigo-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-indigo-900/20">
                     <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-indigo-500/20">
                         <TrendingUp className="text-indigo-400 w-6 h-6" />
                     </div>
                     <h3 className="text-lg font-bold text-white mb-2 group-hover:text-indigo-300 transition-colors">Financial Stmts</h3>
                     <p className="text-gray-400 text-xs leading-relaxed">Generate final audited reports (Income, Balance Sheet, Cash Flow).</p>
-                </div>
-
-                {/* 4. Living Tax Form (NEW) */}
-                <div onClick={() => window.location.href = '/tax-live'} className="group relative bg-gradient-to-br from-blue-900/40 to-slate-800/50 hover:bg-slate-800/80 border border-blue-500/30 hover:border-blue-400 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-blue-900/30">
-                    <div className="absolute top-0 right-0 p-3">
-                        <span className="bg-blue-500 text-white text-[10px] uppercase font-bold px-2 py-1 rounded-full animate-pulse shadow-lg shadow-blue-500/50">Beta</span>
-                    </div>
-                    <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-blue-500/20">
-                        <Scale className="text-blue-400 w-6 h-6" />
-                    </div>
-                    <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-300 transition-colors">Living Tax Form</h3>
-                    <p className="text-gray-400 text-xs leading-relaxed">AI-driven tax compliance. Real-time form generation and auto-filling.</p>
-                </div>
-
-                {/* 4. TOI & ACAR (New Topic) */}
-                <div onClick={() => setView('toi_acar')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-rose-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-rose-900/20">
-                    <div className="w-12 h-12 bg-rose-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-rose-500/20">
-                        <ShieldCheck className="text-rose-400 w-6 h-6" />
-                    </div>
-                    <h3 className="text-lg font-bold text-white mb-2 group-hover:text-rose-300 transition-colors">TOI & ACAR</h3>
-                    <p className="text-gray-400 text-xs leading-relaxed">Tax on Income & ACAR Compliance reporting and auditing tools.</p>
                 </div>
 
                 {/* --- ROW 2: REPORTS & SETTINGS --- */}
@@ -1094,6 +1211,7 @@ export default function CompanyProfile() {
             {/* Main Content */}
             <main className="flex-1 overflow-hidden">
                 {view === 'home' && renderHome()}
+                {view === 'iews' && renderIEWS()}
                 {view === 'profile' && renderProfile()}
                 {view === 'bank' && renderBank()}
                 {view === 'ledger' && <GeneralLedger onBack={() => setView('home')} />}
