@@ -127,17 +127,7 @@ export default function CompanyProfile() {
             <p className="text-blue-200 mb-12">Manage your company entity and financial data with AI precision.</p>
 
             <div className="grid md:grid-cols-2 gap-6">
-                <div
-                    onClick={() => setView('profile')}
-                    className="bg-[#1e293b] p-8 rounded-2xl shadow-xl border border-blue-900/50 cursor-pointer hover:border-blue-500 transition group relative overflow-hidden"
-                >
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-transparent opacity-0 group-hover:opacity-100 transition"></div>
-                    <div className="w-12 h-12 bg-blue-900/50 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition border border-blue-800">
-                        <FileText className="text-blue-400" />
-                    </div>
-                    <h3 className="text-xl font-bold text-white mb-2 relative z-10">Digital Certificate (MOC)</h3>
-                    <p className="text-gray-400 text-sm relative z-10">View and manage your Digital Certificate Twin.</p>
-                </div>
+
 
                 <div
                     onClick={() => setView('bank')}
