@@ -1,10 +1,15 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Loader2, CheckCircle, Table, Save, X, Eye, FileText, CloudUpload } from 'lucide-react';
+import {
+    Loader2, CheckCircle, Table, Save, X, Eye, FileText, CloudUpload,
+    LayoutDashboard, PieChart, Users, Receipt, RefreshCw, BarChart3,
+    FileSpreadsheet, Landmark, ChevronRight, Calculator
+} from 'lucide-react';
 import DigitalCertificate from '../components/DigitalCertificate';
 
 export default function CompanyProfile() {
     const [view, setView] = useState('home'); // home, profile, bank
+    const [subView, setSubView] = useState('dashboard'); // dashboard, income, expenses, etc.
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
     const [uploadingBank, setUploadingBank] = useState(false);
@@ -394,191 +399,245 @@ export default function CompanyProfile() {
         }
     };
 
-    const renderBank = () => (
-        <div className="w-full h-[calc(100vh-80px)] pt-6 px-4 animate-fade-in flex flex-col">
-            <button onClick={() => setView('home')} className="text-gray-400 hover:text-gray-600 mb-4 flex items-center text-sm font-medium transition shrink-0">
-                ← Back to Dashboard
-            </button>
+    const renderFinancialDashboard = () => {
+        const navItems = [
+            { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+            { id: 'income', label: 'Income', icon: PieChart },
+            { id: 'expenses', label: 'Expenses', icon: Receipt },
+            { id: 'customer', label: 'Customer', icon: Users },
+            { id: 'invoice', label: 'Invoice', icon: FileSpreadsheet },
+            { divider: true },
+            { id: 'auto-reporting', label: 'Auto Reporting', icon: RefreshCw },
+            { id: 'financial-reports', label: 'Financial Reports', icon: BarChart3 },
+            { id: 'gdt-toi', label: 'GDT TOI Submission', icon: Landmark },
+            { id: 'acar', label: 'ACAR Submission', icon: CloudUpload },
+        ];
 
-            <div className="flex flex-1 gap-6 min-h-0">
+        return (
+            <div className="flex h-screen bg-[#f8fafc] overflow-hidden">
+                {/* SIDEBAR */}
+                <aside className="w-64 bg-white border-r border-gray-200 flex flex-col shrink-0">
+                    <div className="p-6">
+                        <div className="flex items-center gap-2 mb-8">
+                            <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                                <span className="text-orange-600 font-bold text-xl">🤓</span>
+                            </div>
+                            <div>
+                                <h2 className="font-bold text-[#1e293b] leading-none">IEWS</h2>
+                                <p className="text-[10px] text-red-500 font-bold">Your AI Accountant</p>
+                            </div>
+                        </div>
 
-                {/* COLUMN 1: UPLOAD ZONE (Vertical) */}
-                <div className="w-64 shrink-0 flex flex-col">
-                    <div
-                        className="flex-1 bg-white border-2 border-dashed border-green-200 rounded-2xl p-4 text-center hover:border-green-400 hover:bg-green-50/30 transition relative group flex flex-col items-center justify-center cursor-pointer"
-                        onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                        onDrop={async (e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            if (uploadingBank) return;
-                            const fileList = Array.from(e.dataTransfer.files);
-                            if (fileList.length === 0) return;
-                            handleFiles(fileList);
-                        }}
-                    >
-                        <input
-                            type="file"
-                            accept="image/*,.pdf"
-                            multiple
-                            onChange={(e) => {
-                                if (e.target.files?.length > 0) handleFiles(Array.from(e.target.files));
-                            }}
-                            disabled={uploadingBank}
-                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                        />
+                        <nav className="space-y-1">
+                            {navItems.map((item, i) => {
+                                if (item.divider) return <div key={i} className="my-4 border-t border-gray-100"></div>;
+                                const Icon = item.icon;
+                                const isActive = subView === item.id;
+                                return (
+                                    <button
+                                        key={item.id}
+                                        onClick={() => setSubView(item.id)}
+                                        className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isActive
+                                                ? 'bg-blue-50 text-blue-600 shadow-sm'
+                                                : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                                            }`}
+                                    >
+                                        <Icon size={18} />
+                                        <span>{item.label}</span>
+                                    </button>
+                                );
+                            })}
+                        </nav>
+                    </div>
 
-                        {uploadingBank && (
-                            <div className="absolute inset-0 bg-white/95 z-20 flex flex-col items-center justify-center backdrop-blur-md rounded-2xl">
-                                <Loader2 className="animate-spin h-8 w-8 text-blue-600 mb-2" />
-                                <p className="text-xs font-bold text-gray-700 animate-pulse">Analyzing...</p>
+                    <div className="mt-auto p-4">
+                        <div className="bg-blue-50/50 rounded-xl p-4 border border-blue-100">
+                            <p className="text-[10px] font-bold text-orange-600 mb-1">4,128 KHR / USD</p>
+                            <p className="text-[10px] text-blue-800 font-medium">{new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                            <button className="text-[10px] text-blue-600 underline mt-2 block">Exchange Rate Table</button>
+                        </div>
+                    </div>
+                </aside>
+
+                {/* MAIN CONTENT AREA */}
+                <main className="flex-1 flex flex-col min-w-0 overflow-hidden text-gray-900">
+                    {/* TOP HEADER */}
+                    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 shrink-0">
+                        <div>
+                            <h1 className="text-lg font-bold text-[#1e293b] capitalize">{subView.replace('-', ' ')}</h1>
+                            <div className="flex items-center gap-2 text-[10px] text-gray-400">
+                                <button onClick={() => setView('home')} className="hover:text-blue-500">Home</button>
+                                <ChevronRight size={10} />
+                                <span className="capitalize">{subView.replace('-', ' ')}</span>
+                            </div>
+                        </div>
+                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 border border-blue-200">
+                            <Users size={16} />
+                        </div>
+                    </header>
+
+                    {/* CONTENT SCROLL AREA */}
+                    <div className="flex-1 overflow-auto p-8 bg-gray-50/50">
+                        {subView === 'dashboard' && (
+                            <div className="bg-white p-12 rounded-2xl border border-gray-100 shadow-sm text-center">
+                                <p className="text-gray-500 font-medium">You're logged in!</p>
                             </div>
                         )}
 
-                        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-700 mb-4">
-                            <CloudUpload size={24} />
-                        </div>
-                        <h3 className="font-bold text-gray-800 text-sm mb-2 leading-tight">
-                            Submit your bank statement
-                        </h3>
-                        <p className="text-xs text-gray-400">
-                            Drag & drop or Click to Upload
-                        </p>
-                    </div>
-                </div>
-
-                {/* COLUMN 2: FILE LIST */}
-                <div className="w-80 shrink-0 flex flex-col space-y-4">
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col h-full overflow-hidden">
-                        <div className="p-4 bg-gray-50 border-b border-gray-100 font-bold text-gray-700 flex justify-between items-center shrink-0">
-                            <span>Uploaded Files ({bankFiles.length})</span>
-                            <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">Saved</span>
-                        </div>
-                        <div className="divide-y divide-gray-100 overflow-y-auto flex-1 p-2">
-                            {bankFiles.map((file, idx) => (
-                                <div
-                                    key={idx}
-                                    className={`p-3 mb-2 rounded-lg flex items-center justify-between transition cursor-pointer group ${activeFileIndex === idx ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50 border border-transparent'}`}
-                                    onClick={() => setActiveFileIndex(idx)}
-                                >
-                                    <div className="flex-1 min-w-0 mr-2">
-                                        <p className="font-bold text-gray-800 text-xs truncate mb-1">{file.originalName}</p>
-                                        <p className="text-[10px] text-gray-500 font-mono">{file.dateRange || 'Processing...'}</p>
-                                        <p className="text-[10px] text-gray-400">{(file.transactions || []).length} txs</p>
-                                    </div>
-
-                                    <div className="flex gap-1">
-                                        {/* DELETE */}
-                                        <button
-                                            onClick={async (e) => {
-                                                e.stopPropagation();
-                                                handleDelete(idx, file);
+                        {subView === 'income' && (
+                            <div className="flex flex-col h-full gap-6">
+                                <div className="flex gap-6 h-[400px] shrink-0">
+                                    {/* UPLOAD ZONE */}
+                                    <div className="w-64 shrink-0">
+                                        <div
+                                            className="h-full bg-white border-2 border-dashed border-green-200 rounded-2xl p-4 text-center hover:border-green-400 hover:bg-green-50/30 transition relative group flex flex-col items-center justify-center cursor-pointer shadow-sm"
+                                            onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                                            onDrop={async (e) => {
+                                                e.preventDefault(); e.stopPropagation();
+                                                if (uploadingBank) return;
+                                                const fileList = Array.from(e.dataTransfer.files);
+                                                if (fileList.length > 0) handleFiles(fileList);
                                             }}
-                                            className="p-1.5 rounded-full hover:bg-red-100 text-gray-300 hover:text-red-500 transition"
                                         >
-                                            <X size={14} />
-                                        </button>
-                                        {/* EYE */}
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); setActiveFileIndex(idx); }}
-                                            className={`p-1.5 rounded-full transition ${activeFileIndex === idx ? 'text-blue-600 bg-blue-100' : 'text-gray-300 hover:text-blue-500'}`}
-                                        >
-                                            <Eye size={14} />
-                                        </button>
+                                            <input
+                                                type="file" accept="image/*,.pdf" multiple
+                                                onChange={(e) => { if (e.target.files?.length > 0) handleFiles(Array.from(e.target.files)); }}
+                                                disabled={uploadingBank}
+                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                            />
+                                            {uploadingBank && (
+                                                <div className="absolute inset-0 bg-white/95 z-20 flex flex-col items-center justify-center backdrop-blur-md rounded-2xl">
+                                                    <Loader2 className="animate-spin h-8 w-8 text-blue-600 mb-2" />
+                                                    <p className="text-xs font-bold text-gray-700 animate-pulse">Analyzing...</p>
+                                                </div>
+                                            )}
+                                            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-700 mb-4">
+                                                <CloudUpload size={24} />
+                                            </div>
+                                            <h3 className="font-bold text-gray-800 text-sm mb-2">Submit bank statement</h3>
+                                            <p className="text-xs text-gray-400">Drag & drop or Click to Upload</p>
+                                        </div>
+                                    </div>
+
+                                    {/* FILE LIST */}
+                                    <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col overflow-hidden">
+                                        <div className="p-4 bg-gray-50/50 border-b border-gray-100 font-bold text-gray-700 flex justify-between items-center">
+                                            <span>Uploaded Files ({bankFiles.length})</span>
+                                        </div>
+                                        <div className="divide-y divide-gray-100 overflow-y-auto flex-1 p-2">
+                                            {bankFiles.map((file, idx) => (
+                                                <div
+                                                    key={idx}
+                                                    onClick={() => setActiveFileIndex(idx)}
+                                                    className={`p-3 mb-1 rounded-lg flex items-center justify-between transition cursor-pointer ${activeFileIndex === idx ? 'bg-blue-50 border-blue-200 border' : 'hover:bg-gray-50 border border-transparent'}`}
+                                                >
+                                                    <div className="flex-1 min-w-0 mr-2">
+                                                        <p className="font-bold text-gray-800 text-[11px] truncate">{file.originalName}</p>
+                                                        <p className="text-[9px] text-gray-400 font-mono italic">{file.dateRange || 'Processing...'}</p>
+                                                    </div>
+                                                    <div className="flex gap-1 shrink-0">
+                                                        <button onClick={(e) => { e.stopPropagation(); handleDelete(idx, file); }} className="p-1.5 rounded-full hover:bg-red-100 text-gray-300 hover:text-red-500 transition">
+                                                            <X size={12} />
+                                                        </button>
+                                                        <button className={`p-1.5 rounded-full ${activeFileIndex === idx ? 'text-blue-600 bg-blue-100' : 'text-gray-300'}`}>
+                                                            <Eye size={12} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            {bankFiles.length === 0 && <div className="text-center py-10 text-gray-300 text-xs italic">No files yet.</div>}
+                                        </div>
+                                        <div className="p-4 border-t border-gray-100 bg-gray-50/30 flex gap-2">
+                                            <button
+                                                onClick={handleSaveTransactions}
+                                                disabled={savingBank || bankFiles.length === 0}
+                                                className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition disabled:bg-gray-300 flex items-center justify-center gap-2 shadow-sm text-xs"
+                                            >
+                                                {savingBank ? <Loader2 className="animate-spin h-3 w-3" /> : <Save size={14} />}
+                                                {savingBank ? 'SAVING...' : 'SAVE ALL'}
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                            ))}
-                            {bankFiles.length === 0 && (
-                                <div className="text-center py-10 text-gray-300 text-xs italic">
-                                    No files yet.
+
+                                {/* TABLE AREA */}
+                                <div className="flex-1 min-h-0 bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col overflow-hidden">
+                                    <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between shrink-0">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-blue-50 rounded-lg text-blue-500">
+                                                <Table size={18} />
+                                            </div>
+                                            <h3 className="font-bold text-gray-700 text-sm">Statement Transactions</h3>
+                                        </div>
+                                        <span className="text-[10px] bg-green-100 text-green-700 px-3 py-1 rounded-full font-bold">VERIFIED</span>
+                                    </div>
+                                    <div className="flex-1 overflow-auto">
+                                        <table className="w-full text-left text-[11px]">
+                                            <thead className="bg-[#f8fafc] text-gray-500 font-bold uppercase sticky top-0 z-10 border-b border-gray-100">
+                                                <tr>
+                                                    <th className="px-6 py-3 w-[120px]">Date</th>
+                                                    <th className="px-6 py-3">Description</th>
+                                                    <th className="px-6 py-3 text-right">In</th>
+                                                    <th className="px-6 py-3 text-right">Out</th>
+                                                    <th className="px-6 py-3 text-right">Balance</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-50">
+                                                {(bankFiles[activeFileIndex]?.transactions || []).length === 0 ? (
+                                                    <tr><td colSpan="5" className="text-center py-20 text-gray-300 italic">No data selected</td></tr>
+                                                ) : (
+                                                    (bankFiles[activeFileIndex]?.transactions || []).map((tx, idx) => (
+                                                        <tr key={idx} className="hover:bg-blue-50/30 transition">
+                                                            <td className="px-6 py-3 text-gray-500 font-medium">
+                                                                {tx.date ? new Date(tx.date).toLocaleDateString('en-GB') : '-'}
+                                                            </td>
+                                                            <td className="px-6 py-3 text-gray-700 font-medium">{tx.description}</td>
+                                                            <td className="px-6 py-3 text-right text-green-600 font-bold">
+                                                                {tx.moneyIn > 0 ? parseFloat(tx.moneyIn).toLocaleString() : ''}
+                                                            </td>
+                                                            <td className="px-6 py-3 text-right text-red-600 font-bold">
+                                                                {tx.moneyOut > 0 ? parseFloat(tx.moneyOut).toLocaleString() : ''}
+                                                            </td>
+                                                            <td className="px-6 py-3 text-right text-blue-900 font-bold">
+                                                                {tx.balance ? parseFloat(String(tx.balance).replace(/[^0-9.-]+/g, "")).toLocaleString() : '-'}
+                                                            </td>
+                                                        </tr>
+                                                    ))
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
-                            )}
-                        </div>
-                        <div className="p-4 border-t border-gray-100 bg-gray-50 shrink-0">
-                            <button
-                                onClick={handleSaveTransactions}
-                                disabled={savingBank || bankFiles.length === 0}
-                                className="w-full bg-black text-white px-4 py-3 rounded-lg font-bold hover:bg-gray-800 transition disabled:bg-gray-400 flex items-center justify-center gap-2 shadow-md text-sm"
-                            >
-                                {savingBank ? <Loader2 className="animate-spin h-4 w-4" /> : <Save size={16} />}
-                                {savingBank ? 'SAVING...' : 'SAVE ALL'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                {/* COLUMN 3: DETAILS TABLE */}
-                <div className="flex-1 min-w-0 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col overflow-hidden h-full">
-                    <div className="p-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between shrink-0">
-                        <div className="flex items-center">
-                            <div className="p-2 bg-blue-50 rounded-lg mr-3">
-                                <Table className="text-blue-500" size={20} />
                             </div>
-                            <div>
-                                <h3 className="font-bold text-gray-800">Page Details</h3>
-                                <p className="text-xs text-gray-500">{bankFiles[activeFileIndex]?.dateRange || 'Select a file'}</p>
-                            </div>
-                        </div>
-                        <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium flex items-center">
-                            <CheckCircle size={12} className="mr-1" /> Verified
-                        </span>
-                    </div>
+                        )}
 
-                    <div className="flex-1 overflow-auto bg-white">
-                        <table className="w-full text-left">
-                            <thead className="bg-white text-gray-800 text-xs font-bold uppercase sticky top-0 z-10 border-b border-gray-200 shadow-sm">
-                                <tr>
-                                    <th className="px-4 py-4 whitespace-nowrap w-[120px]">Date</th>
-                                    <th className="px-4 py-4 w-[40%]">Transaction Details</th>
-                                    <th className="px-4 py-4 text-right w-[15%]">Money In</th>
-                                    <th className="px-4 py-4 text-right w-[15%]">Money Out</th>
-                                    <th className="px-4 py-4 text-right w-[15%]">Balance</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                                {(bankFiles[activeFileIndex]?.transactions || []).length === 0 ? (
-                                    <tr>
-                                        <td colSpan="5" className="text-center py-10 text-gray-400">No transactions to display</td>
-                                    </tr>
-                                ) : (
-                                    (bankFiles[activeFileIndex]?.transactions || []).map((tx, idx) => (
-                                        <tr key={idx} className="hover:bg-gray-50 transition group">
-                                            <td className="px-4 py-4 text-xs text-gray-600 font-bold whitespace-nowrap align-top">
-                                                {tx.date ? new Date(tx.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
-                                            </td>
-                                            <td className="px-4 py-4 text-xs text-gray-700 font-medium whitespace-pre-wrap leading-relaxed align-top">
-                                                {tx.description}
-                                            </td>
-                                            <td className="px-4 py-4 text-xs text-right font-medium text-gray-800 align-top whitespace-nowrap">
-                                                {tx.moneyIn && parseFloat(tx.moneyIn) > 0 ? parseFloat(tx.moneyIn).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
-                                            </td>
-                                            <td className="px-4 py-4 text-xs text-right font-medium text-gray-800 align-top whitespace-nowrap">
-                                                {tx.moneyOut && parseFloat(tx.moneyOut) > 0 ? parseFloat(tx.moneyOut).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
-                                            </td>
-                                            <td className="px-4 py-4 text-xs text-right text-gray-800 font-bold align-top whitespace-nowrap">
-                                                {tx.balance ? parseFloat(String(tx.balance).replace(/[^0-9.-]+/g, "")).toLocaleString('en-US', { minimumFractionDigits: 2 }) : '-'}
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
+                        {subView !== 'dashboard' && subView !== 'income' && (
+                            <div className="h-full flex flex-col items-center justify-center opacity-30 grayscale pointer-events-none">
+                                <Landmark size={80} className="mb-4 text-blue-900" />
+                                <h2 className="text-2xl font-bold uppercase tracking-widest">{subView.replace('-', ' ')}</h2>
+                                <p className="font-mono text-sm mt-2">v3.4 Standalone Module | Pending Setup</p>
+                            </div>
+                        )}
                     </div>
-                </div>
+                </main>
+
+                {message && (
+                    <div className="fixed bottom-8 right-8 z-[100] animate-bounce-in">
+                        <div className={`px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3 font-bold text-sm ${message.includes('Error') ? 'bg-red-500 text-white' : 'bg-[#1e293b] text-white border border-blue-500/30'}`}>
+                            {message.includes('Error') ? <X size={20} /> : <CheckCircle size={20} className="text-blue-400" />}
+                            {message}
+                        </div>
+                    </div>
+                )}
             </div>
-
-            {message && (
-                <div className={`mt-4 mx-auto max-w-lg p-3 rounded-full text-xs font-bold text-center fixed bottom-6 left-0 right-0 shadow-lg z-50 animate-bounce-in ${message.includes('Error') ? 'bg-red-500 text-white' : 'bg-black text-white'}`}>
-                    {message}
-                </div>
-            )}
-        </div>
-    );
+        );
+    };
 
     return (
         <div className="min-h-screen bg-[#0f172a]">
             {view === 'home' && renderHome()}
             {view === 'profile' && renderProfile()}
-            {view === 'bank' && renderBank()}
+            {view === 'bank' && renderFinancialDashboard()}
         </div>
     );
 }
