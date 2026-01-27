@@ -264,7 +264,29 @@ export default function CompanyProfile() {
         setMessage(`Created TOI Package for ${createYear}`);
     };
 
+    // --- IEWS Placeholder ---
     const renderIEWS = () => (
+        <div className="w-full max-w-[1600px] mx-0 pt-8 pl-10 pr-[450px] animate-fade-in relative z-10 w-full h-[calc(100vh-80px)] flex flex-col">
+            <div className="mb-8 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <button onClick={() => setView('home')} className="p-2 bg-slate-800 hover:bg-slate-700 text-white rounded-full transition shadow-md border border-slate-700">
+                        <ArrowLeft size={20} />
+                    </button>
+                    <h1 className="text-3xl font-extrabold text-white">IEWS Dashboard</h1>
+                </div>
+            </div>
+            <div className="flex-1 flex items-center justify-center border border-dashed border-slate-700 rounded-3xl bg-slate-800/20">
+                <div className="text-center">
+                    <ShieldCheck size={64} className="mx-auto text-indigo-500/50 mb-4" />
+                    <h2 className="text-xl font-bold text-gray-400">Integrity & Enterprise Work System</h2>
+                    <p className="text-gray-500 mt-2">Global compliance and workflow monitor coming soon.</p>
+                </div>
+            </div>
+        </div>
+    );
+
+    // --- REPURPOSED: Tax Packages (Was renderIEWS) ---
+    const renderTaxPackages = () => (
         <div className="w-full max-w-[1600px] mx-0 pt-8 pl-10 pr-[450px] animate-fade-in relative z-10 w-full h-[calc(100vh-80px)] flex flex-col">
             {/* Header / Back */}
             <div className="mb-8 flex items-center justify-between">
@@ -276,10 +298,10 @@ export default function CompanyProfile() {
                         <ArrowLeft size={20} />
                     </button>
                     <div>
-                        <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-blue-400">
-                            IEWS Workspace
+                        <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-pink-400">
+                            TOI & ACAR Compliance
                         </h1>
-                        <p className="text-gray-400 text-sm">Integrity & Enterprise Work System / TOI Management</p>
+                        <p className="text-gray-400 text-sm">Tax on Income Management & Audit Reports</p>
                     </div>
                 </div>
             </div>
@@ -289,15 +311,15 @@ export default function CompanyProfile() {
                 <div className="md:col-span-2 space-y-6 overflow-y-auto pr-2 pb-20">
                     <div className="bg-slate-800/50 border border-slate-700 rounded-3xl p-6 backdrop-blur-xl">
                         <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
-                            <Book className="text-indigo-400" /> Tax Document Packages
+                            <Book className="text-rose-400" /> Tax Document Packages
                         </h2>
 
                         <div className="space-y-4">
                             {toiPackages.map(pkg => (
-                                <div key={pkg.id} className="bg-slate-900 border border-slate-700 hover:border-indigo-500/50 p-5 rounded-2xl flex items-center justify-between transition-all group shadow-lg">
+                                <div key={pkg.id} className="bg-slate-900 border border-slate-700 hover:border-rose-500/50 p-5 rounded-2xl flex items-center justify-between transition-all group shadow-lg">
                                     <div className="flex items-center gap-4">
                                         <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg
-                                            ${pkg.status === 'Filed' ? 'bg-green-500/20 text-green-400' : 'bg-indigo-500/20 text-indigo-400'}
+                                            ${pkg.status === 'Filed' ? 'bg-green-500/20 text-green-400' : 'bg-rose-500/20 text-rose-400'}
                                         `}>
                                             TOI
                                         </div>
@@ -314,7 +336,7 @@ export default function CompanyProfile() {
                                     </div>
                                     <button
                                         onClick={() => window.location.href = `/tax-live?year=${pkg.year}`}
-                                        className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-indigo-900/40 transition-transform active:scale-95 flex items-center gap-2"
+                                        className="bg-rose-600 hover:bg-rose-500 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-rose-900/40 transition-transform active:scale-95 flex items-center gap-2"
                                     >
                                         Open Workspace <ArrowLeft className="rotate-180" size={16} />
                                     </button>
@@ -326,9 +348,9 @@ export default function CompanyProfile() {
 
                 {/* Right: Create New */}
                 <div className="md:col-span-1">
-                    <div className="bg-gradient-to-br from-indigo-900/40 to-slate-900 border border-indigo-500/30 rounded-3xl p-6 sticky top-6">
+                    <div className="bg-gradient-to-br from-rose-900/40 to-slate-900 border border-rose-500/30 rounded-3xl p-6 sticky top-6">
                         <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                            <ShieldCheck size={20} className="text-indigo-400" /> New Declaration
+                            <ShieldCheck size={20} className="text-rose-400" /> New Declaration
                         </h3>
                         <p className="text-gray-400 text-sm mb-6 leading-relaxed">
                             Start a new Annual Tax on Income declaration. This will create a 25-page document package for the selected fiscal year.
@@ -342,7 +364,7 @@ export default function CompanyProfile() {
                                     placeholder="e.g. 2025"
                                     value={createYear}
                                     onChange={(e) => setCreateYear(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none font-mono text-lg tracking-widest placeholder-slate-600"
+                                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-rose-500 outline-none font-mono text-lg tracking-widest placeholder-slate-600"
                                 />
                             </div>
                             <button
@@ -450,7 +472,7 @@ export default function CompanyProfile() {
                 </div>
 
                 {/* 6. TOI & ACAR */}
-                <div onClick={() => setView('toi_acar')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-rose-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-rose-900/20">
+                <div onClick={() => setView('tax_packages')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-rose-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-rose-900/20">
                     <div className="w-12 h-12 bg-rose-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-rose-500/20">
                         <ShieldCheck className="text-rose-400 w-6 h-6" />
                     </div>
@@ -1229,7 +1251,7 @@ export default function CompanyProfile() {
                 {view === 'currency' && <CurrencyExchange onBack={() => setView('home')} />}
                 {view === 'report' && <TrialBalance onBack={() => setView('home')} />}
                 {view === 'financials' && <FinancialStatements onBack={() => setView('home')} />}
-                {view === 'toi_acar' && <ToiAcar onBack={() => setView('home')} />}
+                {view === 'tax_packages' && renderTaxPackages()}
             </main>
 
             {/* DOCUMENT INSPECTOR MODAL */}
