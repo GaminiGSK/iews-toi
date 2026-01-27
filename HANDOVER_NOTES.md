@@ -28,6 +28,11 @@
     - **High-Fidelity Header**: Implemented exact replica of TOI 01 header including GDT Seal and correct box positioning.
     - **Bilingual Support**: Full schema support for Khmer and English labels.
     - **Agent Simulation**: "Auto-Fill" feature demonstrates dynamic data population into the official structure.
+
+- [x] **Context-Aware AI Assistant**:
+    - `AIAssistant.jsx` now tracks user navigation (Route-Awareness).
+    - `AnalystAgent` (Backend) updated to recognize `/tax-live` context.
+    - Agent can now "see" the active form and offer specific assistance.
     - **Real-Time Filling**: Agent pushes data to the form live.
     - **Self-Healing**: Agent detects "Export Sales" and *changes the form structure* (Schema) on the fly to add new tax sections.
 
