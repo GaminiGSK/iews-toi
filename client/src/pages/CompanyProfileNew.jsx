@@ -265,7 +265,7 @@ export default function CompanyProfile() {
     };
 
     const renderIEWS = () => (
-        <div className="max-w-6xl mx-auto pt-8 px-6 animate-fade-in relative z-10 w-full h-[calc(100vh-80px)] flex flex-col">
+        <div className="w-full max-w-[1600px] mx-0 pt-8 pl-10 pr-[450px] animate-fade-in relative z-10 w-full h-[calc(100vh-80px)] flex flex-col">
             {/* Header / Back */}
             <div className="mb-8 flex items-center justify-between">
                 <div className="flex items-center gap-4">
@@ -371,7 +371,7 @@ export default function CompanyProfile() {
     );
 
     const renderHome = () => (
-        <div className="max-w-6xl mx-auto pt-12 px-6 animate-fade-in relative z-10">
+        <div className="w-full max-w-[1600px] mx-0 pt-12 pl-10 pr-[450px] animate-fade-in relative z-10">
             {/* Background Gradients */}
             <div className="absolute top-0 left-0 w-full h-96 bg-blue-600/10 rounded-full blur-[128px] pointer-events-none -z-10" />
             <div className="absolute bottom-0 right-0 w-full h-96 bg-purple-600/10 rounded-full blur-[128px] pointer-events-none -z-10" />
@@ -397,9 +397,9 @@ export default function CompanyProfile() {
             {/* Main Grid Layout - Sleek Design */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
-                {/* --- ROW 1: CORE OPERATIONS & COMPLIANCE --- */}
+                {/* --- ROW 1: CORE WORKFLOW --- */}
 
-                {/* 1. IEWS (Integrity & Enterprise Work System) - TOI Packages */}
+                {/* 1. IEWS (Integrity & Enterprise Work System) */}
                 <div onClick={() => setView('iews')} className="group relative bg-gradient-to-br from-indigo-900/40 to-slate-800/50 hover:bg-slate-800/80 border border-indigo-500/30 hover:border-indigo-400 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-indigo-900/30">
                     <div className="absolute top-0 right-0 p-3">
                         <span className="bg-indigo-500 text-white text-[10px] uppercase font-bold px-2 py-1 rounded-full animate-pulse shadow-lg shadow-indigo-500/50">New</span>
@@ -407,8 +407,8 @@ export default function CompanyProfile() {
                     <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-indigo-500/20">
                         <ShieldCheck className="text-indigo-400 w-6 h-6" />
                     </div>
-                    <h3 className="text-lg font-bold text-white mb-2 group-hover:text-indigo-300 transition-colors">IEWS / TOI</h3>
-                    <p className="text-gray-400 text-xs leading-relaxed">Manage TOI Document Packages (2025 onwards). Living Form & Compliance.</p>
+                    <h3 className="text-lg font-bold text-white mb-2 group-hover:text-indigo-300 transition-colors">IEWS</h3>
+                    <p className="text-gray-400 text-xs leading-relaxed">Enterprise Work System. Manage workflow packages.</p>
                 </div>
 
                 {/* 2. Bank Statements */}
@@ -429,18 +429,7 @@ export default function CompanyProfile() {
                     <p className="text-gray-400 text-xs leading-relaxed">View chronological financial history of all audited transactions.</p>
                 </div>
 
-                {/* 4. Financial Statements (Standard Card) */}
-                <div onClick={() => setView('financials')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-indigo-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-indigo-900/20">
-                    <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-indigo-500/20">
-                        <TrendingUp className="text-indigo-400 w-6 h-6" />
-                    </div>
-                    <h3 className="text-lg font-bold text-white mb-2 group-hover:text-indigo-300 transition-colors">Financial Stmts</h3>
-                    <p className="text-gray-400 text-xs leading-relaxed">Generate final audited reports (Income, Balance Sheet, Cash Flow).</p>
-                </div>
-
-                {/* --- ROW 2: REPORTS & SETTINGS --- */}
-
-                {/* 5. Trial Balance (Moved to Row 2) */}
+                {/* 4. Trial Balance */}
                 <div onClick={() => setView('report')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-cyan-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-cyan-900/20">
                     <div className="w-12 h-12 bg-cyan-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-cyan-500/20">
                         <Scale className="text-cyan-400 w-6 h-6" />
@@ -449,7 +438,27 @@ export default function CompanyProfile() {
                     <p className="text-gray-400 text-xs leading-relaxed">View Unadjusted & Adjusted Trial Balance reports.</p>
                 </div>
 
-                {/* 6. Company Profile */}
+                {/* --- ROW 2: REPORTING & SETTINGS --- */}
+
+                {/* 5. Financial Statements */}
+                <div onClick={() => setView('financials')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-indigo-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-indigo-900/20">
+                    <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-indigo-500/20">
+                        <TrendingUp className="text-indigo-400 w-6 h-6" />
+                    </div>
+                    <h3 className="text-lg font-bold text-white mb-2 group-hover:text-indigo-300 transition-colors">Financial Stmts</h3>
+                    <p className="text-gray-400 text-xs leading-relaxed">Generate final audited reports (Income, Balance Sheet, Cash Flow).</p>
+                </div>
+
+                {/* 6. TOI & ACAR */}
+                <div onClick={() => setView('toi_acar')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-rose-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-rose-900/20">
+                    <div className="w-12 h-12 bg-rose-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-rose-500/20">
+                        <ShieldCheck className="text-rose-400 w-6 h-6" />
+                    </div>
+                    <h3 className="text-lg font-bold text-white mb-2 group-hover:text-rose-300 transition-colors">TOI & ACAR</h3>
+                    <p className="text-gray-400 text-xs leading-relaxed">Live Tax Form, Tax on Income & ACAR Compliance.</p>
+                </div>
+
+                {/* 7. Company Profile */}
                 <div onClick={() => setView('profile')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-blue-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-blue-900/20">
                     <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-blue-500/20">
                         <FileText className="text-blue-400 w-6 h-6" />
@@ -458,7 +467,7 @@ export default function CompanyProfile() {
                     <p className="text-gray-400 text-xs leading-relaxed">Update official registration details, MOC certificates, and shareholders.</p>
                 </div>
 
-                {/* 7. Accounting Codes */}
+                {/* 8. Accounting Codes */}
                 <div onClick={() => setView('codes')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-orange-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-orange-900/20">
                     <div className="w-12 h-12 bg-orange-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-orange-500/20">
                         <Tag className="text-orange-400 w-6 h-6" />
@@ -467,7 +476,7 @@ export default function CompanyProfile() {
                     <p className="text-gray-400 text-xs leading-relaxed">Manage Chart of Accounts codes and standard descriptions.</p>
                 </div>
 
-                {/* 8. Currency Exchange */}
+                {/* 9. Currency Exchange */}
                 <div onClick={() => setView('currency')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-teal-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-teal-900/20">
                     <div className="w-12 h-12 bg-teal-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-teal-500/20">
                         <DollarSign className="text-teal-400 w-6 h-6" />
@@ -475,6 +484,7 @@ export default function CompanyProfile() {
                     <h3 className="text-lg font-bold text-white mb-2 group-hover:text-teal-300 transition-colors">Currency Exchange</h3>
                     <p className="text-gray-400 text-xs leading-relaxed">Set Annual Exchange Rates (USD to KHR) for compliance.</p>
                 </div>
+                {/* Layout Updated: 2026-01-27 16:50 */}
 
             </div>
         </div>
