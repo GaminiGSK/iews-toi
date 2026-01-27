@@ -299,7 +299,7 @@ export default function CompanyProfile() {
                     </button>
                     <div>
                         <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-pink-400">
-                            TOI & ACAR Compliance
+                            TOI & ACAR Compliance <span className="text-xs text-white bg-rose-500/20 px-2 py-0.5 rounded ml-2">v2.5</span>
                         </h1>
                         <p className="text-gray-400 text-sm">Tax on Income Management & Audit Reports</p>
                     </div>
