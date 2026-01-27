@@ -97,8 +97,8 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
 
             {/* --- OFFICIAL HEADER (REPLICA) --- */}
             <div className="relative mb-8 font-serif">
-                {/* Form Code Top Left */}
-                <div className="absolute -top-6 -left-2 font-bold text-lg tracking-wide font-serif text-black">TOI 01 / I</div>
+                {/* Form Code Top Left - Larger Font */}
+                <div className="absolute -top-6 -left-2 font-bold text-2xl tracking-wide font-serif text-black">TOI 01 / I</div>
 
                 <div className="flex justify-between items-start mt-8">
                     {/* Left Column: Ministry & Dept */}
@@ -109,17 +109,17 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                         <h3 className="font-khmer font-bold text-xs mb-1">អគ្គនាយកដ្ឋានពន្ធដារ</h3>
                         <h4 className="font-bold text-[11px] uppercase mb-4 w-full max-w-[240px] tracking-wide">GENERAL DEPARTMENT OF TAXATION</h4>
 
-                        {/* Form Name Box */}
-                        <div className="border-2 border-black p-1 bg-slate-100 text-center w-full max-w-[260px] shadow-[3px_3px_0px_rgba(0,0,0,0.15)] transform -rotate-1">
+                        {/* Form Name Box - Straight (Removed Rotation) */}
+                        <div className="border-2 border-black p-1 bg-slate-100 text-center w-full max-w-[260px] shadow-[3px_3px_0px_rgba(0,0,0,0.15)]">
                             <h3 className="font-khmer font-bold text-sm leading-tight text-black">ទម្រង់ ពបច ០១ / FORM TOI 01</h3>
                         </div>
                         <p className="font-khmer text-[9px] mt-2 leading-tight text-slate-600">(មាត្រា ២៩ ថ្មី នៃច្បាប់ស្តីពីសារពើពន្ធ )</p>
                         <p className="text-[9px] leading-tight text-slate-600">(Article 29 New of the Law on Taxation)</p>
                     </div>
 
-                    {/* Center Column: Logo */}
+                    {/* Center Column: Logo - Increased 25% (w-40 h-40) */}
                     <div className="w-[30%] flex flex-col items-center justify-start pt-0">
-                        <div className="w-32 h-32 relative mb-2">
+                        <div className="w-40 h-40 relative mb-2">
                             {/* Use the Replica Image with Multiply Blend for 'Ink' effect */}
                             <img
                                 src="/assets/gdt_seal.png"
