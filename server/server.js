@@ -48,6 +48,7 @@ if (process.env.NODE_ENV === 'production') {
 const startServer = async () => {
     try {
         console.log('Attempting to connect to MongoDB...');
+        console.log('Tax Persistence Module Loaded (v2.5)');
         await mongoose.connect(process.env.MONGODB_URI, {
             serverSelectionTimeoutMS: 30000 // 30s Timeout for Cold Starts
         });
