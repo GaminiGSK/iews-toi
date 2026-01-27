@@ -240,15 +240,17 @@ const LiveTaxWorkspace = () => {
                 </div>
             </div>
 
-            {/* Main Canvas */}
-            <div className="pt-28 pb-20 px-6 flex justify-center print:pt-0 print:px-0">
-                {/* Paper Shadow Effect */}
-                <DynamicForm
-                    schema={schema}
-                    data={formData}
-                    onChange={handleChange}
-                    onSubmit={() => alert('Submit To Backend')}
-                />
+            {/* Main Canvas - Shifted Left for Split View with Agent */}
+            <div className="pt-28 pb-20 px-6 w-full flex justify-start items-start overflow-x-auto print:pt-0 print:px-0">
+                {/* Container with reserved right space for the Chat Window */}
+                <div className="ml-4 pr-[700px] min-w-fit transition-all duration-300 ease-in-out">
+                    <DynamicForm
+                        schema={schema}
+                        data={formData}
+                        onChange={handleChange}
+                        onSubmit={() => alert('Submit To Backend')}
+                    />
+                </div>
             </div>
         </div>
     );
