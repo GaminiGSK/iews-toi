@@ -5,6 +5,7 @@ import ChangePassword from './pages/ChangePassword';
 import CompanyProfile from './pages/CompanyProfileNew';
 import PrivateRoute from './components/PrivateRoute';
 import AIAssistant from './components/AIAssistant';
+import LiveTaxWorkspace from './pages/LiveTaxWorkspace';
 
 import SiteGate from './components/SiteGate';
 
@@ -34,6 +35,7 @@ function App() {
 
             <Route element={<PrivateRoute />}>
               <Route path="/change-password" element={<ChangePassword />} />
+              <Route path="/tax-live" element={<LiveTaxWorkspace />} />
             </Route>
 
             {/* Catch all */}

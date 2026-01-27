@@ -300,6 +300,18 @@ export default function CompanyProfile() {
                     <p className="text-gray-400 text-xs leading-relaxed">Generate final audited reports (Income, Balance Sheet, Cash Flow).</p>
                 </div>
 
+                {/* 4. Living Tax Form (NEW) */}
+                <div onClick={() => window.location.href = '/tax-live'} className="group relative bg-gradient-to-br from-blue-900/40 to-slate-800/50 hover:bg-slate-800/80 border border-blue-500/30 hover:border-blue-400 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-blue-900/30">
+                    <div className="absolute top-0 right-0 p-3">
+                        <span className="bg-blue-500 text-white text-[10px] uppercase font-bold px-2 py-1 rounded-full animate-pulse shadow-lg shadow-blue-500/50">Beta</span>
+                    </div>
+                    <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-blue-500/20">
+                        <Scale className="text-blue-400 w-6 h-6" />
+                    </div>
+                    <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-300 transition-colors">Living Tax Form</h3>
+                    <p className="text-gray-400 text-xs leading-relaxed">AI-driven tax compliance. Real-time form generation and auto-filling.</p>
+                </div>
+
                 {/* 4. TOI & ACAR (New Topic) */}
                 <div onClick={() => setView('toi_acar')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-rose-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-rose-900/20">
                     <div className="w-12 h-12 bg-rose-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-rose-500/20">

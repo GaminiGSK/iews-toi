@@ -98,6 +98,11 @@ const startServer = async () => {
             socket.on('disconnect', () => {
                 console.log(`[Neural Link] Client Disconnected: ${socket.id}`);
             });
+
+            // Demo Events
+            socket.on('dev:simulate_fill', () => {
+                require('./agents/TaxAgent').simulateFormFill(socket);
+            });
         });
 
         // Start Server ONLY after DB is ready
