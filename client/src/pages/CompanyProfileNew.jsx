@@ -307,46 +307,7 @@ export default function CompanyProfile() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 flex-1 min-h-0">
-                {/* Left: Package List */}
-                <div className="md:col-span-2 space-y-6 overflow-y-auto pr-2 pb-20">
-                    <div className="bg-slate-800/50 border border-slate-700 rounded-3xl p-6 backdrop-blur-xl">
-                        <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
-                            <Book className="text-rose-400" /> Tax Document Packages
-                        </h2>
-
-                        <div className="space-y-4">
-                            {toiPackages.map(pkg => (
-                                <div key={pkg.id} className="bg-slate-900 border border-slate-700 hover:border-rose-500/50 p-5 rounded-2xl flex items-center justify-between transition-all group shadow-lg">
-                                    <div className="flex items-center gap-4">
-                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg
-                                            ${pkg.status === 'Filed' ? 'bg-green-500/20 text-green-400' : 'bg-rose-500/20 text-rose-400'}
-                                        `}>
-                                            TOI
-                                        </div>
-                                        <div>
-                                            <h3 className="text-white font-bold text-lg">Fiscal Year {pkg.year}</h3>
-                                            <div className="flex items-center gap-3 text-sm text-gray-500 mt-1">
-                                                <span className={`px-2 py-0.5 rounded textxs font-bold ${pkg.status === 'Filed' ? 'bg-green-900/30 text-green-400' : 'bg-yellow-900/30 text-yellow-500'}`}>
-                                                    {pkg.status}
-                                                </span>
-                                                <span>• 25 Pages</span>
-                                                <span>• {pkg.progress}% Complete</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <button
-                                        onClick={() => window.location.href = `/tax-live?year=${pkg.year}`}
-                                        className="bg-rose-600 hover:bg-rose-500 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-rose-900/40 transition-transform active:scale-95 flex items-center gap-2"
-                                    >
-                                        Open Workspace <ArrowLeft className="rotate-180" size={16} />
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Right: Create New */}
+                {/* Left: Create New */}
                 <div className="md:col-span-1">
                     <div className="bg-gradient-to-br from-rose-900/40 to-slate-900 border border-rose-500/30 rounded-3xl p-6 sticky top-6">
                         <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
@@ -385,6 +346,45 @@ export default function CompanyProfile() {
                                     <div className="text-[10px] text-green-400 flex items-center gap-1">● Online - Ready to File</div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Middle: Package List */}
+                <div className="md:col-span-2 space-y-6 overflow-y-auto pr-2 pb-20">
+                    <div className="bg-slate-800/50 border border-slate-700 rounded-3xl p-6 backdrop-blur-xl">
+                        <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                            <Book className="text-rose-400" /> Tax Document Packages
+                        </h2>
+
+                        <div className="space-y-4">
+                            {toiPackages.map(pkg => (
+                                <div key={pkg.id} className="bg-slate-900 border border-slate-700 hover:border-rose-500/50 p-5 rounded-2xl flex items-center justify-between transition-all group shadow-lg">
+                                    <div className="flex items-center gap-4">
+                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg
+                                            ${pkg.status === 'Filed' ? 'bg-green-500/20 text-green-400' : 'bg-rose-500/20 text-rose-400'}
+                                        `}>
+                                            TOI
+                                        </div>
+                                        <div>
+                                            <h3 className="text-white font-bold text-lg">Fiscal Year {pkg.year}</h3>
+                                            <div className="flex items-center gap-3 text-sm text-gray-500 mt-1">
+                                                <span className={`px-2 py-0.5 rounded textxs font-bold ${pkg.status === 'Filed' ? 'bg-green-900/30 text-green-400' : 'bg-yellow-900/30 text-yellow-500'}`}>
+                                                    {pkg.status}
+                                                </span>
+                                                <span>• 25 Pages</span>
+                                                <span>• {pkg.progress}% Complete</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => window.location.href = `/tax-live?year=${pkg.year}`}
+                                        className="bg-rose-600 hover:bg-rose-500 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-rose-900/40 transition-transform active:scale-95 flex items-center gap-2"
+                                    >
+                                        Open Workspace <ArrowLeft className="rotate-180" size={16} />
+                                    </button>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
