@@ -133,10 +133,10 @@ const FieldInput = ({ field, value, onChange, error }) => {
     // Checkbox Group (Official Paper Style)
     if (field.type === 'checkbox-group') {
         return (
-            <div className="flex flex-wrap gap-x-8 gap-y-2 mt-1">
+            <div className="flex flex-wrap gap-x-4 gap-y-1 mt-0.5">
                 {field.options?.map(opt => (
-                    <label key={opt.value} className="flex items-center gap-2 cursor-pointer group hover:bg-blue-50 p-1 rounded">
-                        <div className={`w-4 h-4 border border-slate-800 flex items-center justify-center transition-all bg-white relative`}>
+                    <label key={opt.value} className="flex items-center gap-1.5 cursor-pointer">
+                        <div className={`w-3.5 h-3.5 border border-black flex items-center justify-center bg-white relative`}>
                             {value === opt.value && <div className="absolute inset-0.5 bg-black"></div>}
                         </div>
                         <input
@@ -148,8 +148,8 @@ const FieldInput = ({ field, value, onChange, error }) => {
                             className="hidden"
                         />
                         <div className="flex flex-col leading-none">
-                            {opt.labelKh && <span className="text-[10px] font-khmer text-slate-800">{opt.labelKh}</span>}
-                            <span className={`text-[11px] font-bold uppercase ${value === opt.value ? 'text-black' : 'text-slate-600'}`}>{opt.label}</span>
+                            {opt.labelKh && <span className="text-[9px] font-khmer text-black">{opt.labelKh}</span>}
+                            <span className={`text-[9px] font-bold uppercase ${value === opt.value ? 'text-black' : 'text-slate-600'}`}>{opt.label}</span>
                         </div>
                     </label>
                 ))}
@@ -257,52 +257,54 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
             </div>
 
 
-            {/* SECTIONS AS OFFICIAL TABLES */}
-            <div className="border border-black bg-white">
-                {schema.sections?.map((section, idx) => (
-                    <div key={section.id} className={`${idx > 0 ? 'border-t border-black' : ''}`}>
-
-                        {/* Section Header */}
+            {/* --- OFFICIAL TABLE BLOCK --- */}
+            <div className="border-[1.5px] border-black text-black">
+                {schema.sections?.map((section) => (
+                    <div key={section.id} className="w-full">
+                        {/* Section Header if it exists */}
                         {section.title && (
-                            <div className="bg-slate-100 border-b border-black px-2 py-1 flex items-center gap-2">
-                                {section.number && <span className="bg-black text-white font-bold px-1.5 py-0.5 text-xs rounded-sm">{section.number}</span>}
+                            <div className="bg-slate-100 border-b border-black px-2 py-0.5 flex items-center gap-2">
+                                {section.number && <span className="font-bold text-xs">{section.number}</span>}
                                 <div className="leading-tight">
-                                    {section.titleKh && <h3 className="font-khmer text-xs text-black font-bold">{section.titleKh}</h3>}
-                                    <h3 className="font-bold text-black text-[10px] uppercase">{section.title}</h3>
+                                    {section.titleKh && <h3 className="font-khmer text-[10px] font-bold">{section.titleKh}</h3>}
+                                    <h3 className="font-bold text-[9px] uppercase">{section.title}</h3>
                                 </div>
                             </div>
                         )}
 
-                        {/* Grid */}
-                        <div className="grid grid-cols-12 divide-x divide-black"> {/* Vertical Dividers */}
+                        {/* Fields Grid */}
+                        <div className="grid grid-cols-12 border-b border-black last:border-0">
                             {section.fields?.map((field) => {
                                 const spanClass = field.colSpan ? `col-span-${field.colSpan}` : 'col-span-12';
 
                                 return (
-                                    <div key={field.key} className={`${spanClass} p-2 border-b border-black flex flex-col justify-start relative min-h-[60px] hover:bg-blue-50/50 transition-colors`}>
-
-                                        {/* Label Area */}
-                                        <div className="mb-1">
-                                            {/* Field Number */}
-                                            {field.number && (
-                                                <div className="absolute top-1.5 left-1.5 w-5 h-5 bg-black text-white text-[10px] flex items-center justify-center font-bold">
-                                                    {field.number}
-                                                </div>
-                                            )}
-
-                                            <div className={`${field.number ? 'pl-7' : ''} leading-tight`}>
-                                                {field.labelKh && <p className="font-khmer text-[11px] text-black font-medium">{field.labelKh}</p>}
-                                                <p className="font-bold text-[9px] text-slate-800 uppercase">{field.label}</p>
+                                    <div
+                                        key={field.key}
+                                        className={`${spanClass} border-r border-black last:border-r-0 flex flex-col min-h-[40px] relative`}
+                                        style={{ gridColumn: field.colStart ? `span ${field.colSpan} / span ${field.colSpan}` : undefined }}
+                                    >
+                                        {/* Serial Number in a tiny Box if present */}
+                                        {field.number && (
+                                            <div className="absolute top-0 left-0 w-6 h-full border-r border-black font-bold text-xs flex items-center justify-center bg-slate-50">
+                                                {field.number}
                                             </div>
-                                        </div>
+                                        )}
 
-                                        {/* Input Area */}
-                                        <div className="mt-1">
-                                            <FieldInput
-                                                field={field}
-                                                value={data[field.key]}
-                                                onChange={onChange}
-                                            />
+                                        <div className={`${field.number ? 'ml-7' : 'ml-1'} p-1 h-full flex flex-col justify-between`}>
+                                            {/* Label Area */}
+                                            <div className="leading-[1.1]">
+                                                {field.labelKh && <span className="font-khmer text-[10px] block font-bold">{field.labelKh}</span>}
+                                                {field.label && <span className="text-[9px] block uppercase font-medium">{field.label}</span>}
+                                            </div>
+
+                                            {/* Input Area */}
+                                            <div className="mt-1">
+                                                <FieldInput
+                                                    field={field}
+                                                    value={data[field.key]}
+                                                    onChange={onChange}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 );
@@ -316,9 +318,9 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
             <div className="flex justify-end pt-8 gap-4 print:hidden">
                 <button
                     onClick={onSubmit}
-                    className="bg-slate-900 hover:bg-black text-white font-bold px-8 py-3 rounded shadow-lg transition uppercase tracking-wider text-sm"
+                    className="bg-black text-white font-bold px-8 py-2 rounded shadow transition uppercase text-xs tracking-widest"
                 >
-                    Save Draft Return
+                    Submit Tax Return
                 </button>
             </div>
         </div>
