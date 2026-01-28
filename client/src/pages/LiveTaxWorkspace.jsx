@@ -262,7 +262,8 @@ const INITIAL_SCHEMA = {
     ]
 };
 
-const LiveTaxWorkspace = () => {
+// --- CRITICAL FIX: Child component to access Copilot context ---
+const TaxWorkspaceContent = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const yearParam = searchParams.get('year');
@@ -272,7 +273,7 @@ const LiveTaxWorkspace = () => {
     const [formData, setFormData] = useState({});
     const [status, setStatus] = useState('Idle');
 
-    // --- CopilotKit Intelligence ---
+    // --- CopilotKit Intelligence (Inside Provider) ---
     useCopilotReadable({
         description: "The complete structure and schema of the TOI-01 Tax Return form. This includes all section titles, field keys, and their labels.",
         value: {
@@ -352,8 +353,6 @@ const LiveTaxWorkspace = () => {
     };
 
     const handleSimulateAgent = () => {
-        // DEV ONLY: Trigger a simulate event to the server to start the "Show"
-        // In reality, we'd call an API endpoint `/api/agent/start-task`
         if (socket) {
             socket.emit('dev:simulate_fill');
             setStatus('Requesting Agent...');
@@ -361,48 +360,54 @@ const LiveTaxWorkspace = () => {
     };
 
     return (
-        <CopilotProvider>
-            <div className="min-h-screen bg-slate-100 text-slate-800 font-sans selection:bg-blue-200">
-                {/* Top Bar */}
-                <div className="fixed top-0 left-0 right-0 bg-white border-b border-slate-200 shadow-sm z-40 px-6 py-4 flex justify-between items-center print:hidden">
-                    <div className="flex items-center gap-4">
-                        <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-slate-100 rounded-full transition">
-                            <ArrowLeft size={24} className="text-slate-600" />
-                        </button>
-                        <div className="flex flex-col">
-                            <h1 className="font-bold text-lg tracking-wide text-slate-900">Live Form Workspace</h1>
-                            <div className="flex items-center gap-2 text-xs font-mono text-emerald-600">
-                                <Radio size={12} className="animate-pulse" /> TOI 01 Replica Mode (Beta)
-                            </div>
+        <div className="min-h-screen bg-slate-100 text-slate-800 font-sans selection:bg-blue-200">
+            {/* Top Bar */}
+            <div className="fixed top-0 left-0 right-0 bg-white border-b border-slate-200 shadow-sm z-40 px-6 py-4 flex justify-between items-center print:hidden">
+                <div className="flex items-center gap-4">
+                    <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-slate-100 rounded-full transition">
+                        <ArrowLeft size={24} className="text-slate-600" />
+                    </button>
+                    <div className="flex flex-col">
+                        <h1 className="font-bold text-lg tracking-wide text-slate-900">Live Form Workspace</h1>
+                        <div className="flex items-center gap-2 text-xs font-mono text-emerald-600">
+                            <Radio size={12} className="animate-pulse" /> TOI 01 Replica Mode (Beta)
                         </div>
                     </div>
-
-                    <div className="flex items-center gap-4">
-                        <span className="text-slate-500 text-sm font-mono">{status}</span>
-                        <button onClick={() => window.print()} className="bg-slate-200 hover:bg-slate-300 text-slate-800 px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition">
-                            Print / PDF
-                        </button>
-                        <button
-                            onClick={handleSimulateAgent}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition shadow-blue-200 shadow-lg"
-                        >
-                            <RefreshCw size={16} /> Auto-Fill (AI)
-                        </button>
-                    </div>
                 </div>
 
-                {/* Main Canvas */}
-                <div className="pt-28 pb-20 px-6 w-full flex justify-center items-start overflow-x-auto print:pt-0 print:px-0">
-                    <div className="transition-all duration-300 ease-in-out">
-                        <DynamicForm
-                            schema={schema}
-                            data={formData}
-                            onChange={handleChange}
-                            onSubmit={() => alert('Submit To Backend')}
-                        />
-                    </div>
+                <div className="flex items-center gap-4">
+                    <span className="text-slate-500 text-sm font-mono">{status}</span>
+                    <button onClick={() => window.print()} className="bg-slate-200 hover:bg-slate-300 text-slate-800 px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition">
+                        Print / PDF
+                    </button>
+                    <button
+                        onClick={handleSimulateAgent}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition shadow-blue-200 shadow-lg"
+                    >
+                        <RefreshCw size={16} /> Auto-Fill (AI)
+                    </button>
                 </div>
             </div>
+
+            {/* Main Canvas */}
+            <div className="pt-28 pb-20 px-6 w-full flex justify-center items-start overflow-x-auto print:pt-0 print:px-0">
+                <div className="transition-all duration-300 ease-in-out">
+                    <DynamicForm
+                        schema={schema}
+                        data={formData}
+                        onChange={handleChange}
+                        onSubmit={() => alert('Submit To Backend')}
+                    />
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const LiveTaxWorkspace = () => {
+    return (
+        <CopilotProvider>
+            <TaxWorkspaceContent />
         </CopilotProvider>
     );
 };
