@@ -6,6 +6,7 @@ import "@copilotkit/react-ui/styles.css";
 const CopilotProvider = ({ children }) => {
     return (
         <CopilotKit runtimeUrl="/api/copilotkit">
+            {children}
             <CopilotSidebar
                 instructions={"You are a helpful assistant for the TOI Tax Form. You can help users fill out the form, explain tax rules, and extract data from documents. You have access to the form data and can update it using the provided actions."}
                 labels={{
@@ -14,9 +15,7 @@ const CopilotProvider = ({ children }) => {
                 }}
                 defaultOpen={false}
                 clickOutsideToClose={false}
-            >
-                {children}
-            </CopilotSidebar>
+            />
         </CopilotKit>
     );
 };
