@@ -3,6 +3,7 @@ import DynamicForm from '../components/DynamicForm';
 import { useSocket } from '../context/SocketContext';
 import { ArrowLeft, RefreshCw, Radio } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useCopilotReadable, useCopilotAction } from "@copilotkit/react-core";
 
 const INITIAL_SCHEMA = {
     title: "លិខិតប្រកាសពន្ធលើប្រាក់ចំណូលប្រចាំឆ្នាំ",
@@ -270,6 +271,46 @@ const LiveTaxWorkspace = () => {
     const [formData, setFormData] = useState({});
     const [status, setStatus] = useState('Idle');
 
+    // --- CopilotKit Intelligence ---
+    useCopilotReadable({
+        description: "The complete structure and schema of the TOI-01 Tax Return form. This includes all section titles, field keys, and their labels.",
+        value: {
+            formData,
+            formSchema: {
+                title: schema.title,
+                sections: schema.sections.map(s => ({
+                    title: s.title,
+                    fields: s.fields.map(f => ({ key: f.key, label: f.label, type: f.type }))
+                }))
+            }
+        },
+    });
+
+    useCopilotAction({
+        name: "updateFormField",
+        description: "Updates a single field in the tax form.",
+        parameters: [
+            { name: "key", type: "string", description: "The unique key of the field (e.g., 'tin', 'enterpriseName', 'taxRate')." },
+            { name: "value", type: "string", description: "The new value to enter into the field." }
+        ],
+        handler: ({ key, value }) => {
+            setFormData(prev => ({ ...prev, [key]: value }));
+            setStatus(`AI: Updated ${key}`);
+        },
+    });
+
+    useCopilotAction({
+        name: "applyExtractedData",
+        description: "Fills multiple fields at once, typically used after analyzing a document or bank statement.",
+        parameters: [
+            { name: "data", type: "object", description: "An object where keys are fieldIDs and values are the extracted data." }
+        ],
+        handler: ({ data }) => {
+            setFormData(prev => ({ ...prev, ...data }));
+            setStatus(`AI: Applied ${Object.keys(data).length} fields`);
+        },
+    });
+
     // Auto-Fill Year Logic
     useEffect(() => {
         if (yearParam) {
@@ -348,10 +389,9 @@ const LiveTaxWorkspace = () => {
                 </div>
             </div>
 
-            {/* Main Canvas - Shifted Left for Split View with Agent */}
-            <div className="pt-28 pb-20 px-6 w-full flex justify-start items-start overflow-x-auto print:pt-0 print:px-0">
-                {/* Container with reserved right space for the Chat Window */}
-                <div className="ml-4 pr-[700px] min-w-fit transition-all duration-300 ease-in-out">
+            {/* Main Canvas */}
+            <div className="pt-28 pb-20 px-6 w-full flex justify-center items-start overflow-x-auto print:pt-0 print:px-0">
+                <div className="transition-all duration-300 ease-in-out">
                     <DynamicForm
                         schema={schema}
                         data={formData}

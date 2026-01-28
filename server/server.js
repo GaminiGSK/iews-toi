@@ -29,6 +29,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/company', require('./routes/company'));
 app.use('/api/chat', require('./routes/chat'));
 app.use('/api/tax', require('./routes/tax'));
+app.use('/api/copilotkit', require('./routes/copilot'));
 // app.use('/uploads', express.static('uploads')); // Disabled for Cloud Persistence Safety
 
 // Serve Frontend in Production

@@ -10,6 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@copilotkit/react-core": "^1.51.2",
+    "@copilotkit/react-textarea": "^1.51.2",
+    "@copilotkit/react-ui": "^1.51.2",
     "axios": "^1.13.2",
     "framer-motion": "^12.26.1",
     "jspdf": "^4.0.0",
