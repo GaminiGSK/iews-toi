@@ -18,7 +18,8 @@ const INITIAL_SCHEMA = {
                     labelKh: "ការបរិច្ឆេទសារពើពន្ធ (ចំនួនខែ)",
                     type: "boxes",
                     length: 2,
-                    colSpan: 4
+                    colSpan: 3,
+                    layout: "horizontal"
                 },
                 {
                     key: "periodFrom",
@@ -26,7 +27,11 @@ const INITIAL_SCHEMA = {
                     labelKh: "ចាប់ពីថ្ងៃទី",
                     type: "boxes",
                     length: 8,
-                    colSpan: 4
+                    format: "2-2-4",
+                    noDash: true,
+                    prefix: true,
+                    colSpan: 4.5,
+                    layout: "horizontal"
                 },
                 {
                     key: "periodTo",
@@ -34,7 +39,10 @@ const INITIAL_SCHEMA = {
                     labelKh: "ដល់ថ្ងៃទី",
                     type: "boxes",
                     length: 8,
-                    colSpan: 4
+                    format: "2-2-4",
+                    noDash: true,
+                    colSpan: 4.5,
+                    layout: "horizontal"
                 }
             ]
         },
@@ -49,7 +57,8 @@ const INITIAL_SCHEMA = {
                     type: "boxes",
                     length: 12,
                     format: "3-9",
-                    colSpan: 12
+                    colSpan: 12,
+                    layout: "horizontal"
                 },
                 {
                     key: "enterpriseName",

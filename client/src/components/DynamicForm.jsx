@@ -1,14 +1,12 @@
 import React from 'react';
 import { Calculator, AlertCircle, CheckCircle2 } from 'lucide-react';
 
-const BoxGridInput = ({ length, value, onChange, format }) => {
+const BoxGridInput = ({ length, value, onChange, format, noDash }) => {
     // Filter out non-alphanumeric chars for display in boxes
     const cleanValue = (value || '').toString().replace(/[^a-zA-Z0-9]/g, '');
     const chars = cleanValue.split('');
 
     const handleChange = (index, char) => {
-        // Find existing non-box chars to preserve them if needed? 
-        // For simplicity, we just treat boxes as the source of truth for the clean string.
         const newVal = [...chars];
         while (newVal.length < length) newVal.push('');
         newVal[index] = char.slice(-1);
@@ -49,8 +47,9 @@ const BoxGridInput = ({ length, value, onChange, format }) => {
                     />
                 );
             }
-            renderedBoxes.push(<div key={`seg-${pIdx}`} className="flex">{segment}</div>);
-            if (pIdx < parts.length - 1) {
+            // Add segment with small gap
+            renderedBoxes.push(<div key={`seg-${pIdx}`} className={`flex ${pIdx > 0 ? 'ml-1.5' : ''}`}>{segment}</div>);
+            if (pIdx < parts.length - 1 && !noDash) {
                 renderedBoxes.push(<span key={`dash-${pIdx}`} className="mx-0.5 font-bold text-xs">-</span>);
             }
         });
@@ -84,10 +83,9 @@ const FieldInput = ({ field, value, onChange, error }) => {
 
     if (field.type === 'boxes') {
         return (
-            <div className="flex items-center gap-2">
-                {field.labelKh === "ចាប់ពីថ្ងៃទី" && <span className="text-black font-bold text-sm">▶</span>}
-                <BoxGridInput length={field.length} value={value} onChange={(val) => onChange(field.key, val)} format={field.format} />
-                {field.labelKh === "ដល់ថ្ងៃទី" && <span className="text-black px-2 font-khmer text-[10px] font-bold"></span>}
+            <div className="flex items-center">
+                {field.prefix && <span className="mr-2 text-black text-lg">▶</span>}
+                <BoxGridInput length={field.length} value={value} onChange={(val) => onChange(field.key, val)} format={field.format} noDash={field.noDash} />
             </div>
         );
     }
@@ -113,7 +111,7 @@ const FieldInput = ({ field, value, onChange, error }) => {
             <textarea
                 value={value || ''}
                 onChange={(e) => onChange(field.key, e.target.value)}
-                className={`${baseClasses} border border-slate-300 rounded-sm p-2 min-h-[60px] bg-blue-50/30`}
+                className={`${baseClasses} border border-slate-300 rounded-sm p-2 min-h-[60px] bg-blue-50/30 font-sans`}
                 placeholder={field.placeholder}
             />
         );
@@ -276,11 +274,12 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                         <div className="grid grid-cols-12 border-b border-black last:border-0 divide-x divide-black">
                             {section.fields?.map((field) => {
                                 const spanClass = field.colSpan ? `col-span-${field.colSpan}` : 'col-span-12';
+                                const isHorizontal = field.layout === 'horizontal';
 
                                 return (
                                     <div
                                         key={field.key}
-                                        className={`${spanClass} flex flex-col min-h-[48px] relative bg-white`}
+                                        className={`${spanClass} flex ${isHorizontal ? 'flex-row items-center px-2 py-0.5' : 'flex-col p-1.5'} min-h-[48px] relative bg-white`}
                                     >
                                         {/* Serial Number Box - Official Style */}
                                         {field.number && (
@@ -289,15 +288,15 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                                             </div>
                                         )}
 
-                                        <div className={`${field.number ? 'ml-8' : 'ml-1.5'} p-1.5 h-full flex flex-col`}>
-                                            {/* Label Area - Prevent Overlap */}
-                                            <div className="flex flex-col mb-1.5 leading-tight">
-                                                {field.labelKh && <span className="font-khmer text-[11px] block font-bold text-black">{field.labelKh}</span>}
-                                                {field.label && <span className="text-[9px] block uppercase font-bold text-slate-700">{field.label}</span>}
+                                        <div className={`${field.number ? 'ml-8' : 'ml-0.5'} h-full flex ${isHorizontal ? 'flex-row items-center' : 'flex-col'} w-full`}>
+                                            {/* Label Area */}
+                                            <div className={`flex flex-col leading-tight ${isHorizontal ? 'mr-3' : 'mb-1.5'}`}>
+                                                {field.labelKh && <span className="font-khmer text-[11px] block font-bold text-black whitespace-nowrap">{field.labelKh}</span>}
+                                                {field.label && <span className="text-[9px] block uppercase font-bold text-slate-700 whitespace-nowrap">{field.label}</span>}
                                             </div>
 
                                             {/* Input Area */}
-                                            <div className="mt-auto">
+                                            <div className={isHorizontal ? 'py-1' : 'mt-auto'}>
                                                 <FieldInput
                                                     field={field}
                                                     value={data[field.key]}
