@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Loader2, CheckCircle, AlertCircle, Table, Save, X, Eye, FileText, CloudUpload, Calendar, Book, Tag, DollarSign, Scale, TrendingUp, ArrowLeft, ShieldCheck } from 'lucide-react';
 import GeneralLedger from './GeneralLedger';
@@ -10,6 +11,7 @@ import ToiAcar from './ToiAcar';
 import MOCCertificate from '../components/MOCCertificate';
 
 export default function CompanyProfile() {
+    const navigate = useNavigate();
     const [view, setView] = useState('home'); // home, profile, bank, iews
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
@@ -398,7 +400,7 @@ export default function CompanyProfile() {
                                         </div>
                                     </div>
                                     <button
-                                        onClick={() => window.location.href = `/tax-live?year=${pkg.year}`}
+                                        onClick={() => navigate(`/tax-live?year=${pkg.year}`)}
                                         className="bg-rose-600 hover:bg-rose-500 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-rose-900/40 transition-transform active:scale-95 flex items-center gap-2"
                                     >
                                         Open Workspace <ArrowLeft className="rotate-180" size={16} />
