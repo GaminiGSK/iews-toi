@@ -7,9 +7,13 @@ const API_KEY = process.env.GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(API_KEY);
 
 async function testAnalysis(imagePath) {
-    console.log("Testing Gemini 2.0 Vision for Layout Analysis...");
+    if (!fs.existsSync(imagePath)) {
+        console.error("File not found:", imagePath);
+        return;
+    }
+    console.log(`Testing Gemini 2.0 Flash Vision for: ${imagePath}`);
     const model = genAI.getGenerativeModel({
-        model: "gemini-2.0-flash-exp",
+        model: "gemini-2.0-flash",
         generationConfig: { responseMimeType: "application/json" }
     });
 
@@ -41,14 +45,14 @@ async function testAnalysis(imagePath) {
     }
 }
 
-// Check if any template file exists in server/uploads or /tmp
+// Check for JPG files specifically
 const testDir = './server/uploads';
 if (fs.existsSync(testDir)) {
-    const files = fs.readdirSync(testDir);
+    const files = fs.readdirSync(testDir).filter(f => f.endsWith('.jpg'));
     if (files.length > 0) {
         testAnalysis(path.join(testDir, files[0]));
     } else {
-        console.log("No files in uploads folder to test.");
+        console.log("No JPG files in uploads folder to test.");
     }
 } else {
     console.log("Uploads folder does not exist.");

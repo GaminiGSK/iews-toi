@@ -3,12 +3,12 @@ const fs = require('fs');
 const path = require('path');
 
 // USER PROVIDED KEY
-const API_KEY = process.env.GEMINI_API_KEY || "AIzaSyCL3dNr_tpKtEHH5wJUzJHq4Ydx8w_xONE";
+const API_KEY = process.env.GEMINI_API_KEY || "AIzaSyDNgTq1GWLl0mAeBhP49_6JGpEjfJV-v-g";
 
 const genAI = new GoogleGenerativeAI(API_KEY);
-// Use Gemini 1.5 Flash - Stable and excellent for Vision/OCR
+// Use Gemini 2.0 Flash - Standard for 2026 multimodal tasks
 const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
+    model: "gemini-2.0-flash",
     systemInstruction: "You are an expert Financial AI Agent. Your job is to extract bank transaction data and tax form layouts with 100% accuracy."
 });
 
@@ -304,7 +304,7 @@ exports.analyzeTaxForm = async (filePath) => {
     console.log(`[GeminiAI] Analyzing Tax Form Layout: ${filePath}`);
     try {
         const jsonModel = genAI.getGenerativeModel({
-            model: "gemini-1.5-flash",
+            model: "gemini-2.0-flash",
             generationConfig: { responseMimeType: "application/json" }
         });
 
