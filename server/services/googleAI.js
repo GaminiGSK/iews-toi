@@ -6,11 +6,10 @@ const path = require('path');
 const API_KEY = process.env.GEMINI_API_KEY || "AIzaSyCL3dNr_tpKtEHH5wJUzJHq4Ydx8w_xONE";
 
 const genAI = new GoogleGenerativeAI(API_KEY);
-// Downgrade to Gemini 1.0 Pro (Standard Free Tier) to avoid 403 Forbidden on Flash
-// UPDATE: User confirmed Key supports 'gemini-2.0-flash-exp' (Vision)
+// Use Gemini 1.5 Flash - Stable and excellent for Vision/OCR
 const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash-exp",
-    systemInstruction: "You are an expert Financial AI Agent. Your job is to extract bank transaction data with 100% accuracy from images."
+    model: "gemini-1.5-flash",
+    systemInstruction: "You are an expert Financial AI Agent. Your job is to extract bank transaction data and tax form layouts with 100% accuracy."
 });
 
 // Helper to encode file to base64
@@ -304,37 +303,31 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
 exports.analyzeTaxForm = async (filePath) => {
     console.log(`[GeminiAI] Analyzing Tax Form Layout: ${filePath}`);
     try {
-        // Use a more specialized model configuration for this specific call to ensure JSON
         const jsonModel = genAI.getGenerativeModel({
-            model: "gemini-2.0-flash-exp",
+            model: "gemini-1.5-flash",
             generationConfig: { responseMimeType: "application/json" }
         });
 
         const prompt = `
-            Identify every interactive input field on this Cambodian Tax Form (TOI).
-            Look for:
-            1. Text boxes (white rectangular areas for handwriting).
-            2. Number boxes (small individual squares for TIN, Year, etc).
-            3. Checkboxes (small squares for options).
-
+            List EVERY interactive input box, square for TIN/Numbers, or checkbox on this document.
             For each field, return a JSON object with:
-            - label: A short English name for the field (e.g., "TIN", "Enterprise Name", "Address").
-            - x, y: The percentage (0-100) coordinates of the top-left corner.
-            - w, h: The width and height as percentages (0-100) of the total image.
+            - label: Short English name (e.g., "TIN", "Name of Enterprise", "Address").
+            - x, y: Percentage (0-100) coordinates of top-left.
+            - w, h: Percentage (0-100) width and height.
             - type: "text" or "checkbox".
 
-            Return the results as a JSON Array under a "mappings" key.
-            Example: { "mappings": [ { "label": "TIN", "x": 10, "y": 15, "w": 20, "h": 5, "type": "text" } ] }
+            Return a JSON object with a "fields" key containing the array.
         `;
 
         const ext = path.extname(filePath).toLowerCase();
         let mimeType = 'image/jpeg';
         if (ext === '.png') mimeType = 'image/png';
+        if (ext === '.pdf') mimeType = 'application/pdf';
         if (ext === '.jpg' || ext === '.jpeg') mimeType = 'image/jpeg';
 
         const filePart = fileToGenerativePart(filePath, mimeType);
 
-        const result = await jsonModel.generateContent([prompt, filePart]);
+        const result = await jsonModel.generateContent([prompt, filePart], { timeout: 15000 });
         const response = await result.response;
         const text = response.text();
 
@@ -342,13 +335,11 @@ exports.analyzeTaxForm = async (filePath) => {
 
         const data = JSON.parse(text);
 
-        // Return only the mappings array
-        if (data && data.mappings) {
-            console.log(`[GeminiAI] Successfully detected ${data.mappings.length} fields.`);
-            return data.mappings;
-        }
+        // Handle various JSON shapes from Gemini
+        const mappings = data.fields || data.mappings || (Array.isArray(data) ? data : []);
 
-        return Array.isArray(data) ? data : [];
+        console.log(`[GeminiAI] Successfully detected ${mappings.length} fields.`);
+        return mappings;
 
     } catch (e) {
         console.error("Gemini Tax Analysis Error:", e);
