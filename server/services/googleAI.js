@@ -309,23 +309,28 @@ exports.analyzeTaxForm = async (filePath) => {
         });
 
         const prompt = `
-            ACT AS A PROFESSIONAL DOCUMENT DIGITIZER.
-            Analyze this Cambodian Tax Form (TOI). Find all areas where a user is expected to write or check a box.
+            CRITICAL MISSION: You are an expert Document Fingerprinting AI.
+            Identify every single input area on this Cambodian TOI Tax Form. 
+            
+            YOU MUST FIND AT LEAST 15 FIELDS. 
+            Look for:
+            - The "Fiscal Year" boxes at the top.
+            - The "TIN" (Tax Identification Number) digit-squares.
+            - "Enterprise Name", "Address", "Phone", "Email" large text areas.
+            - "Business Activities" rows.
+            - Checkboxes in sections 11, 12, 13, 14.
+            - All the "Amount" boxes in the main table.
 
-            LOOK FOR:
-            1. LARGE WHITE BOXES: Usually for names, addresses, or descriptions.
-            2. INDIVIDUAL SQUARE BOXES: Used for TIN numbers, years, or currency amounts. Group these into a single "digit-strip" field if they are adjacent.
-            3. CIRCULAR/SQUARE CHECKBOXES: For selecting options (e.g. Type of Business).
-
-            FOR EACH FIELD:
-            - label: Use the number or English text label next to the box (e.g. "1. TIN", "2. Name of Enterprise", "Fiscal Year").
-            - x, y, w, h: Coordinates as percentages (0-100) of the total image size.
+            FOR EACH ITEM: 
+            - label: Use the specific number/text on the form (e.g., "Field 1: TIN", "Field 2: Name").
             - type: "text" or "checkbox".
+            - x, y, w, h: Percentage coordinates (0-100). Be precise.
 
-            OUTPUT REQUIREMENT:
-            Return a JSON object with:
-            - "fields": [ { "label": "...", "x": ..., "y": ..., "w": ..., "h": ..., "type": "..." }, ... ]
-            - "rawText": "A complete transcription of all visible text on the page for reference."
+            JSON OUTPUT:
+            {
+              "fields": [...],
+              "rawText": "Provide a full transcription of every word you see on this page."
+            }
         `;
 
         const ext = path.extname(filePath).toLowerCase();
