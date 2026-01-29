@@ -112,7 +112,7 @@ router.post('/templates/:id/analyze', async (req, res) => {
         }
 
         console.log(`Starting AI Analysis for ${template.name}...`);
-        const aiMappings = await googleAI.analyzeTaxForm(tempFilePath);
+        const { mappings: aiMappings, rawText } = await googleAI.analyzeTaxForm(tempFilePath);
 
         // Convert to our Schema format
         const newMappings = aiMappings.map((m, index) => ({
@@ -127,10 +127,11 @@ router.post('/templates/:id/analyze', async (req, res) => {
 
         // Merge with existing? Or overwrite? Overwrite for now as it's an "Analyze" action.
         template.mappings = newMappings;
+        // Optional: Save rawText to model if you add it later. For now, just send to UI.
         template.status = 'Configured';
         await template.save();
 
-        res.json({ message: 'Analysis Complete', mappings: newMappings });
+        res.json({ message: 'Analysis Complete', mappings: newMappings, rawText });
     } catch (err) {
         console.error('Error analyzing template:', err);
         res.status(500).json({ message: 'AI Analysis Failed' });

@@ -205,7 +205,7 @@ export default function AdminDashboard() {
 
             // Update local state
             setTemplates(prev => prev.map(t => {
-                if (t.id === activeTemplateId) return { ...t, mappings: res.data.mappings };
+                if (t.id === activeTemplateId) return { ...t, mappings: res.data.mappings, harvestedText: res.data.rawText };
                 return t;
             }));
         } catch (err) {
@@ -504,7 +504,7 @@ export default function AdminDashboard() {
                                 >
                                     {isScanning ? (
                                         <>
-                                            <Loader size={12} className="animate-spin" />
+                                            <Loader2 size={12} className="animate-spin" />
                                             Scanning...
                                         </>
                                     ) : (
@@ -651,6 +651,24 @@ export default function AdminDashboard() {
                                 <div className="text-center text-gray-600">
                                     <FileText className="w-16 h-16 mx-auto mb-4 opacity-20" />
                                     <p>Select a template to configure mappings</p>
+                                </div>
+                            )}
+
+                            {/* Harvested Text Overlay (Troubleshooting) */}
+                            {activeTemplateId && templates.find(t => t.id === activeTemplateId)?.harvestedText && (
+                                <div className="absolute bottom-4 right-4 max-w-sm bg-gray-900/95 border border-purple-500/50 rounded-xl p-4 shadow-2xl backdrop-blur-sm z-20">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <h4 className="text-[10px] font-bold text-purple-400 uppercase tracking-widest">AI Text Harvest</h4>
+                                        <button
+                                            onClick={() => setTemplates(prev => prev.map(t => t.id === activeTemplateId ? { ...t, harvestedText: null } : t))}
+                                            className="text-gray-500 hover:text-white"
+                                        >
+                                            <X size={12} />
+                                        </button>
+                                    </div>
+                                    <div className="text-[11px] text-gray-300 leading-relaxed max-h-40 overflow-y-auto font-mono">
+                                        {templates.find(t => t.id === activeTemplateId)?.harvestedText}
+                                    </div>
                                 </div>
                             )}
                         </div>

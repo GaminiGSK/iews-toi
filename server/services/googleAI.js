@@ -316,7 +316,9 @@ exports.analyzeTaxForm = async (filePath) => {
             - w, h: Percentage (0-100) width and height.
             - type: "text" or "checkbox".
 
-            Return a JSON object with a "fields" key containing the array.
+            Return a JSON object with:
+            - "fields": array of field objects.
+            - "rawText": A string containing all harvested text from the document (summary).
         `;
 
         const ext = path.extname(filePath).toLowerCase();
@@ -337,13 +339,14 @@ exports.analyzeTaxForm = async (filePath) => {
 
         // Handle various JSON shapes from Gemini
         const mappings = data.fields || data.mappings || (Array.isArray(data) ? data : []);
+        const rawText = data.rawText || data.text || "Summary available in mappings.";
 
-        console.log(`[GeminiAI] Successfully detected ${mappings.length} fields.`);
-        return mappings;
+        console.log(`[GeminiAI] Detected ${mappings.length} fields and harvested text.`);
+        return { mappings, rawText };
 
     } catch (e) {
         console.error("Gemini Tax Analysis Error:", e);
-        return [];
+        return { mappings: [], rawText: "Error during analysis." };
     }
 };
 
