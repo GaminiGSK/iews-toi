@@ -102,9 +102,22 @@ const startServer = async () => {
                 console.log(`[Neural Link] Client Disconnected: ${socket.id}`);
             });
 
-            // Demo Events
-            socket.on('dev:simulate_fill', () => {
-                require('./agents/TaxAgent').simulateFormFill(socket);
+            // Tax Workspace Events
+            socket.on('workspace:join', (data) => {
+                const { packageId } = data;
+                console.log(`[Tax Workspace] Client joined package ${packageId}`);
+                require('./agents/TaxAgent').onWorkspaceEnter(socket, packageId);
+            });
+
+            socket.on('workspace:perform_action', async (data) => {
+                const { action, packageId, params } = data;
+                const TaxAgent = require('./agents/TaxAgent');
+
+                if (action === 'fill_year') {
+                    await TaxAgent.fillFiscalContext(socket, packageId, params.year);
+                } else if (action === 'fill_company') {
+                    await TaxAgent.fillCompanyDetails(socket, packageId, params.companyCode);
+                }
             });
         });
 

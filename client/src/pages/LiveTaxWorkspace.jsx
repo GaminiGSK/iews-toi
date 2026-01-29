@@ -147,14 +147,57 @@ const LiveTaxWorkspace = () => {
         }
     }, [yearParam]);
 
+    // Neural Link Connection
+    useEffect(() => {
+        if (!socket) return;
+
+        // Fetch Initial Package Data from Server
+        const fetchPackage = async () => {
+            try {
+                const res = await axios.get(`/api/tax/packages/${yearParam}`);
+                if (res.data.data) {
+                    // Convert Map to Object
+                    const dbData = res.data.data;
+                    setFormData(prev => ({ ...prev, ...dbData }));
+                }
+            } catch (e) {
+                console.warn("No existing package found, using defaults.");
+            }
+        };
+        fetchPackage();
+
+        // Join Workspace
+        socket.emit('workspace:join', { packageId: yearParam });
+
+        // Listen for AI Operations
+        socket.on('form:data', (newData) => {
+            console.log("[Neural Link] Applied AI Patch:", newData);
+            setFormData(prev => ({ ...prev, ...newData }));
+            setStatus('AI Patch Applied');
+        });
+
+        socket.on('form:schema', (newSchema) => {
+            setSchema(newSchema);
+            setStatus('Form Layout Updated');
+        });
+
+        return () => {
+            socket.off('form:data');
+            socket.off('form:schema');
+        };
+    }, [socket, yearParam]);
+
     const handleChange = (key, value) => {
         setFormData(prev => ({ ...prev, [key]: value }));
+        // Logic to save to DB (Debounced) can be added here
     };
 
-    const handleSimulateAgent = () => {
-        if (socket) {
-            socket.emit('dev:simulate_fill');
-            setStatus('Requesting Agent...');
+    const handleSave = async () => {
+        try {
+            await axios.put(`/api/tax/packages/${yearParam}`, { data: formData });
+            setStatus('Work Saved');
+        } catch (e) {
+            console.error("Save Error", e);
         }
     };
 

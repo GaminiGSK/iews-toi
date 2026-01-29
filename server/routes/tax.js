@@ -14,8 +14,11 @@ router.post('/templates', upload.array('files'), async (req, res) => {
         }
 
         const savedTemplates = [];
+        // Sort files by original name to maintain sequence (e.g., page1, page2...)
+        const sortedFiles = [...files].sort((a, b) => a.originalname.localeCompare(b.originalname, undefined, { numeric: true }));
 
-        for (const file of files) {
+        for (let i = 0; i < sortedFiles.length; i++) {
+            const file = sortedFiles[i];
             // Read File Content as Base64 for Persistence
             const fileBuffer = fs.readFileSync(file.path);
             const base64Data = fileBuffer.toString('base64');
@@ -23,6 +26,8 @@ router.post('/templates', upload.array('files'), async (req, res) => {
             // Create Template Record
             const template = new TaxTemplate({
                 name: file.originalname,
+                groupName: 'TOI-01',
+                pageNumber: i + 1, // Auto-sequence page 1, 2, 3...
                 originalName: file.originalname,
                 filename: file.filename,
                 path: file.path,
@@ -196,6 +201,40 @@ router.post('/packages', async (req, res) => {
         res.json(newPackage);
     } catch (err) {
         console.error("Error creating package:", err);
+        res.status(500).send("Server Error");
+    }
+});
+
+// Get Single Package by Year
+router.get('/packages/:year', async (req, res) => {
+    try {
+        const pkg = await TaxPackage.findOne({ year: req.params.year });
+        if (!pkg) return res.status(404).json({ message: 'Package not found' });
+        res.json(pkg);
+    } catch (err) {
+        console.error("Error fetching package:", err);
+        res.status(500).send("Server Error");
+    }
+});
+
+// Update Package Data
+router.put('/packages/:year', async (req, res) => {
+    try {
+        const { data } = req.body;
+        const pkg = await TaxPackage.findOne({ year: req.params.year });
+        if (!pkg) return res.status(404).json({ message: 'Package not found' });
+
+        // Merge Data
+        if (data) {
+            for (let [key, val] of Object.entries(data)) {
+                pkg.data.set(key, val);
+            }
+        }
+
+        await pkg.save();
+        res.json(pkg);
+    } catch (err) {
+        console.error("Error updating package:", err);
         res.status(500).send("Server Error");
     }
 });

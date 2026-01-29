@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 
 const TaxTemplateSchema = new mongoose.Schema({
     name: { type: String, required: true },
+    groupName: { type: String, default: 'TOI-01' }, // Group these 25 pages
+    pageNumber: { type: Number }, // Sequence 1-25
     originalName: { type: String },
     filename: { type: String, required: true }, // Saved filename on disk
     path: { type: String, required: true },

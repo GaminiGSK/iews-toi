@@ -20,6 +20,11 @@ const TaxPackageSchema = new mongoose.Schema({
         status: String,
         updatedAt: Date
     }],
+    data: {
+        type: Map,
+        of: String,
+        default: {}
+    },
     createdAt: {
         type: Date,
         default: Date.now

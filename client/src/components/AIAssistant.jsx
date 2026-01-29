@@ -79,20 +79,43 @@ const AIAssistant = () => {
 
         try {
             const token = localStorage.getItem('token');
+            // Get Package ID if in Workspace
+            const searchParams = new URLSearchParams(window.location.search);
+            const packageId = searchParams.get('packageId') || searchParams.get('year'); // Fallback or primary
+
             const res = await axios.post('/api/chat/message',
                 {
                     message: userMsg.text,
                     image: userMsg.image,
-                    context: { route: location.pathname } // <--- Send Context
+                    context: {
+                        route: location.pathname,
+                        packageId: packageId
+                    } // <--- Send Context
                 },
                 { headers: { 'Authorization': `Bearer ${token}` } }
             );
 
+            const { text, toolAction } = res.data;
+
             setMessages(prev => [...prev, {
                 role: 'assistant',
-                text: res.data.text,
-                toolAction: res.data.toolAction
+                text: text,
+                toolAction: toolAction
             }]);
+
+            // AUTO-EXECUTE Workspace Actions
+            if (toolAction && toolAction.tool_use === 'workspace_action' && socket) {
+                console.log("[AI Assistant] Triggering Workspace Action:", toolAction.action);
+                socket.emit('workspace:perform_action', {
+                    action: toolAction.action,
+                    packageId: packageId,
+                    params: {
+                        year: packageId,
+                        companyCode: localStorage.getItem('companyCode') // Pass if available
+                    }
+                });
+            }
+
         } catch (err) {
             console.error("Chat Error:", err);
             setMessages(prev => [...prev, { role: 'assistant', text: "Sorry, I am unable to connect to the server right now." }]);

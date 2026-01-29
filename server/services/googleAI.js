@@ -244,8 +244,10 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
             **Special Instructions for "/tax-live" Route:**
             If the user is on "/tax-live", this is the "Living Tax Form Workspace".
             - If they ask "Can you see the form?" or "Can you see the workspace?", say **YES**.
-            - Explain that you are connected via the Neural Link (Socket.io) and can see the active TOI 01 Replica.
-            - Offer to "Auto-Fill" the form using the button in the header.
+            - If they say **"Yes"**, **"Go ahead"**, **"Fill it"**, or similar to one of your proposals (like filling the year or company details):
+               - Output JSON: { "tool_use": "workspace_action", "action": "...", "reply_text": "Sure, I'll fill that for you now." }
+               - **"fill_year"** if they agree to year filling.
+               - **"fill_company"** if they agree to company details filling.
 
             **Chart of Accounts (Top 50):**
             ${codes.map(c => `- ${c.code} (${c.description})`).slice(0, 50).join('\n')}
@@ -256,12 +258,15 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
             1. **DETECT RULE REQUESTS**: If the user asks to "set a rule", "always tag", "categorize X as Y", or "change the limit", you MUST process this as a Rule Creation Request.
                - Output JSON: { "tool_use": "create_rule", "rule_data": { ... }, "reply_text": "..." }
 
-            2. **DETECT ADJUSTMENT REQUESTS**: If the user asks to "depreciate assets", "accrue expenses", "adjust the books", or "manual entry":
+            2. **DETECT WORKSPACE ACTIONS**: If you are in tax-live and the user agrees to a fill action:
+               - Output JSON: { "tool_use": "workspace_action", "action": "fill_year" OR "fill_company", "reply_text": "..." }
+
+            3. **DETECT ADJUSTMENT REQUESTS**: If the user asks to "depreciate assets", "accrue expenses", "adjust the books", or "manual entry":
                - Output JSON: { "tool_use": "propose_journal_entry", "journal_data": { ... }, "reply_text": "..." }
                
-            3. **IMAGE ANALYSIS**: If an image is provided, analyze the visual content (receipt, invoice, document) and extract relevant numbers or descriptions in your answer.
+            4. **IMAGE ANALYSIS**: If an image is provided, analyze the visual content (receipt, invoice, document) and extract relevant numbers or descriptions in your answer.
 
-            4. **NORMAL CHAT**: If it is NOT a rule/adjustment request, answer normally in plain text.
+            5. **NORMAL CHAT**: If it is NOT a rule/action request, answer normally in plain text.
                - Be professional, concise, and helpful.
                - Use Markdown for formatting (bold, lists).
 
