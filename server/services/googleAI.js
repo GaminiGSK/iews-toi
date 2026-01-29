@@ -303,33 +303,35 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
 exports.analyzeTaxForm = async (filePath) => {
     console.log(`[GeminiAI] Analyzing Tax Form Layout: ${filePath}`);
     try {
-        const jsonModel = genAI.getGenerativeModel({
+        // Use standard model (not forced JSON mode) for better reasoning on Layout
+        const visionModel = genAI.getGenerativeModel({
             model: "gemini-2.0-flash",
-            generationConfig: { responseMimeType: "application/json" }
+            systemInstruction: "You are a professional Document Archeologist. You are excellent at finding OCR fields and their pixel coordinates."
         });
 
         const prompt = `
-            CRITICAL MISSION: You are an expert Document Fingerprinting AI.
-            Identify every single input area on this Cambodian TOI Tax Form. 
+            Analyze this Cambodian TOI Tax Form. 
+            Identify every single white box, digit-strip (TIN), or checkbox. 
             
-            YOU MUST FIND AT LEAST 15 FIELDS. 
-            Look for:
-            - The "Fiscal Year" boxes at the top.
-            - The "TIN" (Tax Identification Number) digit-squares.
-            - "Enterprise Name", "Address", "Phone", "Email" large text areas.
-            - "Business Activities" rows.
-            - Checkboxes in sections 11, 12, 13, 14.
-            - All the "Amount" boxes in the main table.
+            YOU MUST FIND AT LEAST 20 FIELDS.
+            Focus on:
+            1. Fiscal Year (4 boxes at top right)
+            2. Tax Period (top left)
+            3. TIN (1. Tax Identification Number) - 9 digit squares
+            4. Enterpise Details (2, 3, 4, 5, 8, 9, 10 - Name, Phone, Email, Address)
+            5. Business Activities (6, 7)
+            6. Checkboxes (11, 12, 13, 14)
+            7. Amounts (Table columns 15, 16, 17)
 
-            FOR EACH ITEM: 
-            - label: Use the specific number/text on the form (e.g., "Field 1: TIN", "Field 2: Name").
+            For each field, provide:
+            - label: Title of the field.
+            - x, y, w, h: Percentage coordinates (0 to 100).
             - type: "text" or "checkbox".
-            - x, y, w, h: Percentage coordinates (0-100). Be precise.
 
-            JSON OUTPUT:
+            Reply ONLY with a JSON object:
             {
-              "fields": [...],
-              "rawText": "Provide a full transcription of every word you see on this page."
+                "fields": [ { "label": "...", "x": ..., "y": ..., "w": ..., "h": ..., "type": "..." }, ... ],
+                "rawText": "Harvest all text you see here."
             }
         `;
 
@@ -341,13 +343,15 @@ exports.analyzeTaxForm = async (filePath) => {
 
         const filePart = fileToGenerativePart(filePath, mimeType);
 
-        const result = await jsonModel.generateContent([prompt, filePart], { timeout: 15000 });
+        const result = await visionModel.generateContent([prompt, filePart]);
         const response = await result.response;
         const text = response.text();
 
-        console.log("[GeminiAI] Raw Layout Analysis Output:", text);
+        console.log("[GeminiAI] Raw Layout Analysis Output (Full Text):", text);
 
-        const data = JSON.parse(text);
+        const data = cleanAndParseJSON(text);
+
+        if (!data) throw new Error("AI returned unparseable output.");
 
         // Handle various JSON shapes from Gemini
         const mappings = data.fields || data.mappings || (Array.isArray(data) ? data : []);

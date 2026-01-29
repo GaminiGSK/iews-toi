@@ -202,13 +202,15 @@ export default function AdminDashboard() {
             setIsScanning(true);
             const res = await axios.post(`/api/tax/templates/${activeTemplateId}/analyze`);
             console.log("[AI Scan Result]", res.data); // DEBUG LOG
-            alert(`Analysis Complete! Found ${res.data.mappings.length} fields.`);
-
             // Update local state
             setTemplates(prev => prev.map(t => {
                 if (t.id === activeTemplateId) return { ...t, mappings: res.data.mappings, harvestedText: res.data.rawText };
                 return t;
             }));
+
+            setTimeout(() => {
+                alert(`Analysis Complete! Found ${res.data.mappings.length} fields. Check the purple panel at bottom-right for the text summary.`);
+            }, 500);
         } catch (err) {
             console.error(err);
             alert('AI Analysis Failed. Check server logs.');
