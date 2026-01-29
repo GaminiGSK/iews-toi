@@ -309,16 +309,23 @@ exports.analyzeTaxForm = async (filePath) => {
         });
 
         const prompt = `
-            List EVERY interactive input box, square for TIN/Numbers, or checkbox on this document.
-            For each field, return a JSON object with:
-            - label: Short English name (e.g., "TIN", "Name of Enterprise", "Address").
-            - x, y: Percentage (0-100) coordinates of top-left.
-            - w, h: Percentage (0-100) width and height.
+            ACT AS A PROFESSIONAL DOCUMENT DIGITIZER.
+            Analyze this Cambodian Tax Form (TOI). Find all areas where a user is expected to write or check a box.
+
+            LOOK FOR:
+            1. LARGE WHITE BOXES: Usually for names, addresses, or descriptions.
+            2. INDIVIDUAL SQUARE BOXES: Used for TIN numbers, years, or currency amounts. Group these into a single "digit-strip" field if they are adjacent.
+            3. CIRCULAR/SQUARE CHECKBOXES: For selecting options (e.g. Type of Business).
+
+            FOR EACH FIELD:
+            - label: Use the number or English text label next to the box (e.g. "1. TIN", "2. Name of Enterprise", "Fiscal Year").
+            - x, y, w, h: Coordinates as percentages (0-100) of the total image size.
             - type: "text" or "checkbox".
 
+            OUTPUT REQUIREMENT:
             Return a JSON object with:
-            - "fields": array of field objects.
-            - "rawText": A string containing all harvested text from the document (summary).
+            - "fields": [ { "label": "...", "x": ..., "y": ..., "w": ..., "h": ..., "type": "..." }, ... ]
+            - "rawText": "A complete transcription of all visible text on the page for reference."
         `;
 
         const ext = path.extname(filePath).toLowerCase();

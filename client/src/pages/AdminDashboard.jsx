@@ -201,6 +201,7 @@ export default function AdminDashboard() {
         try {
             setIsScanning(true);
             const res = await axios.post(`/api/tax/templates/${activeTemplateId}/analyze`);
+            console.log("[AI Scan Result]", res.data); // DEBUG LOG
             alert(`Analysis Complete! Found ${res.data.mappings.length} fields.`);
 
             // Update local state
@@ -656,19 +657,25 @@ export default function AdminDashboard() {
 
                             {/* Harvested Text Overlay (Troubleshooting) */}
                             {activeTemplateId && templates.find(t => t.id === activeTemplateId)?.harvestedText && (
-                                <div className="absolute bottom-4 right-4 max-w-sm bg-gray-900/95 border border-purple-500/50 rounded-xl p-4 shadow-2xl backdrop-blur-sm z-20">
-                                    <div className="flex justify-between items-center mb-2">
-                                        <h4 className="text-[10px] font-bold text-purple-400 uppercase tracking-widest">AI Text Harvest</h4>
+                                <div className="fixed bottom-6 right-6 max-w-md bg-gray-900/98 border border-purple-500/50 rounded-2xl p-6 shadow-[0_0_50px_rgba(168,85,247,0.2)] backdrop-blur-md z-[100] animate-in slide-in-from-bottom-5 duration-300">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
+                                            <h4 className="text-xs font-bold text-purple-400 uppercase tracking-widest">AI Vision: Harvested Text</h4>
+                                        </div>
                                         <button
                                             onClick={() => setTemplates(prev => prev.map(t => t.id === activeTemplateId ? { ...t, harvestedText: null } : t))}
-                                            className="text-gray-500 hover:text-white"
+                                            className="text-gray-500 hover:text-white p-1"
                                         >
-                                            <X size={12} />
+                                            <X size={16} />
                                         </button>
                                     </div>
-                                    <div className="text-[11px] text-gray-300 leading-relaxed max-h-40 overflow-y-auto font-mono">
+                                    <div className="text-xs text-gray-300 leading-relaxed max-h-64 overflow-y-auto font-mono bg-black/40 p-4 rounded-xl border border-white/5">
                                         {templates.find(t => t.id === activeTemplateId)?.harvestedText}
                                     </div>
+                                    <p className="text-[10px] text-gray-500 mt-4 italic">
+                                        This is what the AI "sees" in the document.
+                                    </p>
                                 </div>
                             )}
                         </div>

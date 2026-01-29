@@ -7,10 +7,6 @@ const API_KEY = process.env.GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(API_KEY);
 
 async function testAnalysis(imagePath) {
-    if (!fs.existsSync(imagePath)) {
-        console.error("File not found:", imagePath);
-        return;
-    }
     console.log(`Testing Gemini 2.0 Flash Vision for: ${imagePath}`);
     const model = genAI.getGenerativeModel({
         model: "gemini-2.0-flash",
@@ -18,42 +14,36 @@ async function testAnalysis(imagePath) {
     });
 
     const prompt = `
-        List EVERY rectangular input field or checkbox on this document.
-        Return as a JSON object with a 'fields' key containing an array of:
-        { "name": "label", "x": 0-100, "y": 0-100, "w": 0-100, "h": 0-100, "type": "text|checkbox" }
+        List EVERY interactive input box, square for TIN/Numbers, or checkbox on this document.
+        For each field, return a JSON object with:
+        - label: Short English name (e.g., "TIN", "Name of Enterprise", "Address").
+        - x, y: Percentage (0-100) coordinates of top-left.
+        - w, h: Percentage (0-100) width and height.
+        - type: "text" or "checkbox".
+
+        Return a JSON object with:
+        - "fields": array of field objects.
+        - "rawText": A string containing all harvested text from the document (summary).
     `;
 
-    const fileBuffer = fs.readFileSync(imagePath);
-    const imagePart = {
-        inlineData: {
-            data: fileBuffer.toString("base64"),
-            mimeType: "image/jpeg"
-        }
-    };
-
     try {
+        const imageBuffer = fs.readFileSync(imagePath);
+        const imagePart = {
+            inlineData: {
+                data: imageBuffer.toString("base64"),
+                mimeType: "image/png"
+            }
+        };
+
         const result = await model.generateContent([prompt, imagePart]);
-        const text = result.response.text();
+        const response = await result.response;
+        const text = response.text();
         console.log("--- RAW AI OUTPUT ---");
         console.log(text);
         console.log("--- END RAW AI OUTPUT ---");
-
-        const data = JSON.parse(text);
-        console.log("Parsed Fields Count:", (data.fields || data.mappings || data || []).length);
     } catch (e) {
         console.error("DEBUG ERROR:", e);
     }
 }
 
-// Check for JPG files specifically
-const testDir = './server/uploads';
-if (fs.existsSync(testDir)) {
-    const files = fs.readdirSync(testDir).filter(f => f.endsWith('.jpg'));
-    if (files.length > 0) {
-        testAnalysis(path.join(testDir, files[0]));
-    } else {
-        console.log("No JPG files in uploads folder to test.");
-    }
-} else {
-    console.log("Uploads folder does not exist.");
-}
+testAnalysis('C:/Users/Gamini/.gemini/antigravity/brain/29ac5434-7ea9-4311-9d63-9413fe932f59/uploaded_media_1769727051957.png');
