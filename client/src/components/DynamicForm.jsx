@@ -363,6 +363,48 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                     value={data.accountantName}
                     onChange={(val) => onChange('accountantName', val)}
                 />
+
+                <NumberedFieldRow
+                    number="8"
+                    labelKh="អាសយដ្ឋានទីស្នាក់ការសហគ្រាសបច្ចុប្បន្ន ៖"
+                    labelEn="Current Registered Office Address"
+                    value={data.registeredAddress}
+                    onChange={(val) => onChange('registeredAddress', val)}
+                />
+
+                <NumberedFieldRow
+                    number="9"
+                    labelKh="អាសយដ្ឋានគ្រឹះស្ថានជាគោលដើមបច្ចុប្បន្ន ៖"
+                    labelEn="Current Principal Establishment Address"
+                    value={data.principalAddress}
+                    onChange={(val) => onChange('principalAddress', val)}
+                />
+
+                <NumberedFieldRow
+                    number="10"
+                    labelKh="អាសយដ្ឋានឃ្លាំងបច្ចុប្បន្ន ៖"
+                    labelEn="Warehouse Address"
+                    value={data.warehouseAddress}
+                    onChange={(val) => onChange('warehouseAddress', val)}
+                />
+
+                <div className="flex items-start gap-4 py-3 border-b border-slate-100 group transition">
+                    <div className="w-8 h-8 shrink-0 bg-blue-100 text-blue-800 rounded-lg flex items-center justify-center font-bold text-[10px] mt-1">
+                        ID
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <div className="flex flex-col mb-1.5">
+                            <span className="font-khmer font-bold text-[13px] text-slate-900 leading-tight">លេខសម្គាល់ភ្នាក់ងារសេវាកម្មពន្ធដារ ៖</span>
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Tax Service Agent License Number</span>
+                        </div>
+                        <input
+                            type="text"
+                            value={data.agentLicenseNumber || ""}
+                            onChange={(e) => onChange('agentLicenseNumber', e.target.value)}
+                            className="w-full bg-transparent border-b-2 border-slate-100 focus:border-blue-500 outline-none font-mono font-bold text-lg text-slate-700 py-1 transition-colors"
+                        />
+                    </div>
+                </div>
             </div>
 
 

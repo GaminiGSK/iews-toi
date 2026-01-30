@@ -240,6 +240,13 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
             - **Total Income**: ${summary.income}
             - **Total Expenses**: ${summary.expense}
 
+            **Regulatory Knowledge (Cambodia Tax Law):**
+            - **Resident Natural Person**: Defined as meeting ONE of these criteria:
+               a) Residence in Cambodia (owns, rents, or leases long-term).
+               b) Principal place of abode (centre of economic interest, family, social activities).
+               c) Physical presence in Cambodia for MORE THAN 182 days in a 12-month period ending in the current tax year. (Any part of a day counts as one full day).
+            - Priority: If criteria A and B are unclear, criteria C (182 days) is the determining factor for residency status.
+
             **App Context (User UI):**
             - **Current Page**: ${ui?.route || "Dashboard"}
             
