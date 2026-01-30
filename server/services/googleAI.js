@@ -305,11 +305,17 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
         }
 
         const result = await model.generateContent(inputs);
-        return result.response.text();
+        const responseText = result.response.text();
+        console.log(`[Gemini Chat] Success. Response length: ${responseText.length}`);
+        return responseText;
 
     } catch (e) {
-        console.error("Gemini Chat Error:", e);
-        return "I apologize, but I am having trouble processing your request right now. Please try again later.";
+        console.error("!!! GEMINI CHAT CRITICAL ERROR !!!");
+        console.error("Error Message:", e.message);
+        console.error("Error Status:", e.status);
+        if (e.response) console.error("Full Response:", JSON.stringify(e.response, null, 2));
+
+        return "I apologize, but I am having trouble processing your request right now. Please ensure the server has been restarted to load the new API key.";
     }
 };
 
