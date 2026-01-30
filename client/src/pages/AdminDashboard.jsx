@@ -355,7 +355,7 @@ export default function AdminDashboard() {
 
             {/* TAB 2: TAX FORMS CONFIGURATION */}
             {activeTab === 'tax_forms' && (
-                <div className="flex flex-1 gap-6 min-h-[calc(100vh-200px)] p-8 pr-[700px]">
+                <div className="flex flex-1 gap-6 min-h-[calc(100vh-200px)] p-8 max-w-[1400px]">
 
                     {/* COLUMN 1: UPLOAD ZONE - 50% Smaller */}
                     <div className="w-32 shrink-0 flex flex-col">
@@ -695,7 +695,7 @@ export default function AdminDashboard() {
 
             {/* TAB 3: FORM SETUP (Text Work Area) */}
             {activeTab === 'form_setup' && (
-                <div className="flex-1 p-8 pr-[700px] animate-in fade-in slide-in-from-left-5 duration-500">
+                <div className="flex-1 p-8 max-w-[1400px] animate-in fade-in slide-in-from-left-5 duration-500">
                     <div className="bg-gray-900/50 backdrop-blur-xl border border-gray-800 rounded-3xl p-10 min-h-[80vh] flex flex-col items-center justify-start">
                         <div className="w-full max-w-4xl text-center mb-12">
                             <h2 className="text-4xl font-black text-white mb-4 tracking-tight">Form Setup Studio</h2>

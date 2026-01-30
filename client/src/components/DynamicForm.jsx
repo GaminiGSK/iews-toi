@@ -178,7 +178,7 @@ const FieldInput = ({ field, value, onChange, error }) => {
 const DigitBoxGroup = ({ value = "", count = 2, highlightIndices = [] }) => {
     const chars = value.toString().replace(/[^0-9]/g, '').padEnd(count, ' ').split('').slice(0, count);
     return (
-        <div className="flex gap-1">
+        <div className="flex gap-1 shrink-0">
             {chars.map((char, i) => (
                 <div key={i} className="flex items-center gap-1">
                     <div className="w-7 h-9 bg-white border border-slate-300 rounded-md shadow-sm flex items-center justify-center font-mono font-bold text-lg text-slate-800">
@@ -190,6 +190,33 @@ const DigitBoxGroup = ({ value = "", count = 2, highlightIndices = [] }) => {
         </div>
     );
 };
+
+// Clean Numbered Row for Ministry Style
+const NumberedFieldRow = ({ number, labelKh, labelEn, value, onChange, type = "text", placeholder = "", suffix = "" }) => (
+    <div className="flex items-start gap-4 py-3 border-b border-slate-100 hover:bg-slate-50/50 transition duration-200">
+        <div className="w-8 h-8 shrink-0 bg-slate-900 text-white rounded-lg flex items-center justify-center font-black text-sm shadow-md mt-1">
+            {number}
+        </div>
+        <div className="flex-1 min-w-0">
+            <div className="flex flex-col mb-1.5">
+                <span className="font-khmer font-bold text-[13px] text-slate-900 leading-tight">{labelKh}</span>
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">{labelEn}</span>
+            </div>
+            {type === "text" || type === "number" ? (
+                <div className="flex items-center gap-2">
+                    <input
+                        type={type}
+                        value={value || ""}
+                        onChange={(e) => onChange(e.target.value)}
+                        placeholder={placeholder}
+                        className="w-full bg-transparent border-b-2 border-slate-200 focus:border-blue-600 outline-none font-bold text-lg text-slate-800 py-1 transition-colors"
+                    />
+                    {suffix && <span className="text-sm font-bold text-slate-400">{suffix}</span>}
+                </div>
+            ) : null}
+        </div>
+    </div>
+);
 
 const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
     if (!schema) return <div className="p-8 text-center text-slate-500 animate-pulse">Waiting for Schema...</div>;
@@ -274,6 +301,68 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                     </div>
                     <DigitBoxGroup value={data.untilDate || "31122023"} count={8} highlightIndices={[1, 3]} />
                 </div>
+            </div>
+
+            {/* --- SECTION 2: ENTERPRISE IDENTIFICATION (STEP 3) --- */}
+            <div className="mb-12 space-y-2">
+                <div className="flex items-center gap-2 mb-4">
+                    <div className="h-0.5 flex-1 bg-slate-100"></div>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-4">Identification of Enterprise</span>
+                    <div className="h-0.5 flex-1 bg-slate-100"></div>
+                </div>
+
+                <NumberedFieldRow
+                    number="2"
+                    labelKh="ឈ្មោះសហគ្រាស ៖"
+                    labelEn="Name of Enterprise"
+                    value={data.enterpriseName}
+                    onChange={(val) => onChange('enterpriseName', val)}
+                />
+
+                <NumberedFieldRow
+                    number="3"
+                    labelKh="ចំនួនសាខាសហគ្រាស ៖"
+                    labelEn="Number of Local Branch"
+                    value={data.branchCount}
+                    onChange={(val) => onChange('branchCount', val)}
+                    type="number"
+                />
+
+                {/* Special Date Row for Number 4 */}
+                <div className="flex items-start gap-4 py-3 border-b border-slate-100 group transition">
+                    <div className="w-8 h-8 shrink-0 bg-slate-900 text-white rounded-lg flex items-center justify-center font-black text-sm shadow-md mt-1">4</div>
+                    <div className="flex-1">
+                        <div className="flex flex-col mb-3">
+                            <span className="font-khmer font-bold text-[13px] text-slate-900 leading-tight">កាលបរិច្ឆេទចុះបញ្ជីពន្ធដារ ៖</span>
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Date of Tax Registration</span>
+                        </div>
+                        <DigitBoxGroup value={data.regDate || "01012023"} count={8} highlightIndices={[1, 3]} />
+                    </div>
+                </div>
+
+                <NumberedFieldRow
+                    number="5"
+                    labelKh="ឈ្មោះអភិបាល/បណ្ណាធិការ/កម្មសិទ្ធិករ ៖"
+                    labelEn="Name of Director/Manager/Owner"
+                    value={data.ownerName}
+                    onChange={(val) => onChange('ownerName', val)}
+                />
+
+                <NumberedFieldRow
+                    number="6"
+                    labelKh="សកម្មភាពអាជីវកម្មចម្បង ៖"
+                    labelEn="Main Business Activities"
+                    value={data.businessActivity}
+                    onChange={(val) => onChange('businessActivity', val)}
+                />
+
+                <NumberedFieldRow
+                    number="7"
+                    labelKh="ឈ្មោះគណនេយ្យករ/ ភ្នាក់ងារសេវាកម្មពន្ធដារ ៖"
+                    labelEn="Name of Accountant/ Tax Service Agent"
+                    value={data.accountantName}
+                    onChange={(val) => onChange('accountantName', val)}
+                />
             </div>
 
 
