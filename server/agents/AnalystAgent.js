@@ -8,7 +8,7 @@ const Transaction = require('../models/Transaction');
 const CompanyProfile = require('../models/CompanyProfile');
 
 // Configuration
-const GENAI_API_KEY = process.env.GEMINI_API_KEY || "AIzaSyCL3dNr_tpKtEHH5wJUzJHq4Ydx8w_xONE";
+const GENAI_API_KEY = process.env.GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(GENAI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 

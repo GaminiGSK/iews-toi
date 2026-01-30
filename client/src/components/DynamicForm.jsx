@@ -174,83 +174,105 @@ const FieldInput = ({ field, value, onChange, error }) => {
     );
 };
 
+// Reusable Digit Box Group for the Ministry Look
+const DigitBoxGroup = ({ value = "", count = 2, highlightIndices = [] }) => {
+    const chars = value.toString().replace(/[^0-9]/g, '').padEnd(count, ' ').split('').slice(0, count);
+    return (
+        <div className="flex gap-1">
+            {chars.map((char, i) => (
+                <div key={i} className="flex items-center gap-1">
+                    <div className="w-7 h-9 bg-white border border-slate-300 rounded-md shadow-sm flex items-center justify-center font-mono font-bold text-lg text-slate-800">
+                        {char}
+                    </div>
+                    {highlightIndices.includes(i) && <span className="text-slate-300 font-bold">/</span>}
+                </div>
+            ))}
+        </div>
+    );
+};
+
 const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
     if (!schema) return <div className="p-8 text-center text-slate-500 animate-pulse">Waiting for Schema...</div>;
 
     return (
         <div className="max-w-[1000px] mx-auto animate-in slide-in-from-bottom-5 fade-in duration-500 pb-20 bg-white text-black shadow-2xl p-8 min-h-[1400px]">
 
-            {/* --- OFFICIAL HEADER (REPLICA) --- */}
-            <div className="relative mb-8 font-serif">
-                {/* Form Code Top Left - Moved outside flow to prevent overlap */}
-                <div className="absolute -top-10 -left-6 font-bold text-xl tracking-wide font-serif text-black">TOI 01 / I</div>
-
-                <div className="flex justify-between items-start mt-12 px-0">
-                    {/* Left Column: Ministry & Dept */}
-                    <div className="flex flex-col items-center w-[35%] text-center">
-                        <h3 className="font-khmer font-bold text-xs mb-1.5 leading-relaxed">ក្រសួងសេដ្ឋកិច្ចនិងហិរញ្ញវត្ថុ</h3>
-                        <h4 className="font-serif font-bold text-[11px] uppercase border-b-2 border-black pb-1 mb-2 w-full max-w-[260px] tracking-wide leading-none">MINISTRY OF ECONOMY AND FINANCE</h4>
-
-                        <h3 className="font-khmer font-bold text-xs mb-1.5 leading-relaxed">អគ្គនាយកដ្ឋានពន្ធដារ</h3>
-                        <h4 className="font-serif font-bold text-[11px] uppercase mb-6 w-full max-w-[260px] tracking-wide leading-none">GENERAL DEPARTMENT OF TAXATION</h4>
-
-                        {/* Form Name Box - No Shadow */}
-                        <div className="border-[2.5px] border-black px-4 py-2 bg-slate-50 relative ml-4">
-                            <h3 className="font-khmer font-bold text-sm text-black leading-none mb-1">ទម្រង់ ពបច ០១ / FORM TOI 01</h3>
-                        </div>
-                        <p className="font-khmer text-[9px] mt-4 leading-none text-slate-800">(មាត្រា ២៩ ថ្មី នៃច្បាប់ស្តីពីសារពើពន្ធ )</p>
-                        <p className="font-serif text-[10px] italic leading-none text-slate-800 mt-1">(Article 29 New of the Law on Taxation)</p>
+            {/* --- DIGITAL-FIRST HEADER --- */}
+            <div className="mb-12 border-b-2 border-slate-900 pb-8">
+                <div className="flex justify-between items-start">
+                    <div className="flex flex-col gap-1">
+                        <div className="text-[10px] font-bold text-slate-500 tracking-widest uppercase">Kingdom of Cambodia</div>
+                        <div className="text-[10px] font-khmer font-bold text-slate-800">ព្រះរាជាណាចក្រកម្ពុជា</div>
                     </div>
-
-                    {/* Center Column: Logo */}
-                    <div className="w-[30%] flex flex-col items-center justify-start -mt-4">
-                        <img
-                            src="/assets/gdt_seal.png"
-                            alt="GDT Seal"
-                            className="w-60 h-60 object-contain mix-blend-multiply"
-                        />
-                    </div>
-
-                    {/* Right Column: Kingdom */}
-                    <div className="flex flex-col items-center w-[35%] text-center pt-2">
-                        <h3 className="font-khmer font-bold text-sm mb-1.5 text-black">ព្រះរាជាណាចក្រកម្ពុជា</h3>
-                        <h4 className="font-serif font-bold text-sm uppercase mb-3 text-black tracking-[0.2em]">KINGDOM OF CAMBODIA</h4>
-
-                        <h3 className="font-khmer font-bold text-xs mb-1.5 text-black">ជាតិ សាសនា ព្រះមហាក្សត្រ</h3>
-                        <h4 className="font-serif font-bold text-[10px] uppercase mb-2 text-black tracking-[0.2em]">NATION RELIGION KING</h4>
-
-                        {/* Decorative Divider - Classical Style */}
-                        <div className="flex items-center gap-2 opacity-90 mt-2">
-                            {/* Using text-based classic divider replication */}
-                            <div className="text-black font-serif tracking-tighter text-xs">
-                                ══════ ❖ ══════
-                            </div>
-                        </div>
+                    <div className="text-right">
+                        <div className="text-[10px] font-bold text-slate-500 tracking-widest uppercase">General Department of Taxation</div>
+                        <div className="text-[10px] font-khmer font-bold text-slate-800">អគ្គនាយកដ្ឋានពន្ធដារ</div>
                     </div>
                 </div>
 
-                {/* Main Title Area - Paper Density */}
-                <div className="text-center mt-12 mb-6">
-                    <div className="flex flex-col items-center justify-center gap-1">
-                        <h1 className="font-khmer font-bold text-lg text-black leading-none">{schema.title || "លិខិតប្រកាសពន្ធលើប្រាក់ចំណូលប្រចាំឆ្នាំ"}</h1>
-                        <div className="flex items-center gap-4">
-                            <h2 className="font-serif font-bold text-[14px] uppercase text-black">{schema.titleKh || "ANNUAL INCOME TAX RETURN FOR THE YEAR ENDED"}</h2>
+                <div className="mt-10 flex flex-col items-center gap-2">
+                    <h1 className="font-khmer font-bold text-2xl text-slate-900 text-center leading-tight">
+                        {schema.title || "លិខិតប្រកាសពន្ធលើប្រាក់ចំណូលប្រចាំឆ្នាំ"}
+                    </h1>
+                    <div className="flex items-center gap-6">
+                        <h2 className="font-sans font-black text-sm uppercase text-slate-700 tracking-tight">
+                            {schema.titleKh || "ANNUAL INCOME TAX RETURN FOR THE YEAR ENDED"}
+                        </h2>
 
-                            {/* The 4 Year Boxes Replica */}
-                            <div className="flex gap-1">
-                                {(() => {
-                                    const yearStr = (data.taxYear || '2023').toString().replace(/[^0-9]/g, '').slice(-4);
-                                    let yearChars = yearStr.split('');
-                                    while (yearChars.length < 4) yearChars.unshift('0');
-                                    return yearChars.map((char, i) => (
-                                        <div key={i} className="w-6 h-8 border-[1.5px] border-black bg-white flex items-center justify-center font-serif font-bold text-lg">
-                                            {char}
-                                        </div>
-                                    ));
-                                })()}
-                            </div>
+                        {/* Interactive Year Boxes */}
+                        <div className="flex gap-1.5 p-1 bg-slate-50 rounded-lg border border-slate-200">
+                            {(() => {
+                                const yearStr = (data.taxYear || '2023').toString().replace(/[^0-9]/g, '').slice(-4);
+                                let yearChars = yearStr.split('');
+                                while (yearChars.length < 4) yearChars.unshift('0');
+                                return yearChars.map((char, i) => (
+                                    <div key={i} className="w-8 h-10 bg-white border-2 border-slate-900 rounded-md flex items-center justify-center font-mono font-black text-xl text-blue-600 shadow-sm">
+                                        {char}
+                                    </div>
+                                ));
+                            })()}
                         </div>
                     </div>
+                </div>
+            </div>
+
+            {/* --- TAX PERIOD ROW (STEP 2) --- */}
+            <div className="flex flex-wrap items-center gap-x-8 gap-y-4 mb-10 p-5 bg-slate-50/50 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
+                {/* Subtle background decoration */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rotate-45 translate-x-16 -translate-y-16"></div>
+
+                {/* 1. Tax Period (Number of Month) */}
+                <div className="flex items-center gap-4">
+                    <div className="flex flex-col">
+                        <span className="font-khmer font-bold text-xs text-slate-900 leading-tight">ការិយបរិច្ឆេទសារពើពន្ធ ( ចំនួនខែ ) ៖</span>
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Tax Period (Number of Month)</span>
+                    </div>
+                    <DigitBoxGroup value={data.taxMonths || "12"} count={2} />
+                </div>
+
+                {/* Arrow Decor */}
+                <div className="hidden md:block text-slate-300">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8 5v14l11-7z" />
+                    </svg>
+                </div>
+
+                {/* 2. From */}
+                <div className="flex items-center gap-4">
+                    <div className="flex flex-col">
+                        <span className="font-khmer font-bold text-xs text-slate-900 leading-tight">ចាប់ពីថ្ងៃទី</span>
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">From</span>
+                    </div>
+                    <DigitBoxGroup value={data.fromDate || "01012023"} count={8} highlightIndices={[1, 3]} />
+                </div>
+
+                {/* 3. Until */}
+                <div className="flex items-center gap-4">
+                    <div className="flex flex-col">
+                        <span className="font-khmer font-bold text-xs text-slate-900 leading-tight">ដល់ថ្ងៃទី</span>
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Until</span>
+                    </div>
+                    <DigitBoxGroup value={data.untilDate || "31122023"} count={8} highlightIndices={[1, 3]} />
                 </div>
             </div>
 

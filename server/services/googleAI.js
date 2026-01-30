@@ -3,7 +3,10 @@ const fs = require('fs');
 const path = require('path');
 
 // USER PROVIDED KEY
-const API_KEY = process.env.GEMINI_API_KEY || "AIzaSyDNgTq1GWLl0mAeBhP49_6JGpEjfJV-v-g";
+const API_KEY = process.env.GEMINI_API_KEY;
+if (!API_KEY) {
+    console.error("FATAL ERROR: GEMINI_API_KEY is missing from environment variables!");
+}
 
 const genAI = new GoogleGenerativeAI(API_KEY);
 // Use Gemini 2.0 Flash - Standard for 2026 multimodal tasks

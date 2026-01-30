@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { UserPlus, LogOut, Building, Mail, Lock, Edit2, Trash2, FileText, CloudUpload, X, CheckCircle, Save, Loader2 } from 'lucide-react';
+import { UserPlus, LogOut, Building, Mail, Lock, Edit2, Trash2, FileText, CloudUpload, X, CheckCircle, Save, Loader2, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function AdminDashboard() {
@@ -287,6 +287,13 @@ export default function AdminDashboard() {
                     <FileText size={20} />
                     Tax Forms Configuration
                 </button>
+                <button
+                    onClick={() => setActiveTab('form_setup')}
+                    className={`pb-4 text-lg font-bold flex items-center gap-2 border-b-2 transition-colors ${activeTab === 'form_setup' ? 'border-purple-500 text-purple-500' : 'border-transparent text-gray-400 hover:text-gray-200'}`}
+                >
+                    <Sparkles size={20} />
+                    Form Setup
+                </button>
             </div>
 
             {/* TAB 1: USER MANAGEMENT */}
@@ -348,10 +355,10 @@ export default function AdminDashboard() {
 
             {/* TAB 2: TAX FORMS CONFIGURATION */}
             {activeTab === 'tax_forms' && (
-                <div className="flex flex-1 gap-6 min-h-[calc(100vh-200px)] p-8">
+                <div className="flex flex-1 gap-6 min-h-[calc(100vh-200px)] p-8 pr-[700px]">
 
-                    {/* COLUMN 1: UPLOAD ZONE */}
-                    <div className="w-64 shrink-0 flex flex-col">
+                    {/* COLUMN 1: UPLOAD ZONE - 50% Smaller */}
+                    <div className="w-32 shrink-0 flex flex-col">
                         <div
                             className="flex-1 bg-gray-900/50 border-2 border-dashed border-blue-900/50 rounded-2xl p-4 text-center hover:border-blue-500 hover:bg-blue-900/10 transition relative group flex flex-col items-center justify-center cursor-pointer"
                             onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
@@ -409,8 +416,8 @@ export default function AdminDashboard() {
                             <div className="w-12 h-12 bg-blue-500/10 rounded-full flex items-center justify-center text-blue-500 mb-4 border border-blue-500/20">
                                 <CloudUpload size={24} />
                             </div>
-                            <h3 className="font-bold text-white text-sm mb-2 leading-tight">
-                                Upload Tax Form Templates
+                            <h3 className="font-bold text-white text-[10px] mb-2 leading-tight">
+                                Upload Templates
                             </h3>
                             <p className="text-xs text-gray-400">
                                 Drag & drop JPG/PNG pages
@@ -683,6 +690,25 @@ export default function AdminDashboard() {
                         </div>
                     </div>
 
+                </div>
+            )}
+
+            {/* TAB 3: FORM SETUP (Text Work Area) */}
+            {activeTab === 'form_setup' && (
+                <div className="flex-1 p-8 pr-[700px] animate-in fade-in slide-in-from-left-5 duration-500">
+                    <div className="bg-gray-900/50 backdrop-blur-xl border border-gray-800 rounded-3xl p-10 min-h-[80vh] flex flex-col items-center justify-start">
+                        <div className="w-full max-w-4xl text-center mb-12">
+                            <h2 className="text-4xl font-black text-white mb-4 tracking-tight">Form Setup Studio</h2>
+                            <p className="text-gray-400 text-lg">Position your bilingual text blocks and data inputs here.</p>
+                        </div>
+
+                        <div className="w-full bg-white rounded-2xl shadow-2xl overflow-hidden min-h-[1000px] border-8 border-gray-800/20">
+                            {/* This is where the DynamicForm work will be mirrored and positioned */}
+                            <div className="p-8 text-slate-400 italic font-medium text-center py-40 bg-slate-50 border-2 border-dashed border-slate-200 m-8 rounded-xl">
+                                [ FORM CANVAS READY FOR TEXT POSITIONING ]
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
 
