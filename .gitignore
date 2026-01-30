@@ -11,5 +11,11 @@ brain/
 *.log
 
 # Secrets
+.env
+server/.env
 service-account.json
 credentials.json
+node_modules/
+dist/
+build/
+.DS_Store
