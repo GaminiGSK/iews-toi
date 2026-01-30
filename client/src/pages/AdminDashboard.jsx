@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { UserPlus, LogOut, Building, Mail, Lock, Edit2, Trash2, FileText, CloudUpload, X, CheckCircle, Save, Loader2, Sparkles } from 'lucide-react';
+import { UserPlus, LogOut, Building, Mail, Lock, Edit2, Trash2, FileText, CloudUpload, X, CheckCircle, Save, Loader2, Sparkles, Hash, Type } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import DynamicForm from '../components/DynamicForm';
 
 export default function AdminDashboard() {
     const [users, setUsers] = useState([]);
@@ -696,16 +697,79 @@ export default function AdminDashboard() {
             {/* TAB 3: FORM SETUP (Text Work Area) */}
             {activeTab === 'form_setup' && (
                 <div className="flex-1 p-8 max-w-[1400px] animate-in fade-in slide-in-from-left-5 duration-500">
-                    <div className="bg-gray-900/50 backdrop-blur-xl border border-gray-800 rounded-3xl p-10 min-h-[80vh] flex flex-col items-center justify-start">
-                        <div className="w-full max-w-4xl text-center mb-12">
-                            <h2 className="text-4xl font-black text-white mb-4 tracking-tight">Form Setup Studio</h2>
-                            <p className="text-gray-400 text-lg">Position your bilingual text blocks and data inputs here.</p>
+                    <div className="bg-gray-900/50 backdrop-blur-xl border border-gray-800 rounded-3xl p-10 min-h-[80vh] flex flex-col items-center justify-start space-y-12">
+
+                        {/* Header */}
+                        <div className="w-full flex justify-between items-end border-b border-gray-800 pb-8">
+                            <div>
+                                <h2 className="text-4xl font-black text-white mb-2 tracking-tight flex items-center gap-3">
+                                    <Sparkles className="text-purple-400" size={36} />
+                                    Form Setup Studio
+                                </h2>
+                                <p className="text-gray-400 text-lg">Positioning bilingual blocks and data inputs.</p>
+                            </div>
+                            <div className="flex gap-4">
+                                <div className="bg-gray-800/50 px-4 py-2 rounded-xl border border-gray-700">
+                                    <span className="text-xs text-gray-500 uppercase font-bold block mb-1">Active Template</span>
+                                    <span className="text-white font-bold">{templates.find(t => t.id === activeTemplateId)?.name || "No Selection"}</span>
+                                </div>
+                            </div>
                         </div>
 
-                        <div className="w-full bg-white rounded-2xl shadow-2xl overflow-hidden min-h-[1000px] border-8 border-gray-800/20">
-                            {/* This is where the DynamicForm work will be mirrored and positioned */}
-                            <div className="p-8 text-slate-400 italic font-medium text-center py-40 bg-slate-50 border-2 border-dashed border-slate-200 m-8 rounded-xl">
-                                [ FORM CANVAS READY FOR TEXT POSITIONING ]
+                        <div className="w-full flex gap-10">
+                            {/* LEFT: THE LIVE FORM CANVAS */}
+                            <div className="flex-1 bg-white rounded-2xl shadow-2xl overflow-hidden min-h-[1000px] border-8 border-gray-800/20">
+                                <div className="p-8">
+                                    <DynamicForm
+                                        schema={{ title: "លិខិតប្រកាសពន្ធលើប្រាក់ចំណូលប្រចាំឆ្នាំ", titleKh: "ANNUAL INCOME TAX RETURN FOR THE YEAR ENDED" }}
+                                        data={{
+                                            taxYear: "2023",
+                                            taxMonths: "12",
+                                            fromDate: "01012023",
+                                            untilDate: "31122023",
+                                            enterpriseName: "SAMPLE ENTERPRISE CO., LTD",
+                                            branchCount: "1",
+                                            regDate: "15062022",
+                                            ownerName: "MR. JOHN DOE",
+                                            businessActivity: "Information Technology Services",
+                                            accountantName: "GK SMART ASSISTANT",
+                                            registeredAddress: "No. 123, St. 456, Phnom Penh, Cambodia",
+                                            agentLicenseNumber: "TAX-2026-XY-999"
+                                        }}
+                                        onChange={() => { }}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* RIGHT: TEXT HARVEST PANEL */}
+                            <div className="w-96 shrink-0 space-y-6">
+                                <div className="bg-gray-800/40 rounded-2xl border border-gray-700 p-6 backdrop-blur-md">
+                                    <div className="flex items-center gap-2 mb-6 text-purple-400">
+                                        <Type size={20} />
+                                        <h3 className="font-bold uppercase tracking-widest text-sm text-white">Harvested Text</h3>
+                                    </div>
+
+                                    <div className="space-y-3 max-h-[800px] overflow-y-auto pr-2 custom-scrollbar">
+                                        {templates.find(t => t.id === activeTemplateId)?.harvestedText ? (
+                                            templates.find(t => t.id === activeTemplateId).harvestedText.split('\n').map((line, i) => (
+                                                <div key={i} className="group cursor-pointer">
+                                                    <div className="p-3 bg-gray-900/50 border border-gray-800 rounded-lg group-hover:border-purple-500/50 group-hover:bg-purple-900/10 transition duration-200">
+                                                        <div className="flex justify-between items-start mb-1">
+                                                            <span className="text-[10px] font-bold text-gray-500 font-mono">L{i + 1}</span>
+                                                            <Hash size={10} className="text-gray-700 group-hover:text-purple-400" />
+                                                        </div>
+                                                        <p className="text-xs text-gray-300 font-medium leading-relaxed">{line}</p>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="py-20 text-center text-gray-600 italic">
+                                                <CloudUpload className="mx-auto mb-4 opacity-20" size={48} />
+                                                No text harvested yet.<br />Please run "Auto-Scan" in the Library tab.
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
