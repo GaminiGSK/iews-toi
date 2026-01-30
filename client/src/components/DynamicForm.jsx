@@ -218,6 +218,27 @@ const NumberedFieldRow = ({ number, labelKh, labelEn, value, onChange, type = "t
     </div>
 );
 
+// New Selection Box for Checkboxes/Radio
+const OptionBox = ({ labelEn, labelKh, selected, onClick, subText = "" }) => (
+    <div
+        onClick={onClick}
+        className={`flex-1 flex gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer group ${selected
+            ? 'border-blue-600 bg-blue-50/50 shadow-md'
+            : 'border-slate-100 bg-white hover:border-slate-300'
+            }`}
+    >
+        <div className={`w-6 h-6 shrink-0 rounded-md border-2 flex items-center justify-center transition-colors ${selected ? 'bg-blue-600 border-blue-600' : 'border-slate-300 group-hover:border-blue-400'
+            }`}>
+            {selected && <div className="w-2 h-2 bg-white rounded-full"></div>}
+        </div>
+        <div className="flex flex-col min-w-0">
+            <span className="font-khmer font-bold text-[11px] text-slate-900 leading-tight">{labelKh}</span>
+            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tight">{labelEn}</span>
+            {subText && <span className="text-[10px] text-blue-600 font-mono mt-1">{subText}</span>}
+        </div>
+    </div>
+);
+
 const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
     if (!schema) return <div className="p-8 text-center text-slate-500 animate-pulse">Waiting for Schema...</div>;
 
@@ -403,6 +424,132 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                             onChange={(e) => onChange('agentLicenseNumber', e.target.value)}
                             className="w-full bg-transparent border-b-2 border-slate-100 focus:border-blue-500 outline-none font-mono font-bold text-lg text-slate-700 py-1 transition-colors"
                         />
+                    </div>
+                </div>
+            </div>
+
+            {/* --- SECTION 3: COMPLIANCE & LEGAL (Fields 11-14) --- */}
+            <div className="space-y-6 mb-12">
+                <div className="flex items-center gap-2 mb-4">
+                    <div className="h-0.5 flex-1 bg-slate-100"></div>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-4">Accounting & Compliance</span>
+                    <div className="h-0.5 flex-1 bg-slate-100"></div>
+                </div>
+
+                {/* 11. Accounting Records */}
+                <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
+                    <div className="flex flex-col mb-4">
+                        <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 bg-slate-900 text-white rounded-md flex items-center justify-center font-black text-[10px]">11</div>
+                            <span className="font-khmer font-bold text-[13px]">ការកត់ត្រាបញ្ជីគណនេយ្យ ៖</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase ml-8">Accounting Records</span>
+                    </div>
+                    <div className="flex gap-4 ml-8">
+                        <OptionBox
+                            labelKh="ប្រើប្រាស់កម្មវិធីគណនេយ្យកុំព្យូទ័រ (ឈ្មោះកម្មវិធី) ៖"
+                            labelEn="Using Accounting Software (Software's Name)"
+                            selected={data.accountingType === 'software'}
+                            onClick={() => onChange('accountingType', 'software')}
+                            subText={data.accountingType === 'software' ? data.softwareName : ""}
+                        />
+                        <OptionBox
+                            labelKh="មិនប្រើប្រាស់កម្មវិធីគណនេយ្យកុំព្យូទ័រ"
+                            labelEn="Not Using Accounting Software"
+                            selected={data.accountingType === 'manual'}
+                            onClick={() => onChange('accountingType', 'manual')}
+                        />
+                    </div>
+                </div>
+
+                {/* 12 & 13 Split Row */}
+                <div className="grid grid-cols-2 gap-6">
+                    {/* 12. Tax Compliance */}
+                    <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
+                        <div className="flex flex-col mb-4">
+                            <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 bg-slate-900 text-white rounded-md flex items-center justify-center font-black text-[10px]">12</div>
+                                <span className="font-khmer font-bold text-[13px]">កម្រិតអនុលោមភាពសារពើពន្ធ ៖</span>
+                            </div>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase ml-8">Status of Tax Compliance</span>
+                        </div>
+                        <div className="flex gap-2 ml-8">
+                            {['Gold', 'Silver', 'Bronze'].map(level => (
+                                <button
+                                    key={level}
+                                    onClick={() => onChange('taxCompliance', level)}
+                                    className={`px-3 py-1.5 rounded-lg border-2 text-[10px] font-black uppercase tracking-widest transition-all ${data.taxCompliance === level
+                                            ? 'bg-amber-100 border-amber-500 text-amber-700 shadow-sm scale-105'
+                                            : 'bg-white border-slate-100 text-slate-400 hover:border-slate-300'
+                                        }`}
+                                >
+                                    {level}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* 13. Statutory Audit */}
+                    <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
+                        <div className="flex flex-col mb-4">
+                            <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 bg-slate-900 text-white rounded-md flex items-center justify-center font-black text-[10px]">13</div>
+                                <span className="font-khmer font-bold text-[13px]">សវនកម្មឯករាជ្យដែលតម្រូវដោយច្បាប់ ៖</span>
+                            </div>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase ml-8">Statutory Audit Requirement</span>
+                        </div>
+                        <div className="flex gap-3 ml-8">
+                            <button
+                                onClick={() => onChange('auditRequired', true)}
+                                className={`flex-1 py-2 rounded-xl border-2 text-[11px] font-bold transition-all ${data.auditRequired ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-slate-100 text-slate-500'}`}
+                            >
+                                REQUIRED
+                            </button>
+                            <button
+                                onClick={() => onChange('auditRequired', false)}
+                                className={`flex-1 py-2 rounded-xl border-2 text-[11px] font-bold transition-all ${data.auditRequired === false ? 'bg-slate-800 border-slate-800 text-white' : 'bg-white border-slate-100 text-slate-500'}`}
+                            >
+                                NOT REQUIRED
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* 14. Legal Form Grid */}
+                <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
+                    <div className="flex flex-col mb-6">
+                        <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 bg-slate-900 text-white rounded-md flex items-center justify-center font-black text-[10px]">14</div>
+                            <span className="font-khmer font-bold text-[13px]">ទម្រង់គតិយុត្តិ / ទម្រង់នៃប្រតិបត្តិការអាជីវកម្ម ៖</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase ml-8">Legal Form or Form of Business Operations</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 ml-8">
+                        {[
+                            { id: 'sole', kh: 'សហគ្រាសឯកបុគ្គល/រូបវន្តបុគ្គល', en: 'Sole Proprietorship / Physical Person' },
+                            { id: 'general_partnership', kh: 'ក្រុមហ៊ុនសហកម្មសិទ្ធិទូទៅ', en: 'General Partnership' },
+                            { id: 'limited_partnership', kh: 'ក្រុមហ៊ុនសហកម្មសិទ្ធិមានកម្រិត', en: 'Limited Partnership' },
+                            { id: 'single_member_plc', kh: 'សហគ្រាសឯកបុគ្គលទទួលខុសត្រូវមានកម្រិត', en: 'Single Member Private Limited Company' },
+                            { id: 'private_limited', kh: 'ក្រុមហ៊ុនឯកជនទទួលខុសត្រូវមានកម្រិត', en: 'Private Limited Company' },
+                            { id: 'public_limited', kh: 'ក្រុមហ៊ុនមហាជនទទួលខុសត្រូវមានកម្រិត', en: 'Public Limited Company' },
+                            { id: 'joint_venture_interest', kh: 'ផលប្រយោជន៍ក្នុងសម្ព័ន្ធអាជីវកម្ម', en: 'Interest in Joint Venture' },
+                            { id: 'public_enterprise', kh: 'សហគ្រាសសាធារណៈ', en: 'Public Enterprise' },
+                            { id: 'state_enterprise', kh: 'សហគ្រាសរដ្ឋ', en: 'State Enterprise' },
+                            { id: 'state_joint_venture', kh: 'ក្រុមហ៊ុនចម្រុះរដ្ឋ', en: 'State Joint Venture' },
+                            { id: 'foreign_branch', kh: 'សាខាក្រុមហ៊ុនបរទេស', en: 'Foreign Company\'s Branch' },
+                            { id: 'representative_office', kh: 'ការិយាល័យតំណាង', en: 'Representative Office' },
+                            { id: 'ngo', kh: 'អង្គការក្រៅរដ្ឋាភិបាល / សមាគម', en: 'Non-Government Organization / Association' },
+                            { id: 'others', kh: 'សហគ្រាសដទៃទៀត', en: 'Others' },
+                        ].map((opt) => (
+                            <OptionBox
+                                key={opt.id}
+                                labelKh={opt.kh}
+                                labelEn={opt.en}
+                                selected={data.legalForm === opt.id}
+                                onClick={() => onChange('legalForm', opt.id)}
+                            />
+                        ))}
                     </div>
                 </div>
             </div>

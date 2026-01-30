@@ -240,12 +240,16 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
             - **Total Income**: ${summary.income}
             - **Total Expenses**: ${summary.expense}
 
-            **Regulatory Knowledge (Cambodia Tax Law):**
-            - **Resident Natural Person**: Defined as meeting ONE of these criteria:
-               a) Residence in Cambodia (owns, rents, or leases long-term).
-               b) Principal place of abode (centre of economic interest, family, social activities).
-               c) Physical presence in Cambodia for MORE THAN 182 days in a 12-month period ending in the current tax year. (Any part of a day counts as one full day).
-            - Priority: If criteria A and B are unclear, criteria C (182 days) is the determining factor for residency status.
+            **Regulatory Knowledge (Cambodia Tax Law - TOI):**
+            - **Resident Natural Person**: Meeting ONE of: a) Permanent residence, b) Principal place of abode, c) In Cambodia > 182 days in any 12-month period.
+            - **Non-Resident Taxpayer**: An entity established, managed, or has a principal place of business in Cambodia (Note: This is the official wording from the GDT manual).
+            - **Legal Entity**: Includes Limited Companies, government institutions, religious/charitable orgs, and Permanent Establishments of non-resident persons.
+            - **Permanent Establishment (PE)**: A fixed place of business. Includes:
+               * Places of management, branches, agents, offices, warehouses, factories.
+               * Construction/assembly sites > 182 days.
+               * Provision of services (including consulting) by employees for > 182 days in any 12-month period.
+               * Individuals regularly exercising authority to enter contracts on behalf of a foreign enterprise.
+            - **PE Residency**: A PE is regarded as a RESIDENT legal entity ONLY if its income originates from Cambodia.
 
             **App Context (User UI):**
             - **Current Page**: ${ui?.route || "Dashboard"}
