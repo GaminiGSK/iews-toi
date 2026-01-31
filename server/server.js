@@ -1,5 +1,8 @@
 require('dotenv').config();
-// BUILD TRIGGER: 2026-01-30_0538
+// BUILD TRIGGER: 2026-01-31_CheckKey
+// Verify Env Load
+const geminiKey = process.env.GEMINI_API_KEY;
+console.log(`[Startup] Environment Loaded. Gemini Key Status: ${geminiKey ? 'Present (Ends in ' + geminiKey.slice(-4) + ')' : 'MISSING ❌'}`);
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
