@@ -89,8 +89,10 @@ export default function CompanyProfile() {
             // Pass token in query for access
             return `/api/company/files/${id}?token=${localStorage.getItem('token')}`;
         }
-        // Fallback for legacy local files
-        return '/' + doc.path.replace(/\\\\/g, '/');
+        // Fallback for local files: Extract filename and use static route
+        const normalized = doc.path.replace(/\\/g, '/');
+        const filename = normalized.split('/').pop();
+        return `/uploads/${filename}`;
     };
 
     // Bank Data State
