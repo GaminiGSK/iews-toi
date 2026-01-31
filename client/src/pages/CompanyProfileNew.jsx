@@ -568,6 +568,10 @@ export default function CompanyProfile() {
             const profileRes = await axios.get('/api/company/profile', { headers: { 'Authorization': `Bearer ${token}` } });
             setFormData(prev => ({ ...prev, ...profileRes.data }));
 
+            // Automatically select the newly uploaded doc for viewing
+            const newDoc = (profileRes.data.documents || []).find(d => d.docType === docType);
+            if (newDoc) setViewDoc(newDoc);
+
         } catch (err) {
             console.error(err);
             const errMsg = err.response?.data?.message || err.message;
@@ -619,202 +623,232 @@ export default function CompanyProfile() {
     };
 
 
-    const renderProfile = () => (
-        <div className="w-full h-[calc(100vh-80px)] pt-6 px-4 animate-fade-in flex flex-col">
-            <div className="mb-4 flex items-center gap-4">
-                <button
-                    onClick={() => setView('home')}
-                    className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-sm font-medium transition shrink-0 shadow-md"
-                    title="Back to Dashboard"
-                >
-                    <ArrowLeft size={20} />
-                </button>
-                <span className="text-gray-500 text-sm font-medium">Back to Dashboard</span>
-            </div>
+    const renderProfile = () => {
+        // Find the active document in the library
+        const activeDocId = viewDoc?.docType || DOC_TYPES[0].id;
+        const activeDocType = DOC_TYPES.find(t => t.id === activeDocId);
+        const uploadedDoc = (formData.documents || []).find(d => d.docType === activeDocId);
 
-            <div className="flex flex-1 gap-6 min-h-0">
+        return (
+            <div className="w-full h-[calc(100vh-80px)] pt-6 px-4 animate-fade-in flex flex-col bg-slate-900 font-sans">
+                {/* Header Row */}
+                <div className="mb-4 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={() => setView('home')}
+                            className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-sm font-medium transition shrink-0 shadow-md"
+                            title="Back to Dashboard"
+                        >
+                            <ArrowLeft size={20} />
+                        </button>
+                        <div>
+                            <h2 className="text-xl font-bold text-white leading-tight">Entity Registration Workspace</h2>
+                            <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">MOC, Tax & Regulatory Documents</p>
+                        </div>
+                    </div>
+                </div>
 
-                {/* COL 1: UPLOAD ZONES */}
-                <div className="w-64 shrink-0 flex flex-col space-y-3 overflow-y-auto pr-1">
-                    <h3 className="font-bold text-gray-700 mb-1">Documents Needed</h3>
-                    {DOC_TYPES.map((doc) => (
+                <div className="flex flex-1 gap-6 min-h-0">
+
+                    {/* COLUMN 1: UPLOAD TEMPLATES (TOI STYLE) */}
+                    <div className="w-48 shrink-0 flex flex-col space-y-4">
                         <div
-                            key={doc.id}
-                            className={`relative border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition group
-                                ${uploadingDoc === doc.id ? 'border-blue-400 bg-blue-50' : 'border-gray-200 hover:border-gray-400 hover:bg-gray-50'}
+                            className={`flex-1 bg-slate-800/40 border-2 border-dashed rounded-3xl p-6 text-center transition-all relative group flex flex-col items-center justify-center cursor-pointer
+                                ${uploadingDoc ? 'border-blue-500 bg-blue-500/5' : 'border-slate-700 hover:border-blue-500/50 hover:bg-slate-800/60'}
                             `}
-                            onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                            onDrop={(e) => {
-                                e.preventDefault(); e.stopPropagation();
-                                if (!uploadingDoc) handleRegUpload(Array.from(e.dataTransfer.files), doc.id);
-                            }}
                         >
                             <input
                                 type="file"
                                 accept="image/*,.pdf"
-                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                disabled={!!uploadingDoc}
+                                multiple
                                 onChange={(e) => {
-                                    if (e.target.files?.length > 0) handleRegUpload(Array.from(e.target.files), doc.id);
+                                    if (e.target.files?.length > 0) handleRegUpload(Array.from(e.target.files), activeDocId);
                                 }}
+                                disabled={!!uploadingDoc}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                             />
 
-                            {uploadingDoc === doc.id ? (
-                                <Loader2 className="animate-spin text-blue-600 mb-2" />
+                            {uploadingDoc ? (
+                                <div className="flex flex-col items-center">
+                                    <Loader2 className="animate-spin h-8 w-8 text-blue-500 mb-2" />
+                                    <p className="text-[10px] font-bold text-blue-400 uppercase animate-pulse">Scanning...</p>
+                                </div>
                             ) : (
-                                <doc.icon size={24} className={`text-${doc.color}-500 mb-2 opacity-70 group-hover:scale-110 transition`} />
+                                <>
+                                    <div className="w-12 h-12 bg-blue-500/10 rounded-full flex items-center justify-center text-blue-500 mb-4 border border-blue-500/20 group-hover:scale-110 transition">
+                                        <CloudUpload size={24} />
+                                    </div>
+                                    <h3 className="font-bold text-white text-[10px] mb-2 leading-tight uppercase tracking-widest">
+                                        Upload Templates
+                                    </h3>
+                                    <p className="text-[10px] text-slate-500 font-medium">
+                                        Drag & drop JPG/PNG pages
+                                    </p>
+                                </>
                             )}
-
-                            <span className="text-xs font-bold text-gray-600">{doc.label}</span>
-                            <span className="text-[10px] text-gray-400 mt-1">Drag or Click</span>
                         </div>
-                    ))}
-                </div>
-
-                {/* COL 2: STATUS LIST */}
-                <div className="w-72 shrink-0 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col overflow-hidden">
-                    <div className="p-4 border-b border-gray-100 bg-gray-50 font-bold text-gray-700">
-                        Document Status
                     </div>
-                    <div className="flex-1 overflow-y-auto p-2 space-y-2">
-                        {DOC_TYPES.map(type => {
-                            const uploaded = (formData.documents || []).find(d => d.docType === type.id);
-                            const isVerified = uploaded?.status === 'Verified';
 
-                            return (
-                                <div
-                                    key={type.id}
-                                    className={`flex items-center justify-between p-3 bg-white border border-gray-100 rounded-lg shadow-sm transition-all ${uploaded ? 'cursor-pointer hover:bg-blue-50 hover:border-blue-200' : ''}`}
-                                    onClick={() => {
-                                        // alert('Debug: Clicked Row. Uploaded: ' + (uploaded ? 'YES' : 'NO'));
-                                        if (uploaded) setViewDoc(uploaded);
-                                    }}
+                    {/* COLUMN 2: FORM LIBRARY (TOI STYLE) */}
+                    <div className="w-80 shrink-0 flex flex-col">
+                        <div className="bg-slate-800/40 rounded-3xl border border-slate-700 flex flex-col h-full overflow-hidden backdrop-blur-xl">
+                            <div className="p-5 border-b border-slate-700/50 font-bold text-white flex flex-col gap-1 shrink-0">
+                                <span className="text-sm">Form Library</span>
+                                <span className="text-[10px] text-slate-500 uppercase tracking-tighter">Registration Documents</span>
+                            </div>
+                            <div className="divide-y divide-slate-700/30 overflow-y-auto flex-1 p-3 space-y-2">
+                                {DOC_TYPES.map(type => {
+                                    const uploaded = (formData.documents || []).find(d => d.docType === type.id);
+                                    const isVerified = uploaded?.status === 'Verified';
+                                    const isActive = activeDocId === type.id;
+
+                                    return (
+                                        <div
+                                            key={type.id}
+                                            className={`p-3 rounded-2xl flex items-center justify-between transition-all cursor-pointer border group
+                                                ${isActive ? 'bg-blue-600 border-blue-500 shadow-lg shadow-blue-900/40 scale-[1.02]' : 'bg-slate-900/40 border-slate-800 hover:border-slate-600'}
+                                            `}
+                                            onClick={() => setViewDoc(uploaded || { docType: type.id, isPlaceholder: true })}
+                                        >
+                                            <div className="flex items-center min-w-0 flex-1">
+                                                <div className={`w-8 h-10 rounded-lg flex items-center justify-center mr-3 border
+                                                    ${isActive ? 'bg-white/20 border-white/30' : 'bg-slate-800 border-slate-700 group-hover:bg-slate-700'}
+                                                `}>
+                                                    {uploaded ? (
+                                                        <img
+                                                            src={getDocUrl(uploaded)}
+                                                            alt=""
+                                                            className="w-full h-full object-cover rounded-lg opacity-80"
+                                                            onError={(e) => { e.target.style.display = 'none'; e.target.parentNode.innerHTML = '📄'; }}
+                                                        />
+                                                    ) : <FileText size={16} className={isActive ? 'text-white' : 'text-slate-500'} />}
+                                                </div>
+                                                <div className="flex flex-col truncate">
+                                                    <span className={`text-[11px] font-bold truncate ${isActive ? 'text-white' : 'text-slate-300'}`}>{type.label}</span>
+                                                    <span className={`text-[9px] font-bold uppercase ${isActive ? 'text-blue-200' : isVerified ? 'text-green-500' : 'text-slate-500'}`}>
+                                                        {uploaded ? 'Saved • Verified' : 'Missing'}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {uploaded && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleClearDoc(type.id);
+                                                    }}
+                                                    className={`p-1.5 rounded-full transition ${isActive ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-slate-600 hover:text-red-400 hover:bg-red-400/10'}`}
+                                                >
+                                                    <X size={14} />
+                                                </button>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* COLUMN 3: WORKBENCH (TOI STYLE) */}
+                    <div className="flex-1 bg-slate-800/40 rounded-3xl border border-slate-700 flex flex-col overflow-hidden backdrop-blur-xl relative">
+                        {/* Toolbar */}
+                        <div className="h-16 border-b border-slate-700/50 flex items-center justify-between px-6 bg-slate-900/50 shrink-0">
+                            <div className="flex items-center gap-4">
+                                <h3 className="font-bold text-white text-sm">Template Editor</h3>
+                                <span className="text-[10px] text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-1 rounded font-bold uppercase tracking-widest">
+                                    {activeDocType?.label}
+                                </span>
+                            </div>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={handleRegenerate}
+                                    disabled={regenerating || !uploadedDoc}
+                                    className={`text-[10px] uppercase tracking-widest px-4 py-2 rounded-xl font-black transition flex items-center gap-2
+                                        ${regenerating ? 'bg-purple-500/50 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-500 text-white shadow-lg shadow-purple-900/20'}
+                                        ${!uploadedDoc && 'opacity-30 grayscale'}
+                                    `}
                                 >
-                                    <div className="flex items-center min-w-0">
-                                        <div className={`w-2 h-2 rounded-full mr-2 ${isVerified ? 'bg-green-500' : 'bg-gray-300'}`} />
-                                        <div className="flex flex-col truncate">
-                                            <span className="text-xs font-bold text-gray-700 truncate">{type.label}</span>
-                                            <span className="text-[10px] text-gray-400 truncate">
-                                                {uploaded ? uploaded.originalName : 'Missing'}
-                                            </span>
+                                    {regenerating ? <Loader2 size={12} className="animate-spin" /> : <CloudUpload size={12} className="animate-bounce" />}
+                                    Auto-Scan
+                                </button>
+                                <div className="text-[10px] text-slate-500 flex items-center gap-2 px-3 font-bold uppercase tracking-tighter">
+                                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
+                                    Draw Mode Active
+                                </div>
+                                <button
+                                    className="text-[10px] uppercase tracking-widest bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl font-black transition shadow-lg shadow-blue-900/20"
+                                >
+                                    Save Mappings
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Editor Split View */}
+                        <div className="flex-1 flex overflow-hidden">
+                            {/* LEFT: Image Preview */}
+                            <div className="flex-1 border-r border-slate-700/50 overflow-auto bg-slate-950/50 p-8 flex items-start justify-center">
+                                {uploadedDoc ? (
+                                    <img
+                                        src={getDocUrl(uploadedDoc)}
+                                        alt="Document Preview"
+                                        className="max-w-full shadow-2xl rounded-sm border border-slate-700"
+                                    />
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center h-full text-slate-600 gap-4 opacity-50">
+                                        <div className="w-20 h-20 border-2 border-dashed border-slate-700 rounded-2xl flex items-center justify-center">
+                                            <FileText size={32} />
+                                        </div>
+                                        <p className="text-xs font-bold uppercase tracking-widest">No Document Scanned</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* RIGHT: Data Form / Replica */}
+                            <div className="w-[450px] overflow-auto bg-white flex flex-col">
+                                {activeDocId === 'moc_cert' ? (
+                                    <div className="p-4 transform scale-[0.85] origin-top">
+                                        <MOCCertificate
+                                            data={formData}
+                                            onRegenerate={handleRegenerate}
+                                            regenerating={regenerating}
+                                        />
+                                    </div>
+                                ) : (
+                                    <div className="p-8 space-y-8">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h4 className="text-sm font-black text-slate-800 uppercase tracking-widest">Extracted Data</h4>
+                                            <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded font-bold">AI ASSISTED</span>
+                                        </div>
+
+                                        {/* Simplified Data Grid for other docs */}
+                                        <div className="space-y-6">
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase">Entity Name (EN)</label>
+                                                <input value={formData.companyNameEn || ''} readOnly className="w-full bg-slate-50 border-none rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none" />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase">Registration ID</label>
+                                                <input value={formData.registrationNumber || ''} readOnly className="w-full bg-slate-50 border-none rounded-xl px-4 py-3 text-sm font-mono font-bold text-blue-600 outline-none" />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase">VAT TIN</label>
+                                                <input value={formData.vatTin || ''} readOnly className="w-full bg-yellow-50 text-yellow-800 border-none rounded-xl px-4 py-3 text-sm font-mono font-bold outline-none" />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase">Official Address</label>
+                                                <textarea value={formData.address || ''} readOnly rows={4} className="w-full bg-slate-50 border-none rounded-xl px-4 py-3 text-xs font-medium text-slate-600 outline-none resize-none" />
+                                            </div>
                                         </div>
                                     </div>
-
-                                    <div className="flex items-center gap-1">
-                                        {/* VIEW BUTTON (Explicit Trigger) */}
-                                        {uploaded && (
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setViewDoc(uploaded);
-                                                }}
-                                                className="p-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition mr-1 flex items-center gap-1"
-                                                title="View Document & Replica"
-                                            >
-                                                <Eye size={12} />
-                                                <span className="text-[10px] font-bold">VIEW</span>
-                                            </button>
-                                        )}
-
-                                        {isVerified && <CheckCircle size={14} className="text-green-500 shrink-0" />}
-
-                                        {/* Clear Button */}
-                                        {uploaded && (
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleClearDoc(type.id);
-                                                }}
-                                                className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition z-10"
-                                                title="Clear Document"
-                                            >
-                                                <X size={14} />
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            );
-                        })}
+                                )}
+                            </div>
+                        </div>
                     </div>
+
                 </div>
-
-                {/* COL 3: EXTRACTED DATA FORM */}
-                <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col overflow-hidden">
-                    <div className="p-4 border-b border-gray-100 bg-gray-50 font-bold text-gray-700 flex justify-between items-center">
-                        <span>Extracted Data</span>
-                        <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">Auto-Filled by AI</span>
-                    </div>
-                    <div className="flex-1 overflow-y-auto p-6 space-y-6">
-
-                        {/* Section 1: Identity */}
-                        <div>
-                            <h4 className="text-xs font-bold text-gray-400 uppercase mb-3 flex items-center">
-                                <FileText size={12} className="mr-1" /> Company Identity
-                            </h4>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                    <label className="text-xs text-gray-500">Company Name (KH)</label>
-                                    <input value={formData.companyNameKh || ''} disabled className="w-full text-sm font-bold bg-gray-50 border-gray-200 rounded-md py-2 px-3" />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs text-gray-500">Company Name (EN)</label>
-                                    <input value={formData.companyNameEn || ''} disabled className="w-full text-sm font-bold bg-gray-50 border-gray-200 rounded-md py-2 px-3" />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs text-gray-500">Registration ID</label>
-                                    <input value={formData.registrationNumber || ''} disabled className="w-full text-sm font-mono bg-gray-50 border-gray-200 rounded-md py-2 px-3" />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs text-gray-500">Incorporation Date</label>
-                                    <input value={formData.incorporationDate || ''} disabled className="w-full text-sm font-mono bg-gray-50 border-gray-200 rounded-md py-2 px-3" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="h-px bg-gray-100 my-2" />
-
-                        {/* Section 2: Tax & Location */}
-                        <div>
-                            <h4 className="text-xs font-bold text-gray-400 uppercase mb-3 flex items-center">
-                                <Table size={12} className="mr-1" /> Tax & Location
-                            </h4>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                    <label className="text-xs text-gray-500">VAT TIN</label>
-                                    <input value={formData.vatTin || ''} disabled className="w-full text-sm font-mono bg-yellow-50 border-yellow-100 text-yellow-800 rounded-md py-2 px-3" />
-                                </div>
-                                <div className="space-y-1 col-span-2">
-                                    <label className="text-xs text-gray-500">Registered Address</label>
-                                    <textarea value={formData.address || ''} disabled rows={2} className="w-full text-sm bg-gray-50 border-gray-200 rounded-md py-2 px-3 resize-none" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="h-px bg-gray-100 my-2" />
-
-                        {/* Section 3: Bank Info */}
-                        <div>
-                            <h4 className="text-xs font-bold text-gray-400 uppercase mb-3 flex items-center">
-                                <Table size={12} className="mr-1" /> Bank Information
-                            </h4>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                    <label className="text-xs text-gray-500">Bank Name</label>
-                                    <input value={formData.bankName || ''} disabled className="w-full text-sm font-bold bg-gray-50 border-gray-200 rounded-md py-2 px-3" />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs text-gray-500">Account Number</label>
-                                    <input value={formData.bankAccountNumber || ''} disabled className="w-full text-sm font-mono bg-green-50 border-green-100 text-green-800 rounded-md py-2 px-3" />
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
             </div>
-        </div >
-    );
+        );
+    };
 
     const handleFiles = async (fileList) => {
         if (fileList.length === 0) return;
