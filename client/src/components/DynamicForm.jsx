@@ -479,8 +479,8 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                                     key={level}
                                     onClick={() => onChange('taxCompliance', level)}
                                     className={`px-3 py-1.5 rounded-lg border-2 text-[10px] font-black uppercase tracking-widest transition-all ${data.taxCompliance === level
-                                            ? 'bg-amber-100 border-amber-500 text-amber-700 shadow-sm scale-105'
-                                            : 'bg-white border-slate-100 text-slate-400 hover:border-slate-300'
+                                        ? 'bg-amber-100 border-amber-500 text-amber-700 shadow-sm scale-105'
+                                        : 'bg-white border-slate-100 text-slate-400 hover:border-slate-300'
                                         }`}
                                 >
                                     {level}
@@ -550,6 +550,138 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                                 onClick={() => onChange('legalForm', opt.id)}
                             />
                         ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* --- SECTION 4: EXEMPTIONS & RATES (Fields 15-18) --- */}
+            <div className="space-y-6 mb-12">
+                <div className="flex items-center gap-2 mb-4">
+                    <div className="h-0.5 flex-1 bg-slate-100"></div>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-4">Exemptions & Tax Rates</span>
+                    <div className="h-0.5 flex-1 bg-slate-100"></div>
+                </div>
+
+                {/* 15. Income Tax Exemption */}
+                <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
+                    <div className="flex flex-col mb-4">
+                        <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 bg-slate-900 text-white rounded-md flex items-center justify-center font-black text-[10px]">15</div>
+                            <span className="font-khmer font-bold text-[13px]">លើកលែងពន្ធលើប្រាក់ចំណូល ៖</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase ml-8">Income Tax Exemption</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 ml-8">
+                        <div>
+                            <label className="block text-[10px] font-bold text-slate-500 mb-1 leading-tight">ឆ្នាំមានផលរបរដំបូង ៖<br /><span className="text-[8px] uppercase">Year of First Revenue</span></label>
+                            <DigitBoxGroup value={data.yearFirstRevenue} count={4} onChange={(v) => onChange('yearFirstRevenue', v)} />
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-bold text-slate-500 mb-1 leading-tight">ឆ្នាំមានចំណេញដំបូង ៖<br /><span className="text-[8px] uppercase">Year of First Profit</span></label>
+                            <DigitBoxGroup value={data.yearFirstProfit} count={4} onChange={(v) => onChange('yearFirstProfit', v)} />
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-bold text-slate-500 mb-1 leading-tight">រយៈពេលអាទិភាព ៖<br /><span className="text-[8px] uppercase">Priority Period</span></label>
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="text"
+                                    value={data.priorityPeriod || ""}
+                                    onChange={(e) => onChange('priorityPeriod', e.target.value)}
+                                    placeholder="Years"
+                                    className="w-20 bg-white border-2 border-slate-200 rounded-lg px-2 py-1 font-bold text-center"
+                                />
+                                <span className="text-[10px] font-bold text-slate-400">YEARS</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* 16. Income Tax Rate */}
+                <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
+                    <div className="flex flex-col mb-4">
+                        <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 bg-slate-900 text-white rounded-md flex items-center justify-center font-black text-[10px]">16</div>
+                            <span className="font-khmer font-bold text-[13px]">អត្រាពន្ធលើប្រាក់ចំណូល ៖</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase ml-8">Income Tax Rate</span>
+                    </div>
+
+                    <div className="flex flex-wrap gap-3 ml-8">
+                        {[
+                            { label: '30%', id: '30' },
+                            { label: '20%', id: '20' },
+                            { label: '5%', id: '5' },
+                            { label: '0%', id: '0' },
+                            { label: '0-20%', id: '0-20' },
+                            { label: 'Progressive Rate', id: 'progressive' }
+                        ].map((rate) => (
+                            <button
+                                key={rate.id}
+                                onClick={() => onChange('taxRate', rate.id)}
+                                className={`px-4 py-2 rounded-xl border-2 font-bold text-sm transition-all ${data.taxRate === rate.id
+                                        ? 'bg-blue-600 border-blue-600 text-white shadow-lg scale-105'
+                                        : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300'
+                                    }`}
+                            >
+                                {rate.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* 17 & 18 Financial Row */}
+                <div className="grid grid-cols-2 gap-6 ml-8">
+                    <div className="p-4 bg-blue-50/30 rounded-2xl border border-blue-100">
+                        <div className="flex items-center gap-2 mb-2">
+                            <div className="w-6 h-6 bg-blue-600 text-white rounded-md flex items-center justify-center font-black text-[10px]">17</div>
+                            <span className="font-khmer font-bold text-[12px] text-blue-900">ពន្ធលើប្រាក់ចំណូលត្រូវបង់ ៖</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="number"
+                                value={data.taxDue || ""}
+                                onChange={(e) => onChange('taxDue', e.target.value)}
+                                className="w-full bg-transparent border-b-2 border-blue-200 focus:border-blue-600 outline-none font-mono font-bold text-xl text-blue-800 py-1"
+                            />
+                            <span className="text-sm font-bold text-blue-400">KHR</span>
+                        </div>
+                        <span className="text-[9px] font-bold text-blue-400 uppercase">Income Tax Due</span>
+                    </div>
+
+                    <div className="p-4 bg-emerald-50/30 rounded-2xl border border-emerald-100">
+                        <div className="flex items-center gap-2 mb-2">
+                            <div className="w-6 h-6 bg-emerald-600 text-white rounded-md flex items-center justify-center font-black text-[10px]">18</div>
+                            <span className="font-khmer font-bold text-[12px] text-emerald-900">ឥណទានពន្ធយោងទៅមុខ ៖</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="number"
+                                value={data.taxCreditForward || ""}
+                                onChange={(e) => onChange('taxCreditForward', e.target.value)}
+                                className="w-full bg-transparent border-b-2 border-emerald-200 focus:border-emerald-600 outline-none font-mono font-bold text-xl text-emerald-800 py-1"
+                            />
+                            <span className="text-sm font-bold text-emerald-400">KHR</span>
+                        </div>
+                        <span className="text-[9px] font-bold text-emerald-400 uppercase">Tax Credit Carried Forward</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* --- DECLARATION SECTION --- */}
+            <div className="mt-12 p-8 bg-slate-900 rounded-3xl text-white">
+                <div className="flex items-start gap-4">
+                    <div className="p-2 bg-emerald-500/10 rounded-lg">
+                        <CheckCircle className="text-emerald-400" size={24} />
+                    </div>
+                    <div className="space-y-4 flex-1">
+                        <h3 className="font-khmer text-xl font-bold leading-tight decoration-emerald-500/30 underline underline-offset-8">សេចក្តីប្រកាស / DECLARATION</h3>
+                        <p className="font-khmer text-[13px] text-slate-300 leading-relaxed text-justify">
+                            យើងខ្ញុំបានពិនិត្យគ្រប់ចំណុចទាំងអស់នៅលើលិខិតប្រកាសនេះ និងតារាងឧបសម្ព័ន្ធភ្ជាប់ជាមួយ។ យើងខ្ញុំមានសក្ខីប័ត្រប៉ញ្ជាក់ច្បាស់លាស់ ត្រឹមត្រូវ ពេញលេញ ដែលធានាបានថា ព័ត៌មានទាំងអស់ នៅលើលិខិតប្រកាសពិតជាត្រឹមត្រូវប្រាកដមែន ហើយគ្មានប្រតិបត្តិការណាមួយមិនបានប្រកាសនោះទេ។ យើងខ្ញុំសូមទទួលខុសត្រូវទាំងស្រុងចំពោះមុខច្បាប់ទាំងឡាយជាធរមានប្រសិនបើព័ត៌មានណាមួយមានការក្លែងបន្លំ។
+                        </p>
+                        <p className="text-[11px] text-slate-400 leading-relaxed italic border-l-2 border-slate-700 pl-4 uppercase font-bold tracking-tight text-justify">
+                            We have examined all items on this return and the annex attached herewith. We have correct, and complete supporting documents which ensure that all information in this return is true and accurate and there is no undeclared business transaction. We are lawfully responsible for any falsified information.
+                        </p>
                     </div>
                 </div>
             </div>

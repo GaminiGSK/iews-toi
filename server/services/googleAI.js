@@ -242,13 +242,18 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
 
             **Regulatory Knowledge (Cambodia Tax Law - TOI):**
             - **Resident Natural Person**: Meeting ONE of: a) Permanent residence, b) Principal place of abode, c) In Cambodia > 182 days in any 12-month period.
-            - **Non-Resident Taxpayer**: An entity established, managed, or has a principal place of business in Cambodia (Note: This is the official wording from the GDT manual).
-            - **Legal Entity**: Includes Limited Companies, government institutions, religious/charitable orgs, and Permanent Establishments of non-resident persons.
+            - **Non-Resident Taxpayer**: An entity established, managed, or has a principal place of business in Cambodia.
+            - **Legal Entity / Limited Company**: Includes Public LLC, Private LLC, and Limited Sole Proprietorship. Also covers gov institutions, religious/charitable orgs, and Permanent Establishments.
+            - **Enterprise**: An establishment or entity where a natural or legal person conducts business.
+            - **Objective of TOI**: Resident taxpayer is obligated on income from Cambodian and foreign sources (World Income). Non-resident taxpayer is obligated ONLY on income from Cambodian sources.
+            - **Income from Cambodian Sources**:
+               * Interest and Dividends paid/shared by a resident enterprise.
+               * Income from services performed in the Kingdom of Cambodia.
+               * Income from management services (employee selection, training, agent management) and technical services (requires specialization/technical knowledge) paid by a resident person.
             - **Permanent Establishment (PE)**: A fixed place of business. Includes:
                * Places of management, branches, agents, offices, warehouses, factories.
                * Construction/assembly sites > 182 days.
                * Provision of services (including consulting) by employees for > 182 days in any 12-month period.
-               * Individuals regularly exercising authority to enter contracts on behalf of a foreign enterprise.
             - **PE Residency**: A PE is regarded as a RESIDENT legal entity ONLY if its income originates from Cambodia.
 
             **App Context (User UI):**
