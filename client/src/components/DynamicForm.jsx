@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calculator, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Calculator, AlertCircle, CheckCircle2, CheckCircle } from 'lucide-react';
 
 const BoxGridInput = ({ length, value, onChange, format, noDash }) => {
     // Filter out non-alphanumeric chars for display in boxes
@@ -620,8 +620,8 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                                 key={rate.id}
                                 onClick={() => onChange('taxRate', rate.id)}
                                 className={`px-4 py-2 rounded-xl border-2 font-bold text-sm transition-all ${data.taxRate === rate.id
-                                        ? 'bg-blue-600 border-blue-600 text-white shadow-lg scale-105'
-                                        : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300'
+                                    ? 'bg-blue-600 border-blue-600 text-white shadow-lg scale-105'
+                                    : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300'
                                     }`}
                             >
                                 {rate.label}
@@ -672,7 +672,7 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
             <div className="mt-12 p-8 bg-slate-900 rounded-3xl text-white">
                 <div className="flex items-start gap-4">
                     <div className="p-2 bg-emerald-500/10 rounded-lg">
-                        <CheckCircle className="text-emerald-400" size={24} />
+                        <CheckCircle2 className="text-emerald-400" size={24} />
                     </div>
                     <div className="space-y-4 flex-1">
                         <h3 className="font-khmer text-xl font-bold leading-tight decoration-emerald-500/30 underline underline-offset-8">សេចក្តីប្រកាស / DECLARATION</h3>
