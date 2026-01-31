@@ -49,17 +49,18 @@ const ToiAcar = ({ onBack }) => {
 
         if (smallBoxes.length >= 4) {
             const taxYear = "2024";
-            newValues[smallBoxes[0].id] = taxYear[0];
-            newValues[smallBoxes[1].id] = taxYear[1];
-            newValues[smallBoxes[2].id] = taxYear[2];
-            newValues[smallBoxes[3].id] = taxYear[3];
+            // Ensure IDs are consistent
+            newValues[smallBoxes[0].id || `auto_box_0`] = taxYear[0];
+            newValues[smallBoxes[1].id || `auto_box_1`] = taxYear[1];
+            newValues[smallBoxes[2].id || `auto_box_2`] = taxYear[2];
+            newValues[smallBoxes[3].id || `auto_box_3`] = taxYear[3];
         } else {
             // Use Semantic Labels
             mappings.forEach(m => {
                 const label = (m.semanticLabel || m.label || '').toLowerCase();
                 // Heuristics for Year/Date
                 if (label.includes('year') || label.includes('date')) {
-                    newValues[m.id] = "2024";
+                    newValues[m.id || `field_${m.x}_${m.y}`] = "2024";
                 }
             });
         }

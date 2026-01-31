@@ -318,9 +318,9 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
         console.error("!!! GEMINI CHAT CRITICAL ERROR !!!");
         console.error("Error Message:", e.message);
         console.error("Error Status:", e.status);
-        if (e.response) console.error("Full Response:", JSON.stringify(e.response, null, 2));
 
-        return "I apologize, but I am having trouble processing your request right now. Please ensure the server has been restarted to load the new API key.";
+        // Return real error for debugging
+        return `[AI Error]: ${e.message}. (Status: ${e.status || 'N/A'})\n\nPlease ensure the server has been restarted to load the new API key if you just changed it.`;
     }
 };
 
