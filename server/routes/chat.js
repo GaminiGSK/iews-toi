@@ -146,7 +146,8 @@ router.post('/message', auth, async (req, res) => {
 
     } catch (err) {
         console.error("Chat API Error:", err);
-        res.status(500).json({ message: "Server error processing chat request" });
+        // Return the error as a chat message so the user sees it
+        res.json({ text: `⚠️ System Error: ${err.message || 'Unknown error occurred in AI service.'}` });
     }
 });
 

@@ -1311,60 +1311,7 @@ export default function CompanyProfile() {
             </main>
 
             {/* DOCUMENT INSPECTOR MODAL */}
-            {viewDoc && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm animate-fade-in pointer-events-auto">
-                    {/* {alert('Debug: Rendering Modal for ' + viewDoc.docType)} */}
-                    <div className="bg-white w-full max-w-7xl h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden relative">
-
-                        {/* Modal Header */}
-                        <div className="h-16 border-b border-gray-100 flex items-center justify-between px-6 bg-white shrink-0">
-                            <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
-                                <FileText size={20} className="text-blue-600" />
-                                Inspecting: <span className="text-blue-900">{viewDoc.originalName}</span>
-                            </h3>
-                            <button onClick={() => setViewDoc(null)} className="p-2 hover:bg-gray-100 rounded-full transition text-gray-500">
-                                <X size={20} />
-                            </button>
-                        </div>
-
-                        {/* Split View Body */}
-                        <div className="flex-1 flex overflow-hidden bg-gray-100">
-
-                            {/* LEFT: Image Preview (Scrollable) */}
-                            <div className="w-1/2 overflow-auto p-8 flex items-start justify-center bg-gray-900/5 shadow-inner">
-                                <img
-                                    src={getDocUrl(viewDoc)}
-                                    alt="Document Preview"
-                                    className="max-w-full shadow-2xl rounded-sm border border-gray-300"
-                                />
-                            </div>
-
-                            {/* RIGHT: Digital Replica */}
-                            <div className="w-1/2 overflow-auto p-8 bg-white border-l border-gray-200 flex flex-col items-center">
-                                {/* Only show MOC Replica for MOC Cert, else standard form or JSON */}
-                                {viewDoc.docType === 'moc_cert' ? (
-                                    <MOCCertificate
-                                        data={formData}
-                                        onRegenerate={handleRegenerate}
-                                        regenerating={regenerating}
-                                    />
-                                ) : (
-                                    <div className="text-center text-gray-500 mt-20 w-full">
-                                        <p className="mb-4 font-bold text-gray-700">No Digital Replica available for this document type.</p>
-                                        <p className="text-sm mb-4">You can verify the raw data below:</p>
-                                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 text-left text-xs font-mono overflow-auto max-h-[500px]">
-                                            <pre>
-                                                {JSON.stringify(JSON.parse(viewDoc.extractedText || '{}'), null, 2)}
-                                            </pre>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* Modal Removed - Using Integrated Workbench Instead */}
 
 
 

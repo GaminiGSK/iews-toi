@@ -31,7 +31,7 @@ app.use('/api/company', require('./routes/company'));
 app.use('/api/chat', require('./routes/chat'));
 app.use('/api/tax', require('./routes/tax'));
 app.use('/api/copilotkit', require('./routes/copilot'));
-// app.use('/uploads', express.static('uploads')); // Disabled for Cloud Persistence Safety
+app.use('/uploads', express.static('uploads')); // Enabled for Local Fallback Access
 
 // Serve Frontend in Production
 const path = require('path');
