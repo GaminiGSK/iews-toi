@@ -418,8 +418,8 @@ export default function CompanyProfile() {
                         name: doc.originalName || doc.docType,
                         status: doc.status || 'Saved',
                         size: 'Stored',
-                        // Proxy Image URL
-                        previewUrl: `/api/company/document-image/${doc.docType}?t=${Date.now()}`,
+                        // Proxy Image URL with Auth Token
+                        previewUrl: `/api/company/document-image/${doc.docType}?token=${token}&t=${Date.now()}`,
                         type: doc.mimeType,
                         isExtracted: doc.status === 'Verified',
                         docType: doc.docType
