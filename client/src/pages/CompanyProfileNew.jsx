@@ -241,15 +241,46 @@ export default function CompanyProfile() {
         // UPDATE STATE TO SHOW SIDEBAR
         setExtractionResults(extractedData);
         setMessage("Deep Map Pattern Recognized: MOC Certificate. Extracted bilingual data + QR Verification.");
+    };
 
-        // MARK DOCUMENT AS EXTRACTED/CONFIRMED
-        if (activeDocTemplateId) {
-            setDocTemplates(prev => prev.map(t => {
-                if (t.id === activeDocTemplateId) {
-                    return { ...t, isExtracted: true };
-                }
-                return t;
-            }));
+    const handleConfirmExtraction = async () => {
+        if (!extractionResults) return;
+
+        try {
+            const token = localStorage.getItem('token');
+
+            // Map Deep Map keys to Backend Schema
+            const mappedData = {
+                companyNameEn: extractionResults["Entity Name [EN]"] || formData.companyNameEn,
+                companyNameKh: extractionResults["Entity Name [KH]"] || formData.companyNameKh,
+                registrationNumber: extractionResults["Registration ID"] || formData.registrationNumber,
+                incorporationDate: extractionResults["Inc. Date [EN]"] || formData.incorporationDate,
+                companyType: extractionResults["Legal Form [EN]"] || formData.companyType,
+                address: extractionResults["Location [EN]"] || formData.address,
+                // Preserve other fields
+                ...formData
+            };
+
+            await axios.post('/api/company/update-profile', mappedData, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            // Update Doc Status (Green Text)
+            if (activeDocTemplateId) {
+                setDocTemplates(prev => prev.map(t => {
+                    if (t.id === activeDocTemplateId) return { ...t, isExtracted: true };
+                    return t;
+                }));
+            }
+
+            // Sync System
+            fetchProfile();
+            setMessage("Profile Updated & Saved to System! AI Context Updated.");
+            setExtractionResults(null);
+
+        } catch (err) {
+            console.error(err);
+            alert("Failed to save profile data.");
         }
     };
 
@@ -1140,10 +1171,7 @@ export default function CompanyProfile() {
                                     </div>
                                     <div className="p-4 border-t border-gray-800">
                                         <button
-                                            onClick={() => {
-                                                alert("Apply to Profile function linked!");
-                                                setExtractionResults(null);
-                                            }}
+                                            onClick={handleConfirmExtraction}
                                             className="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded-lg text-xs"
                                         >
                                             Confirm & Save
