@@ -716,10 +716,10 @@ export default function AdminDashboard() {
                             </div>
                         </div>
 
-                        <div className="w-full flex gap-10">
-                            {/* LEFT: THE LIVE FORM CANVAS */}
-                            <div className="flex-1 bg-gray-800/50 rounded-2xl shadow-inner overflow-y-auto min-h-[800px] border-8 border-gray-800/20 custom-scrollbar">
-                                <div className="p-8">
+                        <div className="w-full h-full">
+                            {/* LIVE FORM CANVAS (Full Width, Centered, Scrollable) */}
+                            <div className="bg-gray-800/50 rounded-2xl shadow-inner overflow-y-auto h-[calc(100vh-280px)] border-8 border-gray-800/20 custom-scrollbar flex justify-center bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')]">
+                                <div className="p-8 w-full flex justify-center">
                                     <DynamicForm
                                         schema={{ title: "លិខិតប្រកាសពន្ធលើប្រាក់ចំណូលប្រចាំឆ្នាំ", titleKh: "ANNUAL INCOME TAX RETURN FOR THE YEAR ENDED" }}
                                         data={{
@@ -738,37 +738,6 @@ export default function AdminDashboard() {
                                         }}
                                         onChange={() => { }}
                                     />
-                                </div>
-                            </div>
-
-                            {/* RIGHT: TEXT HARVEST PANEL */}
-                            <div className="w-96 shrink-0 space-y-6">
-                                <div className="bg-gray-800/40 rounded-2xl border border-gray-700 p-6 backdrop-blur-md">
-                                    <div className="flex items-center gap-2 mb-6 text-purple-400">
-                                        <Type size={20} />
-                                        <h3 className="font-bold uppercase tracking-widest text-sm text-white">Harvested Text</h3>
-                                    </div>
-
-                                    <div className="space-y-3 max-h-[800px] overflow-y-auto pr-2 custom-scrollbar">
-                                        {templates.find(t => t.id === activeTemplateId)?.harvestedText ? (
-                                            templates.find(t => t.id === activeTemplateId).harvestedText.split('\n').map((line, i) => (
-                                                <div key={i} className="group cursor-pointer">
-                                                    <div className="p-3 bg-gray-900/50 border border-gray-800 rounded-lg group-hover:border-purple-500/50 group-hover:bg-purple-900/10 transition duration-200">
-                                                        <div className="flex justify-between items-start mb-1">
-                                                            <span className="text-[10px] font-bold text-gray-500 font-mono">L{i + 1}</span>
-                                                            <Hash size={10} className="text-gray-700 group-hover:text-purple-400" />
-                                                        </div>
-                                                        <p className="text-xs text-gray-300 font-medium leading-relaxed">{line}</p>
-                                                    </div>
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <div className="py-20 text-center text-gray-600 italic">
-                                                <CloudUpload className="mx-auto mb-4 opacity-20" size={48} />
-                                                No text harvested yet.<br />Please run "Auto-Scan" in the Library tab.
-                                            </div>
-                                        )}
-                                    </div>
                                 </div>
                             </div>
                         </div>
