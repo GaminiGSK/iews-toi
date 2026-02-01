@@ -191,16 +191,16 @@ const DigitBoxGroup = ({ value = "", count = 2, highlightIndices = [] }) => {
     );
 };
 
-// Clean Numbered Row for Ministry Style
+// Clean Numbered Row for Ministry Style (Print Version)
 const NumberedFieldRow = ({ number, labelKh, labelEn, value, onChange, type = "text", placeholder = "", suffix = "" }) => (
-    <div className="flex items-start gap-4 py-3 border-b border-slate-100 hover:bg-slate-50/50 transition duration-200">
-        <div className="w-8 h-8 shrink-0 bg-slate-900 text-white rounded-lg flex items-center justify-center font-black text-sm shadow-md mt-1">
+    <div className="flex items-start gap-4 py-3 border-b border-black hover:bg-slate-50/50 transition duration-200 px-4">
+        <div className="w-6 h-6 shrink-0 bg-black text-white flex items-center justify-center font-bold text-xs mt-1">
             {number}
         </div>
         <div className="flex-1 min-w-0">
             <div className="flex flex-col mb-1.5">
-                <span className="font-khmer font-bold text-[13px] text-slate-900 leading-tight">{labelKh}</span>
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">{labelEn}</span>
+                <span className="font-khmer font-bold text-[13px] text-black leading-tight">{labelKh}</span>
+                <span className="text-[10px] font-bold text-black uppercase tracking-tight">{labelEn}</span>
             </div>
             {type === "text" || type === "number" ? (
                 <div className="flex items-center gap-2">
@@ -209,32 +209,28 @@ const NumberedFieldRow = ({ number, labelKh, labelEn, value, onChange, type = "t
                         value={value || ""}
                         onChange={(e) => onChange(e.target.value)}
                         placeholder={placeholder}
-                        className="w-full bg-transparent border-b-2 border-slate-200 focus:border-blue-600 outline-none font-bold text-lg text-slate-800 py-1 transition-colors"
+                        className="w-full bg-transparent border-b border-dotted border-slate-400 focus:border-black outline-none font-bold text-lg text-black py-1"
                     />
-                    {suffix && <span className="text-sm font-bold text-slate-400">{suffix}</span>}
+                    {suffix && <span className="text-sm font-bold text-black">{suffix}</span>}
                 </div>
             ) : null}
         </div>
     </div>
 );
 
-// New Selection Box for Checkboxes/Radio
-const OptionBox = ({ labelEn, labelKh, selected, onClick, subText = "" }) => (
+// Simple Inline Option (Checkbox/Radio) - Replaces "OptionBox"
+const OptionItem = ({ labelEn, labelKh, selected, onClick, subText = "" }) => (
     <div
         onClick={onClick}
-        className={`flex-1 flex gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer group ${selected
-            ? 'border-blue-600 bg-blue-50/50 shadow-md'
-            : 'border-slate-100 bg-white hover:border-slate-300'
-            }`}
+        className="flex items-start gap-2 cursor-pointer group py-1"
     >
-        <div className={`w-6 h-6 shrink-0 rounded-md border-2 flex items-center justify-center transition-colors ${selected ? 'bg-blue-600 border-blue-600' : 'border-slate-300 group-hover:border-blue-400'
-            }`}>
-            {selected && <div className="w-2 h-2 bg-white rounded-full"></div>}
+        <div className={`w-4 h-4 shrink-0 border border-black flex items-center justify-center bg-white mt-0.5`}>
+            {selected && <div className="w-2.5 h-2.5 bg-black"></div>}
         </div>
-        <div className="flex flex-col min-w-0">
-            <span className="font-khmer font-bold text-[11px] text-slate-900 leading-tight">{labelKh}</span>
-            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tight">{labelEn}</span>
-            {subText && <span className="text-[10px] text-blue-600 font-mono mt-1">{subText}</span>}
+        <div className="flex flex-col leading-none">
+            <span className="font-khmer font-bold text-[11px] text-black">{labelKh}</span>
+            <span className="text-[9px] font-normal text-black uppercase">{labelEn}</span>
+            {subText && <span className="text-[10px] text-black font-mono mt-1 border-b border-black inline-block">{subText}</span>}
         </div>
     </div>
 );
@@ -285,18 +281,18 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
             </div>
 
             {/* --- TAX PERIOD ROW (STEP 2) --- */}
-            <div className="flex flex-wrap items-center gap-x-8 gap-y-4 mb-4 p-5 relative overflow-hidden">
+            <div className="flex flex-wrap items-center gap-x-8 gap-y-4 mb-0 p-5 border border-black relative overflow-hidden">
                 {/* 1. Tax Period (Number of Month) */}
                 <div className="flex items-center gap-4">
                     <div className="flex flex-col">
-                        <span className="font-khmer font-bold text-xs text-slate-900 leading-tight">ការិយបរិច្ឆេទសារពើពន្ធ ( ចំនួនខែ ) ៖</span>
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Tax Period (Number of Month)</span>
+                        <span className="font-khmer font-bold text-xs text-black leading-tight">ការិយបរិច្ឆេទសារពើពន្ធ ( ចំនួនខែ ) ៖</span>
+                        <span className="text-[10px] font-bold text-black uppercase tracking-tight">Tax Period (Number of Month)</span>
                     </div>
                     <DigitBoxGroup value={data.taxMonths || "12"} count={2} />
                 </div>
 
                 {/* Arrow Decor */}
-                <div className="hidden md:block text-slate-300">
+                <div className="hidden md:block text-black">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M8 5v14l11-7z" />
                     </svg>
@@ -305,8 +301,8 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                 {/* 2. From */}
                 <div className="flex items-center gap-4">
                     <div className="flex flex-col">
-                        <span className="font-khmer font-bold text-xs text-slate-900 leading-tight">ចាប់ពីថ្ងៃទី</span>
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">From</span>
+                        <span className="font-khmer font-bold text-xs text-black leading-tight">ចាប់ពីថ្ងៃទី</span>
+                        <span className="text-[10px] font-bold text-black uppercase tracking-tight">From</span>
                     </div>
                     <DigitBoxGroup value={data.fromDate || "01012023"} count={8} highlightIndices={[1, 3]} />
                 </div>
@@ -314,16 +310,20 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                 {/* 3. Until */}
                 <div className="flex items-center gap-4">
                     <div className="flex flex-col">
-                        <span className="font-khmer font-bold text-xs text-slate-900 leading-tight">ដល់ថ្ងៃទី</span>
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Until</span>
+                        <span className="font-khmer font-bold text-xs text-black leading-tight">ដល់ថ្ងៃទី</span>
+                        <span className="text-[10px] font-bold text-black uppercase tracking-tight">Until</span>
                     </div>
                     <DigitBoxGroup value={data.untilDate || "31122023"} count={8} highlightIndices={[1, 3]} />
                 </div>
             </div>
 
-            {/* --- SECTION 2: ENTERPRISE IDENTIFICATION (STEP 3) --- */}
-            <div className="mb-8 space-y-0 border-t border-slate-200 pt-4">
-                <h3 className="font-bold text-xs text-slate-500 uppercase tracking-widest mb-4">Identification of Enterprise</h3>
+            {/* --- UNIFIED MAIN CONTENT BOX --- */}
+            <div className="border-x border-b border-black">
+
+                {/* SECTION 2: ENTERPRISE IDENTIFICATION */}
+                <div className="py-2 px-4 border-b border-black bg-slate-50">
+                    <h3 className="font-bold text-xs text-black uppercase tracking-widest text-center">Identification of Enterprise</h3>
+                </div>
 
                 <NumberedFieldRow
                     number="2"
@@ -343,12 +343,12 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                 />
 
                 {/* Special Date Row for Number 4 */}
-                <div className="flex items-start gap-4 py-3 border-b border-slate-100 group transition">
-                    <div className="w-8 h-8 shrink-0 bg-slate-900 text-white rounded-lg flex items-center justify-center font-black text-sm shadow-md mt-1">4</div>
+                <div className="flex items-start gap-4 py-3 border-b border-black px-4 group transition">
+                    <div className="w-6 h-6 shrink-0 bg-black text-white flex items-center justify-center font-bold text-xs mt-1">4</div>
                     <div className="flex-1">
                         <div className="flex flex-col mb-3">
-                            <span className="font-khmer font-bold text-[13px] text-slate-900 leading-tight">កាលបរិច្ឆេទចុះបញ្ជីពន្ធដារ ៖</span>
-                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Date of Tax Registration</span>
+                            <span className="font-khmer font-bold text-[13px] text-black leading-tight">កាលបរិច្ឆេទចុះបញ្ជីពន្ធដារ ៖</span>
+                            <span className="text-[10px] font-bold text-black uppercase tracking-tight">Date of Tax Registration</span>
                         </div>
                         <DigitBoxGroup value={data.regDate || "01012023"} count={8} highlightIndices={[1, 3]} />
                     </div>
@@ -402,47 +402,47 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                     onChange={(val) => onChange('warehouseAddress', val)}
                 />
 
-                <div className="flex items-start gap-4 py-3 border-b border-slate-100 group transition">
-                    <div className="w-8 h-8 shrink-0 bg-slate-100 text-slate-900 rounded-lg flex items-center justify-center font-bold text-[10px] mt-1">
+                <div className="flex items-start gap-4 py-3 border-b border-black px-4 group transition">
+                    <div className="w-6 h-6 shrink-0 border border-black text-black flex items-center justify-center font-bold text-[10px] mt-1">
                         ID
                     </div>
                     <div className="flex-1 min-w-0">
                         <div className="flex flex-col mb-1.5">
-                            <span className="font-khmer font-bold text-[13px] text-slate-900 leading-tight">លេខសម្គាល់ភ្នាក់ងារសេវាកម្មពន្ធដារ ៖</span>
-                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Tax Service Agent License Number</span>
+                            <span className="font-khmer font-bold text-[13px] text-black leading-tight">លេខសម្គាល់ភ្នាក់ងារសេវាកម្មពន្ធដារ ៖</span>
+                            <span className="text-[10px] font-bold text-black uppercase tracking-tight">Tax Service Agent License Number</span>
                         </div>
                         <input
                             type="text"
                             value={data.agentLicenseNumber || ""}
                             onChange={(e) => onChange('agentLicenseNumber', e.target.value)}
-                            className="w-full bg-transparent border-b-2 border-slate-100 focus:border-blue-500 outline-none font-mono font-bold text-lg text-slate-700 py-1 transition-colors"
+                            className="w-full bg-transparent border-b border-dotted border-slate-400 focus:border-black outline-none font-bold text-lg text-black py-1"
                         />
                     </div>
                 </div>
-            </div>
 
-            {/* --- SECTION 3: COMPLIANCE & LEGAL (Fields 11-14) --- */}
-            <div className="space-y-6 mb-8 border-t border-slate-200 pt-8">
-                <h3 className="font-bold text-xs text-slate-500 uppercase tracking-widest mb-4">Accounting & Compliance</h3>
+                {/* SECTION 3: COMPLIANCE & LEGAL */}
+                <div className="py-2 px-4 border-b border-black bg-slate-50">
+                    <h3 className="font-bold text-xs text-black uppercase tracking-widest text-center">Accounting & Compliance</h3>
+                </div>
 
                 {/* 11. Accounting Records */}
-                <div className="p-0 rounded-none border-b border-slate-100 pb-6">
+                <div className="px-4 border-b border-black py-4">
                     <div className="flex flex-col mb-4">
                         <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 bg-slate-900 text-white rounded-md flex items-center justify-center font-black text-[10px]">11</div>
-                            <span className="font-khmer font-bold text-[13px]">ការកត់ត្រាបញ្ជីគណនេយ្យ ៖</span>
+                            <div className="w-6 h-6 bg-black text-white flex items-center justify-center font-bold text-xs">11</div>
+                            <span className="font-khmer font-bold text-[13px] text-black">ការកត់ត្រាបញ្ជីគណនេយ្យ ៖</span>
                         </div>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase ml-8">Accounting Records</span>
+                        <span className="text-[10px] font-bold text-black uppercase ml-8">Accounting Records</span>
                     </div>
-                    <div className="flex gap-4 ml-8">
-                        <OptionBox
+                    <div className="flex gap-8 ml-8">
+                        <OptionItem
                             labelKh="ប្រើប្រាស់កម្មវិធីគណនេយ្យកុំព្យូទ័រ (ឈ្មោះកម្មវិធី) ៖"
-                            labelEn="Using Accounting Software (Software's Name)"
+                            labelEn="Using Accounting Software"
                             selected={data.accountingType === 'software'}
                             onClick={() => onChange('accountingType', 'software')}
                             subText={data.accountingType === 'software' ? data.softwareName : ""}
                         />
-                        <OptionBox
+                        <OptionItem
                             labelKh="មិនប្រើប្រាស់កម្មវិធីគណនេយ្យកុំព្យូទ័រ"
                             labelEn="Not Using Accounting Software"
                             selected={data.accountingType === 'manual'}
@@ -452,74 +452,71 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                 </div>
 
                 {/* 12 & 13 Split Row */}
-                <div className="grid grid-cols-2 gap-6 border-b border-slate-100 pb-6">
+                <div className="grid grid-cols-2 border-b border-black divide-x divide-black">
                     {/* 12. Tax Compliance */}
-                    <div className="p-0">
+                    <div className="p-4">
                         <div className="flex flex-col mb-4">
                             <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 bg-slate-900 text-white rounded-md flex items-center justify-center font-black text-[10px]">12</div>
-                                <span className="font-khmer font-bold text-[13px]">កម្រិតអនុលោមភាពសារពើពន្ធ ៖</span>
+                                <div className="w-6 h-6 bg-black text-white flex items-center justify-center font-bold text-xs">12</div>
+                                <span className="font-khmer font-bold text-[13px] text-black">កម្រិតអនុលោមភាពសារពើពន្ធ ៖</span>
                             </div>
-                            <span className="text-[10px] font-bold text-slate-400 uppercase ml-8">Status of Tax Compliance</span>
+                            <span className="text-[10px] font-bold text-black uppercase ml-8">Status of Tax Compliance</span>
                         </div>
-                        <div className="flex gap-2 ml-8">
+                        <div className="flex gap-4 ml-8">
                             {['Gold', 'Silver', 'Bronze'].map(level => (
-                                <button
+                                <OptionItem
                                     key={level}
+                                    labelKh={level === 'Gold' ? "មាស" : level === 'Silver' ? "ប្រាក់" : "សំរឹទ្ធ"}
+                                    labelEn={level}
+                                    selected={data.taxCompliance === level}
                                     onClick={() => onChange('taxCompliance', level)}
-                                    className={`px-3 py-1.5 rounded-lg border-2 text-[10px] font-black uppercase tracking-widest transition-all ${data.taxCompliance === level
-                                        ? 'bg-slate-900 border-slate-900 text-white scale-105'
-                                        : 'bg-white border-slate-100 text-slate-400 hover:border-slate-300'
-                                        }`}
-                                >
-                                    {level}
-                                </button>
+                                />
                             ))}
                         </div>
                     </div>
 
                     {/* 13. Statutory Audit */}
-                    <div className="p-0">
+                    <div className="p-4">
                         <div className="flex flex-col mb-4">
                             <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 bg-slate-900 text-white rounded-md flex items-center justify-center font-black text-[10px]">13</div>
-                                <span className="font-khmer font-bold text-[13px]">សវនកម្មឯករាជ្យដែលតម្រូវដោយច្បាប់ ៖</span>
+                                <div className="w-6 h-6 bg-black text-white flex items-center justify-center font-bold text-xs">13</div>
+                                <span className="font-khmer font-bold text-[13px] text-black">សវនកម្មឯករាជ្យដែលតម្រូវដោយច្បាប់ ៖</span>
                             </div>
-                            <span className="text-[10px] font-bold text-slate-400 uppercase ml-8">Statutory Audit Requirement</span>
+                            <span className="text-[10px] font-bold text-black uppercase ml-8">Statutory Audit Requirement</span>
                         </div>
-                        <div className="flex gap-3 ml-8">
-                            <button
+                        <div className="flex gap-4 ml-8">
+                            <OptionItem
+                                labelKh="តម្រូវ"
+                                labelEn="REQUIRED"
+                                selected={data.auditRequired === true}
                                 onClick={() => onChange('auditRequired', true)}
-                                className={`flex-1 py-2 rounded-xl border-2 text-[11px] font-bold transition-all ${data.auditRequired ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-100 text-slate-500'}`}
-                            >
-                                REQUIRED
-                            </button>
-                            <button
+                            />
+                            <OptionItem
+                                labelKh="មិនតម្រូវ"
+                                labelEn="NOT REQUIRED"
+                                selected={data.auditRequired === false}
                                 onClick={() => onChange('auditRequired', false)}
-                                className={`flex-1 py-2 rounded-xl border-2 text-[11px] font-bold transition-all ${data.auditRequired === false ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-100 text-slate-500'}`}
-                            >
-                                NOT REQUIRED
-                            </button>
+                            />
                         </div>
                     </div>
                 </div>
 
                 {/* 14. Legal Form Grid */}
-                <div className="p-0">
+                <div className="p-4">
                     <div className="flex flex-col mb-6">
                         <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 bg-slate-900 text-white rounded-md flex items-center justify-center font-black text-[10px]">14</div>
-                            <span className="font-khmer font-bold text-[13px]">ទម្រង់គតិយុត្តិ / ទម្រង់នៃប្រតិបត្តិការអាជីវកម្ម ៖</span>
+                            <div className="w-6 h-6 bg-black text-white flex items-center justify-center font-bold text-xs">14</div>
+                            <span className="font-khmer font-bold text-[13px] text-black">ទម្រង់គតិយុត្តិ / ទម្រង់នៃប្រតិបត្តិការអាជីវកម្ម ៖</span>
                         </div>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase ml-8">Legal Form or Form of Business Operations</span>
+                        <span className="text-[10px] font-bold text-black uppercase ml-8">Legal Form or Form of Business Operations</span>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 ml-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-2 ml-8">
                         {[
                             { id: 'sole', kh: 'សហគ្រាសឯកបុគ្គល/រូបវន្តបុគ្គល', en: 'Sole Proprietorship / Physical Person' },
                             { id: 'general_partnership', kh: 'ក្រុមហ៊ុនសហកម្មសិទ្ធិទូទៅ', en: 'General Partnership' },
                             { id: 'limited_partnership', kh: 'ក្រុមហ៊ុនសហកម្មសិទ្ធិមានកម្រិត', en: 'Limited Partnership' },
-                            { id: 'single_member_plc', kh: 'សហគ្រាសឯកបុគ្គលទទួលខុសត្រូវមានកម្រិត', en: 'Single Member Private Limited Company' },
+                            { id: 'single_member_plc', kh: 'សហគ្រាសឯកបុគ្គលទទួលខុសត្រូវមានកម្រិត', en: 'Single Member Private Ltd.' },
                             { id: 'private_limited', kh: 'ក្រុមហ៊ុនឯកជនទទួលខុសត្រូវមានកម្រិត', en: 'Private Limited Company' },
                             { id: 'public_limited', kh: 'ក្រុមហ៊ុនមហាជនទទួលខុសត្រូវមានកម្រិត', en: 'Public Limited Company' },
                             { id: 'joint_venture_interest', kh: 'ផលប្រយោជន៍ក្នុងសម្ព័ន្ធអាជីវកម្ម', en: 'Interest in Joint Venture' },
@@ -528,10 +525,10 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                             { id: 'state_joint_venture', kh: 'ក្រុមហ៊ុនចម្រុះរដ្ឋ', en: 'State Joint Venture' },
                             { id: 'foreign_branch', kh: 'សាខាក្រុមហ៊ុនបរទេស', en: 'Foreign Company\'s Branch' },
                             { id: 'representative_office', kh: 'ការិយាល័យតំណាង', en: 'Representative Office' },
-                            { id: 'ngo', kh: 'អង្គការក្រៅរដ្ឋាភិបាល / សមាគម', en: 'Non-Government Organization / Association' },
+                            { id: 'ngo', kh: 'អង្គការក្រៅរដ្ឋាភិបាល / សមាគម', en: 'Non-Government Org. / Association' },
                             { id: 'others', kh: 'សហគ្រាសដទៃទៀត', en: 'Others' },
                         ].map((opt) => (
-                            <OptionBox
+                            <OptionItem
                                 key={opt.id}
                                 labelKh={opt.kh}
                                 labelEn={opt.en}
@@ -541,58 +538,58 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                         ))}
                     </div>
                 </div>
-            </div>
 
-            {/* --- SECTION 4: EXEMPTIONS & RATES (Fields 15-18) --- */}
-            <div className="space-y-6 mb-8 border-t border-slate-200 pt-8">
-                <h3 className="font-bold text-xs text-slate-500 uppercase tracking-widest mb-4">Exemptions & Tax Rates</h3>
+                {/* SECTION 4: EXEMPTIONS & RATES */}
+                <div className="py-2 px-4 border-y border-black bg-slate-50">
+                    <h3 className="font-bold text-xs text-black uppercase tracking-widest text-center">Exemptions & Tax Rates</h3>
+                </div>
 
                 {/* 15. Income Tax Exemption */}
-                <div className="p-0 border-b border-slate-100 pb-6">
+                <div className="p-4 border-b border-black">
                     <div className="flex flex-col mb-4">
                         <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 bg-slate-900 text-white rounded-md flex items-center justify-center font-black text-[10px]">15</div>
-                            <span className="font-khmer font-bold text-[13px]">លើកលែងពន្ធលើប្រាក់ចំណូល ៖</span>
+                            <div className="w-6 h-6 bg-black text-white flex items-center justify-center font-bold text-xs">15</div>
+                            <span className="font-khmer font-bold text-[13px] text-black">លើកលែងពន្ធលើប្រាក់ចំណូល ៖</span>
                         </div>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase ml-8">Income Tax Exemption</span>
+                        <span className="text-[10px] font-bold text-black uppercase ml-8">Income Tax Exemption</span>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 ml-8">
                         <div>
-                            <label className="block text-[10px] font-bold text-slate-500 mb-1 leading-tight">ឆ្នាំមានផលរបរដំបូង ៖<br /><span className="text-[8px] uppercase">Year of First Revenue</span></label>
+                            <label className="block text-[10px] font-bold text-black mb-1 leading-tight">ឆ្នាំមានផលរបរដំបូង ៖<br /><span className="text-[8px] uppercase">Year of First Revenue</span></label>
                             <DigitBoxGroup value={data.yearFirstRevenue} count={4} onChange={(v) => onChange('yearFirstRevenue', v)} />
                         </div>
                         <div>
-                            <label className="block text-[10px] font-bold text-slate-500 mb-1 leading-tight">ឆ្នាំមានចំណេញដំបូង ៖<br /><span className="text-[8px] uppercase">Year of First Profit</span></label>
+                            <label className="block text-[10px] font-bold text-black mb-1 leading-tight">ឆ្នាំមានចំណេញដំបូង ៖<br /><span className="text-[8px] uppercase">Year of First Profit</span></label>
                             <DigitBoxGroup value={data.yearFirstProfit} count={4} onChange={(v) => onChange('yearFirstProfit', v)} />
                         </div>
                         <div>
-                            <label className="block text-[10px] font-bold text-slate-500 mb-1 leading-tight">រយៈពេលអាទិភាព ៖<br /><span className="text-[8px] uppercase">Priority Period</span></label>
+                            <label className="block text-[10px] font-bold text-black mb-1 leading-tight">រយៈពេលអាទិភាព ៖<br /><span className="text-[8px] uppercase">Priority Period</span></label>
                             <div className="flex items-center gap-2">
                                 <input
                                     type="text"
                                     value={data.priorityPeriod || ""}
                                     onChange={(e) => onChange('priorityPeriod', e.target.value)}
                                     placeholder="Years"
-                                    className="w-20 bg-white border-2 border-slate-200 rounded-lg px-2 py-1 font-bold text-center"
+                                    className="w-20 bg-transparent border-b border-dotted border-slate-500 px-2 py-1 font-bold text-center text-black"
                                 />
-                                <span className="text-[10px] font-bold text-slate-400">YEARS</span>
+                                <span className="text-[10px] font-bold text-black">YEARS</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* 16. Income Tax Rate */}
-                <div className="p-0 border-b border-slate-100 pb-6">
+                <div className="p-4 border-b border-black">
                     <div className="flex flex-col mb-4">
                         <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 bg-slate-900 text-white rounded-md flex items-center justify-center font-black text-[10px]">16</div>
-                            <span className="font-khmer font-bold text-[13px]">អត្រាពន្ធលើប្រាក់ចំណូល ៖</span>
+                            <div className="w-6 h-6 bg-black text-white flex items-center justify-center font-bold text-xs">16</div>
+                            <span className="font-khmer font-bold text-[13px] text-black">អត្រាពន្ធលើប្រាក់ចំណូល ៖</span>
                         </div>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase ml-8">Income Tax Rate</span>
+                        <span className="text-[10px] font-bold text-black uppercase ml-8">Income Tax Rate</span>
                     </div>
 
-                    <div className="flex flex-wrap gap-3 ml-8">
+                    <div className="flex flex-wrap gap-8 ml-8">
                         {[
                             { label: '30%', id: '30' },
                             { label: '20%', id: '20' },
@@ -601,54 +598,51 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                             { label: '0-20%', id: '0-20' },
                             { label: 'Progressive Rate', id: 'progressive' }
                         ].map((rate) => (
-                            <button
+                            <OptionItem
                                 key={rate.id}
+                                labelKh=""
+                                labelEn={rate.label}
+                                selected={data.taxRate === rate.id}
                                 onClick={() => onChange('taxRate', rate.id)}
-                                className={`px-4 py-2 rounded-xl border-2 font-bold text-sm transition-all ${data.taxRate === rate.id
-                                    ? 'bg-slate-900 border-slate-900 text-white shadow-lg scale-105'
-                                    : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
-                                    }`}
-                            >
-                                {rate.label}
-                            </button>
+                            />
                         ))}
                     </div>
                 </div>
 
                 {/* 17 & 18 Financial Row */}
-                <div className="grid grid-cols-2 gap-6 ml-8">
-                    <div className="p-0">
+                <div className="grid grid-cols-2 divide-x divide-black border-black">
+                    <div className="p-4">
                         <div className="flex items-center gap-2 mb-2">
-                            <div className="w-6 h-6 bg-slate-900 text-white rounded-md flex items-center justify-center font-black text-[10px]">17</div>
-                            <span className="font-khmer font-bold text-[12px] text-slate-900">ពន្ធលើប្រាក់ចំណូលត្រូវបង់ ៖</span>
+                            <div className="w-6 h-6 bg-black text-white flex items-center justify-center font-bold text-xs">17</div>
+                            <span className="font-khmer font-bold text-[12px] text-black">ពន្ធលើប្រាក់ចំណូលត្រូវបង់ ៖</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <input
                                 type="number"
                                 value={data.taxDue || ""}
                                 onChange={(e) => onChange('taxDue', e.target.value)}
-                                className="w-full bg-transparent border-b-2 border-slate-200 focus:border-slate-900 outline-none font-mono font-bold text-xl text-slate-900 py-1"
+                                className="w-full bg-transparent border-b border-dotted border-black outline-none font-mono font-bold text-xl text-black py-1"
                             />
-                            <span className="text-sm font-bold text-slate-400">KHR</span>
+                            <span className="text-sm font-bold text-black">KHR</span>
                         </div>
-                        <span className="text-[9px] font-bold text-slate-400 uppercase">Income Tax Due</span>
+                        <span className="text-[9px] font-bold text-black uppercase">Income Tax Due</span>
                     </div>
 
-                    <div className="p-0">
+                    <div className="p-4">
                         <div className="flex items-center gap-2 mb-2">
-                            <div className="w-6 h-6 bg-slate-900 text-white rounded-md flex items-center justify-center font-black text-[10px]">18</div>
-                            <span className="font-khmer font-bold text-[12px] text-slate-900">ឥណទានពន្ធយោងទៅមុខ ៖</span>
+                            <div className="w-6 h-6 bg-black text-white flex items-center justify-center font-bold text-xs">18</div>
+                            <span className="font-khmer font-bold text-[12px] text-black">ឥណទានពន្ធយោងទៅមុខ ៖</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <input
                                 type="number"
                                 value={data.taxCreditForward || ""}
                                 onChange={(e) => onChange('taxCreditForward', e.target.value)}
-                                className="w-full bg-transparent border-b-2 border-slate-200 focus:border-slate-900 outline-none font-mono font-bold text-xl text-slate-900 py-1"
+                                className="w-full bg-transparent border-b border-dotted border-black outline-none font-mono font-bold text-xl text-black py-1"
                             />
-                            <span className="text-sm font-bold text-slate-400">KHR</span>
+                            <span className="text-sm font-bold text-black">KHR</span>
                         </div>
-                        <span className="text-[9px] font-bold text-slate-400 uppercase">Tax Credit Carried Forward</span>
+                        <span className="text-[9px] font-bold text-black uppercase">Tax Credit Carried Forward</span>
                     </div>
                 </div>
             </div>
