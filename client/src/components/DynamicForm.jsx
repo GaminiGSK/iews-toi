@@ -648,23 +648,7 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                 </div>
             </div>
 
-            {/* --- DECLARATION SECTION --- */}
-            <div className="mt-12 p-8 bg-slate-900 rounded-3xl text-white">
-                <div className="flex items-start gap-4">
-                    <div className="p-2 bg-emerald-500/10 rounded-lg">
-                        <CheckCircle2 className="text-emerald-400" size={24} />
-                    </div>
-                    <div className="space-y-4 flex-1">
-                        <h3 className="font-khmer text-xl font-bold leading-tight decoration-emerald-500/30 underline underline-offset-8">សេចក្តីប្រកាស / DECLARATION</h3>
-                        <p className="font-khmer text-[13px] text-slate-300 leading-relaxed text-justify">
-                            យើងខ្ញុំបានពិនិត្យគ្រប់ចំណុចទាំងអស់នៅលើលិខិតប្រកាសនេះ និងតារាងឧបសម្ព័ន្ធភ្ជាប់ជាមួយ។ យើងខ្ញុំមានសក្ខីប័ត្រប៉ញ្ជាក់ច្បាស់លាស់ ត្រឹមត្រូវ ពេញលេញ ដែលធានាបានថា ព័ត៌មានទាំងអស់ នៅលើលិខិតប្រកាសពិតជាត្រឹមត្រូវប្រាកដមែន ហើយគ្មានប្រតិបត្តិការណាមួយមិនបានប្រកាសនោះទេ។ យើងខ្ញុំសូមទទួលខុសត្រូវទាំងស្រុងចំពោះមុខច្បាប់ទាំងឡាយជាធរមានប្រសិនបើព័ត៌មានណាមួយមានការក្លែងបន្លំ។
-                        </p>
-                        <p className="text-[11px] text-slate-400 leading-relaxed italic border-l-2 border-slate-700 pl-4 uppercase font-bold tracking-tight text-justify">
-                            We have examined all items on this return and the annex attached herewith. We have correct, and complete supporting documents which ensure that all information in this return is true and accurate and there is no undeclared business transaction. We are lawfully responsible for any falsified information.
-                        </p>
-                    </div>
-                </div>
-            </div>
+
 
 
             {/* --- OFFICIAL TABLE BLOCK --- */}
