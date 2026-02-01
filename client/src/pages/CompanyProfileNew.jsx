@@ -241,6 +241,16 @@ export default function CompanyProfile() {
         // UPDATE STATE TO SHOW SIDEBAR
         setExtractionResults(extractedData);
         setMessage("Deep Map Pattern Recognized: MOC Certificate. Extracted bilingual data + QR Verification.");
+
+        // MARK DOCUMENT AS EXTRACTED/CONFIRMED
+        if (activeDocTemplateId) {
+            setDocTemplates(prev => prev.map(t => {
+                if (t.id === activeDocTemplateId) {
+                    return { ...t, isExtracted: true };
+                }
+                return t;
+            }));
+        }
     };
 
     const handleDeleteDocTemplate = async (e, template) => {
@@ -911,8 +921,11 @@ export default function CompanyProfile() {
                                                 <p className="font-bold text-white text-xs truncate mb-0.5" title={template.name}>
                                                     {template.name}
                                                 </p>
-                                                <p className="text-[10px] text-gray-400">
-                                                    {template.status === 'New' ? (template.size || 'Pending') : 'Saved'} • {template.status}
+                                                <p className={`text-[10px] ${template.isExtracted ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
+                                                    {template.isExtracted
+                                                        ? 'Saved • Confirmed'
+                                                        : (template.status === 'New' ? (template.size || 'Pending') : 'Saved') + ' • ' + template.status
+                                                    }
                                                 </p>
                                             </div>
                                         </div>
