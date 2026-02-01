@@ -620,11 +620,6 @@ export default function CompanyProfile() {
 
 
     const renderProfile = () => {
-        // Find the active document in the library
-        const activeDocId = viewDoc?.docType || DOC_TYPES[0].id;
-        const activeDocType = DOC_TYPES.find(t => t.id === activeDocId) || DOC_TYPES[0];
-        const uploadedDoc = (formData.documents || []).find(d => d.docType === activeDocId);
-
         return (
             <div className="w-full h-[calc(100vh-80px)] pt-6 px-4 animate-fade-in flex flex-col bg-slate-900 font-sans">
                 {/* Header Row */}
@@ -644,101 +639,12 @@ export default function CompanyProfile() {
                     </div>
                 </div>
 
-                {/* 3-Column Layout (TOI Style) */}
-                <div className="flex flex-1 gap-6 min-h-0 pb-6">
-
-                    {/* COLUMN 1: UPLOAD */}
-                    <div className="w-48 shrink-0 flex flex-col space-y-4">
-                        <div
-                            className={`flex-1 bg-slate-800/40 border-2 border-dashed rounded-3xl p-6 text-center transition-all relative group flex flex-col items-center justify-center cursor-pointer
-                                ${uploadingDoc ? 'border-blue-500 bg-blue-500/5' : 'border-slate-700 hover:border-blue-500/50 hover:bg-slate-800/60'}
-                            `}
-                        >
-                            <input
-                                type="file"
-                                accept="image/*,.pdf"
-                                multiple
-                                onChange={(e) => {
-                                    if (e.target.files?.length > 0) handleRegUpload(Array.from(e.target.files), activeDocId);
-                                }}
-                                disabled={!!uploadingDoc}
-                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                            />
-
-                            {uploadingDoc ? (
-                                <div className="flex flex-col items-center">
-                                    <Loader2 className="animate-spin h-8 w-8 text-blue-500 mb-2" />
-                                    <p className="text-[10px] font-bold text-blue-400 uppercase animate-pulse">Scanning...</p>
-                                </div>
-                            ) : (
-                                <>
-                                    <div className="w-12 h-12 bg-blue-500/10 rounded-full flex items-center justify-center text-blue-500 mb-4 border border-blue-500/20 group-hover:scale-110 transition">
-                                        <CloudUpload size={24} />
-                                    </div>
-                                    <h3 className="font-bold text-white text-[10px] mb-2 leading-tight uppercase tracking-widest">
-                                        Upload Here
-                                    </h3>
-                                    <p className="text-[10px] text-slate-500 font-medium">
-                                        Drag & Drop for<br />{activeDocType.label}
-                                    </p>
-                                </>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* COLUMN 2: LIST */}
-                    <div className="w-80 shrink-0 bg-slate-800/40 rounded-3xl border border-slate-700 flex flex-col overflow-hidden backdrop-blur-xl">
-                        <div className="p-4 border-b border-slate-700/50">
-                            <h3 className="font-bold text-white text-sm">Form Library</h3>
-                        </div>
-                        <div className="flex-1 overflow-y-auto p-3 space-y-2">
-                            {DOC_TYPES.map(type => {
-                                const uploaded = (formData.documents || []).find(d => d.docType === type.id);
-                                const isVerified = uploaded?.status === 'Verified';
-                                const isActive = activeDocId === type.id;
-
-                                return (
-                                    <div
-                                        key={type.id}
-                                        className={`p-3 rounded-2xl flex items-center justify-between transition-all cursor-pointer border group
-                                            ${isActive ? 'bg-blue-600 border-blue-500 shadow-lg' : 'bg-slate-900/40 border-slate-800 hover:border-slate-600'}
-                                        `}
-                                        onClick={() => setViewDoc(uploaded || { docType: type.id })}
-                                    >
-                                        <div className="flex items-center min-w-0">
-                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center mr-3 border ${isActive ? 'bg-white/20' : 'bg-slate-800 border-slate-700'}`}>
-                                                {uploaded ? <img src={getDocUrl(uploaded)} className="w-full h-full object-cover rounded-md opacity-80" /> : <FileText size={14} className="text-slate-500" />}
-                                            </div>
-                                            <div className="truncate">
-                                                <div className={`text-[11px] font-bold ${isActive ? 'text-white' : 'text-slate-300'}`}>{type.label}</div>
-                                                <div className={`text-[9px] font-bold uppercase ${isVerified ? 'text-green-500' : 'text-slate-500'}`}>{uploaded ? 'VERIFIED' : 'MISSING'}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-
-                    {/* COLUMN 3: PREVIEW */}
-                    <div className="flex-1 bg-slate-800/40 rounded-3xl border border-slate-700 flex flex-col overflow-hidden backdrop-blur-xl relative">
-                        <div className="h-12 border-b border-slate-700/50 flex items-center justify-between px-4 bg-slate-900/50">
-                            <div className="font-bold text-white text-xs uppercase tracking-widest">{activeDocType.label}</div>
-                        </div>
-                        <div className="flex-1 overflow-auto bg-slate-950/50 p-8 flex items-start justify-center">
-                            {uploadedDoc ? (
-                                <img
-                                    src={getDocUrl(uploadedDoc)} // Uses NEW /document-image/:type route
-                                    alt="Document Preview"
-                                    className="max-w-full shadow-2xl rounded-sm border border-slate-700"
-                                />
-                            ) : (
-                                <div className="text-slate-600 flex flex-col items-center">
-                                    <FileText size={48} className="mb-4 opacity-50" />
-                                    <p className="text-xs font-bold uppercase tracking-widest">No Document Scanned</p>
-                                </div>
-                            )}
-                        </div>
+                {/* BLANK SLATE - START FROM SCRATCH */}
+                <div className="flex-1 flex items-center justify-center border-2 border-dashed border-slate-800 rounded-3xl bg-slate-900/50 m-4">
+                    <div className="text-center opacity-50">
+                        <ShieldCheck size={48} className="mx-auto text-slate-600 mb-4" />
+                        <h3 className="text-lg font-bold text-slate-500">Workspace Empty</h3>
+                        <p className="text-sm text-slate-600">Ready to build from scratch.</p>
                     </div>
                 </div>
             </div>

@@ -47,7 +47,10 @@ function verifySignature(rawBody, signature) {
     const sig = signature.startsWith('sha256=') ? signature.split('=')[1] : signature;
     const h = crypto.createHmac('sha256', SHARED_SECRET).update(rawBody).digest('hex');
     try {
-        return crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(h));
+        const a = Buffer.from(sig, 'hex');
+        const b = Buffer.from(h, 'hex');
+        if (a.length !== b.length) return false;
+        return crypto.timingSafeEqual(a, b);
     } catch (e) {
         return false;
     }
@@ -122,7 +125,9 @@ function runScriptSafe(action, params = {}, cb) {
     }
 }
 
-// Pull certs from Vault KV v2 and write to configured paths, then reload TLS context
+const { rotateCertsFromVault: rotateCertsFromVaultImpl } = require('../lib/rotator');
+
+// Pull certs from Vault KV v2 and write to configured paths, then reload TLS context (wrapper)
 function rotateCertsFromVault(cb) {
     const vaultAddr = process.env.VAULT_ADDR;
     const vaultToken = process.env.VAULT_TOKEN;
@@ -131,64 +136,14 @@ function rotateCertsFromVault(cb) {
     const certPath = process.env.MTLS_SERVER_CERT_PATH;
     const caPath = process.env.MTLS_CA_PATH;
 
-    if (!vaultAddr || !vaultToken || !vaultPath || !keyPath || !certPath || !caPath) {
-        return cb(new Error('vault or cert paths not configured'));
-    }
-
-    const url = `${vaultAddr}/v1/${vaultPath}`;
-    const https = require('https');
-
-    const opts = {
-        method: 'GET',
-        headers: {
-            'X-Vault-Token': vaultToken,
-            'Accept': 'application/json'
-        }
-    };
-
-    const req = https.request(url, opts, (res) => {
-        let body = '';
-        res.on('data', (d) => body += d);
-        res.on('end', () => {
-            try {
-                const parsed = JSON.parse(body);
-                // Support KV v2 shape: { data: { data: { key: '...', cert: '...', ca: '...' } } }
-                const secret = parsed && parsed.data && parsed.data.data ? parsed.data.data : (parsed.data || parsed);
-                const serverKey = secret.server_key || secret.key || secret.private_key;
-                const serverCert = secret.server_cert || secret.cert;
-                const caCert = secret.ca_cert || secret.ca;
-                if (!serverKey || !serverCert || !caCert) return cb(new Error('vault response missing keys'));
-
-                // Write files atomically
-                const tmpK = keyPath + '.tmp';
-                const tmpC = certPath + '.tmp';
-                const tmpCA = caPath + '.tmp';
-                fs.writeFileSync(tmpK, serverKey, { mode: 0o600 });
-                fs.writeFileSync(tmpC, serverCert, { mode: 0o644 });
-                fs.writeFileSync(tmpCA, caCert, { mode: 0o644 });
-                fs.renameSync(tmpK, keyPath);
-                fs.renameSync(tmpC, certPath);
-                fs.renameSync(tmpCA, caPath);
-
-                // Reload TLS context if available
-                if (global.reloadServerCerts && typeof global.reloadServerCerts === 'function') {
-                    const ok = global.reloadServerCerts();
-                    return cb(null, { rotated: true, reloaded: ok });
-                }
-                return cb(null, { rotated: true, reloaded: false });
-            } catch (e) {
-                return cb(e);
-            }
-        });
-    });
-
-    req.on('error', (e) => cb(e));
-    req.end();
+    rotateCertsFromVaultImpl(vaultAddr, vaultToken, vaultPath, keyPath, certPath, caPath)
+        .then((res) => cb(null, res))
+        .catch((err) => cb(err));
 }
 
 // POST /handshake
 // body: { id, nonce, timestamp, action, params, auto_execute }
-router.post('/handshake', async (req, res) => {
+async function handshakeHandler(req, res) {
     try {
         const raw = req.rawBody || JSON.stringify(req.body || {});
         const signature = req.get('x-signature');
@@ -249,6 +204,8 @@ router.post('/handshake', async (req, res) => {
         console.error('[management] error', e);
         return res.status(500).json({ error: e.message });
     }
-});
+}
 
-module.exports = router;
+router.post('/handshake', handshakeHandler);
+
+module.exports = { router, handshakeHandler };

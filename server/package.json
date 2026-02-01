@@ -4,9 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --runInBand",
     "start": "node server.js",
     "dev": "npx nodemon server.js"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testTimeout": 20000
   },
   "keywords": [],
   "author": "",
@@ -29,6 +33,7 @@
     "socket.io": "^4.8.3"
   },
   "devDependencies": {
+    "jest": "^29.7.0",
     "nodemon": "^3.1.11"
   }
 }
