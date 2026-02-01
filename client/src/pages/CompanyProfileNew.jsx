@@ -289,8 +289,7 @@ export default function CompanyProfile() {
 
                     await axios.post('/api/company/upload-registration', fileData, {
                         headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'multipart/form-data'
+                            'Authorization': `Bearer ${token}`
                         }
                     });
                 }

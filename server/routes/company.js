@@ -57,7 +57,7 @@ router.post('/upload-registration', auth, upload.single('file'), async (req, res
         if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
         const { docType } = req.body; // 'moc_cert', 'kh_extract', etc.
 
-        console.log(`[RegUpload] Type: ${docType} | File: ${req.file.path}`);
+        console.log(`[RegUpload] Type: ${docType} | File: ${req.file.path} | Size: ${req.file.size}`); // DEBUG LOG
 
         // 1. Read File Content as Base64 (Robust Persistence)
         const fileBuffer = fs.readFileSync(req.file.path);
