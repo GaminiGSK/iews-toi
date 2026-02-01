@@ -81,18 +81,12 @@ export default function CompanyProfile() {
         return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     };
 
-    // Helper: Get Document URL (Local vs Drive)
+    // Helper: Get Document URL (Unified Endpoint)
     const getDocUrl = (doc) => {
-        if (!doc?.path) return '';
-        if (doc.path.startsWith('drive:')) {
-            const id = doc.path.split(':')[1];
-            // Pass token in query for access
-            return `/api/company/files/${id}?token=${localStorage.getItem('token')}`;
-        }
-        // Fallback for local files: Extract filename and use static route
-        const normalized = doc.path.replace(/\\/g, '/');
-        const filename = normalized.split('/').pop();
-        return `/uploads/${filename}`;
+        if (!doc || !doc.docType) return '';
+        // Use the new robust endpoint that serves from DB (Base64), Drive, or Local
+        // Add timestamp to prevent caching when re-uploading
+        return `/api/company/document-image/${doc.docType}?token=${localStorage.getItem('token')}&t=${doc.uploadedAt || new Date().getTime()}`;
     };
 
     // Bank Data State
@@ -628,7 +622,7 @@ export default function CompanyProfile() {
     const renderProfile = () => {
         // Find the active document in the library
         const activeDocId = viewDoc?.docType || DOC_TYPES[0].id;
-        const activeDocType = DOC_TYPES.find(t => t.id === activeDocId);
+        const activeDocType = DOC_TYPES.find(t => t.id === activeDocId) || DOC_TYPES[0];
         const uploadedDoc = (formData.documents || []).find(d => d.docType === activeDocId);
 
         return (
@@ -650,9 +644,10 @@ export default function CompanyProfile() {
                     </div>
                 </div>
 
-                <div className="flex flex-1 gap-6 min-h-0">
+                {/* 3-Column Layout (TOI Style) */}
+                <div className="flex flex-1 gap-6 min-h-0 pb-6">
 
-                    {/* COLUMN 1: UPLOAD TEMPLATES (TOI STYLE) */}
+                    {/* COLUMN 1: UPLOAD */}
                     <div className="w-48 shrink-0 flex flex-col space-y-4">
                         <div
                             className={`flex-1 bg-slate-800/40 border-2 border-dashed rounded-3xl p-6 text-center transition-all relative group flex flex-col items-center justify-center cursor-pointer
@@ -681,172 +676,70 @@ export default function CompanyProfile() {
                                         <CloudUpload size={24} />
                                     </div>
                                     <h3 className="font-bold text-white text-[10px] mb-2 leading-tight uppercase tracking-widest">
-                                        Upload Templates
+                                        Upload Here
                                     </h3>
                                     <p className="text-[10px] text-slate-500 font-medium">
-                                        Drag & drop JPG/PNG pages
+                                        Drag & Drop for<br />{activeDocType.label}
                                     </p>
                                 </>
                             )}
                         </div>
                     </div>
 
-                    {/* COLUMN 2: FORM LIBRARY (TOI STYLE) */}
-                    <div className="w-80 shrink-0 flex flex-col">
-                        <div className="bg-slate-800/40 rounded-3xl border border-slate-700 flex flex-col h-full overflow-hidden backdrop-blur-xl">
-                            <div className="p-5 border-b border-slate-700/50 font-bold text-white flex flex-col gap-1 shrink-0">
-                                <span className="text-sm">Form Library</span>
-                                <span className="text-[10px] text-slate-500 uppercase tracking-tighter">Registration Documents</span>
-                            </div>
-                            <div className="divide-y divide-slate-700/30 overflow-y-auto flex-1 p-3 space-y-2">
-                                {DOC_TYPES.map(type => {
-                                    const uploaded = (formData.documents || []).find(d => d.docType === type.id);
-                                    const isVerified = uploaded?.status === 'Verified';
-                                    const isActive = activeDocId === type.id;
+                    {/* COLUMN 2: LIST */}
+                    <div className="w-80 shrink-0 bg-slate-800/40 rounded-3xl border border-slate-700 flex flex-col overflow-hidden backdrop-blur-xl">
+                        <div className="p-4 border-b border-slate-700/50">
+                            <h3 className="font-bold text-white text-sm">Form Library</h3>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-3 space-y-2">
+                            {DOC_TYPES.map(type => {
+                                const uploaded = (formData.documents || []).find(d => d.docType === type.id);
+                                const isVerified = uploaded?.status === 'Verified';
+                                const isActive = activeDocId === type.id;
 
-                                    return (
-                                        <div
-                                            key={type.id}
-                                            className={`p-3 rounded-2xl flex items-center justify-between transition-all cursor-pointer border group
-                                                ${isActive ? 'bg-blue-600 border-blue-500 shadow-lg shadow-blue-900/40 scale-[1.02]' : 'bg-slate-900/40 border-slate-800 hover:border-slate-600'}
-                                            `}
-                                            onClick={() => setViewDoc(uploaded || { docType: type.id, isPlaceholder: true })}
-                                        >
-                                            <div className="flex items-center min-w-0 flex-1">
-                                                <div className={`w-8 h-10 rounded-lg flex items-center justify-center mr-3 border
-                                                    ${isActive ? 'bg-white/20 border-white/30' : 'bg-slate-800 border-slate-700 group-hover:bg-slate-700'}
-                                                `}>
-                                                    {uploaded ? (
-                                                        <img
-                                                            src={getDocUrl(uploaded)}
-                                                            alt=""
-                                                            className="w-full h-full object-cover rounded-lg opacity-80"
-                                                            onError={(e) => { e.target.style.display = 'none'; e.target.parentNode.innerHTML = '📄'; }}
-                                                        />
-                                                    ) : <FileText size={16} className={isActive ? 'text-white' : 'text-slate-500'} />}
-                                                </div>
-                                                <div className="flex flex-col truncate">
-                                                    <span className={`text-[11px] font-bold truncate ${isActive ? 'text-white' : 'text-slate-300'}`}>{type.label}</span>
-                                                    <span className={`text-[9px] font-bold uppercase ${isActive ? 'text-blue-200' : isVerified ? 'text-green-500' : 'text-slate-500'}`}>
-                                                        {uploaded ? 'Saved • Verified' : 'Missing'}
-                                                    </span>
-                                                </div>
+                                return (
+                                    <div
+                                        key={type.id}
+                                        className={`p-3 rounded-2xl flex items-center justify-between transition-all cursor-pointer border group
+                                            ${isActive ? 'bg-blue-600 border-blue-500 shadow-lg' : 'bg-slate-900/40 border-slate-800 hover:border-slate-600'}
+                                        `}
+                                        onClick={() => setViewDoc(uploaded || { docType: type.id })}
+                                    >
+                                        <div className="flex items-center min-w-0">
+                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center mr-3 border ${isActive ? 'bg-white/20' : 'bg-slate-800 border-slate-700'}`}>
+                                                {uploaded ? <img src={getDocUrl(uploaded)} className="w-full h-full object-cover rounded-md opacity-80" /> : <FileText size={14} className="text-slate-500" />}
                                             </div>
-
-                                            {uploaded && (
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleClearDoc(type.id);
-                                                    }}
-                                                    className={`p-1.5 rounded-full transition ${isActive ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-slate-600 hover:text-red-400 hover:bg-red-400/10'}`}
-                                                >
-                                                    <X size={14} />
-                                                </button>
-                                            )}
+                                            <div className="truncate">
+                                                <div className={`text-[11px] font-bold ${isActive ? 'text-white' : 'text-slate-300'}`}>{type.label}</div>
+                                                <div className={`text-[9px] font-bold uppercase ${isVerified ? 'text-green-500' : 'text-slate-500'}`}>{uploaded ? 'VERIFIED' : 'MISSING'}</div>
+                                            </div>
                                         </div>
-                                    );
-                                })}
-                            </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
 
-                    {/* COLUMN 3: WORKBENCH (TOI STYLE) */}
+                    {/* COLUMN 3: PREVIEW */}
                     <div className="flex-1 bg-slate-800/40 rounded-3xl border border-slate-700 flex flex-col overflow-hidden backdrop-blur-xl relative">
-                        {/* Toolbar */}
-                        <div className="h-16 border-b border-slate-700/50 flex items-center justify-between px-6 bg-slate-900/50 shrink-0">
-                            <div className="flex items-center gap-4">
-                                <h3 className="font-bold text-white text-sm">Template Editor</h3>
-                                <span className="text-[10px] text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-1 rounded font-bold uppercase tracking-widest">
-                                    {activeDocType?.label}
-                                </span>
-                            </div>
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={handleRegenerate}
-                                    disabled={regenerating || !uploadedDoc}
-                                    className={`text-[10px] uppercase tracking-widest px-4 py-2 rounded-xl font-black transition flex items-center gap-2
-                                        ${regenerating ? 'bg-purple-500/50 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-500 text-white shadow-lg shadow-purple-900/20'}
-                                        ${!uploadedDoc && 'opacity-30 grayscale'}
-                                    `}
-                                >
-                                    {regenerating ? <Loader2 size={12} className="animate-spin" /> : <CloudUpload size={12} className="animate-bounce" />}
-                                    Auto-Scan
-                                </button>
-                                <div className="text-[10px] text-slate-500 flex items-center gap-2 px-3 font-bold uppercase tracking-tighter">
-                                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
-                                    Draw Mode Active
-                                </div>
-                                <button
-                                    className="text-[10px] uppercase tracking-widest bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl font-black transition shadow-lg shadow-blue-900/20"
-                                >
-                                    Save Mappings
-                                </button>
-                            </div>
+                        <div className="h-12 border-b border-slate-700/50 flex items-center justify-between px-4 bg-slate-900/50">
+                            <div className="font-bold text-white text-xs uppercase tracking-widest">{activeDocType.label}</div>
                         </div>
-
-                        {/* Editor Split View */}
-                        <div className="flex-1 flex overflow-hidden">
-                            {/* LEFT: Image Preview */}
-                            <div className="flex-1 border-r border-slate-700/50 overflow-auto bg-slate-950/50 p-8 flex items-start justify-center">
-                                {uploadedDoc ? (
-                                    <img
-                                        src={getDocUrl(uploadedDoc)}
-                                        alt="Document Preview"
-                                        className="max-w-full shadow-2xl rounded-sm border border-slate-700"
-                                    />
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center h-full text-slate-600 gap-4 opacity-50">
-                                        <div className="w-20 h-20 border-2 border-dashed border-slate-700 rounded-2xl flex items-center justify-center">
-                                            <FileText size={32} />
-                                        </div>
-                                        <p className="text-xs font-bold uppercase tracking-widest">No Document Scanned</p>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* RIGHT: Data Form / Replica */}
-                            <div className="w-[450px] overflow-auto bg-white flex flex-col">
-                                {activeDocId === 'moc_cert' ? (
-                                    <div className="p-4 transform scale-[0.85] origin-top">
-                                        <MOCCertificate
-                                            data={formData}
-                                            onRegenerate={handleRegenerate}
-                                            regenerating={regenerating}
-                                        />
-                                    </div>
-                                ) : (
-                                    <div className="p-8 space-y-8">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <h4 className="text-sm font-black text-slate-800 uppercase tracking-widest">Extracted Data</h4>
-                                            <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded font-bold">AI ASSISTED</span>
-                                        </div>
-
-                                        {/* Simplified Data Grid for other docs */}
-                                        <div className="space-y-6">
-                                            <div className="space-y-1.5">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase">Entity Name (EN)</label>
-                                                <input value={formData.companyNameEn || ''} readOnly className="w-full bg-slate-50 border-none rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none" />
-                                            </div>
-                                            <div className="space-y-1.5">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase">Registration ID</label>
-                                                <input value={formData.registrationNumber || ''} readOnly className="w-full bg-slate-50 border-none rounded-xl px-4 py-3 text-sm font-mono font-bold text-blue-600 outline-none" />
-                                            </div>
-                                            <div className="space-y-1.5">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase">VAT TIN</label>
-                                                <input value={formData.vatTin || ''} readOnly className="w-full bg-yellow-50 text-yellow-800 border-none rounded-xl px-4 py-3 text-sm font-mono font-bold outline-none" />
-                                            </div>
-                                            <div className="space-y-1.5">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase">Official Address</label>
-                                                <textarea value={formData.address || ''} readOnly rows={4} className="w-full bg-slate-50 border-none rounded-xl px-4 py-3 text-xs font-medium text-slate-600 outline-none resize-none" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
+                        <div className="flex-1 overflow-auto bg-slate-950/50 p-8 flex items-start justify-center">
+                            {uploadedDoc ? (
+                                <img
+                                    src={getDocUrl(uploadedDoc)} // Uses NEW /document-image/:type route
+                                    alt="Document Preview"
+                                    className="max-w-full shadow-2xl rounded-sm border border-slate-700"
+                                />
+                            ) : (
+                                <div className="text-slate-600 flex flex-col items-center">
+                                    <FileText size={48} className="mb-4 opacity-50" />
+                                    <p className="text-xs font-bold uppercase tracking-widest">No Document Scanned</p>
+                                </div>
+                            )}
                         </div>
                     </div>
-
                 </div>
             </div>
         );

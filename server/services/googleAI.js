@@ -2,18 +2,26 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const fs = require('fs');
 const path = require('path');
 
-// USER PROVIDED KEY
-const API_KEY = process.env.GEMINI_API_KEY;
-if (!API_KEY) {
-    console.error("FATAL ERROR: GEMINI_API_KEY is missing from environment variables!");
+// DYNAMIC API KEY GETTER - Ensures fresh read from environment
+function getApiKey() {
+    const key = process.env.GEMINI_API_KEY;
+    if (!key) {
+        console.error("FATAL ERROR: GEMINI_API_KEY is missing from environment variables!");
+        throw new Error("GEMINI_API_KEY is not configured");
+    }
+    return key;
 }
 
-const genAI = new GoogleGenerativeAI(API_KEY);
-// Use Gemini 2.0 Flash - Standard for 2026 multimodal tasks
-const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
-    systemInstruction: "You are an expert Financial AI Agent. Your job is to extract bank transaction data and tax form layouts with 100% accuracy."
-});
+// LAZY INITIALIZATION - Create model instance only when needed
+function getModel() {
+    const apiKey = getApiKey();
+    console.log(`[GoogleAI] Using API Key ending in: ...${apiKey.slice(-4)}`);
+    const genAI = new GoogleGenerativeAI(apiKey);
+    return genAI.getGenerativeModel({
+        model: "gemini-2.0-flash",
+        systemInstruction: "You are an expert Financial AI Agent. Your job is to extract bank transaction data and tax form layouts with 100% accuracy."
+    });
+}
 
 // Helper to encode file to base64
 function fileToGenerativePart(path, mimeType) {
@@ -54,7 +62,7 @@ exports.extractDocumentData = async (filePath, docType) => {
         // Vision Model supports JPEG/PNG directly
         const imagePart = fileToGenerativePart(filePath, "image/jpeg");
 
-        const result = await model.generateContent([prompt, imagePart]);
+        const result = await getModel().generateContent([prompt, imagePart]);
         const response = await result.response;
         const text = response.text();
 
@@ -107,7 +115,7 @@ exports.extractBankStatement = async (filePath) => {
 
         const filePart = fileToGenerativePart(filePath, mimeType);
 
-        const result = await model.generateContent([prompt, filePart]);
+        const result = await getModel().generateContent([prompt, filePart]);
         const response = await result.response;
         const text = response.text();
 
@@ -163,7 +171,7 @@ exports.generateMatchDescription = async (code, description) => {
         Example for "Utilities": "EDC Electricity Bill, PPWSA Water Bill, ISP Internet Charge"
     `;
     try {
-        const result = await model.generateContent(prompt);
+        const result = await getModel().generateContent(prompt);
         const text = result.response.text();
         return text.trim();
     } catch (e) {
@@ -212,7 +220,7 @@ exports.suggestAccountingCodes = async (transactions, codes) => {
     `;
 
     try {
-        const result = await model.generateContent(prompt);
+        const result = await getModel().generateContent(prompt);
         const response = await result.response;
         const text = response.text();
         const suggestions = cleanAndParseJSON(text);
@@ -309,7 +317,7 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
             }
         }
 
-        const result = await model.generateContent(inputs);
+        const result = await getModel().generateContent(inputs);
         const responseText = result.response.text();
         console.log(`[Gemini Chat] Success. Response length: ${responseText.length}`);
         return responseText;
@@ -329,6 +337,8 @@ exports.analyzeTaxForm = async (filePath) => {
     console.log(`[GeminiAI] Analyzing Tax Form Layout: ${filePath}`);
     try {
         // Use standard model (not forced JSON mode) for better reasoning on Layout
+        const apiKey = getApiKey();
+        const genAI = new GoogleGenerativeAI(apiKey);
         const visionModel = genAI.getGenerativeModel({
             model: "gemini-2.0-flash",
             systemInstruction: "You are a professional Document Archeologist. You are excellent at finding OCR fields and their pixel coordinates."

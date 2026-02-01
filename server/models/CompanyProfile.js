@@ -20,6 +20,8 @@ const CompanyProfileSchema = new mongoose.Schema({
         docType: { type: String, required: true }, // 'moc_cert', 'kh_extract', 'en_extract', 'tax_patent', 'tax_id', 'bank_opening'
         originalName: String,
         path: String,
+        data: String, // Base64 Storage (TOI-Style)
+        mimeType: String,
         status: { type: String, default: 'Pending' }, // 'Pending', 'Verified', 'Error'
         extractedText: String, // Raw AI text if needed
         uploadedAt: { type: Date, default: Date.now }

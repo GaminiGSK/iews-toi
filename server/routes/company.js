@@ -31,8 +31,8 @@ router.get('/profile', auth, async (req, res) => {
         const companyCode = req.user.companyCode;
         if (!companyCode) return res.status(400).json({ message: 'No Company Code associated with user' });
 
-        // DB Lookup
-        const profile = await CompanyProfile.findOne({ user: req.user.id });
+        // DB Lookup - Exclude Base64 Data for performance
+        const profile = await CompanyProfile.findOne({ user: req.user.id }).select('-documents.data');
 
         // If no profile, return minimal data based on User ID
         if (!profile) {
@@ -51,6 +51,7 @@ router.get('/profile', auth, async (req, res) => {
 
 // Upload Registration & Extract
 // Upload Registration & Extract (Multi-Doc)
+// Upload Registration & Extract (Multi-Doc) - TOI STYLE PERSISTENCE
 router.post('/upload-registration', auth, upload.single('file'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
@@ -58,35 +59,26 @@ router.post('/upload-registration', auth, upload.single('file'), async (req, res
 
         console.log(`[RegUpload] Type: ${docType} | File: ${req.file.path}`);
 
-        // 1. Extract Data
+        // 1. Read File Content as Base64 (Robust Persistence)
+        const fileBuffer = fs.readFileSync(req.file.path);
+        const base64Data = fileBuffer.toString('base64');
+
+        // 2. Extract Data (AI)
         const extracted = await googleAI.extractDocumentData(req.file.path, docType);
 
-        // --- GOOGLE DRIVE UPLOAD ---
-        let driveId = null;
-        try {
-            const driveData = await uploadFile(req.file.path, req.file.mimetype, req.file.filename);
-            driveId = driveData.id;
-            console.log(`[Drive] Uploaded as ${driveId}`);
-
-            // Delete Local File Only If Drive Successful
-            try { fs.unlinkSync(req.file.path); } catch (e) { console.error('Delete Temp Fail:', e); }
-
-        } catch (driveErr) {
-            console.warn("Drive Upload Skipped/Failed (Using Local):", driveErr.message);
-            // Fallback: File remains on disk
-        }
-
-        // 2. Find Profile
+        // 3. Find Profile
         let profile = await CompanyProfile.findOne({ user: req.user.id });
         if (!profile) {
             profile = new CompanyProfile({ user: req.user.id, companyCode: req.user.companyCode });
         }
 
-        // 3. Update Documents List
+        // 4. Update Documents List
         const newDoc = {
             docType: docType || 'unknown',
             originalName: req.file.originalname,
-            path: driveId ? `drive:${driveId}` : req.file.path,
+            path: req.file.path, // Keep path for reference/AI regen
+            data: base64Data,    // STORE IN DB
+            mimeType: req.file.mimetype,
             status: 'Verified',
             extractedText: JSON.stringify(extracted),
             uploadedAt: new Date()
@@ -98,7 +90,7 @@ router.post('/upload-registration', auth, upload.single('file'), async (req, res
         }
         profile.documents.push(newDoc);
 
-        // 4. Update Profile Fields based on Extracted Data
+        // 5. Update Profile Fields based on Extracted Data
         if (extracted) {
             if (extracted.companyNameEn) profile.companyNameEn = extracted.companyNameEn;
             if (extracted.companyNameKh) profile.companyNameKh = extracted.companyNameKh;
@@ -113,6 +105,9 @@ router.post('/upload-registration', auth, upload.single('file'), async (req, res
 
         await profile.save();
 
+        // 6. Clean up temp file (Optional, but safe now that it's in DB)
+        try { fs.unlinkSync(req.file.path); } catch (e) { }
+
         res.json({
             message: 'Extraction & Save successful',
             data: extracted,
@@ -126,6 +121,50 @@ router.post('/upload-registration', auth, upload.single('file'), async (req, res
 });
 
 // Delete Registration Document
+// Serve Document Image (From DB Base64)
+router.get('/document-image/:docType', auth, async (req, res) => {
+    try {
+        const { docType } = req.params;
+        // DB Lookup - Include Base64 Data here because we need it
+        const profile = await CompanyProfile.findOne({ user: req.user.id });
+        if (!profile) return res.status(404).send('Profile not found');
+
+        const doc = profile.documents.find(d => d.docType === docType);
+        if (!doc) return res.status(404).send('Document not found');
+
+        if (doc.data) {
+            // Serve Base64 Data
+            const imgBuffer = Buffer.from(doc.data, 'base64');
+            res.type(doc.mimeType || 'image/jpeg');
+            res.send(imgBuffer);
+        } else if (doc.path && doc.path.startsWith('drive:')) {
+            // Forward to Drive Logic (Legacy support)
+            const driveId = doc.path.split(':')[1];
+            res.redirect(`/api/company/files/${driveId}`);
+        } else if (doc.path) {
+            // Local file fallback (Legacy)
+            if (fs.existsSync(doc.path)) {
+                res.sendFile(doc.path);
+            } else {
+                // Try relative upload path
+                const filename = path.basename(doc.path);
+                const localPath = path.join(__dirname, '../uploads', filename);
+                if (fs.existsSync(localPath)) {
+                    res.sendFile(localPath);
+                } else {
+                    res.status(404).send('File not found on server');
+                }
+            }
+        } else {
+            res.status(404).send('No image data found');
+        }
+
+    } catch (err) {
+        console.error('Serve Image Error:', err);
+        res.status(500).send('Server Error');
+    }
+});
+
 // Delete Registration Document (Atomic $pull)
 router.delete('/document/:docType', auth, async (req, res) => {
     try {
