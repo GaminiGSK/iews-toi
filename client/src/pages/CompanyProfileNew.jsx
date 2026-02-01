@@ -315,7 +315,7 @@ export default function CompanyProfile() {
             // Update Doc Status (Green Text)
             if (activeDocTemplateId) {
                 setDocTemplates(prev => prev.map(t => {
-                    if (t.id === activeDocTemplateId) return { ...t, isExtracted: true };
+                    if (t.id === activeDocTemplateId) return { ...t, isExtracted: true, status: 'Verified' };
                     return t;
                 }));
             }
@@ -323,7 +323,8 @@ export default function CompanyProfile() {
             // Sync System
             fetchProfile();
             setMessage("Profile Updated & Saved to System! AI Context Updated.");
-            setExtractionResults(null);
+            // Do NOT close panel, user wants to see what's saved
+            // setExtractionResults(null);
 
         } catch (err) {
             console.error(err);
@@ -1234,12 +1235,21 @@ export default function CompanyProfile() {
                                         ))}
                                     </div>
                                     <div className="p-4 border-t border-gray-800">
-                                        <button
-                                            onClick={handleConfirmExtraction}
-                                            className="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded-lg text-xs"
-                                        >
-                                            Confirm & Save
-                                        </button>
+                                        {docTemplates.find(t => t.id === activeDocTemplateId)?.isExtracted ? (
+                                            <button
+                                                disabled
+                                                className="w-full bg-gray-700 text-green-400 font-bold py-2 rounded-lg text-xs flex items-center justify-center gap-2 cursor-default"
+                                            >
+                                                Saved <span className="text-lg">✓</span>
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={handleConfirmExtraction}
+                                                className="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded-lg text-xs"
+                                            >
+                                                Confirm & Save
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             )}
