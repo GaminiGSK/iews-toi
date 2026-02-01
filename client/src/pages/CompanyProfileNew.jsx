@@ -275,6 +275,28 @@ export default function CompanyProfile() {
         try {
             const token = localStorage.getItem('token');
 
+            // 1. UPLOAD FILE IF NEW (To ensure persistence)
+            if (activeDocTemplateId) {
+                const template = docTemplates.find(t => t.id === activeDocTemplateId);
+                // Only upload if it has a raw 'file' object (not just restored metadata)
+                if (template && template.file) {
+                    const fileData = new FormData();
+                    fileData.append('file', template.file);
+
+                    // Determine DocType bucket based on pattern
+                    const isExtract = template.name.toLowerCase().includes('extract');
+                    fileData.append('docType', isExtract ? 'kh_extract' : 'moc_cert');
+
+                    await axios.post('/api/company/upload-registration', fileData, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    });
+                }
+            }
+
+            // 2. UPDATE PROFILE TEXT DATA
             // Map Deep Map keys to Backend Schema
             const mappedData = {
                 companyNameEn: extractionResults["Entity Name [EN]"] || formData.companyNameEn,
@@ -388,6 +410,23 @@ export default function CompanyProfile() {
             });
             if (res.data) {
                 setFormData(prev => ({ ...prev, ...res.data }));
+
+                // --- RESTORE MOC/TAX DOCUMENTS ---
+                if (res.data.documents && Array.isArray(res.data.documents)) {
+                    const restoredDocs = res.data.documents.map(doc => ({
+                        id: doc._id,
+                        name: doc.originalName || doc.docType,
+                        status: doc.status || 'Saved',
+                        size: 'Stored',
+                        // Proxy Image URL
+                        previewUrl: `/api/company/document-image/${doc.docType}?t=${Date.now()}`,
+                        type: doc.mimeType,
+                        isExtracted: doc.status === 'Verified',
+                        docType: doc.docType
+                    }));
+                    setDocTemplates(restoredDocs);
+                    if (restoredDocs.length > 0) setActiveDocTemplateId(restoredDocs[0].id);
+                }
             }
 
             // --- FETCH BANK DATA (Files + Transactions) ---
