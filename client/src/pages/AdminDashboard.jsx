@@ -718,7 +718,7 @@ export default function AdminDashboard() {
 
                         <div className="w-full flex gap-10">
                             {/* LEFT: THE LIVE FORM CANVAS */}
-                            <div className="flex-1 bg-white rounded-2xl shadow-2xl overflow-hidden min-h-[1000px] border-8 border-gray-800/20">
+                            <div className="flex-1 bg-gray-800/50 rounded-2xl shadow-inner overflow-y-auto min-h-[800px] border-8 border-gray-800/20 custom-scrollbar">
                                 <div className="p-8">
                                     <DynamicForm
                                         schema={{ title: "លិខិតប្រកាសពន្ធលើប្រាក់ចំណូលប្រចាំឆ្នាំ", titleKh: "ANNUAL INCOME TAX RETURN FOR THE YEAR ENDED" }}

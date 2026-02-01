@@ -244,19 +244,19 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
     const pages = Array.from({ length: 25 }, (_, i) => i + 1);
 
     return (
-        <div className="max-w-[1200px] mx-auto animate-in slide-in-from-bottom-5 fade-in duration-500 pb-20 bg-slate-50/50 p-4 min-h-[1400px]">
+        <div className="max-w-[1200px] mx-auto animate-in slide-in-from-bottom-5 fade-in duration-500 pb-20 bg-gray-200 p-4 min-h-[1400px] border border-gray-300 rounded-xl mt-4">
 
-            {/* --- SHEET NAVIGATION TABS (EXCEL STYLE) --- */}
-            <div className="flex items-center gap-1 overflow-x-auto pb-0 mb-4 border-b border-slate-300 no-scrollbar">
+            {/* --- SHEET NAVIGATION TABS (HIGH VISIBILITY) --- */}
+            <div className="flex items-end gap-1 overflow-x-auto px-2 pb-0 mb-0 no-scrollbar">
                 {pages.map((page) => (
                     <button
                         key={page}
                         onClick={() => setActiveSheet(page)}
                         className={`
-                            px-6 py-2 text-xs font-bold uppercase tracking-wider rounded-t-lg border-x border-t transition-all whitespace-nowrap
+                            px-6 py-2 text-xs font-bold uppercase tracking-wider rounded-t-lg border-x border-t transition-all whitespace-nowrap relative top-[1px]
                             ${activeSheet === page
-                                ? 'bg-white border-slate-300 text-black border-b-white translate-y-[1px] shadow-sm z-10'
-                                : 'bg-slate-200 border-slate-300 text-slate-500 hover:bg-slate-100 hover:text-slate-700'
+                                ? 'bg-white border-gray-300 text-blue-700 border-b-white z-10 h-11 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]'
+                                : 'bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600 h-9 mb-1'
                             }
                         `}
                     >
