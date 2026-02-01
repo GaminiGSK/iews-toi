@@ -105,6 +105,8 @@ export default function CompanyProfile() {
     const [savingDocLibrary, setSavingDocLibrary] = useState(false);
     const [isDocScanning, setIsDocScanning] = useState(false);
 
+    const [extractionResults, setExtractionResults] = useState(null);
+
     // Fetch Templates (Reusing Tax Template API for now as per "100% same method" request)
     // In future, we might want to filter by 'groupName' or similar if we separate them.
     const fetchDocTemplates = async () => {
@@ -221,24 +223,15 @@ export default function CompanyProfile() {
         }
 
         // SIMULATION OF AI EXTRACTION
-        // In reality, this would send coords to backend -> backend crops image -> OCR -> Return Text
-        let summary = `AI Extraction Preview for ${template.name}:\n\n`;
         const extractedData = {};
-
         template.mappings.forEach((m, i) => {
-            const mockValue = `[Extracted Value for ${m.label}]`; // Placeholder
-            summary += `✅ ${m.label}: ${mockValue}\n`;
+            const mockValue = `[Extracted Value for ${m.label}]`;
             extractedData[m.label] = mockValue;
         });
 
-        summary += `\nConfirm to update Company Profile with these values?`;
-
-        if (window.confirm(summary)) {
-            // Apply updates to form state
-            // Logic to map 'labels' to specific form fields would go here
-            // setFormData(prev => ({...prev, ...extractedData})); 
-            alert("Profile Updated Successfully! (Simulation)");
-        }
+        // UPDATE STATE TO SHOW SIDEBAR
+        setExtractionResults(extractedData);
+        setMessage("Extraction Complete! Review results on the right ->");
     };
 
     const handleDeleteDocTemplate = async (e, template) => {
@@ -960,130 +953,170 @@ export default function CompanyProfile() {
                             </div>
                         </div>
 
-                        {/* Canvas Area with Drawing Logic */}
-                        <div className="flex-1 bg-black/50 overflow-auto p-8 flex items-center justify-center relative select-none">
-                            {activeDocTemplateId ? (
-                                <div
-                                    className="relative shadow-2xl border border-gray-700 max-w-full cursor-crosshair group"
-                                    onMouseDown={(e) => {
-                                        const rect = e.currentTarget.getBoundingClientRect();
-                                        const x = ((e.clientX - rect.left) / rect.width) * 100;
-                                        const y = ((e.clientY - rect.top) / rect.height) * 100;
-
-                                        setDocTemplates(prev => prev.map(t => {
-                                            if (t.id === activeDocTemplateId) {
-                                                return {
-                                                    ...t,
-                                                    drawing: true,
-                                                    currentBox: { startX: x, startY: y, x, y, w: 0, h: 0 }
-                                                };
-                                            }
-                                            return t;
-                                        }));
-                                    }}
-                                    onMouseMove={(e) => {
-                                        const active = docTemplates.find(t => t.id === activeDocTemplateId);
-                                        if (active?.drawing) {
+                        {/* WORKBENCH BODY: Split View (Canvas | Results) */}
+                        <div className="flex-1 flex flex-row overflow-hidden relative">
+                            {/* LEFT: Canvas Area */}
+                            <div className="flex-1 bg-black/50 overflow-auto p-8 flex items-center justify-center relative select-none">
+                                {activeDocTemplateId ? (
+                                    <div
+                                        className="relative shadow-2xl border border-gray-700 max-w-full cursor-crosshair group"
+                                        onMouseDown={(e) => {
                                             const rect = e.currentTarget.getBoundingClientRect();
-                                            const currentX = ((e.clientX - rect.left) / rect.width) * 100;
-                                            const currentY = ((e.clientY - rect.top) / rect.height) * 100;
-
-                                            const startX = active.currentBox.startX;
-                                            const startY = active.currentBox.startY;
-
-                                            const x = Math.min(startX, currentX);
-                                            const y = Math.min(startY, currentY);
-                                            const w = Math.abs(currentX - startX);
-                                            const h = Math.abs(currentY - startY);
+                                            const x = ((e.clientX - rect.left) / rect.width) * 100;
+                                            const y = ((e.clientY - rect.top) / rect.height) * 100;
 
                                             setDocTemplates(prev => prev.map(t => {
                                                 if (t.id === activeDocTemplateId) {
-                                                    return { ...t, currentBox: { ...t.currentBox, x, y, w, h } };
+                                                    return {
+                                                        ...t,
+                                                        drawing: true,
+                                                        currentBox: { startX: x, startY: y, x, y, w: 0, h: 0 }
+                                                    };
                                                 }
                                                 return t;
                                             }));
-                                        }
-                                    }}
-                                    onMouseUp={() => {
-                                        setDocTemplates(prev => prev.map(t => {
-                                            if (t.id === activeDocTemplateId && t.drawing) {
-                                                const newMapping = {
-                                                    id: Date.now(),
-                                                    x: t.currentBox.x,
-                                                    y: t.currentBox.y,
-                                                    w: t.currentBox.w,
-                                                    h: t.currentBox.h,
-                                                    label: `Field ${(t.mappings || []).length + 1}`
-                                                };
-                                                const mappings = (newMapping.w > 1 && newMapping.h > 1)
-                                                    ? [...(t.mappings || []), newMapping]
-                                                    : (t.mappings || []);
+                                        }}
+                                        onMouseMove={(e) => {
+                                            const active = docTemplates.find(t => t.id === activeDocTemplateId);
+                                            if (active?.drawing) {
+                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                const currentX = ((e.clientX - rect.left) / rect.width) * 100;
+                                                const currentY = ((e.clientY - rect.top) / rect.height) * 100;
 
-                                                return { ...t, drawing: false, currentBox: null, mappings };
+                                                const startX = active.currentBox.startX;
+                                                const startY = active.currentBox.startY;
+
+                                                const x = Math.min(startX, currentX);
+                                                const y = Math.min(startY, currentY);
+                                                const w = Math.abs(currentX - startX);
+                                                const h = Math.abs(currentY - startY);
+
+                                                setDocTemplates(prev => prev.map(t => {
+                                                    if (t.id === activeDocTemplateId) {
+                                                        return { ...t, currentBox: { ...t.currentBox, x, y, w, h } };
+                                                    }
+                                                    return t;
+                                                }));
                                             }
-                                            return t;
-                                        }));
-                                    }}
-                                >
-                                    <img
-                                        src={docTemplates.find(t => t.id === activeDocTemplateId)?.previewUrl || '/placeholder.png'}
-                                        alt="Doc Template"
-                                        className="h-[80vh] w-auto object-contain block pointer-events-none"
-                                        draggable="false"
-                                        onError={(e) => { e.target.style.display = 'none'; e.target.parentNode.innerHTML = '<div class="text-white">Image Not Loaded (Save & Refresh)</div>'; }}
-                                    />
+                                        }}
+                                        onMouseUp={() => {
+                                            setDocTemplates(prev => prev.map(t => {
+                                                if (t.id === activeDocTemplateId && t.drawing) {
+                                                    const newMapping = {
+                                                        id: Date.now(),
+                                                        x: t.currentBox.x,
+                                                        y: t.currentBox.y,
+                                                        w: t.currentBox.w,
+                                                        h: t.currentBox.h,
+                                                        label: `Field ${(t.mappings || []).length + 1}`
+                                                    };
+                                                    const mappings = (newMapping.w > 1 && newMapping.h > 1)
+                                                        ? [...(t.mappings || []), newMapping]
+                                                        : (t.mappings || []);
 
-                                    {/* Render Mappings */}
-                                    {docTemplates.find(t => t.id === activeDocTemplateId)?.mappings?.map(m => (
-                                        <div
-                                            key={m.id}
-                                            className="absolute border-2 border-blue-500 bg-blue-500/20 hover:bg-blue-500/30 transition flex items-center justify-center cursor-pointer"
-                                            style={{
-                                                left: `${m.x}%`,
-                                                top: `${m.y}%`,
-                                                width: `${m.w}%`,
-                                                height: `${m.h}%`
-                                            }}
-                                            title={m.label}
-                                        >
-                                            <span className="text-[10px] font-bold text-white bg-blue-600 px-1 rounded shadow-sm">
-                                                {m.label}
-                                            </span>
-                                            <button
-                                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover/box:opacity-100 hover:scale-110 transition"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setDocTemplates(prev => prev.map(t => {
-                                                        if (t.id === activeDocTemplateId) {
-                                                            return { ...t, mappings: t.mappings.filter(map => map.id !== m.id) };
-                                                        }
-                                                        return t;
-                                                    }));
-                                                }}
-                                            >
-                                                <X size={8} />
-                                            </button>
-                                        </div>
-                                    ))}
-
-                                    {/* Render Box Being Drawn */}
-                                    {docTemplates.find(t => t.id === activeDocTemplateId)?.drawing && docTemplates.find(t => t.id === activeDocTemplateId)?.currentBox && (
-                                        <div
-                                            className="absolute border-2 border-green-400 bg-green-400/20"
-                                            style={{
-                                                left: `${docTemplates.find(t => t.id === activeDocTemplateId)?.currentBox?.x}%`,
-                                                top: `${docTemplates.find(t => t.id === activeDocTemplateId)?.currentBox?.y}%`,
-                                                width: `${docTemplates.find(t => t.id === activeDocTemplateId)?.currentBox?.w}%`,
-                                                height: `${docTemplates.find(t => t.id === activeDocTemplateId)?.currentBox?.h}%`
-                                            }}
+                                                    return { ...t, drawing: false, currentBox: null, mappings };
+                                                }
+                                                return t;
+                                            }));
+                                        }}
+                                    >
+                                        <img
+                                            src={docTemplates.find(t => t.id === activeDocTemplateId)?.previewUrl || '/placeholder.png'}
+                                            alt="Doc Template"
+                                            className="h-[80vh] w-auto object-contain block pointer-events-none"
+                                            draggable="false"
+                                            onError={(e) => { e.target.style.display = 'none'; e.target.parentNode.innerHTML = '<div class="text-white">Image Not Loaded (Save & Refresh)</div>'; }}
                                         />
-                                    )}
 
-                                </div>
-                            ) : (
-                                <div className="text-center text-gray-600">
-                                    <FileText className="w-16 h-16 mx-auto mb-4 opacity-20" />
-                                    <p>Select a document to map fields</p>
+                                        {/* Render Mappings */}
+                                        {docTemplates.find(t => t.id === activeDocTemplateId)?.mappings?.map(m => (
+                                            <div
+                                                key={m.id}
+                                                className="absolute border-2 border-blue-500 bg-blue-500/20 hover:bg-blue-500/30 transition flex items-center justify-center cursor-pointer"
+                                                style={{
+                                                    left: `${m.x}%`,
+                                                    top: `${m.y}%`,
+                                                    width: `${m.w}%`,
+                                                    height: `${m.h}%`
+                                                }}
+                                                title={m.label}
+                                            >
+                                                <span className="text-[10px] font-bold text-white bg-blue-600 px-1 rounded shadow-sm">
+                                                    {m.label}
+                                                </span>
+                                                <button
+                                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover/box:opacity-100 hover:scale-110 transition"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setDocTemplates(prev => prev.map(t => {
+                                                            if (t.id === activeDocTemplateId) {
+                                                                return { ...t, mappings: t.mappings.filter(map => map.id !== m.id) };
+                                                            }
+                                                            return t;
+                                                        }));
+                                                    }}
+                                                >
+                                                    <X size={8} />
+                                                </button>
+                                            </div>
+                                        ))}
+
+                                        {/* Render Box Being Drawn */}
+                                        {docTemplates.find(t => t.id === activeDocTemplateId)?.drawing && docTemplates.find(t => t.id === activeDocTemplateId)?.currentBox && (
+                                            <div
+                                                className="absolute border-2 border-green-400 bg-green-400/20"
+                                                style={{
+                                                    left: `${docTemplates.find(t => t.id === activeDocTemplateId)?.currentBox?.x}%`,
+                                                    top: `${docTemplates.find(t => t.id === activeDocTemplateId)?.currentBox?.y}%`,
+                                                    width: `${docTemplates.find(t => t.id === activeDocTemplateId)?.currentBox?.w}%`,
+                                                    height: `${docTemplates.find(t => t.id === activeDocTemplateId)?.currentBox?.h}%`
+                                                }}
+                                            />
+                                        )}
+
+                                    </div>
+                                ) : (
+                                    <div className="text-center text-gray-600">
+                                        <FileText className="w-16 h-16 mx-auto mb-4 opacity-20" />
+                                        <p>Select a document to map fields</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* RIGHT: Results Panel */}
+                            {extractionResults && (
+                                <div className="w-80 bg-gray-900 border-l border-gray-800 flex flex-col animate-slide-in-right">
+                                    <div className="p-4 border-b border-gray-800 bg-gray-800/50 flex justify-between items-center">
+                                        <h3 className="font-bold text-green-400 flex items-center gap-2 text-sm">
+                                            <Sparkles size={14} /> Extracted Data
+                                        </h3>
+                                        <button onClick={() => setExtractionResults(null)} className="text-gray-500 hover:text-white">
+                                            <X size={16} />
+                                        </button>
+                                    </div>
+                                    <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                                        {Object.entries(extractionResults).map(([key, value], i) => (
+                                            <div key={i} className="bg-black/30 p-3 rounded-lg border border-gray-800 hover:border-green-500/30 transition">
+                                                <div className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1">
+                                                    {key}
+                                                </div>
+                                                <div className="text-sm text-white font-mono break-words">
+                                                    {value}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="p-4 border-t border-gray-800">
+                                        <button
+                                            onClick={() => {
+                                                alert("Apply to Profile function linked!");
+                                                setExtractionResults(null);
+                                            }}
+                                            className="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded-lg text-xs"
+                                        >
+                                            Confirm & Save
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                         </div>
