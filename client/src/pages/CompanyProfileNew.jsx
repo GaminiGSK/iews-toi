@@ -99,6 +99,138 @@ export default function CompanyProfile() {
         companyCode: ''
     });
 
+    // --- ENTITY DOC TEMPLATE STATE (Mirrors AdminDashboard) ---
+    const [docTemplates, setDocTemplates] = useState([]);
+    const [activeDocTemplateId, setActiveDocTemplateId] = useState(null);
+    const [savingDocLibrary, setSavingDocLibrary] = useState(false);
+    const [isDocScanning, setIsDocScanning] = useState(false);
+
+    // Fetch Templates (Reusing Tax Template API for now as per "100% same method" request)
+    // In future, we might want to filter by 'groupName' or similar if we separate them.
+    const fetchDocTemplates = async () => {
+        try {
+            const res = await axios.get('/api/tax/templates');
+            const apiTemplates = res.data.map(t => ({
+                ...t,
+                id: t._id,
+                status: 'Saved',
+                previewUrl: `/api/tax/file/${t.filename}`
+            }));
+            setDocTemplates(apiTemplates);
+        } catch (err) {
+            console.error("Error fetching doc templates", err);
+        }
+    };
+
+    useEffect(() => {
+        if (view === 'profile') {
+            fetchDocTemplates();
+        }
+    }, [view]);
+
+    // Safety: Reset active selection if template disappears
+    useEffect(() => {
+        if (activeDocTemplateId && !docTemplates.find(t => t.id === activeDocTemplateId)) {
+            setActiveDocTemplateId(null);
+        }
+    }, [docTemplates, activeDocTemplateId]);
+
+    // --- HANDLERS ---
+    const handleSaveDocLibrary = async () => {
+        const newTemplates = docTemplates.filter(t => t.status === 'New');
+        if (newTemplates.length === 0) return alert('No new templates to save.');
+
+        setSavingDocLibrary(true);
+        const formData = new FormData();
+        let appendedCount = 0;
+
+        newTemplates.forEach(t => {
+            if (t.file) {
+                formData.append('files', t.file);
+                appendedCount++;
+            }
+        });
+
+        if (appendedCount === 0) {
+            setSavingDocLibrary(false);
+            return alert('No file data found to upload.');
+        }
+
+        try {
+            const res = await axios.post('/api/tax/templates', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            alert(`Successfully saved ${res.data.templates.length} documents!`);
+            fetchDocTemplates();
+        } catch (err) {
+            console.error(err);
+            alert('Failed to save documents.');
+        } finally {
+            setSavingDocLibrary(false);
+        }
+    };
+
+    const handleDocSaveMappings = async () => {
+        if (!activeDocTemplateId) return;
+        const template = docTemplates.find(t => t.id === activeDocTemplateId);
+        if (!template) return;
+
+        if (template.status === 'New') return alert('Please Save to Library first.');
+
+        try {
+            await axios.put(`/api/tax/templates/${activeDocTemplateId}`, {
+                mappings: template.mappings
+            });
+            alert('Mappings saved successfully!');
+            fetchDocTemplates();
+        } catch (err) {
+            console.error(err);
+            alert('Error saving mappings.');
+        }
+    };
+
+    const handleDocAnalyze = async () => {
+        if (!activeDocTemplateId) return alert("Select a document first.");
+        const template = docTemplates.find(t => t.id === activeDocTemplateId);
+        if (template.status === 'New') return alert('Please Save to Library first.');
+
+        if (!window.confirm('AI Agent will scan this document to map fields. Continue?')) return;
+
+        try {
+            setIsDocScanning(true);
+            const res = await axios.post(`/api/tax/templates/${activeDocTemplateId}/analyze`);
+            setDocTemplates(prev => prev.map(t => {
+                if (t.id === activeDocTemplateId) return { ...t, mappings: res.data.mappings, harvestedText: res.data.rawText };
+                return t;
+            }));
+            setTimeout(() => alert(`Analysis Complete! Found ${res.data.mappings.length} fields.`), 500);
+        } catch (err) {
+            console.error(err);
+            alert('AI Analysis Failed.');
+        } finally {
+            setIsDocScanning(false);
+        }
+    };
+
+    const handleDeleteDocTemplate = async (e, template) => {
+        e.stopPropagation();
+        if (!window.confirm(`Delete ${template.name}?`)) return;
+
+        if (template.status === 'New') {
+            setDocTemplates(prev => prev.filter(t => t.id !== template.id));
+            if (activeDocTemplateId === template.id) setActiveDocTemplateId(null);
+        } else {
+            try {
+                await axios.delete(`/api/tax/templates/${template.id}`);
+                setDocTemplates(prev => prev.filter(t => t.id !== template.id));
+                if (activeDocTemplateId === template.id) setActiveDocTemplateId(null);
+            } catch (err) {
+                console.error(err);
+                alert('Failed to delete.');
+            }
+        }
+    };
+
     const handleSaveTransactions = async () => {
         // Only save transactions that haven't been saved yet (no _id)
         const newTransactions = (bankFiles || [])
@@ -640,12 +772,333 @@ export default function CompanyProfile() {
                 </div>
 
                 {/* TRULY EMPTY SLATE */}
-                <div className="flex-1 flex items-center justify-center border-2 border-dashed border-slate-800 rounded-3xl bg-slate-900/50 m-4">
-                    <div className="text-center opacity-30">
-                        <ShieldCheck size={64} className="mx-auto text-slate-700 mb-6" />
-                        <h3 className="text-xl font-bold text-slate-600 tracking-[0.2em] mb-2">WORKSPACE RESET</h3>
-                        <p className="text-sm text-slate-700 font-mono">No Components Loaded</p>
+                {/* DOCUMENT MAPPING WORKSPACE (Mirrors AdminDashboard Tax Config) */}
+                <div className="flex flex-1 gap-6 min-h-[calc(100vh-200px)] p-8 max-w-[1400px]">
+
+                    {/* COLUMN 1: UPLOAD ZONE - 50% Smaller */}
+                    <div className="w-32 shrink-0 flex flex-col">
+                        <div
+                            className="flex-1 bg-gray-900/50 border-2 border-dashed border-blue-900/50 rounded-2xl p-4 text-center hover:border-blue-500 hover:bg-blue-900/10 transition relative group flex flex-col items-center justify-center cursor-pointer"
+                            onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                            onDrop={(e) => {
+                                e.preventDefault(); e.stopPropagation();
+                                const files = Array.from(e.dataTransfer.files);
+                                if (files.length > 0) {
+                                    const newTemplates = [];
+                                    files.forEach(file => {
+                                        const exists = docTemplates.some(t => t.name === file.name || t.originalName === file.name);
+                                        if (exists) return;
+                                        newTemplates.push({
+                                            id: Date.now() + Math.random(),
+                                            name: file.name,
+                                            file: file,
+                                            type: file.type,
+                                            size: (file.size / 1024).toFixed(2) + ' KB',
+                                            previewUrl: URL.createObjectURL(file),
+                                            status: 'New'
+                                        });
+                                    });
+                                    setDocTemplates(prev => [...prev, ...newTemplates]);
+                                    if (!activeDocTemplateId && newTemplates.length > 0) setActiveDocTemplateId(newTemplates[0].id);
+                                }
+                            }}
+                        >
+                            <input
+                                type="file"
+                                accept="image/jpeg,image/png,image/jpg"
+                                multiple
+                                onChange={(e) => {
+                                    if (e.target.files?.length > 0) {
+                                        const files = Array.from(e.target.files);
+                                        const newTemplates = files.map(file => ({
+                                            id: Date.now() + Math.random(),
+                                            name: file.name,
+                                            file: file,
+                                            type: file.type,
+                                            size: (file.size / 1024).toFixed(2) + ' KB',
+                                            previewUrl: URL.createObjectURL(file),
+                                            status: 'New'
+                                        }));
+                                        setDocTemplates(prev => [...prev, ...newTemplates]);
+                                        if (!activeDocTemplateId && newTemplates.length > 0) setActiveDocTemplateId(newTemplates[0].id);
+                                    }
+                                }}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                            />
+                            <div className="w-12 h-12 bg-blue-500/10 rounded-full flex items-center justify-center text-blue-500 mb-4 border border-blue-500/20">
+                                <CloudUpload size={24} />
+                            </div>
+                            <h3 className="font-bold text-white text-[10px] mb-2 leading-tight">
+                                Upload Docs
+                            </h3>
+                            <p className="text-xs text-gray-400">
+                                Drag & drop pages
+                            </p>
+                        </div>
                     </div>
+
+                    {/* COLUMN 2: DOCUMENT LIBRARY */}
+                    <div className="w-80 shrink-0 flex flex-col space-y-4">
+                        <div className="bg-gray-900 rounded-xl border border-gray-800 flex flex-col h-full overflow-hidden">
+                            <div className="p-4 bg-gray-900/50 border-b border-gray-800 font-bold text-white flex flex-col shrink-0 gap-3">
+                                <div className="flex justify-between items-center">
+                                    <span>Document Library ({docTemplates.length})</span>
+                                    <span className="text-xs text-gray-500 bg-gray-800 px-2 py-1 rounded">
+                                        Total Pages
+                                    </span>
+                                </div>
+                                <button
+                                    onClick={handleSaveDocLibrary}
+                                    disabled={savingDocLibrary || docTemplates.filter(t => t.status === 'New').length === 0}
+                                    className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-800 disabled:text-gray-500 text-white text-xs font-bold py-2 rounded transition flex items-center justify-center gap-2"
+                                >
+                                    {savingDocLibrary ? <Loader2 className="animate-spin h-3 w-3" /> : <Save size={14} />}
+                                    {savingDocLibrary ? 'SAVING...' : `SAVE ALL (${docTemplates.filter(t => t.status === 'New').length})`}
+                                </button>
+                            </div>
+                            <div className="divide-y divide-gray-800 overflow-y-auto flex-1 p-2">
+                                {docTemplates.map((template) => (
+                                    <div
+                                        key={template.id}
+                                        className={`p-3 mb-2 rounded-lg flex items-center justify-between transition cursor-pointer group ${activeDocTemplateId === template.id ? 'bg-blue-900/20 border border-blue-500/50' : 'hover:bg-gray-800 border border-transparent'}`}
+                                        onClick={() => setActiveDocTemplateId(template.id)}
+                                    >
+                                        <div className="flex-1 min-w-0 mr-2 flex items-center gap-3">
+                                            {/* Thumbnail */}
+                                            <div className="w-8 h-10 bg-gray-800 rounded flex-shrink-0 overflow-hidden border border-gray-700">
+                                                <img
+                                                    src={template.previewUrl || '/placeholder.png'}
+                                                    alt=""
+                                                    className="w-full h-full object-cover opacity-80"
+                                                    onError={(e) => {
+                                                        e.target.style.display = 'none';
+                                                        e.target.parentNode.innerHTML = '📄';
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="font-bold text-white text-xs truncate mb-0.5" title={template.name}>
+                                                    {template.name}
+                                                </p>
+                                                <p className="text-[10px] text-gray-400">
+                                                    {template.status === 'New' ? (template.size || 'Pending') : 'Saved'} • {template.status}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={(e) => handleDeleteDocTemplate(e, template)}
+                                            className="p-1.5 rounded-full hover:bg-red-500/20 text-gray-500 hover:text-red-400 transition"
+                                        >
+                                            <X size={14} />
+                                        </button>
+                                    </div>
+                                ))}
+                                {docTemplates.length === 0 && (
+                                    <div className="text-center text-gray-600 text-xs py-10 italic">
+                                        No documents uploaded.
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* COLUMN 3: MAPPING WORKBENCH */}
+                    <div className="flex-1 bg-gray-900 rounded-xl border border-gray-800 flex flex-col overflow-hidden relative">
+                        {/* Toolbar */}
+                        <div className="h-14 border-b border-gray-800 flex items-center justify-between px-6 bg-gray-900/50 shrink-0">
+                            <div className="flex items-center gap-4">
+                                <h3 className="font-bold text-white text-sm">Mapping Workbench</h3>
+                                {activeDocTemplateId && (
+                                    <span className="text-xs text-gray-500 bg-gray-800 px-2 py-0.5 rounded border border-gray-700">
+                                        {docTemplates.find(t => t.id === activeDocTemplateId)?.name}
+                                    </span>
+                                )}
+                            </div>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={handleDocAnalyze}
+                                    disabled={isDocScanning}
+                                    className={`text-xs ${isDocScanning ? 'bg-purple-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-500'} text-white px-3 py-1.5 rounded font-bold transition mr-2 flex items-center gap-1`}
+                                    title="Use AI to detect fields"
+                                >
+                                    {isDocScanning ? (
+                                        <>
+                                            <Loader2 size={12} className="animate-spin" />
+                                            Scanning...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <CloudUpload size={12} className="animate-bounce" />
+                                            Auto-Scan
+                                        </>
+                                    )}
+                                </button>
+                                <div className="text-xs text-gray-500 flex items-center gap-2 mr-4">
+                                    <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+                                    Draw Mode Active
+                                </div>
+                                <button
+                                    onClick={handleDocSaveMappings}
+                                    className="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded font-bold transition"
+                                >
+                                    Save Mappings
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Canvas Area with Drawing Logic */}
+                        <div className="flex-1 bg-black/50 overflow-auto p-8 flex items-center justify-center relative select-none">
+                            {activeDocTemplateId ? (
+                                <div
+                                    className="relative shadow-2xl border border-gray-700 max-w-full cursor-crosshair group"
+                                    onMouseDown={(e) => {
+                                        const rect = e.currentTarget.getBoundingClientRect();
+                                        const x = ((e.clientX - rect.left) / rect.width) * 100;
+                                        const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+                                        setDocTemplates(prev => prev.map(t => {
+                                            if (t.id === activeDocTemplateId) {
+                                                return {
+                                                    ...t,
+                                                    drawing: true,
+                                                    currentBox: { startX: x, startY: y, x, y, w: 0, h: 0 }
+                                                };
+                                            }
+                                            return t;
+                                        }));
+                                    }}
+                                    onMouseMove={(e) => {
+                                        const active = docTemplates.find(t => t.id === activeDocTemplateId);
+                                        if (active?.drawing) {
+                                            const rect = e.currentTarget.getBoundingClientRect();
+                                            const currentX = ((e.clientX - rect.left) / rect.width) * 100;
+                                            const currentY = ((e.clientY - rect.top) / rect.height) * 100;
+
+                                            const startX = active.currentBox.startX;
+                                            const startY = active.currentBox.startY;
+
+                                            const x = Math.min(startX, currentX);
+                                            const y = Math.min(startY, currentY);
+                                            const w = Math.abs(currentX - startX);
+                                            const h = Math.abs(currentY - startY);
+
+                                            setDocTemplates(prev => prev.map(t => {
+                                                if (t.id === activeDocTemplateId) {
+                                                    return { ...t, currentBox: { ...t.currentBox, x, y, w, h } };
+                                                }
+                                                return t;
+                                            }));
+                                        }
+                                    }}
+                                    onMouseUp={() => {
+                                        setDocTemplates(prev => prev.map(t => {
+                                            if (t.id === activeDocTemplateId && t.drawing) {
+                                                const newMapping = {
+                                                    id: Date.now(),
+                                                    x: t.currentBox.x,
+                                                    y: t.currentBox.y,
+                                                    w: t.currentBox.w,
+                                                    h: t.currentBox.h,
+                                                    label: `Field ${(t.mappings || []).length + 1}`
+                                                };
+                                                const mappings = (newMapping.w > 1 && newMapping.h > 1)
+                                                    ? [...(t.mappings || []), newMapping]
+                                                    : (t.mappings || []);
+
+                                                return { ...t, drawing: false, currentBox: null, mappings };
+                                            }
+                                            return t;
+                                        }));
+                                    }}
+                                >
+                                    <img
+                                        src={docTemplates.find(t => t.id === activeDocTemplateId)?.previewUrl || '/placeholder.png'}
+                                        alt="Doc Template"
+                                        className="h-[80vh] w-auto object-contain block pointer-events-none"
+                                        draggable="false"
+                                        onError={(e) => { e.target.style.display = 'none'; e.target.parentNode.innerHTML = '<div class="text-white">Image Not Loaded (Save & Refresh)</div>'; }}
+                                    />
+
+                                    {/* Render Mappings */}
+                                    {docTemplates.find(t => t.id === activeDocTemplateId)?.mappings?.map(m => (
+                                        <div
+                                            key={m.id}
+                                            className="absolute border-2 border-blue-500 bg-blue-500/20 hover:bg-blue-500/30 transition flex items-center justify-center cursor-pointer"
+                                            style={{
+                                                left: `${m.x}%`,
+                                                top: `${m.y}%`,
+                                                width: `${m.w}%`,
+                                                height: `${m.h}%`
+                                            }}
+                                            title={m.label}
+                                        >
+                                            <span className="text-[10px] font-bold text-white bg-blue-600 px-1 rounded shadow-sm">
+                                                {m.label}
+                                            </span>
+                                            <button
+                                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover/box:opacity-100 hover:scale-110 transition"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setDocTemplates(prev => prev.map(t => {
+                                                        if (t.id === activeDocTemplateId) {
+                                                            return { ...t, mappings: t.mappings.filter(map => map.id !== m.id) };
+                                                        }
+                                                        return t;
+                                                    }));
+                                                }}
+                                            >
+                                                <X size={8} />
+                                            </button>
+                                        </div>
+                                    ))}
+
+                                    {/* Render Box Being Drawn */}
+                                    {docTemplates.find(t => t.id === activeDocTemplateId)?.drawing && docTemplates.find(t => t.id === activeDocTemplateId)?.currentBox && (
+                                        <div
+                                            className="absolute border-2 border-green-400 bg-green-400/20"
+                                            style={{
+                                                left: `${docTemplates.find(t => t.id === activeDocTemplateId)?.currentBox?.x}%`,
+                                                top: `${docTemplates.find(t => t.id === activeDocTemplateId)?.currentBox?.y}%`,
+                                                width: `${docTemplates.find(t => t.id === activeDocTemplateId)?.currentBox?.w}%`,
+                                                height: `${docTemplates.find(t => t.id === activeDocTemplateId)?.currentBox?.h}%`
+                                            }}
+                                        />
+                                    )}
+
+                                </div>
+                            ) : (
+                                <div className="text-center text-gray-600">
+                                    <FileText className="w-16 h-16 mx-auto mb-4 opacity-20" />
+                                    <p>Select a document to map fields</p>
+                                </div>
+                            )}
+
+                            {/* Harvested Text Overlay (Troubleshooting) */}
+                            {activeDocTemplateId && docTemplates.find(t => t.id === activeDocTemplateId)?.harvestedText && (
+                                <div className="fixed bottom-6 right-6 max-w-md bg-gray-900/98 border border-purple-500/50 rounded-2xl p-6 shadow-[0_0_50px_rgba(168,85,247,0.2)] backdrop-blur-md z-[100] animate-in slide-in-from-bottom-5 duration-300">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
+                                            <h4 className="text-xs font-bold text-purple-400 uppercase tracking-widest">AI Vision: Harvested Text</h4>
+                                        </div>
+                                        <button
+                                            onClick={() => setDocTemplates(prev => prev.map(t => t.id === activeDocTemplateId ? { ...t, harvestedText: null } : t))}
+                                            className="text-gray-500 hover:text-white p-1"
+                                        >
+                                            <X size={16} />
+                                        </button>
+                                    </div>
+                                    <div className="text-xs text-gray-300 leading-relaxed max-h-64 overflow-y-auto font-mono bg-black/40 p-4 rounded-xl border border-white/5">
+                                        {docTemplates.find(t => t.id === activeDocTemplateId)?.harvestedText}
+                                    </div>
+                                    <p className="text-[10px] text-gray-500 mt-4 italic">
+                                        This is what the AI "sees" in the document.
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
                 </div>
             </div>
         );
