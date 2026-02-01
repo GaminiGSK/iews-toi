@@ -4,10 +4,10 @@ const path = require('path');
 
 // DYNAMIC API KEY GETTER - Ensures fresh read from environment
 function getApiKey() {
-    const key = process.env.GEMINI_API_KEY;
+    const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
     if (!key) {
         console.error("FATAL ERROR: GEMINI_API_KEY is missing from environment variables!");
-        throw new Error("GEMINI_API_KEY is not configured");
+        throw new Error("GEMINI_API_KEY (or GOOGLE_API_KEY) is not configured in Cloud Run Environment Variables.");
     }
     return key;
 }
