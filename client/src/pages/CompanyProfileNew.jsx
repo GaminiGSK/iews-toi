@@ -916,28 +916,6 @@ export default function CompanyProfile() {
                             </div>
                             <div className="flex gap-2">
                                 <button
-                                    onClick={handleDocAnalyze}
-                                    disabled={isDocScanning}
-                                    className={`text-xs ${isDocScanning ? 'bg-purple-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-500'} text-white px-3 py-1.5 rounded font-bold transition mr-2 flex items-center gap-1`}
-                                    title="Use AI to detect fields"
-                                >
-                                    {isDocScanning ? (
-                                        <>
-                                            <Loader2 size={12} className="animate-spin" />
-                                            Scanning...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <CloudUpload size={12} className="animate-bounce" />
-                                            Auto-Scan
-                                        </>
-                                    )}
-                                </button>
-                                <div className="text-xs text-gray-500 flex items-center gap-2 mr-4">
-                                    <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-                                    Draw Mode Active
-                                </div>
-                                <button
                                     onClick={handleDocSaveMappings}
                                     className="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded font-bold transition"
                                 >
