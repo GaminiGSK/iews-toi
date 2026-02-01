@@ -280,39 +280,40 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                 </div>
             </div>
 
-            {/* --- TAX PERIOD ROW (STEP 2) --- */}
-            <div className="flex flex-wrap items-center gap-x-8 gap-y-4 mb-0 p-5 border border-black relative overflow-hidden">
+            {/* --- TAX PERIOD ROW (Compact One-Liner) --- */}
+            <div className="flex flex-wrap items-center justify-between px-6 py-4 border border-black border-b-0">
                 {/* 1. Tax Period (Number of Month) */}
-                <div className="flex items-center gap-4">
-                    <div className="flex flex-col">
-                        <span className="font-khmer font-bold text-xs text-black leading-tight">ការិយបរិច្ឆេទសារពើពន្ធ ( ចំនួនខែ ) ៖</span>
-                        <span className="text-[10px] font-bold text-black uppercase tracking-tight">Tax Period (Number of Month)</span>
+                <div className="flex items-center gap-2">
+                    <div className="flex flex-col text-right">
+                        <span className="font-khmer font-bold text-xs text-black leading-tight">ការិយបរិច្ឆេទសារពើពន្ធ <br className="hidden md:block" />(ចំនួនខែ)</span>
+                        <span className="text-[9px] font-bold text-black uppercase tracking-tight hidden md:block">Tax Period (Months)</span>
                     </div>
+                    <span className="font-bold text-black px-1">:</span>
                     <DigitBoxGroup value={data.taxMonths || "12"} count={2} />
                 </div>
 
                 {/* Arrow Decor */}
-                <div className="hidden md:block text-black">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M8 5v14l11-7z" />
-                    </svg>
+                <div className="text-black hidden lg:block">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
                 </div>
 
                 {/* 2. From */}
-                <div className="flex items-center gap-4">
-                    <div className="flex flex-col">
+                <div className="flex items-center gap-2">
+                    <div className="flex flex-col text-right">
                         <span className="font-khmer font-bold text-xs text-black leading-tight">ចាប់ពីថ្ងៃទី</span>
-                        <span className="text-[10px] font-bold text-black uppercase tracking-tight">From</span>
+                        <span className="text-[9px] font-bold text-black uppercase tracking-tight hidden md:block">From</span>
                     </div>
+                    <span className="font-bold text-black px-1">:</span>
                     <DigitBoxGroup value={data.fromDate || "01012023"} count={8} highlightIndices={[1, 3]} />
                 </div>
 
                 {/* 3. Until */}
-                <div className="flex items-center gap-4">
-                    <div className="flex flex-col">
+                <div className="flex items-center gap-2">
+                    <div className="flex flex-col text-right">
                         <span className="font-khmer font-bold text-xs text-black leading-tight">ដល់ថ្ងៃទី</span>
-                        <span className="text-[10px] font-bold text-black uppercase tracking-tight">Until</span>
+                        <span className="text-[9px] font-bold text-black uppercase tracking-tight hidden md:block">Until</span>
                     </div>
+                    <span className="font-bold text-black px-1">:</span>
                     <DigitBoxGroup value={data.untilDate || "31122023"} count={8} highlightIndices={[1, 3]} />
                 </div>
             </div>
