@@ -212,6 +212,35 @@ export default function CompanyProfile() {
         }
     };
 
+    const handleExtractToProfile = async () => {
+        if (!activeDocTemplateId) return alert("Please select a document.");
+        const template = docTemplates.find(t => t.id === activeDocTemplateId);
+
+        if (!template.mappings || template.mappings.length === 0) {
+            return alert("No mappings found. Please draw boxes around the data fields first.");
+        }
+
+        // SIMULATION OF AI EXTRACTION
+        // In reality, this would send coords to backend -> backend crops image -> OCR -> Return Text
+        let summary = `AI Extraction Preview for ${template.name}:\n\n`;
+        const extractedData = {};
+
+        template.mappings.forEach((m, i) => {
+            const mockValue = `[Extracted Value for ${m.label}]`; // Placeholder
+            summary += `✅ ${m.label}: ${mockValue}\n`;
+            extractedData[m.label] = mockValue;
+        });
+
+        summary += `\nConfirm to update Company Profile with these values?`;
+
+        if (window.confirm(summary)) {
+            // Apply updates to form state
+            // Logic to map 'labels' to specific form fields would go here
+            // setFormData(prev => ({...prev, ...extractedData})); 
+            alert("Profile Updated Successfully! (Simulation)");
+        }
+    };
+
     const handleDeleteDocTemplate = async (e, template) => {
         e.stopPropagation();
         if (!window.confirm(`Delete ${template.name}?`)) return;
@@ -922,7 +951,7 @@ export default function CompanyProfile() {
                                     Save Mappings
                                 </button>
                                 <button
-                                    onClick={() => alert("AI Extraction Engine: Scanning mapped fields to update Company Profile... (Function Pending Backend Link)")}
+                                    onClick={handleExtractToProfile}
                                     className="text-xs bg-green-600 hover:bg-green-500 text-white px-3 py-1.5 rounded font-bold transition flex items-center gap-1 shadow-lg shadow-green-900/20"
                                 >
                                     <Sparkles size={12} />
