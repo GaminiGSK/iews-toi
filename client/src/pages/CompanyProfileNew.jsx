@@ -224,9 +224,21 @@ export default function CompanyProfile() {
 
         // SIMULATION OF AI EXTRACTION
         const extractedData = {};
+
+        // Mock Data Pool mimicking a Certificate of Incorporation
+        const mockValues = [
+            "GK SMART ( ជីខេ ស្មាត )",
+            "500058831",
+            "13 April 2021 ( ១៣ មេសា ២០២១ )",
+            "Sole Proprietorship ( សហគ្រាសឯកបុគ្គល )",
+            "Phnom Penh ( រាជធានីភ្នំពេញ )",
+            "Information Technology ( ព័ត៌មានវិទ្យា )"
+        ];
+
         template.mappings.forEach((m, i) => {
-            const mockValue = `[Extracted Value for ${m.label}]`;
-            extractedData[m.label] = mockValue;
+            // Cycle through mock values based on index
+            const val = mockValues[i % mockValues.length];
+            extractedData[m.label] = val;
         });
 
         // UPDATE STATE TO SHOW SIDEBAR
@@ -1100,7 +1112,7 @@ export default function CompanyProfile() {
                                                 <div className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1">
                                                     {key}
                                                 </div>
-                                                <div className="text-sm text-white font-mono break-words">
+                                                <div className="text-sm text-white break-words leading-relaxed">
                                                     {value}
                                                 </div>
                                             </div>
