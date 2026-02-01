@@ -5,6 +5,7 @@ const googleAI = require('../services/googleAI');
 const Transaction = require('../models/Transaction');
 const AccountCode = require('../models/AccountCode');
 const User = require('../models/User');
+const CompanyProfile = require('../models/CompanyProfile');
 
 // POST /api/chat/message
 router.post('/message', auth, async (req, res) => {
@@ -15,9 +16,12 @@ router.post('/message', auth, async (req, res) => {
         // 1. Fetch Context Data
         const companyCode = req.user.companyCode;
 
-        // Fetch Company Name (Optional, derived from User or generic)
+        // Fetch Company Profile (Source of Truth for Entity Info)
+        const profile = await CompanyProfile.findOne({ user: req.user.id }).lean() || {};
+
+        // Fetch Company Name (Fallback)
         const user = await User.findById(req.user.id);
-        const companyName = user.companyName || companyCode;
+        const companyName = profile.companyNameEn || user.companyName || companyCode;
 
         // Fetch recent transactions (Limit 15 for context)
         const transactions = await Transaction.find({ companyCode })
@@ -85,6 +89,15 @@ router.post('/message', auth, async (req, res) => {
         // 2. Call AI Service
         const context = {
             companyName,
+            profile: {
+                nameEn: profile.companyNameEn,
+                nameKh: profile.companyNameKh,
+                regId: profile.registrationNumber,
+                taxId: profile.vatTin,
+                incDate: profile.incorporationDate,
+                type: profile.companyType,
+                addr: profile.address
+            },
             codes,
             recentTransactions: recentTxContext,
             summary,
