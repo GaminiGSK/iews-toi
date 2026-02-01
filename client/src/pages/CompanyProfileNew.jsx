@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Loader2, CheckCircle, AlertCircle, Table, Save, X, Eye, FileText, CloudUpload, Calendar, Book, Tag, DollarSign, Scale, TrendingUp, ArrowLeft, ShieldCheck, Sparkles } from 'lucide-react';
+import { Loader2, CheckCircle, AlertCircle, Table, Save, X, Eye, FileText, CloudUpload, Calendar, Book, Tag, DollarSign, Scale, TrendingUp, ArrowLeft, ShieldCheck, Sparkles, QrCode } from 'lucide-react';
 import GeneralLedger from './GeneralLedger';
 import AccountingCodes from './AccountingCodes';
 import CurrencyExchange from './CurrencyExchange';
@@ -234,12 +234,13 @@ export default function CompanyProfile() {
             "Legal Form [KH]": "សហគ្រាសឯកបុគ្គល",
             "Legal Form [EN]": "Sole Proprietorship",
             "Location [KH]": "រាជធានីភ្នំពេញ",
-            "Location [EN]": "Phnom Penh"
+            "Location [EN]": "Phnom Penh",
+            "QR Code Verification": "https://www.businessregistration.moc.gov.kh/verification/500058831"
         };
 
         // UPDATE STATE TO SHOW SIDEBAR
         setExtractionResults(extractedData);
-        setMessage("Deep Map Pattern Recognized: MOC Certificate. Extracted bilingual data with high confidence.");
+        setMessage("Deep Map Pattern Recognized: MOC Certificate. Extracted bilingual data + QR Verification.");
     };
 
     const handleDeleteDocTemplate = async (e, template) => {
@@ -1109,7 +1110,17 @@ export default function CompanyProfile() {
                                                     {key}
                                                 </div>
                                                 <div className="text-sm text-white break-words leading-relaxed">
-                                                    {value}
+                                                    {value.toString().startsWith('http') ? (
+                                                        <a
+                                                            href={value}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-green-400 hover:text-green-300 underline flex items-center gap-2 mt-1 decoration-dashed underline-offset-4"
+                                                        >
+                                                            <QrCode size={16} />
+                                                            <span className="font-bold">Verify on MOC System</span>
+                                                        </a>
+                                                    ) : value}
                                                 </div>
                                             </div>
                                         ))}
