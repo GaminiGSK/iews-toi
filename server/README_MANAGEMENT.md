@@ -45,6 +45,24 @@ This project supports optional mTLS for authenticating agents. To enable:
 - For CI (GitHub Actions), add secrets:
   - `MTLS_CLIENT_CERT` (PEM), `MTLS_CLIENT_KEY` (PEM), `MTLS_CA_CERT` (PEM). The included workflow writes these at runtime and uses them with `curl --cert --key --cacert`.
 
+## Natural language commands
+
+A convenience route is provided so your agent (or you) can POST plain text commands like `Restart server` to the server. Example:
+
+POST /api/management/command
+Body: { "id": "agent-1", "nonce": "n-123", "timestamp": 167xxxx, "text": "Restart server", "auto_execute": true }
+
+Behavior:
+- The text is parsed (simple rules) into an `action` (e.g., `restart_service`) and `params`.
+- If `auto_execute: true` the server will attempt to auto-run the action **only** when the caller is authorized for auto-exec (mTLS client CN allowlist by default; `AUTO_ALLOW_HMAC=true` enables HMAC fallback).
+- Circuit breaker prevents many auto restarts: set `AUTO_CIRCUIT_MAX` and `AUTO_CIRCUIT_WINDOW` to tune limits.
+
+Config environment variables (defaults shown):
+- `AUTO_ALLOWED_ACTIONS=restart_service,fetch_logs`
+- `AUTO_CIRCUIT_MAX=3`
+- `AUTO_CIRCUIT_WINDOW=600` (seconds)
+- `AUTO_ALLOW_HMAC=false` (set to `true` only if you accept HMAC for auto-exec)
+
 ## Vault Integration & Automated Rotation 🔄
 
 This project supports automatic certificate rotation where the server pulls updated certs from Vault (KV v2). To enable:

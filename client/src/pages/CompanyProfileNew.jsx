@@ -639,12 +639,12 @@ export default function CompanyProfile() {
                     </div>
                 </div>
 
-                {/* BLANK SLATE - START FROM SCRATCH */}
+                {/* TRULY EMPTY SLATE */}
                 <div className="flex-1 flex items-center justify-center border-2 border-dashed border-slate-800 rounded-3xl bg-slate-900/50 m-4">
-                    <div className="text-center opacity-50">
-                        <ShieldCheck size={48} className="mx-auto text-slate-600 mb-4" />
-                        <h3 className="text-lg font-bold text-slate-500">Workspace Empty</h3>
-                        <p className="text-sm text-slate-600">Ready to build from scratch.</p>
+                    <div className="text-center opacity-30">
+                        <ShieldCheck size={64} className="mx-auto text-slate-700 mb-6" />
+                        <h3 className="text-xl font-bold text-slate-600 tracking-[0.2em] mb-2">WORKSPACE RESET</h3>
+                        <p className="text-sm text-slate-700 font-mono">No Components Loaded</p>
                     </div>
                 </div>
             </div>

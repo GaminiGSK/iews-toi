@@ -14,6 +14,38 @@ const MTLS_REQUIRED = process.env.MTLS_REQUIRED === 'true';
 // Comma separated list of allowed client cert CNs (optional). If empty, any client cert signed by CA is accepted.
 const MTLS_CLIENT_CN_ALLOWLIST = (process.env.MTLS_CLIENT_CN_ALLOWLIST || '').split(',').map(s => s.trim()).filter(Boolean);
 
+// Auto execution config
+const AUTO_ALLOWED_ACTIONS = (process.env.AUTO_ALLOWED_ACTIONS || 'restart_service,fetch_logs').split(',').map(s => s.trim()).filter(Boolean);
+const AUTO_CIRCUIT_MAX = Number(process.env.AUTO_CIRCUIT_MAX || 3);
+const AUTO_CIRCUIT_WINDOW = Number(process.env.AUTO_CIRCUIT_WINDOW || 600) * 1000; // ms
+const AUTO_ALLOW_HMAC = process.env.AUTO_ALLOW_HMAC === 'true';
+
+// Simple in-memory circuit breaker for auto actions: { action -> { count, windowStart } }
+const autoStats = new Map();
+
+function checkCircuit(action) {
+    const now = Date.now();
+    const st = autoStats.get(action);
+    if (!st) return false;
+    if (now - st.windowStart > AUTO_CIRCUIT_WINDOW) {
+        // window expired
+        autoStats.delete(action);
+        return false;
+    }
+    return st.count >= AUTO_CIRCUIT_MAX;
+}
+
+function recordCircuit(action) {
+    const now = Date.now();
+    const st = autoStats.get(action);
+    if (!st || (now - st.windowStart > AUTO_CIRCUIT_WINDOW)) {
+        autoStats.set(action, { count: 1, windowStart: now });
+    } else {
+        st.count += 1;
+        autoStats.set(action, st);
+    }
+}
+
 // Whitelisted actions -> scripts (supports Windows PowerShell variants)
 const ALLOWED_ACTIONS = {
     restart_service: {
@@ -70,6 +102,36 @@ function verifyAuth(req, rawBody, signature) {
     }
     // Fallback to HMAC signature verification
     return verifySignature(rawBody, signature);
+}
+
+function parseCommandText(text) {
+    if (!text || typeof text !== 'string') return null;
+    const s = text.trim().toLowerCase();
+    // Restart patterns
+    const restartMatch = s.match(/restart(?:\s+server|\s+service)?(?:\s+([a-zA-Z0-9._\-]+))?/);
+    if (restartMatch) {
+        const svc = restartMatch[1] || 'app';
+        return { action: 'restart_service', params: { args: [svc] } };
+    }
+    // Fetch logs
+    if (/fetch\s+log(s)?|show\s+log(s)?|get\s+log(s)?/.test(s)) {
+        return { action: 'fetch_logs', params: { args: [] } };
+    }
+    return null;
+}
+
+function isAutoAllowed(req, raw, signature) {
+    // mTLS preferred
+    const socket = req.socket || req.connection;
+    if (socket && socket.authorized) {
+        if (MTLS_CLIENT_CN_ALLOWLIST.length === 0) return true;
+        const peer = socket.getPeerCertificate && socket.getPeerCertificate();
+        const cn = peer && peer.subject && peer.subject.CN;
+        return !!(cn && MTLS_CLIENT_CN_ALLOWLIST.includes(cn));
+    }
+    // fallback to HMAC if explicitly enabled
+    if (AUTO_ALLOW_HMAC) return verifySignature(raw, signature);
+    return false;
 }
 
 function isReplayValid(nonce, timestamp) {
@@ -168,7 +230,7 @@ async function handshakeHandler(req, res) {
             const suggestion = { method: 'vault_pull', vault_path: process.env.VAULT_CERT_PATH || '<not-configured>' };
             if (!auto_execute) {
                 auditEvent({ ...audit, stage: 'suggested', suggestion });
-                return res.json({ status: 'suggested', suggestion });
+                return res.status(200).json({ status: 'suggested', suggestion });
             }
 
             // Auto-execute: pull certs from Vault and write to configured paths
@@ -176,7 +238,7 @@ async function handshakeHandler(req, res) {
             rotateCertsFromVault((err, resObj) => {
                 auditEvent({ ...audit, stage: 'finished', error: err ? err.message : null, result: resObj });
                 if (err) return res.status(500).json({ error: err.message });
-                return res.json({ status: 'ok', result: resObj });
+                return res.status(200).json({ status: 'ok', result: resObj });
             });
             return;
         }
@@ -189,7 +251,7 @@ async function handshakeHandler(req, res) {
 
         if (!auto_execute) {
             auditEvent({ ...audit, stage: 'suggested', suggestion });
-            return res.json({ status: 'suggested', suggestion });
+            return res.status(200).json({ status: 'suggested', suggestion });
         }
 
         // Auto execute
@@ -197,7 +259,7 @@ async function handshakeHandler(req, res) {
         runScriptSafe(action, params, (err, out) => {
             auditEvent({ ...audit, stage: 'finished', error: err ? err.message : null, output: out });
             if (err) return res.status(500).json({ error: err.message, output: out });
-            return res.json({ status: 'ok', output: out });
+            return res.status(200).json({ status: 'ok', output: out });
         });
 
     } catch (e) {
@@ -208,4 +270,47 @@ async function handshakeHandler(req, res) {
 
 router.post('/handshake', handshakeHandler);
 
-module.exports = { router, handshakeHandler };
+// POST /command
+// body: { id, nonce, timestamp, text, auto_execute }
+async function commandHandler(req, res) {
+    try {
+        const raw = req.rawBody || JSON.stringify(req.body || {});
+        const signature = req.get('x-signature');
+        const { id, nonce, timestamp, text, auto_execute = false } = req.body || {};
+
+        const parsed = parseCommandText(text);
+        if (!parsed) return res.status(400).json({ error: 'unknown command' });
+
+        if (!isReplayValid(nonce, timestamp)) return res.status(400).json({ error: 'invalid or replayed request' });
+
+        const audit = { id, text, parsed, ts: new Date().toISOString(), origin: req.ip };
+        auditEvent({ ...audit, stage: 'received' });
+
+        const suggestion = { action: parsed.action, params: parsed.params };
+        if (!auto_execute) {
+            auditEvent({ ...audit, stage: 'suggested', suggestion });
+            return res.status(200).json({ status: 'suggested', suggestion });
+        }
+
+        // Auto execution path
+        if (!AUTO_ALLOWED_ACTIONS.includes(parsed.action)) return res.status(403).json({ error: 'action not allowed for auto-exec' });
+        if (!isAutoAllowed(req, raw, signature)) return res.status(403).json({ error: 'not authorized for auto-exec' });
+        if (checkCircuit(parsed.action)) return res.status(429).json({ error: 'auto-exec circuit open' });
+
+        auditEvent({ ...audit, stage: 'executing' });
+        recordCircuit(parsed.action);
+        runScriptSafe(parsed.action, parsed.params, (err, out) => {
+            auditEvent({ ...audit, stage: 'finished', error: err ? err.message : null, output: out });
+            if (err) return res.status(500).json({ error: err.message, output: out });
+            return res.status(200).json({ status: 'ok', output: out });
+        });
+
+    } catch (e) {
+        console.error('[management] command error', e);
+        return res.status(500).json({ error: e.message });
+    }
+}
+
+router.post('/command', commandHandler);
+
+module.exports = { router, handshakeHandler, commandHandler };

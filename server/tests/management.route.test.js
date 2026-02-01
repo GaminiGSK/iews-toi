@@ -83,7 +83,7 @@ describe('management handshake handler', () => {
         const req = makeReq({ body: payload, headers: { 'x-signature': 'sha256=' + h } });
         const res = makeRes();
         await handshakeHandler(req, res);
-        expect(res.statusCode).toBeUndefined(); // handler returns via res.json without setting explicit status
+        expect(res.statusCode).toBe(200); // suggestion responses are explicit 200
         expect(res.body.status).toBe('suggested');
         expect(res.body.suggestion).toHaveProperty('script');
     });

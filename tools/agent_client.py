@@ -12,8 +12,9 @@ payload = {
     "id": "agent-1",
     "nonce": "nonce-12345",
     "timestamp": int(time.time()),
-    "action": "restart_service",
-    "params": {"args": ["app"]},
+    # You can use `action` (handshake) or plain text `text` (command).
+    # For convenience, send `text: "Restart server"` and set auto_execute True.
+    "text": "Restart server",
     "auto_execute": True
 }
 raw = json.dumps(payload, separators=(',', ':'))
