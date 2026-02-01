@@ -285,10 +285,7 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
             </div>
 
             {/* --- TAX PERIOD ROW (STEP 2) --- */}
-            <div className="flex flex-wrap items-center gap-x-8 gap-y-4 mb-10 p-5 bg-slate-50/50 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
-                {/* Subtle background decoration */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rotate-45 translate-x-16 -translate-y-16"></div>
-
+            <div className="flex flex-wrap items-center gap-x-8 gap-y-4 mb-4 p-5 relative overflow-hidden">
                 {/* 1. Tax Period (Number of Month) */}
                 <div className="flex items-center gap-4">
                     <div className="flex flex-col">
@@ -325,12 +322,8 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
             </div>
 
             {/* --- SECTION 2: ENTERPRISE IDENTIFICATION (STEP 3) --- */}
-            <div className="mb-12 space-y-2">
-                <div className="flex items-center gap-2 mb-4">
-                    <div className="h-0.5 flex-1 bg-slate-100"></div>
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-4">Identification of Enterprise</span>
-                    <div className="h-0.5 flex-1 bg-slate-100"></div>
-                </div>
+            <div className="mb-8 space-y-0 border-t border-slate-200 pt-4">
+                <h3 className="font-bold text-xs text-slate-500 uppercase tracking-widest mb-4">Identification of Enterprise</h3>
 
                 <NumberedFieldRow
                     number="2"
@@ -410,7 +403,7 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                 />
 
                 <div className="flex items-start gap-4 py-3 border-b border-slate-100 group transition">
-                    <div className="w-8 h-8 shrink-0 bg-blue-100 text-blue-800 rounded-lg flex items-center justify-center font-bold text-[10px] mt-1">
+                    <div className="w-8 h-8 shrink-0 bg-slate-100 text-slate-900 rounded-lg flex items-center justify-center font-bold text-[10px] mt-1">
                         ID
                     </div>
                     <div className="flex-1 min-w-0">
@@ -429,15 +422,11 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
             </div>
 
             {/* --- SECTION 3: COMPLIANCE & LEGAL (Fields 11-14) --- */}
-            <div className="space-y-6 mb-12">
-                <div className="flex items-center gap-2 mb-4">
-                    <div className="h-0.5 flex-1 bg-slate-100"></div>
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-4">Accounting & Compliance</span>
-                    <div className="h-0.5 flex-1 bg-slate-100"></div>
-                </div>
+            <div className="space-y-6 mb-8 border-t border-slate-200 pt-8">
+                <h3 className="font-bold text-xs text-slate-500 uppercase tracking-widest mb-4">Accounting & Compliance</h3>
 
                 {/* 11. Accounting Records */}
-                <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
+                <div className="p-0 rounded-none border-b border-slate-100 pb-6">
                     <div className="flex flex-col mb-4">
                         <div className="flex items-center gap-2">
                             <div className="w-6 h-6 bg-slate-900 text-white rounded-md flex items-center justify-center font-black text-[10px]">11</div>
@@ -463,9 +452,9 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                 </div>
 
                 {/* 12 & 13 Split Row */}
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-2 gap-6 border-b border-slate-100 pb-6">
                     {/* 12. Tax Compliance */}
-                    <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
+                    <div className="p-0">
                         <div className="flex flex-col mb-4">
                             <div className="flex items-center gap-2">
                                 <div className="w-6 h-6 bg-slate-900 text-white rounded-md flex items-center justify-center font-black text-[10px]">12</div>
@@ -479,7 +468,7 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                                     key={level}
                                     onClick={() => onChange('taxCompliance', level)}
                                     className={`px-3 py-1.5 rounded-lg border-2 text-[10px] font-black uppercase tracking-widest transition-all ${data.taxCompliance === level
-                                        ? 'bg-amber-100 border-amber-500 text-amber-700 shadow-sm scale-105'
+                                        ? 'bg-slate-900 border-slate-900 text-white scale-105'
                                         : 'bg-white border-slate-100 text-slate-400 hover:border-slate-300'
                                         }`}
                                 >
@@ -490,7 +479,7 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                     </div>
 
                     {/* 13. Statutory Audit */}
-                    <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
+                    <div className="p-0">
                         <div className="flex flex-col mb-4">
                             <div className="flex items-center gap-2">
                                 <div className="w-6 h-6 bg-slate-900 text-white rounded-md flex items-center justify-center font-black text-[10px]">13</div>
@@ -501,13 +490,13 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                         <div className="flex gap-3 ml-8">
                             <button
                                 onClick={() => onChange('auditRequired', true)}
-                                className={`flex-1 py-2 rounded-xl border-2 text-[11px] font-bold transition-all ${data.auditRequired ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-slate-100 text-slate-500'}`}
+                                className={`flex-1 py-2 rounded-xl border-2 text-[11px] font-bold transition-all ${data.auditRequired ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-100 text-slate-500'}`}
                             >
                                 REQUIRED
                             </button>
                             <button
                                 onClick={() => onChange('auditRequired', false)}
-                                className={`flex-1 py-2 rounded-xl border-2 text-[11px] font-bold transition-all ${data.auditRequired === false ? 'bg-slate-800 border-slate-800 text-white' : 'bg-white border-slate-100 text-slate-500'}`}
+                                className={`flex-1 py-2 rounded-xl border-2 text-[11px] font-bold transition-all ${data.auditRequired === false ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-100 text-slate-500'}`}
                             >
                                 NOT REQUIRED
                             </button>
@@ -516,7 +505,7 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                 </div>
 
                 {/* 14. Legal Form Grid */}
-                <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
+                <div className="p-0">
                     <div className="flex flex-col mb-6">
                         <div className="flex items-center gap-2">
                             <div className="w-6 h-6 bg-slate-900 text-white rounded-md flex items-center justify-center font-black text-[10px]">14</div>
@@ -555,15 +544,11 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
             </div>
 
             {/* --- SECTION 4: EXEMPTIONS & RATES (Fields 15-18) --- */}
-            <div className="space-y-6 mb-12">
-                <div className="flex items-center gap-2 mb-4">
-                    <div className="h-0.5 flex-1 bg-slate-100"></div>
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-4">Exemptions & Tax Rates</span>
-                    <div className="h-0.5 flex-1 bg-slate-100"></div>
-                </div>
+            <div className="space-y-6 mb-8 border-t border-slate-200 pt-8">
+                <h3 className="font-bold text-xs text-slate-500 uppercase tracking-widest mb-4">Exemptions & Tax Rates</h3>
 
                 {/* 15. Income Tax Exemption */}
-                <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
+                <div className="p-0 border-b border-slate-100 pb-6">
                     <div className="flex flex-col mb-4">
                         <div className="flex items-center gap-2">
                             <div className="w-6 h-6 bg-slate-900 text-white rounded-md flex items-center justify-center font-black text-[10px]">15</div>
@@ -598,7 +583,7 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                 </div>
 
                 {/* 16. Income Tax Rate */}
-                <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
+                <div className="p-0 border-b border-slate-100 pb-6">
                     <div className="flex flex-col mb-4">
                         <div className="flex items-center gap-2">
                             <div className="w-6 h-6 bg-slate-900 text-white rounded-md flex items-center justify-center font-black text-[10px]">16</div>
@@ -620,8 +605,8 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                                 key={rate.id}
                                 onClick={() => onChange('taxRate', rate.id)}
                                 className={`px-4 py-2 rounded-xl border-2 font-bold text-sm transition-all ${data.taxRate === rate.id
-                                    ? 'bg-blue-600 border-blue-600 text-white shadow-lg scale-105'
-                                    : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300'
+                                    ? 'bg-slate-900 border-slate-900 text-white shadow-lg scale-105'
+                                    : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
                                     }`}
                             >
                                 {rate.label}
@@ -632,38 +617,38 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
 
                 {/* 17 & 18 Financial Row */}
                 <div className="grid grid-cols-2 gap-6 ml-8">
-                    <div className="p-4 bg-blue-50/30 rounded-2xl border border-blue-100">
+                    <div className="p-0">
                         <div className="flex items-center gap-2 mb-2">
-                            <div className="w-6 h-6 bg-blue-600 text-white rounded-md flex items-center justify-center font-black text-[10px]">17</div>
-                            <span className="font-khmer font-bold text-[12px] text-blue-900">ពន្ធលើប្រាក់ចំណូលត្រូវបង់ ៖</span>
+                            <div className="w-6 h-6 bg-slate-900 text-white rounded-md flex items-center justify-center font-black text-[10px]">17</div>
+                            <span className="font-khmer font-bold text-[12px] text-slate-900">ពន្ធលើប្រាក់ចំណូលត្រូវបង់ ៖</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <input
                                 type="number"
                                 value={data.taxDue || ""}
                                 onChange={(e) => onChange('taxDue', e.target.value)}
-                                className="w-full bg-transparent border-b-2 border-blue-200 focus:border-blue-600 outline-none font-mono font-bold text-xl text-blue-800 py-1"
+                                className="w-full bg-transparent border-b-2 border-slate-200 focus:border-slate-900 outline-none font-mono font-bold text-xl text-slate-900 py-1"
                             />
-                            <span className="text-sm font-bold text-blue-400">KHR</span>
+                            <span className="text-sm font-bold text-slate-400">KHR</span>
                         </div>
-                        <span className="text-[9px] font-bold text-blue-400 uppercase">Income Tax Due</span>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase">Income Tax Due</span>
                     </div>
 
-                    <div className="p-4 bg-emerald-50/30 rounded-2xl border border-emerald-100">
+                    <div className="p-0">
                         <div className="flex items-center gap-2 mb-2">
-                            <div className="w-6 h-6 bg-emerald-600 text-white rounded-md flex items-center justify-center font-black text-[10px]">18</div>
-                            <span className="font-khmer font-bold text-[12px] text-emerald-900">ឥណទានពន្ធយោងទៅមុខ ៖</span>
+                            <div className="w-6 h-6 bg-slate-900 text-white rounded-md flex items-center justify-center font-black text-[10px]">18</div>
+                            <span className="font-khmer font-bold text-[12px] text-slate-900">ឥណទានពន្ធយោងទៅមុខ ៖</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <input
                                 type="number"
                                 value={data.taxCreditForward || ""}
                                 onChange={(e) => onChange('taxCreditForward', e.target.value)}
-                                className="w-full bg-transparent border-b-2 border-emerald-200 focus:border-emerald-600 outline-none font-mono font-bold text-xl text-emerald-800 py-1"
+                                className="w-full bg-transparent border-b-2 border-slate-200 focus:border-slate-900 outline-none font-mono font-bold text-xl text-slate-900 py-1"
                             />
-                            <span className="text-sm font-bold text-emerald-400">KHR</span>
+                            <span className="text-sm font-bold text-slate-400">KHR</span>
                         </div>
-                        <span className="text-[9px] font-bold text-emerald-400 uppercase">Tax Credit Carried Forward</span>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase">Tax Credit Carried Forward</span>
                     </div>
                 </div>
             </div>
