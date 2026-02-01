@@ -100,7 +100,7 @@ const startServer = async () => {
         }
 
         // Initialize Socket.io (Phase 4: Neural Link)
-        const fs = require('fs');
+        // fs is already required at top level
         const http = require('http');
         const https = require('https');
         const { Server } = require('socket.io');
