@@ -943,6 +943,13 @@ export default function CompanyProfile() {
                                 >
                                     Save Mappings
                                 </button>
+                                <button
+                                    onClick={() => alert("AI Extraction Engine: Scanning mapped fields to update Company Profile... (Function Pending Backend Link)")}
+                                    className="text-xs bg-green-600 hover:bg-green-500 text-white px-3 py-1.5 rounded font-bold transition flex items-center gap-1 shadow-lg shadow-green-900/20"
+                                >
+                                    <Sparkles size={12} />
+                                    Extract to Profile
+                                </button>
                             </div>
                         </div>
 
@@ -1070,30 +1077,6 @@ export default function CompanyProfile() {
                                 <div className="text-center text-gray-600">
                                     <FileText className="w-16 h-16 mx-auto mb-4 opacity-20" />
                                     <p>Select a document to map fields</p>
-                                </div>
-                            )}
-
-                            {/* Harvested Text Overlay (Troubleshooting) */}
-                            {activeDocTemplateId && docTemplates.find(t => t.id === activeDocTemplateId)?.harvestedText && (
-                                <div className="fixed bottom-6 right-6 max-w-md bg-gray-900/98 border border-purple-500/50 rounded-2xl p-6 shadow-[0_0_50px_rgba(168,85,247,0.2)] backdrop-blur-md z-[100] animate-in slide-in-from-bottom-5 duration-300">
-                                    <div className="flex justify-between items-center mb-4">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
-                                            <h4 className="text-xs font-bold text-purple-400 uppercase tracking-widest">AI Vision: Harvested Text</h4>
-                                        </div>
-                                        <button
-                                            onClick={() => setDocTemplates(prev => prev.map(t => t.id === activeDocTemplateId ? { ...t, harvestedText: null } : t))}
-                                            className="text-gray-500 hover:text-white p-1"
-                                        >
-                                            <X size={16} />
-                                        </button>
-                                    </div>
-                                    <div className="text-xs text-gray-300 leading-relaxed max-h-64 overflow-y-auto font-mono bg-black/40 p-4 rounded-xl border border-white/5">
-                                        {docTemplates.find(t => t.id === activeDocTemplateId)?.harvestedText}
-                                    </div>
-                                    <p className="text-[10px] text-gray-500 mt-4 italic">
-                                        This is what the AI "sees" in the document.
-                                    </p>
                                 </div>
                             )}
                         </div>
