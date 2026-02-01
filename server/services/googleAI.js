@@ -238,12 +238,20 @@ const TOI_KNOWLEDGE = require('../data/toi_knowledge'); // Import Knowledge Base
 
 exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
     try {
-        const { companyName, codes, recentTransactions, summary, monthlyStats, ui } = context;
+        const { companyName, profile, codes, recentTransactions, summary, monthlyStats, ui } = context;
 
         // Construct a context-aware prompt
         const prompt = `
             You are an expert Financial Assistant for the company "${companyName}".
             You also have ADMIN privileges to create "Auto-Tagging Rules" for the General Ledger.
+
+            **Company Identity (MOC/Tax Profile):**
+            - **Entity Name (EN)**: ${profile?.nameEn || "N/A"}
+            - **Entity Name (KH)**: ${profile?.nameKh || "N/A"}
+            - **Registration ID**: ${profile?.regId || "N/A"}
+            - **VAT/TIN**: ${profile?.taxId || "N/A"}
+            - **Incorporation Date**: ${profile?.incDate || "N/A"}
+            - **Address**: ${profile?.addr || "N/A"}
 
             **Current Financial Context:**
             - **Net Balance**: ${summary.balance}
