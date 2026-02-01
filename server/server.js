@@ -3,12 +3,19 @@ require('dotenv').config();
 // Verify Env Load
 const geminiKey = process.env.GEMINI_API_KEY;
 console.log(`[Startup] Environment Loaded. Gemini Key Status: ${geminiKey ? 'Present (Ends in ' + geminiKey.slice(-4) + ')' : 'MISSING ❌'}`);
+console.log('[Debug] Req express...');
 const express = require('express');
+console.log('[Debug] Req mongoose...');
 const mongoose = require('mongoose');
+console.log('[Debug] Req cors...');
 const cors = require('cors');
+console.log('[Debug] Req helmet...');
 const helmet = require('helmet');
+console.log('[Debug] Req morgan...');
 const morgan = require('morgan');
+console.log('[Startup] Loading Auth Routes...');
 const authRoutes = require('./routes/auth');
+console.log('[Startup] Auth Routes Loaded.');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -33,12 +40,14 @@ app.use(helmet({
 app.use(morgan('dev'));
 
 // Routes
+console.log('[Startup] Loading API Routes...');
 app.use('/api/auth', authRoutes);
 app.use('/api/company', require('./routes/company'));
 app.use('/api/chat', require('./routes/chat'));
 app.use('/api/tax', require('./routes/tax'));
 app.use('/api/copilotkit', require('./routes/copilot'));
 app.use('/api/management', require('./routes/management'));
+console.log('[Startup] API Routes Loaded.');
 app.use('/uploads', express.static('uploads')); // Enabled for Local Fallback Access
 
 // Serve Frontend in Production
@@ -67,39 +76,7 @@ if (fs.existsSync(clientDist)) {
 // Database Connection & Server Start
 const startServer = async () => {
     try {
-        console.log('Attempting to connect to MongoDB...');
-        console.log('Tax Persistence Module Loaded (v2.5)');
-        await mongoose.connect(process.env.MONGODB_URI, {
-            serverSelectionTimeoutMS: 30000 // 30s Timeout for Cold Starts
-        });
-        console.log('MongoDB Connected Successfully');
-
-        // Seed Admins
-        const User = require('./models/User');
-        const bcrypt = require('bcryptjs');
-        const adminCount = await User.countDocuments({ role: 'admin' });
-        if (adminCount === 0) {
-            console.log('Seeding initial admins...');
-            const salt = await bcrypt.genSalt(10);
-            const hashedPassword = await bcrypt.hash('admin123', salt);
-
-            await User.create([
-                { companyCode: 'ADMIN01', password: hashedPassword, role: 'admin', isFirstLogin: true },
-                { companyCode: 'ADMIN02', password: hashedPassword, role: 'admin', isFirstLogin: true }
-            ]);
-            console.log('Admins seeded');
-        }
-
-        // Apply Gate Code Logic
-        try {
-            const authRoutes = require('./routes/auth');
-            // Check if initGateCodes is exported or just rely on module load
-            // It runs on load in auth.js, so requiring it above is fine.
-        } catch (e) {
-            console.error("Auth init error", e);
-        }
-
-        // Initialize Socket.io (Phase 4: Neural Link)
+        // --- 1. Initialize Server & Socket.io ---
         // fs is already required at top level
         const http = require('http');
         const https = require('https');
@@ -126,6 +103,7 @@ const startServer = async () => {
             server = https.createServer(options, app);
             console.log('[mtls] HTTPS server started with client certificate verification (mTLS required)');
         } else {
+            // Standard HTTP Server
             server = http.createServer(app);
         }
 
@@ -165,10 +143,45 @@ const startServer = async () => {
             });
         });
 
-        // Start Server ONLY after DB is ready
+        // --- 2. Start Listening Immediately (Fixes deployment timeouts) ---
         server.listen(PORT, () => {
             console.log(`Server running on port ${PORT} (with Neural Link active)`);
         });
+
+        // --- 3. Database Connection ---
+        console.log('Attempting to connect to MongoDB...');
+        console.log('Tax Persistence Module Loaded (v2.5)');
+
+        // Connect without blocking the port listener (already listening)
+        await mongoose.connect(process.env.MONGODB_URI, {
+            serverSelectionTimeoutMS: 30000 // 30s Timeout for Cold Starts
+        });
+        console.log('MongoDB Connected Successfully');
+
+        // Seed Admins
+        const User = require('./models/User');
+        const bcrypt = require('bcryptjs');
+        const adminCount = await User.countDocuments({ role: 'admin' });
+        if (adminCount === 0) {
+            console.log('Seeding initial admins...');
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash('admin123', salt);
+
+            await User.create([
+                { companyCode: 'ADMIN01', password: hashedPassword, role: 'admin', isFirstLogin: true },
+                { companyCode: 'ADMIN02', password: hashedPassword, role: 'admin', isFirstLogin: true }
+            ]);
+            console.log('Admins seeded');
+        }
+
+        // Apply Gate Code Logic
+        try {
+            const authRoutes = require('./routes/auth');
+            // Check if initGateCodes is exported or just rely on module load
+            // It runs on load in auth.js, so requiring it above is fine.
+        } catch (e) {
+            console.error("Auth init error", e);
+        }
 
         // Provide a method to reload TLS assets at runtime for cert rotation
         const tls = require('tls');

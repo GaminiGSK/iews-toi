@@ -313,4 +313,6 @@ async function commandHandler(req, res) {
 
 router.post('/command', commandHandler);
 
-module.exports = { router, handshakeHandler, commandHandler };
+module.exports = router;
+module.exports.handshakeHandler = handshakeHandler;
+module.exports.commandHandler = commandHandler;
