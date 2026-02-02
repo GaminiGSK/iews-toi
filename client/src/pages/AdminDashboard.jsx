@@ -254,7 +254,7 @@ export default function AdminDashboard() {
                     <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold shadow-sm text-sm tracking-tighter">
                         GK
                     </div>
-                    <span className="font-bold text-lg tracking-tight text-white">GK SMART <span className="text-gray-400 font-normal">& Ai</span></span>
+                    <span className="font-bold text-lg tracking-tight text-white">GGMT <span className="text-gray-400 font-normal">& Ai</span></span>
                 </div>
                 <div className="flex gap-4">
                     <button
@@ -472,7 +472,7 @@ export default function AdminDashboard() {
                                                     {template.name}
                                                 </p>
                                                 <p className="text-[10px] text-gray-400">
-                                                    {template.status === 'New' ? (template.size || 'Pending') : 'Saved'} • {template.status}
+                                                    {template.status === 'New' ? (template.size || 'Pending') : 'Saved'} �?{template.status}
                                                 </p>
                                             </div>
                                         </div>
@@ -721,7 +721,7 @@ export default function AdminDashboard() {
                             <div className="bg-gray-800/50 rounded-2xl shadow-inner overflow-y-auto h-[calc(100vh-280px)] border-8 border-gray-800/20 custom-scrollbar flex justify-center bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')]">
                                 <div className="p-8 w-full flex justify-center">
                                     <DynamicForm
-                                        schema={{ title: "លិខិតប្រកាសពន្ធលើប្រាក់ចំណូលប្រចាំឆ្នាំ", titleKh: "ANNUAL INCOME TAX RETURN FOR THE YEAR ENDED" }}
+                                        schema={{ title: "លិខិតប្រកាសពន្ធលើប្រាក់ចំណូលប្រចាំឆ្នា�?, titleKh: "ANNUAL INCOME TAX RETURN FOR THE YEAR ENDED" }}
                                         data={{
                                             taxYear: "2023",
                                             taxMonths: "12",
@@ -732,7 +732,7 @@ export default function AdminDashboard() {
                                             regDate: "15062022",
                                             ownerName: "MR. JOHN DOE",
                                             businessActivity: "Information Technology Services",
-                                            accountantName: "GK SMART ASSISTANT",
+                                            accountantName: "GGMT ASSISTANT",
                                             registeredAddress: "No. 123, St. 456, Phnom Penh, Cambodia",
                                             agentLicenseNumber: "TAX-2026-XY-999"
                                         }}
@@ -753,7 +753,7 @@ export default function AdminDashboard() {
                             onClick={() => setIsChangingCode(false)}
                             className="absolute top-4 right-4 text-gray-500 hover:text-black"
                         >
-                            ✕
+                            �?
                         </button>
                         <h2 className="text-xl font-bold mb-6">Change Admin Code</h2>
 
@@ -784,7 +784,7 @@ export default function AdminDashboard() {
                             onClick={resetForm}
                             className="absolute top-4 right-4 text-gray-500 hover:text-black"
                         >
-                            ✕
+                            �?
                         </button>
 
                         <div className="text-center mb-8">

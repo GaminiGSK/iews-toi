@@ -47,7 +47,7 @@ export default function Login() {
                     <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-2xl shadow-lg mx-auto mb-4 tracking-tighter">
                         GK
                     </div>
-                    <h1 className="text-3xl font-bold text-blue-600 mb-2">GK SMART & Ai</h1>
+                    <h1 className="text-3xl font-bold text-blue-600 mb-2">GGMT & Ai</h1>
                     <p className="text-gray-500">Welcome Back</p>
                     <p className="text-gray-400 text-sm mt-1">Sign in with your Access Code</p>
                 </div>

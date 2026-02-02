@@ -16,7 +16,7 @@ const AIAssistant = () => {
     // STATE
     const [isOpen, setIsOpen] = useState(true); // Default Open
     const [messages, setMessages] = useState([
-        { role: 'assistant', text: 'Hello! I am your GK Blue Agent. Describe your request or paste an image for analysis.' }
+        { role: 'assistant', text: 'Hello! I am your GGMT BLUE AGENT. Describe your request or paste an image for analysis.' }
     ]);
     const [input, setInput] = useState('');
     const [image, setImage] = useState(null); // Base64 string
@@ -154,10 +154,10 @@ const AIAssistant = () => {
                 journalData,
                 { headers: { 'Authorization': `Bearer ${token}` } }
             );
-            setMessages(prev => [...prev, { role: 'assistant', text: "âœ… Journal Entry posted successfully! The Trial Balance has been updated.", isSystem: true }]);
+            setMessages(prev => [...prev, { role: 'assistant', text: "âœ?Journal Entry posted successfully! The Trial Balance has been updated.", isSystem: true }]);
         } catch (err) {
             console.error(err);
-            setMessages(prev => [...prev, { role: 'assistant', text: "âŒ Error posting journal entry. Please try again.", isSystem: true }]);
+            setMessages(prev => [...prev, { role: 'assistant', text: "â?Error posting journal entry. Please try again.", isSystem: true }]);
         }
     };
 
@@ -190,7 +190,7 @@ const AIAssistant = () => {
                                 <div className="hidden w-full h-full bg-blue-600 items-center justify-center font-bold text-white text-3xl">GK</div>
                             </div>
                             <div>
-                                <h3 className="font-extrabold text-2xl tracking-wide text-white drop-shadow-sm">GK BLUE AGENT</h3>
+                                <h3 className="font-extrabold text-2xl tracking-wide text-white drop-shadow-sm">GGMT BLUE AGENT</h3>
                                 <div className="flex items-center gap-2 opacity-90 mt-1">
                                     <span className={`w-3 h-3 rounded-full ${isConnected ? 'bg-emerald-400' : 'bg-red-500'} animate-pulse box-shadow-glow`}></span>
                                     <span className={`text-sm font-bold uppercase tracking-wider ${isConnected ? 'text-blue-200' : 'text-red-400'}`}>{isConnected ? 'Online' : 'Offline'}</span>
@@ -323,7 +323,7 @@ const AIAssistant = () => {
                         </div>
                         <div className="text-center mt-3">
                             <p className="text-sm text-slate-500 flex items-center justify-center gap-2">
-                                <Sparkles size={14} className="text-blue-400" /> GK Blue Agent - v3.0 Ultra
+                                <Sparkles size={14} className="text-blue-400" /> GGMT BLUE AGENT - v3.0 Ultra
                             </p>
                         </div>
                     </div>

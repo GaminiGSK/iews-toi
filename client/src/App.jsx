@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
 import ChangePassword from './pages/ChangePassword';
-import CompanyProfile from './pages/CompanyProfileNew';
+import CompanyProfile from './pages/CompanyProfile';
 import PrivateRoute from './components/PrivateRoute';
 import AIAssistant from './components/AIAssistant';
 import LiveTaxWorkspace from './pages/LiveTaxWorkspace';

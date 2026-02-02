@@ -25,9 +25,9 @@ const MOCCertificate = ({ data, onRegenerate, regenerating }) => {
                         <div className="w-16 h-16 mx-auto mb-2 bg-gray-100 rounded-full flex items-center justify-center border border-gray-300">
                             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Emblem_of_the_Ministry_of_Commerce_%28Cambodia%29.svg/1200px-Emblem_of_the_Ministry_of_Commerce_%28Cambodia%29.svg.png" alt="MOC" className="w-12 h-12 opacity-80" />
                         </div>
-                        <h3 className="font-bold text-[10px] text-blue-900 font-khmer leading-tight">ក្រសួងពាណិជ្ជកម្ម</h3>
+                        <h3 className="font-bold text-[10px] text-blue-900 font-khmer leading-tight">ក្រសួងពាណិជ្ជកម្�?/h3>
                         <h3 className="font-bold text-[8px] text-gray-800 uppercase">Ministry of Commerce</h3>
-                        <p className="text-[8px] text-gray-500 mt-1">លេខ (No): MOC-{data.registrationNumber || '00000000'}</p>
+                        <p className="text-[8px] text-gray-500 mt-1">លេ�?(No): MOC-{data.registrationNumber || '00000000'}</p>
                     </div>
 
                     {/* Center: Title (Actually usually blank or small decorative) */}
@@ -48,7 +48,7 @@ const MOCCertificate = ({ data, onRegenerate, regenerating }) => {
 
                 {/* 3. CENTER TITLE */}
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-blue-900 font-khmer mb-2 shadow-sm">វិញ្ញាបនបត្របញ្ជារការចុះឈ្មោះក្នុងបញ្ជីពាណិជ្ជកម្ម</h1>
+                    <h1 className="text-3xl font-bold text-blue-900 font-khmer mb-2 shadow-sm">វិញ្ញាបនបត្របញ្ជារការចុះឈ្មោះក្នុងបញ្ជីពាណិជ្ជកម្�?/h1>
                     <h2 className="text-xl font-bold text-gray-900 tracking-wide uppercase decoration-double">Certificate of Incorporation</h2>
                 </div>
 

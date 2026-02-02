@@ -84,7 +84,7 @@ const FieldInput = ({ field, value, onChange, error }) => {
     if (field.type === 'boxes') {
         return (
             <div className="flex items-center">
-                {field.prefix && <span className="mr-2 text-black text-lg">▶</span>}
+                {field.prefix && <span className="mr-2 text-black text-lg">�?/span>}
                 <BoxGridInput length={field.length} value={value} onChange={(val) => onChange(field.key, val)} format={field.format} noDash={field.noDash} />
             </div>
         );
@@ -285,7 +285,7 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
 
                             <div className="mt-8 flex flex-col items-center gap-2">
                                 <h1 className="font-khmer font-bold text-2xl text-slate-900 text-center leading-tight">
-                                    {schema.title || "លិខិតប្រកាសពន្ធលើប្រាក់ចំណូលប្រចាំឆ្នាំ"}
+                                    {schema.title || "លិខិតប្រកាសពន្ធលើប្រាក់ចំណូលប្រចាំឆ្នា�?}
                                 </h1>
                                 <div className="flex items-center gap-6">
                                     <h2 className="font-sans font-black text-sm uppercase text-slate-700 tracking-tight">
@@ -314,7 +314,7 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                             {/* 1. Tax Period (Number of Month) */}
                             <div className="flex items-center gap-2">
                                 <div className="flex flex-col text-right">
-                                    <span className="font-khmer font-bold text-xs text-black leading-tight">ការិយបរិច្ឆេទសារពើពន្ធ <br className="hidden md:block" />(ចំនួនខែ)</span>
+                                    <span className="font-khmer font-bold text-xs text-black leading-tight">ការិយបរិច្ឆេទសារពើពន្�?<br className="hidden md:block" />(ចំនួនខ�?</span>
                                     <span className="text-[9px] font-bold text-black uppercase tracking-tight hidden md:block">Tax Period (Months)</span>
                                 </div>
                                 <span className="font-bold text-black px-1">:</span>
@@ -339,7 +339,7 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                             {/* 3. Until */}
                             <div className="flex items-center gap-2">
                                 <div className="flex flex-col text-right">
-                                    <span className="font-khmer font-bold text-xs text-black leading-tight">ដល់ថ្ងៃទី</span>
+                                    <span className="font-khmer font-bold text-xs text-black leading-tight">ដល់ថ្ងៃទ�?/span>
                                     <span className="text-[9px] font-bold text-black uppercase tracking-tight hidden md:block">Until</span>
                                 </div>
                                 <span className="font-bold text-black px-1">:</span>
@@ -357,7 +357,7 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
 
                             <NumberedFieldRow
                                 number="2"
-                                labelKh="ឈ្មោះសហគ្រាស ៖"
+                                labelKh="ឈ្មោះសហគ្រាស �?
                                 labelEn="Name of Enterprise"
                                 value={data.enterpriseName}
                                 onChange={(val) => onChange('enterpriseName', val)}
@@ -365,7 +365,7 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
 
                             <NumberedFieldRow
                                 number="3"
-                                labelKh="ចំនួនសាខាសហគ្រាស ៖"
+                                labelKh="ចំនួនសាខាសហគ្រាស �?
                                 labelEn="Number of Local Branch"
                                 value={data.branchCount}
                                 onChange={(val) => onChange('branchCount', val)}
@@ -377,7 +377,7 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                                 <div className="w-6 h-6 shrink-0 bg-black text-white flex items-center justify-center font-bold text-xs mt-1">4</div>
                                 <div className="flex-1">
                                     <div className="flex flex-col mb-3">
-                                        <span className="font-khmer font-bold text-[13px] text-black leading-tight">កាលបរិច្ឆេទចុះបញ្ជីពន្ធដារ ៖</span>
+                                        <span className="font-khmer font-bold text-[13px] text-black leading-tight">កាលបរិច្ឆេទចុះបញ្ជីពន្ធដា�?�?/span>
                                         <span className="text-[10px] font-bold text-black uppercase tracking-tight">Date of Tax Registration</span>
                                     </div>
                                     <DigitBoxGroup value={data.regDate || "01012023"} count={8} highlightIndices={[1, 3]} />
@@ -386,7 +386,7 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
 
                             <NumberedFieldRow
                                 number="5"
-                                labelKh="ឈ្មោះអភិបាល/បណ្ណាធិការ/កម្មសិទ្ធិករ ៖"
+                                labelKh="ឈ្មោះអភិបា�?បណ្ណាធិការ/កម្មសិទ្ធិក�?�?
                                 labelEn="Name of Director/Manager/Owner"
                                 value={data.ownerName}
                                 onChange={(val) => onChange('ownerName', val)}
@@ -394,7 +394,7 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
 
                             <NumberedFieldRow
                                 number="6"
-                                labelKh="សកម្មភាពអាជីវកម្មចម្បង ៖"
+                                labelKh="សកម្មភាពអាជីវកម្មចម្បង �?
                                 labelEn="Main Business Activities"
                                 value={data.businessActivity}
                                 onChange={(val) => onChange('businessActivity', val)}
@@ -402,7 +402,7 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
 
                             <NumberedFieldRow
                                 number="7"
-                                labelKh="ឈ្មោះគណនេយ្យករ/ ភ្នាក់ងារសេវាកម្មពន្ធដារ ៖"
+                                labelKh="ឈ្មោះគណនេយ្យក�? ភ្នាក់ងារសេវាកម្មពន្ធដារ �?
                                 labelEn="Name of Accountant/ Tax Service Agent"
                                 value={data.accountantName}
                                 onChange={(val) => onChange('accountantName', val)}
@@ -410,7 +410,7 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
 
                             <NumberedFieldRow
                                 number="8"
-                                labelKh="អាសយដ្ឋានទីស្នាក់ការសហគ្រាសបច្ចុប្បន្ន ៖"
+                                labelKh="អាសយដ្ឋានទីស្នាក់ការសហគ្រាសបច្ចុប្បន្ន �?
                                 labelEn="Current Registered Office Address"
                                 value={data.registeredAddress}
                                 onChange={(val) => onChange('registeredAddress', val)}
@@ -418,7 +418,7 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
 
                             <NumberedFieldRow
                                 number="9"
-                                labelKh="អាសយដ្ឋានគ្រឹះស្ថានជាគោលដើមបច្ចុប្បន្ន ៖"
+                                labelKh="អាសយដ្ឋានគ្រឹះស្ថានជាគោលដើមបច្ចុប្បន្ន �?
                                 labelEn="Current Principal Establishment Address"
                                 value={data.principalAddress}
                                 onChange={(val) => onChange('principalAddress', val)}
@@ -426,7 +426,7 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
 
                             <NumberedFieldRow
                                 number="10"
-                                labelKh="អាសយដ្ឋានឃ្លាំងបច្ចុប្បន្ន ៖"
+                                labelKh="អាសយដ្ឋានឃ្លាំងបច្ចុប្បន្ន �?
                                 labelEn="Warehouse Address"
                                 value={data.warehouseAddress}
                                 onChange={(val) => onChange('warehouseAddress', val)}
@@ -438,7 +438,7 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex flex-col mb-1.5">
-                                        <span className="font-khmer font-bold text-[13px] text-black leading-tight">លេខសម្គាល់ភ្នាក់ងារសេវាកម្មពន្ធដារ ៖</span>
+                                        <span className="font-khmer font-bold text-[13px] text-black leading-tight">លេខសម្គាល់ភ្នាក់ងារសេវាកម្មពន្ធដារ �?/span>
                                         <span className="text-[10px] font-bold text-black uppercase tracking-tight">Tax Service Agent License Number</span>
                                     </div>
                                     <input
@@ -460,20 +460,20 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                                 <div className="flex flex-col mb-4">
                                     <div className="flex items-center gap-2">
                                         <div className="w-6 h-6 bg-black text-white flex items-center justify-center font-bold text-xs">11</div>
-                                        <span className="font-khmer font-bold text-[13px] text-black">ការកត់ត្រាបញ្ជីគណនេយ្យ ៖</span>
+                                        <span className="font-khmer font-bold text-[13px] text-black">ការកត់ត្រាបញ្ជីគណនេយ្យ �?/span>
                                     </div>
                                     <span className="text-[10px] font-bold text-black uppercase ml-8">Accounting Records</span>
                                 </div>
                                 <div className="flex gap-8 ml-8">
                                     <OptionItem
-                                        labelKh="ប្រើប្រាស់កម្មវិធីគណនេយ្យកុំព្យូទ័រ (ឈ្មោះកម្មវិធី) ៖"
+                                        labelKh="ប្រើប្រាស់កម្មវិធីគណនេយ្យកុំព្យូទ័�?(ឈ្មោះកម្មវិធ�? �?
                                         labelEn="Using Accounting Software"
                                         selected={data.accountingType === 'software'}
                                         onClick={() => onChange('accountingType', 'software')}
                                         subText={data.accountingType === 'software' ? data.softwareName : ""}
                                     />
                                     <OptionItem
-                                        labelKh="មិនប្រើប្រាស់កម្មវិធីគណនេយ្យកុំព្យូទ័រ"
+                                        labelKh="មិនប្រើប្រាស់កម្មវិធីគណនេយ្យកុំព្យូទ័�?
                                         labelEn="Not Using Accounting Software"
                                         selected={data.accountingType === 'manual'}
                                         onClick={() => onChange('accountingType', 'manual')}
@@ -488,7 +488,7 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                                     <div className="flex flex-col mb-4">
                                         <div className="flex items-center gap-2">
                                             <div className="w-6 h-6 bg-black text-white flex items-center justify-center font-bold text-xs">12</div>
-                                            <span className="font-khmer font-bold text-[13px] text-black">កម្រិតអនុលោមភាពសារពើពន្ធ ៖</span>
+                                            <span className="font-khmer font-bold text-[13px] text-black">កម្រិតអនុលោមភាពសារពើពន្�?�?/span>
                                         </div>
                                         <span className="text-[10px] font-bold text-black uppercase ml-8">Status of Tax Compliance</span>
                                     </div>
@@ -496,7 +496,7 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                                         {['Gold', 'Silver', 'Bronze'].map(level => (
                                             <OptionItem
                                                 key={level}
-                                                labelKh={level === 'Gold' ? "មាស" : level === 'Silver' ? "ប្រាក់" : "សំរឹទ្ធ"}
+                                                labelKh={level === 'Gold' ? "មា�? : level === 'Silver' ? "ប្រាក�? : "សំរឹទ្�?}
                                                 labelEn={level}
                                                 selected={data.taxCompliance === level}
                                                 onClick={() => onChange('taxCompliance', level)}
@@ -510,7 +510,7 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                                     <div className="flex flex-col mb-4">
                                         <div className="flex items-center gap-2">
                                             <div className="w-6 h-6 bg-black text-white flex items-center justify-center font-bold text-xs">13</div>
-                                            <span className="font-khmer font-bold text-[13px] text-black">សវនកម្មឯករាជ្យដែលតម្រូវដោយច្បាប់ ៖</span>
+                                            <span className="font-khmer font-bold text-[13px] text-black">សវនកម្មឯករាជ្យដែលតម្រូវដោយច្បាប�?�?/span>
                                         </div>
                                         <span className="text-[10px] font-bold text-black uppercase ml-8">Statutory Audit Requirement</span>
                                     </div>
@@ -522,7 +522,7 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                                             onClick={() => onChange('auditRequired', true)}
                                         />
                                         <OptionItem
-                                            labelKh="មិនតម្រូវ"
+                                            labelKh="មិនតម្រូ�?
                                             labelEn="NOT REQUIRED"
                                             selected={data.auditRequired === false}
                                             onClick={() => onChange('auditRequired', false)}
@@ -536,27 +536,27 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                                 <div className="flex flex-col mb-6">
                                     <div className="flex items-center gap-2">
                                         <div className="w-6 h-6 bg-black text-white flex items-center justify-center font-bold text-xs">14</div>
-                                        <span className="font-khmer font-bold text-[13px] text-black">ទម្រង់គតិយុត្តិ / ទម្រង់នៃប្រតិបត្តិការអាជីវកម្ម ៖</span>
+                                        <span className="font-khmer font-bold text-[13px] text-black">ទម្រង់គតិយុត្ត�?/ ទម្រង់នៃប្រតិបត្តិការអាជីវកម្�?�?/span>
                                     </div>
                                     <span className="text-[10px] font-bold text-black uppercase ml-8">Legal Form or Form of Business Operations</span>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-2 ml-8">
                                     {[
-                                        { id: 'sole', kh: 'សហគ្រាសឯកបុគ្គល/រូបវន្តបុគ្គល', en: 'Sole Proprietorship / Physical Person' },
-                                        { id: 'general_partnership', kh: 'ក្រុមហ៊ុនសហកម្មសិទ្ធិទូទៅ', en: 'General Partnership' },
-                                        { id: 'limited_partnership', kh: 'ក្រុមហ៊ុនសហកម្មសិទ្ធិមានកម្រិត', en: 'Limited Partnership' },
-                                        { id: 'single_member_plc', kh: 'សហគ្រាសឯកបុគ្គលទទួលខុសត្រូវមានកម្រិត', en: 'Single Member Private Ltd.' },
-                                        { id: 'private_limited', kh: 'ក្រុមហ៊ុនឯកជនទទួលខុសត្រូវមានកម្រិត', en: 'Private Limited Company' },
-                                        { id: 'public_limited', kh: 'ក្រុមហ៊ុនមហាជនទទួលខុសត្រូវមានកម្រិត', en: 'Public Limited Company' },
-                                        { id: 'joint_venture_interest', kh: 'ផលប្រយោជន៍ក្នុងសម្ព័ន្ធអាជីវកម្ម', en: 'Interest in Joint Venture' },
+                                        { id: 'sole', kh: 'សហគ្រាសឯកបុគ្គល/រូបវន្តបុគ្គ�?, en: 'Sole Proprietorship / Physical Person' },
+                                        { id: 'general_partnership', kh: 'ក្រុមហ៊ុនសហកម្មសិទ្ធិទូទ�?, en: 'General Partnership' },
+                                        { id: 'limited_partnership', kh: 'ក្រុមហ៊ុនសហកម្មសិទ្ធិមានកម្រិ�?, en: 'Limited Partnership' },
+                                        { id: 'single_member_plc', kh: 'សហគ្រាសឯកបុគ្គលទទួលខុសត្រូវមានកម្រិ�?, en: 'Single Member Private Ltd.' },
+                                        { id: 'private_limited', kh: 'ក្រុមហ៊ុនឯកជនទទួលខុសត្រូវមានកម្រិ�?, en: 'Private Limited Company' },
+                                        { id: 'public_limited', kh: 'ក្រុមហ៊ុនមហាជនទទួលខុសត្រូវមានកម្រិ�?, en: 'Public Limited Company' },
+                                        { id: 'joint_venture_interest', kh: 'ផលប្រយោជន៍ក្នុងសម្ព័ន្ធអាជីវកម្�?, en: 'Interest in Joint Venture' },
                                         { id: 'public_enterprise', kh: 'សហគ្រាសសាធារណៈ', en: 'Public Enterprise' },
-                                        { id: 'state_enterprise', kh: 'សហគ្រាសរដ្ឋ', en: 'State Enterprise' },
+                                        { id: 'state_enterprise', kh: 'សហគ្រាសរដ្�?, en: 'State Enterprise' },
                                         { id: 'state_joint_venture', kh: 'ក្រុមហ៊ុនចម្រុះរដ្ឋ', en: 'State Joint Venture' },
-                                        { id: 'foreign_branch', kh: 'សាខាក្រុមហ៊ុនបរទេស', en: 'Foreign Company\'s Branch' },
-                                        { id: 'representative_office', kh: 'ការិយាល័យតំណាង', en: 'Representative Office' },
-                                        { id: 'ngo', kh: 'អង្គការក្រៅរដ្ឋាភិបាល / សមាគម', en: 'Non-Government Org. / Association' },
-                                        { id: 'others', kh: 'សហគ្រាសដទៃទៀត', en: 'Others' },
+                                        { id: 'foreign_branch', kh: 'សាខាក្រុមហ៊ុនបរទេ�?, en: 'Foreign Company\'s Branch' },
+                                        { id: 'representative_office', kh: 'ការិយាល័យតំណា�?, en: 'Representative Office' },
+                                        { id: 'ngo', kh: 'អង្គការក្រៅរដ្ឋាភិបា�?/ សមាគ�?, en: 'Non-Government Org. / Association' },
+                                        { id: 'others', kh: 'សហគ្រាសដទៃទៀ�?, en: 'Others' },
                                     ].map((opt) => (
                                         <OptionItem
                                             key={opt.id}
@@ -579,22 +579,22 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                                 <div className="flex flex-col mb-4">
                                     <div className="flex items-center gap-2">
                                         <div className="w-6 h-6 bg-black text-white flex items-center justify-center font-bold text-xs">15</div>
-                                        <span className="font-khmer font-bold text-[13px] text-black">លើកលែងពន្ធលើប្រាក់ចំណូល ៖</span>
+                                        <span className="font-khmer font-bold text-[13px] text-black">លើកលែងពន្ធលើប្រាក់ចំណូល �?/span>
                                     </div>
                                     <span className="text-[10px] font-bold text-black uppercase ml-8">Income Tax Exemption</span>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 ml-8">
                                     <div>
-                                        <label className="block text-[10px] font-bold text-black mb-1 leading-tight">ឆ្នាំមានផលរបរដំបូង ៖<br /><span className="text-[8px] uppercase">Year of First Revenue</span></label>
+                                        <label className="block text-[10px] font-bold text-black mb-1 leading-tight">ឆ្នាំមានផលរបរដំបូង �?br /><span className="text-[8px] uppercase">Year of First Revenue</span></label>
                                         <DigitBoxGroup value={data.yearFirstRevenue} count={4} onChange={(v) => onChange('yearFirstRevenue', v)} />
                                     </div>
                                     <div>
-                                        <label className="block text-[10px] font-bold text-black mb-1 leading-tight">ឆ្នាំមានចំណេញដំបូង ៖<br /><span className="text-[8px] uppercase">Year of First Profit</span></label>
+                                        <label className="block text-[10px] font-bold text-black mb-1 leading-tight">ឆ្នាំមានចំណេញដំបូង �?br /><span className="text-[8px] uppercase">Year of First Profit</span></label>
                                         <DigitBoxGroup value={data.yearFirstProfit} count={4} onChange={(v) => onChange('yearFirstProfit', v)} />
                                     </div>
                                     <div>
-                                        <label className="block text-[10px] font-bold text-black mb-1 leading-tight">រយៈពេលអាទិភាព ៖<br /><span className="text-[8px] uppercase">Priority Period</span></label>
+                                        <label className="block text-[10px] font-bold text-black mb-1 leading-tight">រយៈពេលអាទិភា�?�?br /><span className="text-[8px] uppercase">Priority Period</span></label>
                                         <div className="flex items-center gap-2">
                                             <input
                                                 type="text"
@@ -614,7 +614,7 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                                 <div className="flex flex-col mb-4">
                                     <div className="flex items-center gap-2">
                                         <div className="w-6 h-6 bg-black text-white flex items-center justify-center font-bold text-xs">16</div>
-                                        <span className="font-khmer font-bold text-[13px] text-black">អត្រាពន្ធលើប្រាក់ចំណូល ៖</span>
+                                        <span className="font-khmer font-bold text-[13px] text-black">អត្រាពន្ធលើប្រាក់ចំណូល �?/span>
                                     </div>
                                     <span className="text-[10px] font-bold text-black uppercase ml-8">Income Tax Rate</span>
                                 </div>
@@ -644,7 +644,7 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                                 <div className="p-4">
                                     <div className="flex items-center gap-2 mb-2">
                                         <div className="w-6 h-6 bg-black text-white flex items-center justify-center font-bold text-xs">17</div>
-                                        <span className="font-khmer font-bold text-[12px] text-black">ពន្ធលើប្រាក់ចំណូលត្រូវបង់ ៖</span>
+                                        <span className="font-khmer font-bold text-[12px] text-black">ពន្ធលើប្រាក់ចំណូលត្រូវបង់ �?/span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <input
@@ -661,7 +661,7 @@ const DynamicForm = ({ schema, data, onChange, onSubmit }) => {
                                 <div className="p-4">
                                     <div className="flex items-center gap-2 mb-2">
                                         <div className="w-6 h-6 bg-black text-white flex items-center justify-center font-bold text-xs">18</div>
-                                        <span className="font-khmer font-bold text-[12px] text-black">ឥណទានពន្ធយោងទៅមុខ ៖</span>
+                                        <span className="font-khmer font-bold text-[12px] text-black">ឥណទានពន្ធយោងទៅមុ�?�?/span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <input

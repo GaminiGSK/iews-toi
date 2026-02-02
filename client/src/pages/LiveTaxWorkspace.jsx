@@ -5,7 +5,7 @@ import { ArrowLeft, RefreshCw, Radio, AlertTriangle } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const INITIAL_SCHEMA = {
-    title: "លិខិតប្រកាសពន្ធលើប្រាក់ចំណូលប្រចាំឆ្នាំ",
+    title: "លិខិតប្រកាសពន្ធលើប្រាក់ចំណូលប្រចាំឆ្នា�?,
     titleKh: "ANNUAL INCOME TAX RETURN FOR THE YEAR ENDED",
     status: "active",
     sections: [
@@ -15,7 +15,7 @@ const INITIAL_SCHEMA = {
                 {
                     key: "taxYear",
                     label: "Tax Period (Number of Month)",
-                    labelKh: "ការបរិច្ឆេទសារពើពន្ធ (ចំនួនខែ)",
+                    labelKh: "ការបរិច្ឆេទសារពើពន្�?(ចំនួនខ�?",
                     type: "boxes",
                     length: 2,
                     colSpan: 3,
@@ -36,7 +36,7 @@ const INITIAL_SCHEMA = {
                 {
                     key: "periodTo",
                     label: "Until",
-                    labelKh: "ដល់ថ្ងៃទី",
+                    labelKh: "ដល់ថ្ងៃទ�?,
                     type: "boxes",
                     length: 8,
                     format: "2-2-4",
@@ -73,7 +73,7 @@ const INITIAL_SCHEMA = {
                     key: "directorName",
                     number: "5",
                     label: "Name of Director/Manager/Owner",
-                    labelKh: "ឈ្មោះនាយកសហគ្រាស / អ្នកគ្រប់គ្រង / ម្ចាស់",
+                    labelKh: "ឈ្មោះនាយកសហគ្រា�?/ អ្នកគ្រប់គ្រ�?/ ម្ចាស់",
                     type: "text",
                     colSpan: 12
                 },
@@ -89,7 +89,7 @@ const INITIAL_SCHEMA = {
                     key: "registeredAddress",
                     number: "8",
                     label: "Current Registered Office Address",
-                    labelKh: "អាសយដ្ឋានចុះបញ្ជីបច្ចុប្បន្នរបស់សហគ្រាស",
+                    labelKh: "អាសយដ្ឋានចុះបញ្ជីបច្ចុប្បន្នរបស់សហគ្រា�?,
                     type: "textarea",
                     colSpan: 12
                 }

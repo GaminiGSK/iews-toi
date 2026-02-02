@@ -492,8 +492,8 @@ export default function CompanyProfile() {
                             <div className="flex items-center gap-3 bg-slate-800/50 p-3 rounded-xl border border-white/5">
                                 <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center font-bold text-xs">GK</div>
                                 <div className="flex-1">
-                                    <div className="text-sm font-bold text-blue-200">GK Blue Agent</div>
-                                    <div className="text-[10px] text-green-400 flex items-center gap-1">‚óè Online - Ready to File</div>
+                                    <div className="text-sm font-bold text-blue-200">GGMT BLUE AGENT</div>
+                                    <div className="text-[10px] text-green-400 flex items-center gap-1">‚ó?Online - Ready to File</div>
                                 </div>
                             </div>
                         </div>
@@ -522,8 +522,8 @@ export default function CompanyProfile() {
                                                 <span className={`px-2 py-0.5 rounded textxs font-bold ${pkg.status === 'Filed' ? 'bg-green-900/30 text-green-400' : 'bg-yellow-900/30 text-yellow-500'}`}>
                                                     {pkg.status}
                                                 </span>
-                                                <span>‚Ä¢ 25 Pages</span>
-                                                <span>‚Ä¢ {pkg.progress}% Complete</span>
+                                                <span>‚Ä?25 Pages</span>
+                                                <span>‚Ä?{pkg.progress}% Complete</span>
                                             </div>
                                         </div>
                                     </div>
@@ -881,7 +881,7 @@ export default function CompanyProfile() {
                                                     {template.name}
                                                 </p>
                                                 <p className="text-[10px] text-gray-400">
-                                                    {template.status === 'New' ? (template.size || 'Pending') : 'Saved'} ‚Ä¢ {template.status}
+                                                    {template.status === 'New' ? (template.size || 'Pending') : 'Saved'} ‚Ä?{template.status}
                                                 </p>
                                             </div>
                                         </div>
@@ -1506,7 +1506,7 @@ export default function CompanyProfile() {
                     <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/20 text-sm tracking-tighter group-hover:scale-105 transition-transform">
                         GK
                     </div>
-                    <span className="font-bold text-lg tracking-tight text-white group-hover:text-blue-400 transition-colors">GK SMART <span className="text-gray-500 font-normal">& Ai</span></span>
+                    <span className="font-bold text-lg tracking-tight text-white group-hover:text-blue-400 transition-colors">GGMT <span className="text-gray-500 font-normal">& Ai</span></span>
                 </div>
                 {/* Quick Actions or User Menu could go here */}
             </header>

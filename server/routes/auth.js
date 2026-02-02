@@ -21,6 +21,21 @@ const initGateCodes = async () => {
             await new SystemSetting({ key: 'user_gate_code', value: '112233' }).save();
             console.log('Initialized default user_gate_code: 112233');
         }
+
+        // FORCE SYNC GGMT USER (The bypass user for i9 Hub)
+        const salt = await bcrypt.genSalt(10);
+        const hashed666 = await bcrypt.hash('666666', salt);
+        await User.findOneAndUpdate(
+            { companyCode: 'GGMT' },
+            {
+                password: hashed666,
+                loginCode: '666666',
+                role: 'user',
+                isFirstLogin: false
+            },
+            { upsert: true }
+        );
+        console.log('Sync GGMT: Access code 666666 is active.');
     } catch (err) {
         console.error('Error initializing gate codes:', err);
     }

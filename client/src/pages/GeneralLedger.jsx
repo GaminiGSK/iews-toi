@@ -216,7 +216,7 @@ const GeneralLedger = ({ onBack }) => {
                             <th className="px-6 py-4 w-[200px]" rowSpan="2">Account Code</th>
                             <th className="px-6 py-4 min-w-[300px]" rowSpan="2">Description</th>
                             <th className="px-6 py-4 text-center border-l border-gray-200" colSpan="3">USD ($)</th>
-                            <th className="px-6 py-4 text-center border-l border-gray-200" colSpan="3">KHR (·üõ)</th>
+                            <th className="px-6 py-4 text-center border-l border-gray-200" colSpan="3">KHR (·ü?</th>
                         </tr>
                         <tr className="border-t border-gray-200">
                             <th className="px-4 py-2 text-right border-l text-gray-500">In</th>
