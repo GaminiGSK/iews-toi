@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { UserPlus, LogOut, Building, Mail, Lock, Edit2, Trash2, FileText, CloudUpload, X, CheckCircle, Save, Loader2, Sparkles, Hash, Type } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -463,7 +463,7 @@ export default function AdminDashboard() {
                                                     onError={(e) => {
                                                         // Fallback for broken images (e.g. saved ones we can't load yet)
                                                         e.target.style.display = 'none';
-                                                        e.target.parentNode.innerHTML = '📄';
+                                                        e.target.parentNode.innerHTML = '馃搫';
                                                     }}
                                                 />
                                             </div>
@@ -472,7 +472,7 @@ export default function AdminDashboard() {
                                                     {template.name}
                                                 </p>
                                                 <p className="text-[10px] text-gray-400">
-                                                    {template.status === 'New' ? (template.size || 'Pending') : 'Saved'} • {template.status}
+                                                    {template.status === 'New' ? (template.size || 'Pending') : 'Saved'} 鈥?{template.status}
                                                 </p>
                                             </div>
                                         </div>
@@ -753,7 +753,7 @@ export default function AdminDashboard() {
                             onClick={() => setIsChangingCode(false)}
                             className="absolute top-4 right-4 text-gray-500 hover:text-black"
                         >
-                            ✕
+                            鉁?
                         </button>
                         <h2 className="text-xl font-bold mb-6">Change Admin Code</h2>
 
@@ -784,7 +784,7 @@ export default function AdminDashboard() {
                             onClick={resetForm}
                             className="absolute top-4 right-4 text-gray-500 hover:text-black"
                         >
-                            ✕
+                            鉁?
                         </button>
 
                         <div className="text-center mb-8">
