@@ -27,7 +27,8 @@ export default function AdminDashboard() {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [analysisProgress, setAnalysisProgress] = useState(0);
     const [analysisStep, setAnalysisStep] = useState('');
-
+    const [analysisLogs, setAnalysisLogs] = useState([]);
+    const navigate = useNavigate();
     // Excel Engine State
     const [excelFiles, setExcelFiles] = useState([]);
     const [activeExcelId, setActiveExcelId] = useState(null);
@@ -40,7 +41,6 @@ export default function AdminDashboard() {
     const [contextMenu, setContextMenu] = useState(null);
     const [isAiAnalyzing, setIsAiAnalyzing] = useState(false);
 
-    const navigate = useNavigate();
 
     // --- Fetching Logic ---
     const fetchUsers = async () => {
@@ -131,24 +131,33 @@ export default function AdminDashboard() {
     const handleAnalyze = async () => {
         if (!activeTemplate) return alert("Select a template first.");
 
+        console.log("[Document AI] Starting Analysis for:", activeTemplate.name);
         setIsAnalyzing(true);
         setAnalysisProgress(0);
+        setAnalysisLogs(["[SYSTEM] Initializing Neural Link...", "[CORE] Detecting Document Schema..."]);
 
         const steps = [
-            { label: 'Initializing Neural Core...', duration: 1500, p: 20 },
-            { label: 'Mapping Logic Framework...', duration: 2500, p: 55 },
-            { label: 'Extracting Structural Metadata...', duration: 2000, p: 90 },
-            { label: 'Finalizing Scan...', duration: 1000, p: 100 }
+            { label: 'Initializing Neural Core...', duration: 1500, p: 20, log: "[CORE] Neural Core v3.0 Online" },
+            { label: 'Mapping Logic Framework...', duration: 2500, p: 55, log: "[LOGIC] Applying TOI-01 Logic Heuristics..." },
+            { label: 'Extracting Structural Metadata...', duration: 2000, p: 90, log: "[INGEST] Extracting Entity Relationships..." },
+            { label: 'Finalizing Scan...', duration: 1000, p: 100, log: "[SYSTEM] Structural Mapping Complete." }
         ];
 
-        for (const step of steps) {
-            setAnalysisStep(step.label);
-            setAnalysisProgress(step.p);
-            await new Promise(r => setTimeout(r, step.duration));
+        try {
+            for (const step of steps) {
+                setAnalysisStep(step.label);
+                setAnalysisProgress(step.p);
+                setAnalysisLogs(prev => [...prev, step.log]);
+                await new Promise(r => setTimeout(r, step.duration));
+            }
+            console.log("[Document AI] Analysis Complete.");
+        } catch (err) {
+            console.error("[Document AI] Scan Error:", err);
+            setAnalysisLogs(prev => [...prev, "!! ERROR: Neural Link Interrupted !!"]);
+        } finally {
+            setIsAnalyzing(false);
+            alert("Analysis Complete! Data structure mapped to Main Stage.");
         }
-
-        setIsAnalyzing(false);
-        alert("Analysis Complete! Data structure mapped to Main Stage.");
     };
 
     const handleDropTemplate = async (e) => {
@@ -500,9 +509,9 @@ export default function AdminDashboard() {
                                 <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mt-2">Awaiting Template Ingestion or Selection</p>
                             </div>
                         ) : (
-                            <div className="flex-1 flex flex-col p-8 animate-in fade-in zoom-in duration-500">
+                            <div className="flex-1 flex flex-col p-8 animate-in fade-in zoom-in duration-500 min-h-0">
                                 {/* Header Area */}
-                                <div className="flex items-center justify-between mb-10">
+                                <div className="flex items-center justify-between mb-8 shrink-0">
                                     <div className="flex items-center gap-4">
                                         <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
                                             <Sparkles size={24} className="text-emerald-400" />
@@ -513,63 +522,69 @@ export default function AdminDashboard() {
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        <div className={`px-3 py-1 rounded-full border text-[9px] font-black uppercase tracking-widest transition-colors ${isAnalyzing ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'}`}>
-                                            {isAnalyzing ? 'Scan in Progress' : 'Analysis Idle'}
+                                        <div className={`px-4 py-1.5 rounded-full border text-[9px] font-black uppercase tracking-widest transition-all ${isAnalyzing ? 'bg-amber-500/10 border-amber-500/30 text-amber-400 animate-pulse' : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'}`}>
+                                            {isAnalyzing ? 'Neural Link Active' : 'System Ready'}
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Body Area: Analysis Visualization */}
-                                <div className="flex-1 flex flex-col items-center justify-center relative">
-                                    {isAnalyzing ? (
-                                        <div className="w-full max-w-lg space-y-8">
-                                            <div className="flex justify-between items-end mb-2">
-                                                <div className="space-y-1">
-                                                    <p className="text-[10px] text-emerald-400 font-black uppercase tracking-widest animate-pulse">{analysisStep}</p>
-                                                    <p className="text-[8px] text-gray-500 uppercase tracking-widest">Neural Link Active</p>
-                                                </div>
-                                                <p className="text-2xl font-black text-white font-mono">{analysisProgress}%</p>
-                                            </div>
-                                            <div className="h-4 w-full bg-white/5 rounded-full overflow-hidden border border-white/10 p-1">
-                                                <div
-                                                    className="h-full bg-gradient-to-r from-emerald-600 to-blue-600 rounded-full transition-all duration-700 ease-out shadow-[0_0_20px_rgba(16,185,129,0.3)]"
-                                                    style={{ width: `${analysisProgress}%` }}
-                                                ></div>
-                                            </div>
-                                            <div className="grid grid-cols-3 gap-4 opacity-40">
-                                                <div className="h-20 bg-white/5 rounded-2xl border border-white/10 flex flex-col items-center justify-center">
-                                                    <div className="text-[8px] text-gray-400 uppercase font-black mb-1">OCR Buffer</div>
-                                                    <div className="text-xs font-mono text-white">READY</div>
-                                                </div>
-                                                <div className="h-20 bg-white/5 rounded-2xl border border-white/10 flex flex-col items-center justify-center">
-                                                    <div className="text-[8px] text-gray-400 uppercase font-black mb-1">Logic Gate</div>
-                                                    <div className="text-xs font-mono text-white">S2</div>
-                                                </div>
-                                                <div className="h-20 bg-white/5 rounded-2xl border border-white/10 flex flex-col items-center justify-center">
-                                                    <div className="text-[8px] text-gray-400 uppercase font-black mb-1">Entities</div>
-                                                    <div className="text-xs font-mono text-white">MAP</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="flex flex-col items-center opacity-40">
-                                            <div className="w-64 h-80 bg-white/5 rounded-[32px] border border-white/10 flex flex-col items-center justify-center mb-6 shadow-inner relative overflow-hidden group-hover:scale-105 transition-transform duration-700">
-                                                <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/5 to-transparent"></div>
-                                                <FileText size={48} className="text-gray-400 relative z-10" />
-                                            </div>
-                                            <p className="text-[10px] text-gray-500 uppercase tracking-[0.3em] font-black">Scan Ready</p>
-                                        </div>
-                                    )}
-                                </div>
+                                {/* Body Area: Analysis Visualization & Preview */}
+                                <div className="flex-1 flex gap-8 min-h-0">
+                                    {/* Preview Side */}
+                                    <div className="flex-1 bg-black/40 rounded-[32px] border border-white/10 relative overflow-hidden flex items-center justify-center group/stage">
+                                        <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/10 via-transparent to-blue-500/10 opacity-0 group-hover/stage:opacity-100 transition duration-700"></div>
+                                        {activeTemplate.filename ? (
+                                            <img
+                                                src={`/api/tax/file/${activeTemplate.filename}`}
+                                                alt="Template Preview"
+                                                className={`max-w-full max-h-full object-contain transition-all duration-1000 ${isAnalyzing ? 'blur-md opacity-30 grayscale' : 'opacity-80 grayscale group-hover/stage:grayscale-0 group-hover/stage:opacity-100 group-hover/stage:scale-105'}`}
+                                            />
+                                        ) : (
+                                            <FileText size={64} className="text-gray-700" />
+                                        )}
 
-                                {/* Footer Control Area */}
-                                {!isAnalyzing && (
-                                    <div className="mt-auto pt-8 border-t border-white/5 flex justify-center">
-                                        <button onClick={handleAnalyze} className="px-10 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl shadow-emerald-500/20 transition-all active:scale-95 flex items-center gap-3 group">
-                                            Run Logic Scan <Sparkles size={16} className="group-hover:rotate-12 transition" />
-                                        </button>
+                                        {isAnalyzing && (
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
+                                                <Loader2 size={48} className="text-emerald-400 animate-spin mb-4" />
+                                                <div className="w-48 h-1 bg-white/10 rounded-full overflow-hidden">
+                                                    <div className="h-full bg-emerald-500 transition-all duration-300" style={{ width: `${analysisProgress}%` }}></div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
-                                )}
+
+                                    {/* Log & Control Side */}
+                                    <div className="w-80 shrink-0 flex flex-col gap-4">
+                                        <div className="flex-1 bg-black/60 rounded-[32px] border border-white/10 p-5 font-mono flex flex-col overflow-hidden relative">
+                                            <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-black to-transparent pointer-events-none z-10"></div>
+                                            <h4 className="text-[10px] font-black text-emerald-500/50 uppercase tracking-widest mb-4 shrink-0">Neural System Logs</h4>
+                                            <div className="flex-1 overflow-y-auto space-y-2 no-scrollbar scroll-smooth">
+                                                {analysisLogs.map((log, i) => (
+                                                    <div key={i} className="text-[9px] text-gray-400 leading-relaxed animate-in slide-in-from-left-2 duration-300">
+                                                        <span className="text-emerald-500/30">[{new Date().toLocaleTimeString([], { hour12: false, Hour: '2-digit', minute: '2-digit', second: '2-digit' })}]</span> {log}
+                                                    </div>
+                                                ))}
+                                                {isAnalyzing && (
+                                                    <div className="h-4 flex items-center gap-1">
+                                                        <div className="w-1 h-3 bg-emerald-500 animate-pulse"></div>
+                                                        <div className="text-[9px] text-emerald-500 font-black tracking-widest uppercase animate-pulse">Scanning...</div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {!isAnalyzing && (
+                                            <button
+                                                onClick={handleAnalyze}
+                                                className="w-full py-5 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white rounded-[24px] font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl shadow-emerald-500/30 transition-all active:scale-95 flex items-center justify-center gap-3 group relative overflow-hidden"
+                                            >
+                                                <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
+                                                <span className="relative z-10">Run Logic Scan</span>
+                                                <Sparkles size={16} className="relative z-10 group-hover:rotate-12 transition" />
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </div>
