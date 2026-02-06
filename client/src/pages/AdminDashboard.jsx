@@ -17,8 +17,9 @@ export default function AdminDashboard() {
     const [isChangingCode, setIsChangingCode] = useState(false);
     const [newAdminCode, setNewAdminCode] = useState('');
     const [message, setMessage] = useState('');
-    const [activeTab, setActiveTab] = useState('users');
-    const [isAiAnalyzing, setIsAiAnalyzing] = useState(false);
+    const [templates, setTemplates] = useState([]);
+    const [activeTemplateId, setActiveTemplateId] = useState(null);
+    const [isUploadingTemplate, setIsUploadingTemplate] = useState(false);
     const navigate = useNavigate();
 
     // Fetch users on mount
@@ -44,9 +45,17 @@ export default function AdminDashboard() {
         } catch (err) { console.error("Failed to load excel files", err); }
     };
 
+    const fetchTemplates = async () => {
+        try {
+            const res = await axios.get('/api/tax/templates');
+            setTemplates(res.data);
+        } catch (err) { console.error("Failed to load templates", err); }
+    };
+
     useEffect(() => {
         fetchUsers();
         fetchExcelFiles();
+        fetchTemplates();
     }, []);
 
     // User Handlers
@@ -120,6 +129,37 @@ export default function AdminDashboard() {
 
     const handleAnalyze = async () => {
         alert("Initializing Document AI v3.0 Engine...");
+    };
+
+    const handleDropTemplate = async (e) => {
+        e.preventDefault(); e.stopPropagation();
+        const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/') || f.type === 'application/pdf');
+        if (files.length === 0) return alert("Only Images or PDFs allowed.");
+
+        setIsUploadingTemplate(true);
+        const formData = new FormData();
+        files.forEach(f => formData.append('files', f));
+
+        try {
+            await axios.post('/api/tax/templates', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            fetchTemplates();
+        } catch (err) {
+            console.error(err);
+            alert("Upload Failed");
+        } finally {
+            setIsUploadingTemplate(false);
+        }
+    };
+
+    const handleDeleteTemplate = async (e, id) => {
+        e.stopPropagation();
+        if (!window.confirm("Delete this template?")) return;
+        try {
+            await axios.delete(`/api/tax/templates/${id}`);
+            fetchTemplates();
+        } catch (err) { alert("Delete Failed"); }
     };
 
     // --- Excel Handling Logic ---
@@ -433,30 +473,63 @@ export default function AdminDashboard() {
                     {/* LEFT PANEL: INGESTION & CONTROL */}
                     <div className="w-80 shrink-0 flex flex-col gap-4">
                         <div
-                            onDrop={(e) => { e.preventDefault(); e.stopPropagation(); alert("Ingesting Template into Document AI v3.0 Library..."); }}
+                            onDrop={handleDropTemplate}
                             onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
-                            className="flex-1 bg-white/5 backdrop-blur-xl rounded-[32px] border border-white/10 p-8 flex flex-col items-center text-center shadow-2xl relative overflow-hidden group hover:border-emerald-500/30 transition-all cursor-pointer"
+                            className="h-48 bg-white/5 backdrop-blur-xl rounded-[32px] border border-white/10 p-6 flex flex-col items-center text-center shadow-2xl relative overflow-hidden group hover:border-emerald-500/30 transition-all cursor-pointer"
                         >
                             <div className="absolute -top-20 -left-20 w-40 h-40 bg-emerald-500/5 rounded-full blur-[50px] group-hover:bg-emerald-500/10 transition-all duration-700"></div>
 
                             <div className="relative z-10 flex flex-col items-center h-full justify-center">
-                                <div className="w-16 h-16 bg-gradient-to-br from-emerald-500/20 to-blue-500/20 rounded-2xl flex items-center justify-center mb-6 border border-white/10 shadow-inner group-hover:scale-110 transition duration-500">
-                                    <Sparkles size={32} className="text-emerald-400 animate-pulse" />
-                                </div>
+                                {isUploadingTemplate ? (
+                                    <Loader2 size={32} className="text-emerald-400 animate-spin mb-4" />
+                                ) : (
+                                    <div className="w-12 h-12 bg-gradient-to-br from-emerald-500/20 to-blue-500/20 rounded-2xl flex items-center justify-center mb-4 border border-white/10 shadow-inner group-hover:scale-110 transition duration-500">
+                                        <CloudUpload size={24} className="text-emerald-400" />
+                                    </div>
+                                )}
 
-                                <h2 className="text-lg font-black text-white uppercase tracking-widest mb-2">Document AI <span className="text-emerald-500">v3.0</span></h2>
-                                <p className="text-gray-400 text-[9px] font-medium leading-relaxed uppercase tracking-widest mb-8">Drop Templates Here to <br />Initialize Neural Scan</p>
-
-                                <div className="space-y-3 w-full">
-                                    <button onClick={handleAnalyze} className="w-full py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl font-black text-[9px] uppercase tracking-[0.2em] border border-white/10 transition active:scale-95">Initialize Framework</button>
-                                </div>
+                                <h2 className="text-sm font-black text-white uppercase tracking-widest mb-1">Ingest</h2>
+                                <p className="text-gray-400 text-[8px] font-medium leading-relaxed uppercase tracking-widest">Drop Templates Here</p>
                             </div>
+                        </div>
 
-                            {/* Mini Status */}
-                            <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-4 opacity-30">
-                                <div className="flex items-center gap-1.5"><div className="w-1 h-1 rounded-full bg-emerald-500"></div><span className="text-[7px] font-black text-white uppercase tracking-widest">Empty</span></div>
-                                <div className="flex items-center gap-1.5"><div className="w-1 h-1 rounded-full bg-blue-500"></div><span className="text-[7px] font-black text-white uppercase tracking-widest">Listening</span></div>
+                        {/* TEMPLATE LIST */}
+                        <div className="flex-1 bg-black/40 rounded-[32px] p-5 overflow-y-auto border border-white/5 no-scrollbar">
+                            <h4 className="text-[10px] font-black uppercase text-gray-500 tracking-widest mb-4 flex items-center gap-2">
+                                <FileText size={12} /> Template Library ({templates.length})
+                            </h4>
+                            <div className="space-y-2">
+                                {templates.map(tmp => (
+                                    <div
+                                        key={tmp._id}
+                                        className={`p-3 rounded-xl border border-white/5 bg-white/5 flex items-center justify-between group hover:bg-white/10 transition cursor-pointer ${activeTemplateId === tmp._id ? 'border-emerald-500/50 bg-emerald-500/5' : ''}`}
+                                    >
+                                        <div className="flex items-center gap-3 overflow-hidden">
+                                            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                                                <FileText size={14} className="text-emerald-400" />
+                                            </div>
+                                            <div className="overflow-hidden">
+                                                <div className="text-[10px] font-bold text-white truncate">{tmp.name}</div>
+                                                <div className="text-[8px] text-gray-500 uppercase tracking-tighter">Page {tmp.pageNumber}</div>
+                                            </div>
+                                        </div>
+                                        <button onClick={(e) => handleDeleteTemplate(e, tmp._id)} className="p-2 text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition">
+                                            <Trash2 size={12} />
+                                        </button>
+                                    </div>
+                                ))}
+                                {templates.length === 0 && (
+                                    <div className="text-center py-10 opacity-20 flex flex-col items-center">
+                                        <Sparkles size={24} className="mb-2" />
+                                        <span className="text-[8px] font-black uppercase tracking-[0.2em]">Library Empty</span>
+                                    </div>
+                                )}
                             </div>
+                        </div>
+
+                        {/* Control Box */}
+                        <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+                            <button onClick={handleAnalyze} className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-black text-[9px] uppercase tracking-[0.2em] shadow-xl shadow-emerald-500/20 transition active:scale-95">Initialize Analysis</button>
                         </div>
                     </div>
 
@@ -470,111 +543,118 @@ export default function AdminDashboard() {
                         </div>
                     </div>
                 </div>
-            )}
+            )
+            }
 
-            {activeTab === 'excel_merge' && (
-                <div className="flex flex-1 gap-6 px-6 w-full h-[calc(100vh-250px)] animate-in fade-in duration-700">
-                    <div className="w-72 shrink-0 flex flex-col gap-4">
-                        <div onDrop={handleDropExcel} onDragOver={e => { e.preventDefault(); e.stopPropagation(); }} className="h-40 bg-white/5 border-2 border-dashed border-amber-500/20 rounded-2xl flex flex-col items-center justify-center text-gray-400 hover:border-amber-500/50 hover:bg-amber-500/5 transition cursor-pointer group">
-                            <CloudUpload size={32} className="mb-3 opacity-50 group-hover:opacity-100 group-hover:scale-110 transition text-amber-500" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Drop Excel Here</span>
-                        </div>
-                        <div className="flex-1 bg-black/20 rounded-2xl p-4 overflow-y-auto border border-white/5 no-scrollbar">
-                            <h4 className="text-[10px] font-black uppercase text-gray-500 tracking-widest mb-4 flex items-center gap-2"><Table size={12} /> Files</h4>
-                            <div className="space-y-2">
-                                {excelFiles.map(f => (
-                                    <div key={f.id} onClick={() => handleSelectExcel(f)} className={`p-3 rounded-xl border cursor-pointer transition flex items-center justify-between group ${activeExcelId === f.id ? 'bg-amber-500/10 border-amber-500/50 text-amber-400' : 'bg-white/5 border-white/5 text-gray-300'}`}>
-                                        <div className="flex items-center gap-3 overflow-hidden">
-                                            <FileSpreadsheet size={16} className={activeExcelId === f.id ? 'text-amber-400' : 'text-gray-500'} />
-                                            <div className="text-[11px] font-bold truncate">{f.name}</div>
+            {
+                activeTab === 'excel_merge' && (
+                    <div className="flex flex-1 gap-6 px-6 w-full h-[calc(100vh-250px)] animate-in fade-in duration-700">
+                        <div className="w-72 shrink-0 flex flex-col gap-4">
+                            <div onDrop={handleDropExcel} onDragOver={e => { e.preventDefault(); e.stopPropagation(); }} className="h-40 bg-white/5 border-2 border-dashed border-amber-500/20 rounded-2xl flex flex-col items-center justify-center text-gray-400 hover:border-amber-500/50 hover:bg-amber-500/5 transition cursor-pointer group">
+                                <CloudUpload size={32} className="mb-3 opacity-50 group-hover:opacity-100 group-hover:scale-110 transition text-amber-500" />
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em]">Drop Excel Here</span>
+                            </div>
+                            <div className="flex-1 bg-black/20 rounded-2xl p-4 overflow-y-auto border border-white/5 no-scrollbar">
+                                <h4 className="text-[10px] font-black uppercase text-gray-500 tracking-widest mb-4 flex items-center gap-2"><Table size={12} /> Files</h4>
+                                <div className="space-y-2">
+                                    {excelFiles.map(f => (
+                                        <div key={f.id} onClick={() => handleSelectExcel(f)} className={`p-3 rounded-xl border cursor-pointer transition flex items-center justify-between group ${activeExcelId === f.id ? 'bg-amber-500/10 border-amber-500/50 text-amber-400' : 'bg-white/5 border-white/5 text-gray-300'}`}>
+                                            <div className="flex items-center gap-3 overflow-hidden">
+                                                <FileSpreadsheet size={16} className={activeExcelId === f.id ? 'text-amber-400' : 'text-gray-500'} />
+                                                <div className="text-[11px] font-bold truncate">{f.name}</div>
+                                            </div>
+                                            <button onClick={e => handleDeleteExcel(e, f.id)} className="opacity-0 group-hover:opacity-100 p-2 hover:text-red-400 transition"><Trash2 size={14} /></button>
                                         </div>
-                                        <button onClick={e => handleDeleteExcel(e, f.id)} className="opacity-0 group-hover:opacity-100 p-2 hover:text-red-400 transition"><Trash2 size={14} /></button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                    <div className="flex-1 bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col relative text-black">
-                        {!excelData ? (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-300 pointer-events-none">
-                                <Table size={64} className="mb-4" />
-                                <h3 className="text-xl font-black uppercase tracking-widest">Spreadsheet Engine</h3>
-                            </div>
-                        ) : (
-                            <div className="flex-1 overflow-auto p-0.5">
-                                <table className="border-collapse text-[10px] w-max">
-                                    <thead>
-                                        <tr>
-                                            <th className="bg-gray-100 border border-gray-300 w-8"></th>
-                                            {excelData.rows[0]?.map((_, i) => (
-                                                <th key={i} className="bg-gray-100 border border-gray-300 px-1 py-1 text-center font-bold text-gray-500 relative" style={{ width: excelData.colWidths[i] ? `${excelData.colWidths[i]}px` : '80px' }}>
-                                                    {(i >= 26 ? String.fromCharCode(65 + Math.floor(i / 26) - 1) : '') + String.fromCharCode(65 + (i % 26))}
-                                                    <div className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-blue-400" onMouseDown={e => handleColResizeStart(e, i)} />
-                                                </th>
-                                            ))}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {excelData.rows.map((row, rI) => (
-                                            <tr key={rI} style={{ height: excelData.rowHeights[rI] ? `${excelData.rowHeights[rI]}px` : '20px' }}>
-                                                <td className="bg-gray-100 border border-gray-300 text-center font-bold text-gray-500">{rI + 1}</td>
-                                                {row.map((cellVal, cI) => {
-                                                    const { rowspan, colspan, hidden } = getCellMergeProps(rI, cI, excelData.merges);
-                                                    if (hidden) return null;
-                                                    const isSelected = selectedRange && rI >= Math.min(selectedRange.r1, selectedRange.r2) && rI <= Math.max(selectedRange.r1, selectedRange.r2) && cI >= Math.min(selectedRange.c1, selectedRange.c2) && cI <= Math.max(selectedRange.c1, selectedRange.c2);
-                                                    const mappedVar = cellMappings[`${rI}_${cI}`];
-                                                    return (
-                                                        <td key={cI} colSpan={colspan} rowSpan={rowspan} onMouseDown={e => handleCellMouseDown(rI, cI, e)} onMouseEnter={() => handleCellMouseEnter(rI, cI)} onClick={() => handleCellClick(rI, cI)} className={`border border-gray-300 px-1 py-0.5 align-top truncate max-w-[200px] ${isSelected ? 'bg-blue-100 ring-1 ring-blue-500' : ''} ${mappedVar ? 'bg-amber-100 ring-1 ring-amber-400' : ''}`}>
-                                                            {mappedVar ? <span className="text-[9px] font-bold text-amber-700 font-mono">${mappedVar}</span> : String(cellVal || '')}
-                                                        </td>
-                                                    );
-                                                })}
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-                        {excelData && (
-                            <div className="h-12 bg-gray-100 border-t border-gray-200 px-4 flex items-center justify-between text-[10px] text-gray-500 font-mono">
-                                <div className="flex items-center gap-4">
-                                    <button onClick={handleAiClean} disabled={isAiAnalyzing} className="bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-500 shadow-sm flex items-center gap-2">{isAiAnalyzing ? <Loader2 size={10} className="animate-spin" /> : <Sparkles size={10} />} AI Auto-Fix</button>
-                                    <button onClick={removeEmptyA} className="bg-red-50 text-red-600 px-2 py-1 rounded border border-red-200 flex items-center gap-1">Delete A</button>
-                                    <button onClick={() => setIsMappingMode(!isMappingMode)} className={`px-3 py-1.5 rounded-md font-bold uppercase ${isMappingMode ? 'bg-amber-500 text-white shadow-lg' : 'bg-white border text-gray-600'}`}> {isMappingMode ? 'Mapping Active' : 'Enable Mapping'} </button>
-                                    {isMappingMode && <button onClick={handleSaveExcelMappings} className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-md font-bold shadow-lg">Save</button>}
+                                    ))}
                                 </div>
                             </div>
-                        )}
+                        </div>
+                        <div className="flex-1 bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col relative text-black">
+                            {!excelData ? (
+                                <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-300 pointer-events-none">
+                                    <Table size={64} className="mb-4" />
+                                    <h3 className="text-xl font-black uppercase tracking-widest">Spreadsheet Engine</h3>
+                                </div>
+                            ) : (
+                                <div className="flex-1 overflow-auto p-0.5">
+                                    <table className="border-collapse text-[10px] w-max">
+                                        <thead>
+                                            <tr>
+                                                <th className="bg-gray-100 border border-gray-300 w-8"></th>
+                                                {excelData.rows[0]?.map((_, i) => (
+                                                    <th key={i} className="bg-gray-100 border border-gray-300 px-1 py-1 text-center font-bold text-gray-500 relative" style={{ width: excelData.colWidths[i] ? `${excelData.colWidths[i]}px` : '80px' }}>
+                                                        {(i >= 26 ? String.fromCharCode(65 + Math.floor(i / 26) - 1) : '') + String.fromCharCode(65 + (i % 26))}
+                                                        <div className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-blue-400" onMouseDown={e => handleColResizeStart(e, i)} />
+                                                    </th>
+                                                ))}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {excelData.rows.map((row, rI) => (
+                                                <tr key={rI} style={{ height: excelData.rowHeights[rI] ? `${excelData.rowHeights[rI]}px` : '20px' }}>
+                                                    <td className="bg-gray-100 border border-gray-300 text-center font-bold text-gray-500">{rI + 1}</td>
+                                                    {row.map((cellVal, cI) => {
+                                                        const { rowspan, colspan, hidden } = getCellMergeProps(rI, cI, excelData.merges);
+                                                        if (hidden) return null;
+                                                        const isSelected = selectedRange && rI >= Math.min(selectedRange.r1, selectedRange.r2) && rI <= Math.max(selectedRange.r1, selectedRange.r2) && cI >= Math.min(selectedRange.c1, selectedRange.c2) && cI <= Math.max(selectedRange.c1, selectedRange.c2);
+                                                        const mappedVar = cellMappings[`${rI}_${cI}`];
+                                                        return (
+                                                            <td key={cI} colSpan={colspan} rowSpan={rowspan} onMouseDown={e => handleCellMouseDown(rI, cI, e)} onMouseEnter={() => handleCellMouseEnter(rI, cI)} onClick={() => handleCellClick(rI, cI)} className={`border border-gray-300 px-1 py-0.5 align-top truncate max-w-[200px] ${isSelected ? 'bg-blue-100 ring-1 ring-blue-500' : ''} ${mappedVar ? 'bg-amber-100 ring-1 ring-amber-400' : ''}`}>
+                                                                {mappedVar ? <span className="text-[9px] font-bold text-amber-700 font-mono">${mappedVar}</span> : String(cellVal || '')}
+                                                            </td>
+                                                        );
+                                                    })}
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                            {excelData && (
+                                <div className="h-12 bg-gray-100 border-t border-gray-200 px-4 flex items-center justify-between text-[10px] text-gray-500 font-mono">
+                                    <div className="flex items-center gap-4">
+                                        <button onClick={handleAiClean} disabled={isAiAnalyzing} className="bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-500 shadow-sm flex items-center gap-2">{isAiAnalyzing ? <Loader2 size={10} className="animate-spin" /> : <Sparkles size={10} />} AI Auto-Fix</button>
+                                        <button onClick={removeEmptyA} className="bg-red-50 text-red-600 px-2 py-1 rounded border border-red-200 flex items-center gap-1">Delete A</button>
+                                        <button onClick={() => setIsMappingMode(!isMappingMode)} className={`px-3 py-1.5 rounded-md font-bold uppercase ${isMappingMode ? 'bg-amber-500 text-white shadow-lg' : 'bg-white border text-gray-600'}`}> {isMappingMode ? 'Mapping Active' : 'Enable Mapping'} </button>
+                                        {isMappingMode && <button onClick={handleSaveExcelMappings} className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-md font-bold shadow-lg">Save</button>}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
-            {isChangingCode && (
-                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-                    <div className="bg-white text-black p-8 rounded-lg shadow-xl w-full max-w-md relative">
-                        <button onClick={() => setIsChangingCode(false)} className="absolute top-4 right-4 text-gray-500 hover:text-black font-black">X</button>
-                        <h2 className="text-xl font-bold mb-6">Change Admin Code</h2>
-                        <form onSubmit={handleUpdateCode} className="space-y-4">
-                            <input className="w-full border p-2 rounded" value={newAdminCode} onChange={e => setNewAdminCode(e.target.value)} placeholder="New 6-Digit Code" type="text" maxLength="6" required />
-                            <button className="w-full bg-black text-white py-2 rounded mt-4">Update Code</button>
-                        </form>
+            {
+                isChangingCode && (
+                    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+                        <div className="bg-white text-black p-8 rounded-lg shadow-xl w-full max-w-md relative">
+                            <button onClick={() => setIsChangingCode(false)} className="absolute top-4 right-4 text-gray-500 hover:text-black font-black">X</button>
+                            <h2 className="text-xl font-bold mb-6">Change Admin Code</h2>
+                            <form onSubmit={handleUpdateCode} className="space-y-4">
+                                <input className="w-full border p-2 rounded" value={newAdminCode} onChange={e => setNewAdminCode(e.target.value)} placeholder="New 6-Digit Code" type="text" maxLength="6" required />
+                                <button className="w-full bg-black text-white py-2 rounded mt-4">Update Code</button>
+                            </form>
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
-            {(isCreating || isEditing) && (
-                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-                    <div className="bg-white text-black p-8 rounded-xl shadow-lg w-full max-w-md relative">
-                        <button onClick={resetForm} className="absolute top-4 right-4 text-gray-500 hover:text-black font-black">X</button>
-                        <h2 className="text-2xl font-bold text-center mb-8 text-blue-600">{isEditing ? 'Edit Company' : 'Create Company'}</h2>
-                        <form onSubmit={isEditing ? handleUpdateUser : handleCreateUser} className="space-y-6">
-                            <input className="w-full p-2 border rounded" value={formData.companyName} onChange={e => setFormData({ ...formData, companyName: e.target.value.toUpperCase() })} placeholder="COMPANY NAME" required />
-                            <input className="w-full p-2 border rounded" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} placeholder="PASSWORD" required />
-                            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg">SAVE</button>
-                        </form>
+            {
+                (isCreating || isEditing) && (
+                    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+                        <div className="bg-white text-black p-8 rounded-xl shadow-lg w-full max-w-md relative">
+                            <button onClick={resetForm} className="absolute top-4 right-4 text-gray-500 hover:text-black font-black">X</button>
+                            <h2 className="text-2xl font-bold text-center mb-8 text-blue-600">{isEditing ? 'Edit Company' : 'Create Company'}</h2>
+                            <form onSubmit={isEditing ? handleUpdateUser : handleCreateUser} className="space-y-6">
+                                <input className="w-full p-2 border rounded" value={formData.companyName} onChange={e => setFormData({ ...formData, companyName: e.target.value.toUpperCase() })} placeholder="COMPANY NAME" required />
+                                <input className="w-full p-2 border rounded" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} placeholder="PASSWORD" required />
+                                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg">SAVE</button>
+                            </form>
+                        </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }
