@@ -429,24 +429,44 @@ export default function AdminDashboard() {
             )}
 
             {activeTab === 'tax_forms' && (
-                <div className="flex-1 flex flex-col items-center justify-center p-6 w-full h-[calc(100vh-250px)] animate-in fade-in duration-1000">
-                    <div className="max-w-4xl w-full bg-white/5 backdrop-blur-xl rounded-[48px] border border-white/10 p-20 flex flex-col items-center text-center shadow-2xl relative overflow-hidden group">
-                        <div className="absolute -top-40 -left-40 w-80 h-80 bg-emerald-500/10 rounded-full blur-[100px] group-hover:bg-emerald-500/20 transition-all duration-700"></div>
-                        <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-blue-500/10 rounded-full blur-[100px] group-hover:bg-blue-500/20 transition-all duration-700"></div>
-                        <div className="relative z-10 flex flex-col items-center">
-                            <div className="w-24 h-24 bg-gradient-to-br from-emerald-500/20 to-blue-500/20 rounded-3xl flex items-center justify-center mb-10 border border-white/10 shadow-inner group-hover:scale-110 transition duration-500">
-                                <Sparkles size={48} className="text-emerald-400 animate-pulse" />
+                <div className="flex flex-1 gap-6 px-6 w-full h-[calc(100vh-250px)] animate-in fade-in duration-700">
+                    {/* LEFT PANEL: INGESTION & CONTROL */}
+                    <div className="w-80 shrink-0 flex flex-col gap-4">
+                        <div
+                            onDrop={(e) => { e.preventDefault(); e.stopPropagation(); alert("Ingesting Template into Document AI v3.0 Library..."); }}
+                            onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
+                            className="flex-1 bg-white/5 backdrop-blur-xl rounded-[32px] border border-white/10 p-8 flex flex-col items-center text-center shadow-2xl relative overflow-hidden group hover:border-emerald-500/30 transition-all cursor-pointer"
+                        >
+                            <div className="absolute -top-20 -left-20 w-40 h-40 bg-emerald-500/5 rounded-full blur-[50px] group-hover:bg-emerald-500/10 transition-all duration-700"></div>
+
+                            <div className="relative z-10 flex flex-col items-center h-full justify-center">
+                                <div className="w-16 h-16 bg-gradient-to-br from-emerald-500/20 to-blue-500/20 rounded-2xl flex items-center justify-center mb-6 border border-white/10 shadow-inner group-hover:scale-110 transition duration-500">
+                                    <Sparkles size={32} className="text-emerald-400 animate-pulse" />
+                                </div>
+
+                                <h2 className="text-lg font-black text-white uppercase tracking-widest mb-2">Document AI <span className="text-emerald-500">v3.0</span></h2>
+                                <p className="text-gray-400 text-[9px] font-medium leading-relaxed uppercase tracking-widest mb-8">Drop Templates Here to <br />Initialize Neural Scan</p>
+
+                                <div className="space-y-3 w-full">
+                                    <button onClick={handleAnalyze} className="w-full py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl font-black text-[9px] uppercase tracking-[0.2em] border border-white/10 transition active:scale-95">Initialize Framework</button>
+                                </div>
                             </div>
-                            <h2 className="text-4xl font-black text-white uppercase tracking-[0.3em] mb-6">Document AI <span className="text-emerald-500">v3.0</span></h2>
-                            <p className="text-gray-400 text-lg font-medium max-w-lg leading-relaxed mb-12 uppercase tracking-widest text-[10px]">Workspace Purged. Ready for next-generation <br /><span className="text-white">Google Document AI API</span> integration.</p>
-                            <div className="flex gap-4">
-                                <button onClick={handleAnalyze} className="px-10 py-4 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] border border-white/10 transition active:scale-95">Initialize Framework</button>
-                                <button className="px-10 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-emerald-500/20 transition active:scale-95">Upload Template</button>
+
+                            {/* Mini Status */}
+                            <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-4 opacity-30">
+                                <div className="flex items-center gap-1.5"><div className="w-1 h-1 rounded-full bg-emerald-500"></div><span className="text-[7px] font-black text-white uppercase tracking-widest">Empty</span></div>
+                                <div className="flex items-center gap-1.5"><div className="w-1 h-1 rounded-full bg-blue-500"></div><span className="text-[7px] font-black text-white uppercase tracking-widest">Listening</span></div>
                             </div>
                         </div>
-                        <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-8 opacity-30">
-                            <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div><span className="text-[8px] font-black text-white uppercase tracking-widest">System Empty</span></div>
-                            <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div><span className="text-[8px] font-black text-white uppercase tracking-widest">API Listening</span></div>
+                    </div>
+
+                    {/* MAIN STAGE (SPACE FOR OTHER WORK) */}
+                    <div className="flex-1 bg-white/5 rounded-[48px] border border-white/5 relative overflow-hidden flex flex-col items-center justify-center group">
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.03)_0%,transparent_100%)]"></div>
+                        <div className="relative z-10 opacity-20 group-hover:opacity-30 transition-opacity">
+                            <FileText size={80} className="text-gray-500 mb-4" />
+                            <h3 className="text-xl font-black text-white uppercase tracking-[0.4em]">Main Stage</h3>
+                            <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mt-2">Awaiting Template Ingestion</p>
                         </div>
                     </div>
                 </div>
