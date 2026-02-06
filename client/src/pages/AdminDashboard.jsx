@@ -24,6 +24,7 @@ export default function AdminDashboard() {
     const [templates, setTemplates] = useState([]);
     const [activeTemplate, setActiveTemplate] = useState(null);
     const [isUploadingTemplate, setIsUploadingTemplate] = useState(false);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [analysisProgress, setAnalysisProgress] = useState(0);
     const [analysisStep, setAnalysisStep] = useState('');
     const [analysisLogs, setAnalysisLogs] = useState([]);
