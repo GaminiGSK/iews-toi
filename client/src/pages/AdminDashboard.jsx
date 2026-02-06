@@ -22,8 +22,11 @@ export default function AdminDashboard() {
 
     // Document AI State
     const [templates, setTemplates] = useState([]);
-    const [activeTemplateId, setActiveTemplateId] = useState(null);
+    const [activeTemplate, setActiveTemplate] = useState(null);
     const [isUploadingTemplate, setIsUploadingTemplate] = useState(false);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [analysisProgress, setAnalysisProgress] = useState(0);
+    const [analysisStep, setAnalysisStep] = useState('');
 
     // Excel Engine State
     const [excelFiles, setExcelFiles] = useState([]);
@@ -126,7 +129,26 @@ export default function AdminDashboard() {
 
     // --- Document AI Handlers ---
     const handleAnalyze = async () => {
-        alert("Initializing Document AI v3.0 Engine...");
+        if (!activeTemplate) return alert("Select a template first.");
+
+        setIsAnalyzing(true);
+        setAnalysisProgress(0);
+
+        const steps = [
+            { label: 'Initializing Neural Core...', duration: 1500, p: 20 },
+            { label: 'Mapping Logic Framework...', duration: 2500, p: 55 },
+            { label: 'Extracting Structural Metadata...', duration: 2000, p: 90 },
+            { label: 'Finalizing Scan...', duration: 1000, p: 100 }
+        ];
+
+        for (const step of steps) {
+            setAnalysisStep(step.label);
+            setAnalysisProgress(step.p);
+            await new Promise(r => setTimeout(r, step.duration));
+        }
+
+        setIsAnalyzing(false);
+        alert("Analysis Complete! Data structure mapped to Main Stage.");
     };
 
     const handleDropTemplate = async (e) => {
@@ -437,8 +459,8 @@ export default function AdminDashboard() {
                                 {templates.map(tmp => (
                                     <div
                                         key={tmp._id}
-                                        onClick={() => setActiveTemplateId(tmp._id)}
-                                        className={`p-3 rounded-xl border border-white/5 bg-white/5 flex items-center justify-between group hover:bg-white/10 transition cursor-pointer ${activeTemplateId === tmp._id ? 'border-emerald-500/50 bg-emerald-500/5' : ''}`}
+                                        onClick={() => setActiveTemplate(tmp)}
+                                        className={`p-3 rounded-xl border border-white/5 bg-white/5 flex items-center justify-between group hover:bg-white/10 transition cursor-pointer ${activeTemplate?._id === tmp._id ? 'border-emerald-500/50 bg-emerald-500/5' : ''}`}
                                     >
                                         <div className="flex items-center gap-3 overflow-hidden">
                                             <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
@@ -468,13 +490,88 @@ export default function AdminDashboard() {
                         </div>
                     </div>
 
-                    <div className="flex-1 bg-white/5 rounded-[48px] border border-white/5 relative overflow-hidden flex flex-col items-center justify-center group text-center p-10">
+                    <div className="flex-1 bg-white/5 rounded-[48px] border border-white/5 relative overflow-hidden flex flex-col group p-2">
                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.03)_0%,transparent_100%)]"></div>
-                        <div className="relative z-10 opacity-20 group-hover:opacity-30 transition-opacity flex flex-col items-center">
-                            <FileText size={80} className="text-gray-500 mb-6" />
-                            <h3 className="text-xl font-black text-white uppercase tracking-[0.4em]">Main Stage</h3>
-                            <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mt-2">Awaiting Template Ingestion or Selection</p>
-                        </div>
+
+                        {!activeTemplate ? (
+                            <div className="flex-1 flex flex-col items-center justify-center text-center opacity-20 group-hover:opacity-30 transition-opacity">
+                                <FileText size={80} className="text-gray-500 mb-6" />
+                                <h3 className="text-xl font-black text-white uppercase tracking-[0.4em]">Main Stage</h3>
+                                <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mt-2">Awaiting Template Ingestion or Selection</p>
+                            </div>
+                        ) : (
+                            <div className="flex-1 flex flex-col p-8 animate-in fade-in zoom-in duration-500">
+                                {/* Header Area */}
+                                <div className="flex items-center justify-between mb-10">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+                                            <Sparkles size={24} className="text-emerald-400" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-xl font-black text-white uppercase tracking-wider">{activeTemplate.name}</h3>
+                                            <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Document AI Analysis Environment</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <div className={`px-3 py-1 rounded-full border text-[9px] font-black uppercase tracking-widest transition-colors ${isAnalyzing ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'}`}>
+                                            {isAnalyzing ? 'Scan in Progress' : 'Analysis Idle'}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Body Area: Analysis Visualization */}
+                                <div className="flex-1 flex flex-col items-center justify-center relative">
+                                    {isAnalyzing ? (
+                                        <div className="w-full max-w-lg space-y-8">
+                                            <div className="flex justify-between items-end mb-2">
+                                                <div className="space-y-1">
+                                                    <p className="text-[10px] text-emerald-400 font-black uppercase tracking-widest animate-pulse">{analysisStep}</p>
+                                                    <p className="text-[8px] text-gray-500 uppercase tracking-widest">Neural Link Active</p>
+                                                </div>
+                                                <p className="text-2xl font-black text-white font-mono">{analysisProgress}%</p>
+                                            </div>
+                                            <div className="h-4 w-full bg-white/5 rounded-full overflow-hidden border border-white/10 p-1">
+                                                <div
+                                                    className="h-full bg-gradient-to-r from-emerald-600 to-blue-600 rounded-full transition-all duration-700 ease-out shadow-[0_0_20px_rgba(16,185,129,0.3)]"
+                                                    style={{ width: `${analysisProgress}%` }}
+                                                ></div>
+                                            </div>
+                                            <div className="grid grid-cols-3 gap-4 opacity-40">
+                                                <div className="h-20 bg-white/5 rounded-2xl border border-white/10 flex flex-col items-center justify-center">
+                                                    <div className="text-[8px] text-gray-400 uppercase font-black mb-1">OCR Buffer</div>
+                                                    <div className="text-xs font-mono text-white">READY</div>
+                                                </div>
+                                                <div className="h-20 bg-white/5 rounded-2xl border border-white/10 flex flex-col items-center justify-center">
+                                                    <div className="text-[8px] text-gray-400 uppercase font-black mb-1">Logic Gate</div>
+                                                    <div className="text-xs font-mono text-white">S2</div>
+                                                </div>
+                                                <div className="h-20 bg-white/5 rounded-2xl border border-white/10 flex flex-col items-center justify-center">
+                                                    <div className="text-[8px] text-gray-400 uppercase font-black mb-1">Entities</div>
+                                                    <div className="text-xs font-mono text-white">MAP</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col items-center opacity-40">
+                                            <div className="w-64 h-80 bg-white/5 rounded-[32px] border border-white/10 flex flex-col items-center justify-center mb-6 shadow-inner relative overflow-hidden group-hover:scale-105 transition-transform duration-700">
+                                                <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/5 to-transparent"></div>
+                                                <FileText size={48} className="text-gray-400 relative z-10" />
+                                            </div>
+                                            <p className="text-[10px] text-gray-500 uppercase tracking-[0.3em] font-black">Scan Ready</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Footer Control Area */}
+                                {!isAnalyzing && (
+                                    <div className="mt-auto pt-8 border-t border-white/5 flex justify-center">
+                                        <button onClick={handleAnalyze} className="px-10 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl shadow-emerald-500/20 transition-all active:scale-95 flex items-center gap-3 group">
+                                            Run Logic Scan <Sparkles size={16} className="group-hover:rotate-12 transition" />
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
