@@ -143,46 +143,43 @@ export default function AdminDashboard() {
         setAnalysisLogs(["[SYSTEM] Initializing Neural Link...", "[CORE] Detecting Document Schema..."]);
 
         const steps = [
-            { label: 'Initializing Neural Core...', duration: 1000, p: 20, log: "[CORE] Neural Core v3.0 Online" },
-            { label: 'Detecting Khmer/English Scripts...', duration: 1500, p: 40, log: "[LANG] Scripts Detected: Khmer (92%), English (98%)" },
-            { label: 'Mapping Logic Framework...', duration: 2000, p: 70, log: "[LOGIC] Applying TOI-01 Logic Heuristics..." },
-            { label: 'Extracting Structural Metadata...', duration: 1500, p: 90, log: "[INGEST] Extracting Entities and KV Pairs..." },
-            { label: 'Finalizing Scan...', duration: 800, p: 100, log: "[SYSTEM] Structural Mapping Complete." }
+            { label: 'Initializing Neural Core...', p: 10, log: "[CORE] Neural Core v4.0 Active" },
+            { label: 'Connecting to Vision Matrix...', p: 30, log: "[SYSTEM] Establishing SSL Handshake..." },
+            { label: 'Scanning Spatial Layers...', p: 60, log: "[INGEST] Deep Scanning OCR Layers..." },
+            { label: 'Optimizing Neural Weights...', p: 85, log: "[LANG] Resolution: High-Fidelity Khmer Detection" }
         ];
 
         try {
-            for (const step of steps) {
-                setAnalysisStep(step.label);
-                setAnalysisProgress(step.p);
-                setAnalysisLogs(prev => [...prev, step.log]);
-                await new Promise(r => setTimeout(r, step.duration));
-            }
+            // Start visual progress
+            let currentP = 0;
+            const progressRef = setInterval(() => {
+                if (currentP < 95) {
+                    currentP += 1;
+                    setAnalysisProgress(currentP);
+                    const step = steps.find(s => s.p === currentP);
+                    if (step) {
+                        setAnalysisStep(step.label);
+                        setAnalysisLogs(prev => [...prev, step.log]);
+                    }
+                }
+            }, 100);
 
-            // Mock Extracted Data
-            setExtractedData({
-                ocr: [
-                    { id: 1, khr: "ព្រះរាជាណាចក្រកម្ពុជា", eng: "KINGDOM OF CAMBODIA", x: 42, y: 15 },
-                    { id: 2, khr: "ក្រសួងសេដ្ឋកិច្ច និងហិរញ្ញវត្ថុ", eng: "Ministry of Economy and Finance", x: 20, y: 22 },
-                    { id: 3, khr: "អគ្គនាយកដ្ឋានពន្ធដារ", eng: "General Department of Taxation", x: 20, y: 26 },
-                    { id: 4, khr: "លិខិតប្រកាសពន្ធលើប្រាក់ចំណូល", eng: "Annual Income Tax Return", x: 35, y: 35 }
-                ],
-                kv: [
-                    { key: "Taxpayer Name", val: "CAMBODIA GLOBAL LOGISTICS", conf: 0.99 },
-                    { key: "TIN", val: "L001-901827364", conf: 1 },
-                    { key: "Tax Period", val: "2024", conf: 0.97 }
-                ],
-                tables: [
-                    { item: "Net Profit", taxable: "$1,200,500.00", tax_due: "$240,100.00" },
-                    { item: "Adjustments", taxable: "$50,000.00", tax_due: "$10,000.00" }
-                ]
-            });
-            console.log("[Document AI] Extraction Data Loaded.");
+            // Real API Call
+            const res = await axios.post('/api/vision/extract', { templateId: activeTemplate._id });
+            clearInterval(progressRef);
+
+            setAnalysisProgress(100);
+            setAnalysisStep("Extraction Complete");
+            setAnalysisLogs(prev => [...prev, "[SYSTEM] Neural Scan 100% Complete.", `[DATA] Captured ${res.data.ocr?.length || 0} Text Elements.`]);
+
+            setExtractedData(res.data);
+            console.log("[Document AI] Real Neural Data Loaded.");
         } catch (err) {
-            console.error("[Document AI] Scan Error:", err);
-            setAnalysisLogs(prev => [...prev, "!! ERROR: Neural Link Interrupted !!"]);
+            console.error("[Document AI] Neural Scan Error:", err);
+            setAnalysisLogs(prev => [...prev, "!! ERROR: Neural Link Interrupted !!", `!! MESSAGE: ${err.response?.data?.error || "Connection Timeout"}`]);
+            alert(err.response?.data?.error || "Extraction Failed. Is your API key configured?");
         } finally {
             setIsAnalyzing(false);
-            alert("Analysis Complete! Data structure mapped to Function Panel.");
         }
     };
 
@@ -534,15 +531,15 @@ export default function AdminDashboard() {
                                                 className={`max-w-none w-auto h-[700px] object-contain shadow-2xl rounded-sm transition-all duration-1000 ${isAnalyzing ? 'blur-md opacity-30 grayscale' : 'opacity-100'}`}
                                             />
                                             {/* Simulated Bounding Boxes */}
-                                            {!isAnalyzing && extractedData.ocr.length > 0 && extractedData.ocr.map(box => (
+                                            {!isAnalyzing && extractedData.ocr.length > 0 && extractedData.ocr.map((box, i) => (
                                                 <div
-                                                    key={box.id}
+                                                    key={i}
                                                     className="absolute border border-emerald-500/40 bg-emerald-500/5 hover:border-emerald-400 hover:bg-emerald-500/10 cursor-alias transition-all"
                                                     style={{
                                                         left: `${box.x}%`,
                                                         top: `${box.y}%`,
-                                                        width: '15%',
-                                                        height: '2%',
+                                                        width: `${box.w}%`,
+                                                        height: `${box.h}%`,
                                                         zIndex: 30
                                                     }}
                                                     title={`${box.eng}\n${box.khr}`}

@@ -19,6 +19,8 @@
   "dependencies": {
     "@copilotkit/backend": "^0.37.0",
     "@copilotkit/runtime": "^0.37.0",
+    "@google-cloud/documentai": "^9.5.0",
+    "@google-cloud/vertexai": "^1.10.0",
     "@google/generative-ai": "^0.24.1",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
