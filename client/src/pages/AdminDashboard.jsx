@@ -24,10 +24,15 @@ export default function AdminDashboard() {
     const [templates, setTemplates] = useState([]);
     const [activeTemplate, setActiveTemplate] = useState(null);
     const [isUploadingTemplate, setIsUploadingTemplate] = useState(false);
-    const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [analysisProgress, setAnalysisProgress] = useState(0);
     const [analysisStep, setAnalysisStep] = useState('');
     const [analysisLogs, setAnalysisLogs] = useState([]);
+    const [activeFeatureTab, setActiveFeatureTab] = useState('OCR');
+    const [extractedData, setExtractedData] = useState({
+        ocr: [],
+        kv: [],
+        tables: []
+    });
     const navigate = useNavigate();
     // Excel Engine State
     const [excelFiles, setExcelFiles] = useState([]);
@@ -131,16 +136,17 @@ export default function AdminDashboard() {
     const handleAnalyze = async () => {
         if (!activeTemplate) return alert("Select a template first.");
 
-        console.log("[Document AI] Starting Analysis for:", activeTemplate.name);
+        console.log("[Document AI] Starting Neural Logic Scan for:", activeTemplate.name);
         setIsAnalyzing(true);
         setAnalysisProgress(0);
         setAnalysisLogs(["[SYSTEM] Initializing Neural Link...", "[CORE] Detecting Document Schema..."]);
 
         const steps = [
-            { label: 'Initializing Neural Core...', duration: 1500, p: 20, log: "[CORE] Neural Core v3.0 Online" },
-            { label: 'Mapping Logic Framework...', duration: 2500, p: 55, log: "[LOGIC] Applying TOI-01 Logic Heuristics..." },
-            { label: 'Extracting Structural Metadata...', duration: 2000, p: 90, log: "[INGEST] Extracting Entity Relationships..." },
-            { label: 'Finalizing Scan...', duration: 1000, p: 100, log: "[SYSTEM] Structural Mapping Complete." }
+            { label: 'Initializing Neural Core...', duration: 1000, p: 20, log: "[CORE] Neural Core v3.0 Online" },
+            { label: 'Detecting Khmer/English Scripts...', duration: 1500, p: 40, log: "[LANG] Scripts Detected: Khmer (92%), English (98%)" },
+            { label: 'Mapping Logic Framework...', duration: 2000, p: 70, log: "[LOGIC] Applying TOI-01 Logic Heuristics..." },
+            { label: 'Extracting Structural Metadata...', duration: 1500, p: 90, log: "[INGEST] Extracting Entities and KV Pairs..." },
+            { label: 'Finalizing Scan...', duration: 800, p: 100, log: "[SYSTEM] Structural Mapping Complete." }
         ];
 
         try {
@@ -150,13 +156,32 @@ export default function AdminDashboard() {
                 setAnalysisLogs(prev => [...prev, step.log]);
                 await new Promise(r => setTimeout(r, step.duration));
             }
-            console.log("[Document AI] Analysis Complete.");
+
+            // Mock Extracted Data
+            setExtractedData({
+                ocr: [
+                    { id: 1, khr: "ព្រះរាជាណាចក្រកម្ពុជា", eng: "KINGDOM OF CAMBODIA", x: 42, y: 15 },
+                    { id: 2, khr: "ក្រសួងសេដ្ឋកិច្ច និងហិរញ្ញវត្ថុ", eng: "Ministry of Economy and Finance", x: 20, y: 22 },
+                    { id: 3, khr: "អគ្គនាយកដ្ឋានពន្ធដារ", eng: "General Department of Taxation", x: 20, y: 26 },
+                    { id: 4, khr: "លិខិតប្រកាសពន្ធលើប្រាក់ចំណូល", eng: "Annual Income Tax Return", x: 35, y: 35 }
+                ],
+                kv: [
+                    { key: "Taxpayer Name", val: "CAMBODIA GLOBAL LOGISTICS", conf: 0.99 },
+                    { key: "TIN", val: "L001-901827364", conf: 1 },
+                    { key: "Tax Period", val: "2024", conf: 0.97 }
+                ],
+                tables: [
+                    { item: "Net Profit", taxable: "$1,200,500.00", tax_due: "$240,100.00" },
+                    { item: "Adjustments", taxable: "$50,000.00", tax_due: "$10,000.00" }
+                ]
+            });
+            console.log("[Document AI] Extraction Data Loaded.");
         } catch (err) {
             console.error("[Document AI] Scan Error:", err);
             setAnalysisLogs(prev => [...prev, "!! ERROR: Neural Link Interrupted !!"]);
         } finally {
             setIsAnalyzing(false);
-            alert("Analysis Complete! Data structure mapped to Main Stage.");
+            alert("Analysis Complete! Data structure mapped to Function Panel.");
         }
     };
 
@@ -438,155 +463,239 @@ export default function AdminDashboard() {
             )}
 
             {activeTab === 'tax_forms' && (
-                <div className="flex flex-1 gap-6 px-6 w-full h-[calc(100vh-250px)] animate-in fade-in duration-700">
-                    <div className="w-80 shrink-0 flex flex-col gap-4">
+                <div className="flex flex-1 gap-4 px-4 w-full h-[calc(100vh-220px)] animate-in fade-in duration-700">
+                    {/* LEFT PANEL: SLIM INGESTION & LIBRARY */}
+                    <div className="w-72 shrink-0 flex flex-col gap-3">
                         <div
                             onDrop={handleDropTemplate}
                             onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
-                            className="h-48 bg-white/5 backdrop-blur-xl rounded-[32px] border border-white/10 p-6 flex flex-col items-center text-center shadow-2xl relative overflow-hidden group hover:border-emerald-500/30 transition-all cursor-pointer"
+                            className="h-32 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-4 flex flex-col items-center text-center shadow-xl group hover:border-emerald-500/30 transition-all cursor-pointer relative overflow-hidden"
                         >
-                            <div className="absolute -top-20 -left-20 w-40 h-40 bg-emerald-500/5 rounded-full blur-[50px] group-hover:bg-emerald-500/10 transition-all duration-700"></div>
-
-                            <div className="relative z-10 flex flex-col items-center h-full justify-center">
-                                {isUploadingTemplate ? (
-                                    <Loader2 size={32} className="text-emerald-400 animate-spin mb-4" />
-                                ) : (
-                                    <div className="w-12 h-12 bg-gradient-to-br from-emerald-500/20 to-blue-500/20 rounded-2xl flex items-center justify-center mb-4 border border-white/10 shadow-inner group-hover:scale-110 transition duration-500">
-                                        <CloudUpload size={24} className="text-emerald-400" />
-                                    </div>
-                                )}
-                                <h2 className="text-sm font-black text-white uppercase tracking-widest mb-1">Ingest</h2>
-                                <p className="text-gray-400 text-[8px] font-medium leading-relaxed uppercase tracking-widest">Drop Templates Here</p>
-                            </div>
+                            <div className="absolute -top-10 -left-10 w-24 h-24 bg-emerald-500/5 rounded-full blur-[30px]"></div>
+                            {isUploadingTemplate ? (
+                                <Loader2 size={24} className="text-emerald-400 animate-spin my-auto" />
+                            ) : (
+                                <div className="my-auto flex flex-col items-center">
+                                    <CloudUpload size={20} className="text-emerald-400 mb-2 group-hover:scale-110 transition" />
+                                    <h2 className="text-[10px] font-black text-white uppercase tracking-widest">Ingest Template</h2>
+                                    <p className="text-gray-500 text-[8px] uppercase tracking-tighter mt-1">Images / PDFs</p>
+                                </div>
+                            )}
                         </div>
 
-                        <div className="flex-1 bg-black/40 rounded-[32px] p-5 overflow-y-auto border border-white/5 no-scrollbar">
-                            <h4 className="text-[10px] font-black uppercase text-gray-500 tracking-widest mb-4 flex items-center gap-2">
-                                <FileText size={12} /> Template Library ({templates.length})
+                        <div className="flex-1 bg-black/40 rounded-3xl p-4 overflow-y-auto border border-white/5 no-scrollbar">
+                            <h4 className="text-[9px] font-black uppercase text-gray-500 tracking-widest mb-4 flex items-center gap-2">
+                                <FileText size={10} /> Library ({templates.length})
                             </h4>
                             <div className="space-y-2">
                                 {templates.map(tmp => (
                                     <div
                                         key={tmp._id}
                                         onClick={() => setActiveTemplate(tmp)}
-                                        className={`p-3 rounded-xl border border-white/5 bg-white/5 flex items-center justify-between group hover:bg-white/10 transition cursor-pointer ${activeTemplate?._id === tmp._id ? 'border-emerald-500/50 bg-emerald-500/5' : ''}`}
+                                        className={`p-2 rounded-xl border border-white/5 bg-white/5 flex items-center justify-between group hover:bg-white/10 transition cursor-pointer ${activeTemplate?._id === tmp._id ? 'border-emerald-400 bg-emerald-400/5' : ''}`}
                                     >
-                                        <div className="flex items-center gap-3 overflow-hidden">
-                                            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                                                <FileText size={14} className="text-emerald-400" />
+                                        <div className="flex items-center gap-2 overflow-hidden">
+                                            <div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
+                                                <FileText size={12} className="text-emerald-400" />
                                             </div>
                                             <div className="overflow-hidden">
-                                                <div className="text-[10px] font-bold text-white truncate">{tmp.name}</div>
-                                                <div className="text-[8px] text-gray-500 uppercase tracking-tighter">Page {tmp.pageNumber}</div>
+                                                <div className="text-[9px] font-bold text-white truncate">{tmp.name}</div>
+                                                <div className="text-[7px] text-gray-500 uppercase">Neural Ready</div>
                                             </div>
                                         </div>
-                                        <button onClick={(e) => handleDeleteTemplate(e, tmp._id)} className="p-2 text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition">
-                                            <Trash2 size={12} />
+                                        <button onClick={(e) => handleDeleteTemplate(e, tmp._id)} className="p-1.5 text-gray-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition">
+                                            <Trash2 size={10} />
                                         </button>
                                     </div>
                                 ))}
-                                {templates.length === 0 && (
-                                    <div className="text-center py-10 opacity-20 flex flex-col items-center">
-                                        <Sparkles size={24} className="mb-2" />
-                                        <span className="text-[8px] font-black uppercase tracking-[0.2em]">Library Empty</span>
-                                    </div>
-                                )}
                             </div>
-                        </div>
-
-                        <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
-                            <button onClick={handleAnalyze} className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-black text-[9px] uppercase tracking-[0.2em] shadow-xl shadow-emerald-500/20 transition active:scale-95">Initialize Analysis</button>
                         </div>
                     </div>
 
-                    <div className="flex-1 bg-white/5 rounded-[48px] border border-white/5 relative overflow-hidden flex flex-col group p-2">
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.03)_0%,transparent_100%)]"></div>
-
+                    {/* CENTRAL PANEL: DOCUMENT WORKSPACE */}
+                    <div className="flex-1 flex flex-col gap-4 min-w-0">
                         {!activeTemplate ? (
-                            <div className="flex-1 flex flex-col items-center justify-center text-center opacity-20 group-hover:opacity-30 transition-opacity">
-                                <FileText size={80} className="text-gray-500 mb-6" />
-                                <h3 className="text-xl font-black text-white uppercase tracking-[0.4em]">Main Stage</h3>
-                                <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mt-2">Awaiting Template Ingestion or Selection</p>
+                            <div className="flex-1 bg-white/5 rounded-[40px] border border-white/5 flex flex-col items-center justify-center opacity-20">
+                                <FileText size={60} className="text-gray-500 mb-4" />
+                                <h3 className="text-sm font-black text-white uppercase tracking-[0.4em]">Document Stage</h3>
+                                <p className="text-[9px] text-gray-500 uppercase tracking-widest mt-2">Select a template to begin analysis</p>
                             </div>
                         ) : (
-                            <div className="flex-1 flex flex-col p-8 animate-in fade-in zoom-in duration-500 min-h-0">
-                                {/* Header Area */}
-                                <div className="flex items-center justify-between mb-8 shrink-0">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
-                                            <Sparkles size={24} className="text-emerald-400" />
-                                        </div>
-                                        <div>
-                                            <h3 className="text-xl font-black text-white uppercase tracking-wider">{activeTemplate.name}</h3>
-                                            <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Document AI Analysis Environment</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <div className={`px-4 py-1.5 rounded-full border text-[9px] font-black uppercase tracking-widest transition-all ${isAnalyzing ? 'bg-amber-500/10 border-amber-500/30 text-amber-400 animate-pulse' : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'}`}>
-                                            {isAnalyzing ? 'Neural Link Active' : 'System Ready'}
-                                        </div>
-                                    </div>
-                                </div>
+                            <div className="flex-1 bg-black rounded-[40px] border border-white/10 relative overflow-hidden flex items-center justify-center group/stage">
+                                <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/5 via-transparent to-blue-500/5"></div>
 
-                                {/* Body Area: Analysis Visualization & Preview */}
-                                <div className="flex-1 flex gap-8 min-h-0">
-                                    {/* Preview Side */}
-                                    <div className="flex-1 bg-black/40 rounded-[32px] border border-white/10 relative overflow-hidden flex items-center justify-center group/stage">
-                                        <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/10 via-transparent to-blue-500/10 opacity-0 group-hover/stage:opacity-100 transition duration-700"></div>
-                                        {activeTemplate.filename ? (
+                                {activeTemplate.filename ? (
+                                    <div className="relative w-full h-full flex items-center justify-center p-8 overflow-auto no-scrollbar">
+                                        <div className="relative animate-in zoom-in duration-500">
                                             <img
                                                 src={`/api/tax/file/${activeTemplate.filename}`}
-                                                alt="Template Preview"
-                                                className={`max-w-full max-h-full object-contain transition-all duration-1000 ${isAnalyzing ? 'blur-md opacity-30 grayscale' : 'opacity-80 grayscale group-hover/stage:grayscale-0 group-hover/stage:opacity-100 group-hover/stage:scale-105'}`}
+                                                alt="Review"
+                                                className={`max-w-none w-auto h-[700px] object-contain shadow-2xl rounded-sm transition-all duration-1000 ${isAnalyzing ? 'blur-md opacity-30 grayscale' : 'opacity-100'}`}
                                             />
-                                        ) : (
-                                            <FileText size={64} className="text-gray-700" />
-                                        )}
-
-                                        {isAnalyzing && (
-                                            <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
-                                                <Loader2 size={48} className="text-emerald-400 animate-spin mb-4" />
-                                                <div className="w-48 h-1 bg-white/10 rounded-full overflow-hidden">
-                                                    <div className="h-full bg-emerald-500 transition-all duration-300" style={{ width: `${analysisProgress}%` }}></div>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Log & Control Side */}
-                                    <div className="w-80 shrink-0 flex flex-col gap-4">
-                                        <div className="flex-1 bg-black/60 rounded-[32px] border border-white/10 p-5 font-mono flex flex-col overflow-hidden relative">
-                                            <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-black to-transparent pointer-events-none z-10"></div>
-                                            <h4 className="text-[10px] font-black text-emerald-500/50 uppercase tracking-widest mb-4 shrink-0">Neural System Logs</h4>
-                                            <div className="flex-1 overflow-y-auto space-y-2 no-scrollbar scroll-smooth">
-                                                {analysisLogs.map((log, i) => (
-                                                    <div key={i} className="text-[9px] text-gray-400 leading-relaxed animate-in slide-in-from-left-2 duration-300">
-                                                        <span className="text-emerald-500/30">[{new Date().toLocaleTimeString([], { hour12: false, Hour: '2-digit', minute: '2-digit', second: '2-digit' })}]</span> {log}
-                                                    </div>
-                                                ))}
-                                                {isAnalyzing && (
-                                                    <div className="h-4 flex items-center gap-1">
-                                                        <div className="w-1 h-3 bg-emerald-500 animate-pulse"></div>
-                                                        <div className="text-[9px] text-emerald-500 font-black tracking-widest uppercase animate-pulse">Scanning...</div>
-                                                    </div>
-                                                )}
-                                            </div>
+                                            {/* Simulated Bounding Boxes */}
+                                            {!isAnalyzing && extractedData.ocr.length > 0 && extractedData.ocr.map(box => (
+                                                <div
+                                                    key={box.id}
+                                                    className="absolute border border-emerald-500/40 bg-emerald-500/5 hover:border-emerald-400 hover:bg-emerald-500/10 cursor-alias transition-all"
+                                                    style={{
+                                                        left: `${box.x}%`,
+                                                        top: `${box.y}%`,
+                                                        width: '15%',
+                                                        height: '2%',
+                                                        zIndex: 30
+                                                    }}
+                                                    title={`${box.eng}\n${box.khr}`}
+                                                ></div>
+                                            ))}
                                         </div>
-
-                                        {!isAnalyzing && (
-                                            <button
-                                                onClick={handleAnalyze}
-                                                className="w-full py-5 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white rounded-[24px] font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl shadow-emerald-500/30 transition-all active:scale-95 flex items-center justify-center gap-3 group relative overflow-hidden"
-                                            >
-                                                <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
-                                                <span className="relative z-10">Run Logic Scan</span>
-                                                <Sparkles size={16} className="relative z-10 group-hover:rotate-12 transition" />
-                                            </button>
-                                        )}
                                     </div>
-                                </div>
+                                ) : (
+                                    <FileText size={64} className="text-gray-800" />
+                                )}
+
+                                {isAnalyzing && (
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center z-50 backdrop-blur-sm bg-black/20">
+                                        <div className="w-16 h-16 relative mb-6">
+                                            <div className="absolute inset-0 border-2 border-emerald-500/20 rounded-full"></div>
+                                            <div className="absolute inset-0 border-2 border-t-emerald-500 rounded-full animate-spin"></div>
+                                            <Sparkles size={24} className="absolute inset-0 m-auto text-emerald-400 animate-pulse" />
+                                        </div>
+                                        <div className="text-center space-y-3">
+                                            <p className="text-[10px] text-emerald-400 font-black uppercase tracking-[0.3em]">{analysisStep}</p>
+                                            <div className="w-48 h-1 bg-white/10 rounded-full overflow-hidden mx-auto">
+                                                <div className="h-full bg-emerald-500 transition-all duration-500" style={{ width: `${analysisProgress}%` }}></div>
+                                            </div>
+                                            <p className="text-[32px] font-black text-white font-mono">{analysisProgress}%</p>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
+
+                        {/* BOTTOM TOOLBAR */}
+                        <div className="h-16 bg-white/5 rounded-3xl border border-white/5 flex items-center justify-between px-6 shrink-0">
+                            <div className="flex gap-4">
+                                <button onClick={handleAnalyze} className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest shadow-xl shadow-emerald-500/20 flex items-center gap-2 transition active:scale-95">
+                                    <Sparkles size={14} /> Run Neural Extract
+                                </button>
+                                <button className="bg-white/10 hover:bg-white/20 text-white border border-white/10 px-4 py-2 rounded-xl text-[9px] font-medium uppercase tracking-widest transition">
+                                    Khmer Logic Detect
+                                </button>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="text-[10px] text-gray-500 font-mono">STATUS: <span className={isAnalyzing ? 'text-amber-500' : 'text-emerald-500'}>{isAnalyzing ? 'SCANNING' : 'SYSTEM READY'}</span></div>
+                                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* RIGHT PANEL: FUNCTION TABS (GOOGLE CLOUD STYLE) */}
+                    <div className="w-96 shrink-0 flex flex-col gap-4">
+                        <div className="flex-1 bg-white/5 rounded-[40px] border border-white/10 flex flex-col overflow-hidden shadow-2xl">
+                            {/* Tabs Header */}
+                            <div className="flex bg-white/5 border-b border-white/10 shrink-0">
+                                {['FIELDS', 'KV PAIRS', 'TABLES', 'OCR'].map((tab) => (
+                                    <button
+                                        key={tab}
+                                        onClick={() => setActiveFeatureTab(tab)}
+                                        className={`flex-1 py-4 text-[9px] font-black tracking-widest transition-all relative ${activeFeatureTab === tab ? 'text-emerald-400' : 'text-gray-500 hover:text-gray-300'}`}
+                                    >
+                                        {tab}
+                                        {activeFeatureTab === tab && <div className="absolute bottom-0 left-0 right-0 h-1 bg-emerald-500"></div>}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Feature Body */}
+                            <div className="flex-1 overflow-y-auto p-6 no-scrollbar">
+                                {activeFeatureTab === 'FIELDS' && (
+                                    <div className="space-y-4 animate-in slide-in-from-right-4">
+                                        <h5 className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-6">Detected Global Entities</h5>
+                                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5 space-y-4">
+                                            <div className="flex justify-between items-center pb-3 border-b border-white/5">
+                                                <span className="text-[10px] font-bold text-gray-400">Process Method</span>
+                                                <span className="text-[10px] font-black text-emerald-400">NEURAL V3</span>
+                                            </div>
+                                            <div className="space-y-3">
+                                                <div className="text-[8px] text-gray-500 uppercase tracking-widest">Confidence Scores</div>
+                                                <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
+                                                    <div className="h-full bg-emerald-500 w-[98%]"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {activeFeatureTab === 'OCR' && (
+                                    <div className="space-y-3 animate-in fade-in">
+                                        <div className="flex justify-between items-center mb-4">
+                                            <h5 className="text-[10px] font-black text-white/40 uppercase tracking-widest">Script Recognition</h5>
+                                            <div className="flex gap-2">
+                                                <div className="px-2 py-0.5 bg-blue-500/20 text-blue-400 text-[8px] rounded border border-blue-500/30">ENG</div>
+                                                <div className="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 text-[8px] rounded border border-emerald-500/30">KHR</div>
+                                            </div>
+                                        </div>
+                                        {extractedData.ocr.length > 0 ? extractedData.ocr.map(line => (
+                                            <div key={line.id} className="p-4 bg-white/[0.03] rounded-xl border border-white/5 group hover:border-emerald-500/30 transition">
+                                                <div className="text-[11px] text-emerald-400 font-medium mb-1 line-clamp-2">{line.khr}</div>
+                                                <div className="text-[10px] text-gray-400 font-medium italic">{line.eng}</div>
+                                            </div>
+                                        )) : (
+                                            <div className="py-20 text-center opacity-20 flex flex-col items-center">
+                                                <Loader2 size={32} className="mb-4" />
+                                                <span className="text-[10px] font-black uppercase tracking-widest">Waiting for Scan...</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {activeFeatureTab === 'KV PAIRS' && (
+                                    <div className="space-y-2 animate-in fade-in">
+                                        <h5 className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-6">Semantic Mappings</h5>
+                                        {extractedData.kv.map((pair, idx) => (
+                                            <div key={idx} className="flex justify-between items-center p-3 bg-white/5 rounded-xl border border-white/5 group hover:bg-emerald-500/5 transition">
+                                                <span className="text-[9px] font-bold text-gray-400 uppercase">{pair.key}</span>
+                                                <span className="text-[10px] font-black text-white">{pair.val}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {activeFeatureTab === 'TABLES' && (
+                                    <div className="space-y-4 animate-in fade-in overflow-hidden">
+                                        <h5 className="text-[10px] font-black text-white/40 uppercase tracking-widest">Table Extraction</h5>
+                                        <div className="rounded-xl border border-white/10 overflow-hidden">
+                                            <table className="w-full text-[9px] text-left">
+                                                <thead className="bg-white/5 font-black text-gray-500">
+                                                    <tr>
+                                                        <th className="p-2 border-b border-white/10">ITEM</th>
+                                                        <th className="p-2 border-b border-white/10 text-right">TAXABLE</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="text-gray-300">
+                                                    {extractedData.tables.map((row, i) => (
+                                                        <tr key={i} className="hover:bg-white/5 transition">
+                                                            <td className="p-2 border-b border-white/5 font-medium">{row.item}</td>
+                                                            <td className="p-2 border-b border-white/5 text-right font-mono text-emerald-400">{row.taxable}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Neural System Logs (Minimized) */}
+                            <div className="h-32 bg-black/80 border-t border-white/10 p-4 font-mono overflow-y-auto no-scrollbar shrink-0">
+                                <h6 className="text-[8px] font-black text-emerald-500/50 uppercase mb-2">Neural Link Status</h6>
+                                {analysisLogs.map((log, i) => (
+                                    <div key={i} className="text-[8px] text-gray-500 leading-tight mb-1 animate-in slide-in-from-left-1">
+                                        <span className="opacity-30">[{new Date().toLocaleTimeString([], { hour12: false })}]</span> {log}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
