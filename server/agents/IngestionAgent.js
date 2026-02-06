@@ -83,7 +83,7 @@ async function runIngestionAgent() {
             Exclude Markdown formatting. Just the JSON.
         `;
 
-        console.log(`[Ingestion Agent] Sending to Neural Core (Gemini 1.5)...`);
+        console.log(`[Ingestion Agent] Sending to Logic Core (Gemini 1.5)...`);
         const result = await model.generateContent([prompt, imagePart]);
         const response = await result.response;
         const text = response.text();

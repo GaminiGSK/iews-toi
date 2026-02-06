@@ -137,6 +137,68 @@ export default function CompanyProfile() {
         }
     }, [docTemplates, activeDocTemplateId]);
 
+    // --- IEWS ACCESS MANAGEMENT STATE ---
+    const [showAccessModal, setShowAccessModal] = useState(false);
+    const [accessUnlocked, setAccessUnlocked] = useState(false);
+    const [accessControlCode, setAccessControlCode] = useState('');
+    const [accessUsers, setAccessUsers] = useState([]);
+    const [newAccessUser, setNewAccessUser] = useState({ name: '', level: 'Data', code: '' });
+    const [isChangingControlCode, setIsChangingControlCode] = useState(false);
+    const [newControlCodeInput, setNewControlCodeInput] = useState('');
+
+    const fetchAccessUsers = async () => {
+        try {
+            const res = await axios.get('/api/auth/access-users');
+            setAccessUsers(res.data);
+        } catch (err) {
+            console.error("Error fetching access users", err);
+        }
+    };
+
+    const handleAccessVerify = async () => {
+        try {
+            await axios.post('/api/auth/access-verify', { code: accessControlCode });
+            setAccessUnlocked(true);
+            fetchAccessUsers();
+        } catch (err) {
+            alert("Invalid Control Code");
+        }
+    };
+
+    const handleCreateAccessUser = async () => {
+        if (!newAccessUser.name || newAccessUser.code.length !== 6) {
+            return alert("Name and 6-digit code required.");
+        }
+        try {
+            const res = await axios.post('/api/auth/access-users', newAccessUser);
+            setAccessUsers([res.data, ...accessUsers]);
+            setNewAccessUser({ name: '', level: 'Data', code: '' });
+        } catch (err) {
+            alert("Error creating user");
+        }
+    };
+
+    const handleDeleteAccessUser = async (id) => {
+        try {
+            await axios.delete(`/api/auth/access-users/${id}`);
+            setAccessUsers(accessUsers.filter(u => u._id !== id));
+        } catch (err) {
+            alert("Error deleting user");
+        }
+    };
+
+    const handleUpdateControlCode = async () => {
+        if (newControlCodeInput.length !== 6) return alert("6-digit code required");
+        try {
+            await axios.post('/api/auth/update-access-control-code', { newCode: newControlCodeInput });
+            alert("Control code updated successfully");
+            setIsChangingControlCode(false);
+            setNewControlCodeInput('');
+        } catch (err) {
+            alert("Error updating code");
+        }
+    };
+
     // --- HANDLERS ---
     const handleSaveDocLibrary = async () => {
         const newTemplates = docTemplates.filter(t => t.status === 'New');
@@ -511,7 +573,18 @@ export default function CompanyProfile() {
                     mappedFiles.push(...virtualFiles);
                 }
 
-                setBankFiles(mappedFiles);
+                // 5. Final Critical Sync: Sort all files by First Transaction Date (Oldest at Top)
+                const sortedFiles = mappedFiles.sort((a, b) => {
+                    const d1 = a.transactions?.[0]?.date ? parseDate(a.transactions[0].date) : null;
+                    const d2 = b.transactions?.[0]?.date ? parseDate(b.transactions[0].date) : null;
+
+                    const timeA = (d1 && d1.getTime() > 0) ? d1.getTime() : 9999999999999;
+                    const timeB = (d2 && d2.getTime() > 0) ? d2.getTime() : 9999999999999;
+
+                    return timeA - timeB;
+                });
+
+                setBankFiles(sortedFiles);
 
             } catch (txErr) {
                 console.error("Error fetching bank data:", txErr);
@@ -553,21 +626,55 @@ export default function CompanyProfile() {
 
     // --- IEWS Placeholder ---
     const renderIEWS = () => (
-        <div className="w-full max-w-[1600px] mx-0 pt-8 pl-10 pr-[450px] animate-fade-in relative z-10 w-full h-[calc(100vh-80px)] flex flex-col">
+        <div className="w-full h-[calc(100vh-80px)] pt-6 pl-10 pr-[450px] animate-fade-in flex flex-col bg-slate-900">
+            {/* Header Row */}
             <div className="mb-8 flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                    <button onClick={() => setView('home')} className="p-2 bg-slate-800 hover:bg-slate-700 text-white rounded-full transition shadow-md border border-slate-700">
+                    <button
+                        onClick={() => setView('home')}
+                        className="p-2 bg-slate-800 hover:bg-slate-700 text-white rounded-full transition shadow-md border border-slate-700 shrink-0"
+                    >
                         <ArrowLeft size={20} />
                     </button>
-                    <h1 className="text-3xl font-extrabold text-white">IEWS Dashboard</h1>
+                    <div className="flex lg:flex-row flex-col lg:items-center gap-2">
+                        <h2 className={`font-extrabold text-white leading-tight uppercase tracking-tight ${(formData.companyNameEn || 'IEWS WORKSPACE').length > 25 ? 'text-lg lg:text-xl' : 'text-2xl lg:text-3xl'
+                            }`}>
+                            IEWS "{formData.companyNameEn || formData.companyCode || 'GK SMART'}"
+                        </h2>
+                        <div className="h-1 lg:h-6 w-full lg:w-[2px] bg-slate-800 rounded-full lg:mx-2" />
+                        <p className="text-[10px] lg:text-xs text-slate-500 uppercase tracking-widest font-bold">Income, Expenses, Withholding, Salaries</p>
+                    </div>
+                </div>
+
+                {/* HEADER ACTIONS (RIGHT SIDE) */}
+                <div className="flex items-center gap-3">
+                    <button className="flex items-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl border border-slate-700 transition-all font-bold text-sm">
+                        <ShieldCheck size={16} className="text-blue-400" />
+                        Control
+                    </button>
+                    <button className="flex items-center gap-3 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl border border-slate-700 transition-all font-bold text-sm">
+                        <ShieldCheck size={16} className="text-indigo-400" />
+                        Profile
+                    </button>
+                    <button onClick={() => setShowAccessModal(true)} className="flex items-center gap-3 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl border border-slate-700 transition-all font-bold text-sm">
+                        <ShieldCheck size={16} className="text-emerald-400" />
+                        Access
+                    </button>
                 </div>
             </div>
-            <div className="flex-1 flex items-center justify-center border border-dashed border-slate-700 rounded-3xl bg-slate-800/20">
-                <div className="text-center">
-                    <ShieldCheck size={64} className="mx-auto text-indigo-500/50 mb-4" />
-                    <h2 className="text-xl font-bold text-gray-400">Integrity & Enterprise Work System</h2>
-                    <p className="text-gray-500 mt-2">Global compliance and workflow monitor coming soon.</p>
+
+            {/* DARK EMPTY SHEET / WORKSPACE */}
+            <div className="flex-1 bg-slate-950/50 border border-slate-800 rounded-3xl relative overflow-hidden flex flex-col">
+                {/* Visual Guide / Placeholder */}
+                <div className="flex-1 flex flex-col items-center justify-center text-center p-20">
+                    <ShieldCheck size={48} className="text-indigo-400 opacity-20 mb-6" />
+                    <h3 className="text-2xl font-bold text-slate-700">Ready for Analysis</h3>
+                    <p className="text-slate-500 mt-2">Initialize financial modules in the top control panel.</p>
                 </div>
+
+                {/* Grid Overlay for "Sheet" feel */}
+                <div className="absolute inset-0 pointer-events-none opacity-[0.03]"
+                    style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 0)', backgroundSize: '40px 40px' }} />
             </div>
         </div>
     );
@@ -708,8 +815,8 @@ export default function CompanyProfile() {
 
                 {/* --- ROW 1: CORE WORKFLOW --- */}
 
-                {/* 1. IEWS (Integrity & Enterprise Work System) */}
-                <div onClick={() => window.open('https://iews-toi-standalone-588941282431.europe-west1.run.app/dashboard', '_blank')} className="group relative bg-gradient-to-br from-indigo-900/40 to-slate-800/50 hover:bg-slate-800/80 border border-indigo-500/30 hover:border-indigo-400 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-indigo-900/30">
+                {/* 1. IEWS (Income, Expenses, Withholding, Salaries) */}
+                <div onClick={() => setView('iews')} className="group relative bg-gradient-to-br from-indigo-900/40 to-slate-800/50 hover:bg-slate-800/80 border border-indigo-500/30 hover:border-indigo-400 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-indigo-900/30">
                     <div className="absolute top-0 right-0 p-3">
                         <span className="bg-indigo-500 text-white text-[10px] uppercase font-bold px-2 py-1 rounded-full animate-pulse shadow-lg shadow-indigo-500/50">New</span>
                     </div>
@@ -717,7 +824,7 @@ export default function CompanyProfile() {
                         <ShieldCheck className="text-indigo-400 w-6 h-6" />
                     </div>
                     <h3 className="text-lg font-bold text-white mb-2 group-hover:text-indigo-300 transition-colors">IEWS</h3>
-                    <p className="text-gray-400 text-xs leading-relaxed">Enterprise Work System. Manage workflow packages.</p>
+                    <p className="text-gray-400 text-xs leading-relaxed">Income, Expenses, Withholding, Salaries. Manage workflow packages.</p>
                 </div>
 
                 {/* 2. Bank Statements */}
@@ -863,9 +970,11 @@ export default function CompanyProfile() {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
-            // NUCLEAR OPTION: Force Reload to ensure state sync
-            alert('Document cleared. Page will reload.');
-            window.location.reload();
+            // 2026-02-03 FIX: Update state locally instead of full reload to prevent SiteGate lock
+            setMessage('Document cleared successfully.');
+            // Re-fetch profile to sync UI safely
+            await fetchProfile();
+            setTimeout(() => setMessage(''), 3000);
 
         } catch (err) {
             console.error(err);
@@ -1264,65 +1373,77 @@ export default function CompanyProfile() {
     const handleFiles = async (fileList) => {
         if (fileList.length === 0) return;
 
-        setMessage(`Processing ${fileList.length} files...`);
+        // 2026-02-03: Limit to 5 files to prevent bandwidth/AI timeouts
+        if (fileList.length > 5) {
+            alert("Maximum 5 files allowed per upload batch. Please upload more in chunks.");
+            return;
+        }
+
+        setMessage(`Preparing to process ${fileList.length} files...`);
         setUploadingBank(true);
 
-        const formData = new FormData();
-        fileList.forEach(file => formData.append('files', file));
+        const token = localStorage.getItem('token');
+        let processedCount = 0;
+        let failCount = 0;
 
-        try {
-            const token = localStorage.getItem('token');
-            const res = await axios.post('/api/company/upload-bank-statement', formData, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
+        // SEQUENTIAL UPLOAD: One by one to prevent 502 Bad Gateway timeouts
+        for (let i = 0; i < fileList.length; i++) {
+            const file = fileList[i];
+            const formData = new FormData();
+            formData.append('files', file);
 
-            let safeFiles = res.data.files || [];
-            if (!Array.isArray(safeFiles)) safeFiles = [];
+            setMessage(`Processing File ${i + 1}/${fileList.length}: ${file.name}...`);
 
-            // Set active file to the first new file if there are no files currently
-            setBankFiles(prev => {
-                const combined = [...prev, ...safeFiles];
-                // Sort by date (oldest first)
-                return combined.sort((a, b) => {
-                    const dateA = a.transactions?.[0]?.date ? parseDate(a.transactions[0].date) : new Date(0);
-                    const dateB = b.transactions?.[0]?.date ? parseDate(b.transactions[0].date) : new Date(0);
-                    return dateA - dateB;
+            try {
+                const res = await axios.post('/api/company/upload-bank-statement', formData, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'multipart/form-data'
+                    }
                 });
-            });
 
-            // Auto-select first file if we had none
-            if (bankFiles.length === 0 && safeFiles.length > 0) {
-                setActiveFileIndex(0);
+                let safeFiles = res.data.files || [];
+                if (!Array.isArray(safeFiles)) safeFiles = [];
+
+                // Update state instantly for this file
+                setBankFiles(prev => {
+                    const combined = [...prev, ...safeFiles];
+                    // Sort by date (Oldest at Top)
+                    return combined.sort((a, b) => {
+                        const d1 = a.transactions?.[0]?.date ? parseDate(a.transactions[0].date) : null;
+                        const d2 = b.transactions?.[0]?.date ? parseDate(b.transactions[0].date) : null;
+
+                        // Push errors/unknown to bottom (far future timestamp)
+                        const timeA = (d1 && d1.getTime() > 0) ? d1.getTime() : 9999999999999;
+                        const timeB = (d2 && d2.getTime() > 0) ? d2.getTime() : 9999999999999;
+
+                        return timeA - timeB;
+                    });
+                });
+
+                // Auto-select if it's the first one
+                if (processedCount === 0 && safeFiles.length > 0) {
+                    setActiveFileIndex(0);
+                }
+
+                processedCount++;
+
+                // 2026-02-03: Increased cooling delay (4s) to prevent Gemini 429 Resource Exhaustion
+                if (i < fileList.length - 1) {
+                    await new Promise(r => setTimeout(r, 4000));
+                }
+            } catch (err) {
+                console.error(`Upload failed for ${file.name}:`, err);
+                failCount++;
             }
+        }
 
-            const newCount = safeFiles.reduce((acc, f) => acc + (f.transactions?.length || 0), 0);
-            setMessage(`Success! Appended ${newCount} transactions from ${safeFiles.length} new files.`);
+        const statusMsg = `Upload Finished. ${processedCount} successful, ${failCount} failed.`;
+        setMessage(statusMsg);
+        setUploadingBank(false);
 
-        } catch (err) {
-            console.error("Bank Upload Error:", err);
-            const errMsg = err.response?.data?.message || err.message;
-
-            if (errMsg === 'Token is not valid' || err.response?.status === 401) {
-                alert('Session Expired. Please Login Again.');
-                localStorage.removeItem('token');
-                window.location.href = '/login';
-                return;
-            }
-
-            setMessage('Error: ' + errMsg);
-
-            // Show On-Screen Error
-            setDebugLog({
-                title: 'Bank Upload Failed',
-                message: errMsg,
-                details: JSON.stringify(err.response?.data || {}, null, 2)
-            });
-
-        } finally {
-            setUploadingBank(false);
+        if (failCount > 0) {
+            alert(`Warnings: ${failCount} file(s) failed during upload. Check console for details.`);
         }
     };
 
@@ -1342,13 +1463,13 @@ export default function CompanyProfile() {
             try {
                 const token = localStorage.getItem('token');
 
-                // If it's a Bank Registry File (has _id), use the new delete-bank-file API
+                // Corrected endpoint: /api/company/bank-file/ (singular)
                 if (file._id && !file.isVirtual) {
-                    await axios.delete(`/api/company/bank-files/${file._id}`, {
+                    await axios.delete(`/api/company/bank-file/${file._id}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                 } else {
-                    // Fallback to legacy transaction deletion (for Virtual Files or unlinked transactions)
+                    // Fallback to legacy transaction deletion
                     const ids = file.transactions ? file.transactions.map(t => t._id).filter(Boolean) : [];
                     if (ids.length > 0) {
                         await axios.post('/api/company/delete-transactions', {
@@ -1359,8 +1480,11 @@ export default function CompanyProfile() {
                     }
                 }
 
-                alert(`Document and transactions deleted. Page will reload.`);
-                window.location.reload();
+                // 2026-02-03 FIX: Update state locally instead of full reload to prevent SiteGate lock
+                setBankFiles(prev => prev.filter((_, i) => i !== idx));
+                if (activeFileIndex === idx) setActiveFileIndex(0);
+                setMessage("Document and transactions deleted successfully.");
+                setTimeout(() => setMessage(''), 3000);
 
             } catch (err) {
                 console.error('Delete API Error:', err);
@@ -1404,7 +1528,7 @@ export default function CompanyProfile() {
     };
 
     const renderBank = () => (
-        <div className="w-full h-[calc(100vh-80px)] pt-6 px-4 animate-fade-in flex flex-col">
+        <div className="w-full h-[calc(100vh-80px)] pt-6 pl-10 pr-[450px] animate-fade-in flex flex-col">
             <div className="mb-4 flex items-center gap-4">
                 <button
                     onClick={() => setView('home')}
@@ -1747,6 +1871,158 @@ export default function CompanyProfile() {
                     <p className="text-[10px] text-red-400 mt-2">
                         Please take a screenshot of this error and send it to support.
                     </p>
+                </div>
+            )}
+
+            {/* IEWS ACCESS MODAL */}
+            {showAccessModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+                    <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md" onClick={() => setShowAccessModal(false)} />
+                    <div className="relative w-full max-w-2xl bg-slate-900 border border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                        <div className="p-8 border-b border-white/5 flex justify-between items-center bg-slate-800/50">
+                            <div>
+                                <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                                    <ShieldCheck className="text-emerald-400" />
+                                    Access Management
+                                </h2>
+                                <p className="text-slate-400 text-[10px] uppercase tracking-widest mt-1">Management • Approval • Data</p>
+                            </div>
+                            <button onClick={() => setShowAccessModal(false)} className="text-slate-400 hover:text-white transition">
+                                <ArrowLeft size={24} />
+                            </button>
+                        </div>
+
+                        {!accessUnlocked ? (
+                            <div className="p-12 text-center flex flex-col items-center">
+                                <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mb-6 border border-emerald-500/20">
+                                    <ShieldCheck size={40} className="text-emerald-400" />
+                                </div>
+                                <h3 className="text-xl font-bold text-white mb-2">Systems Locked</h3>
+                                <p className="text-slate-400 mb-8 max-w-sm">Enter the 6-digit control code to manage departmental access levels.</p>
+                                <input
+                                    type="password"
+                                    maxLength={6}
+                                    placeholder="888888"
+                                    value={accessControlCode}
+                                    onChange={(e) => setAccessControlCode(e.target.value)}
+                                    className="w-full max-w-[200px] bg-slate-950/50 border border-white/5 rounded-2xl px-4 py-4 text-center text-2xl tracking-[0.5em] text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all font-mono mb-6"
+                                />
+                                <button
+                                    onClick={handleAccessVerify}
+                                    className="w-full max-w-[200px] bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-2xl transition-all active:scale-[0.98] shadow-lg shadow-emerald-600/20"
+                                >
+                                    Verify Code
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="p-8 overflow-y-auto flex-1">
+                                {/* Change Control Code Section */}
+                                <div className="mb-10 bg-slate-800/30 p-6 rounded-2xl border border-white/5">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="font-bold text-white uppercase text-xs tracking-widest">Master Control Code</h3>
+                                        <button
+                                            onClick={() => setIsChangingControlCode(!isChangingControlCode)}
+                                            className="text-[10px] text-blue-400 font-bold hover:underline"
+                                        >
+                                            {isChangingControlCode ? 'Cancel' : 'Change Master Code'}
+                                        </button>
+                                    </div>
+                                    {isChangingControlCode ? (
+                                        <div className="flex gap-4">
+                                            <input
+                                                type="password"
+                                                maxLength={6}
+                                                placeholder="Enter New 6-Digit Code"
+                                                value={newControlCodeInput}
+                                                onChange={(e) => setNewControlCodeInput(e.target.value)}
+                                                className="flex-1 bg-slate-950 border border-white/10 rounded-xl px-4 py-2 text-white font-mono"
+                                            />
+                                            <button onClick={handleUpdateControlCode} className="bg-blue-600 px-6 py-2 rounded-xl text-white font-bold text-sm">Save</button>
+                                        </div>
+                                    ) : (
+                                        <div className="text-slate-400 text-xs italic">Active master code is enforced.</div>
+                                    )}
+                                </div>
+
+                                {/* Create User Section */}
+                                <div className="mb-10">
+                                    <h3 className="font-bold text-white uppercase text-xs tracking-widest mb-6 flex items-center gap-2">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                        Create New Access Point
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                        <input
+                                            placeholder="Access Name (e.g. John Manager)"
+                                            value={newAccessUser.name}
+                                            onChange={(e) => setNewAccessUser({ ...newAccessUser, name: e.target.value })}
+                                            className="bg-slate-800 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
+                                        />
+                                        <select
+                                            value={newAccessUser.level}
+                                            onChange={(e) => setNewAccessUser({ ...newAccessUser, level: e.target.value })}
+                                            className="bg-slate-800 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
+                                        >
+                                            <option>Management</option>
+                                            <option>Approval</option>
+                                            <option>Data</option>
+                                        </select>
+                                    </div>
+                                    <div className="flex gap-4">
+                                        <input
+                                            placeholder="6-Digit Access Code"
+                                            maxLength={6}
+                                            value={newAccessUser.code}
+                                            onChange={(e) => setNewAccessUser({ ...newAccessUser, code: e.target.value })}
+                                            className="flex-1 bg-slate-800 border border-white/10 rounded-xl px-4 py-3 text-white font-mono text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
+                                        />
+                                        <button
+                                            onClick={handleCreateAccessUser}
+                                            className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-8 py-3 rounded-xl transition-all shadow-lg shadow-emerald-900/40"
+                                        >
+                                            + Access
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* User List */}
+                                <div>
+                                    <h3 className="font-bold text-white uppercase text-xs tracking-widest mb-6 flex items-center gap-2">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                                        Department Authority
+                                    </h3>
+                                    <div className="space-y-3 pb-8">
+                                        {accessUsers.map(user => (
+                                            <div key={user._id} className="flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-2xl hover:border-white/10 transition">
+                                                <div className="flex items-center gap-4">
+                                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xs ${user.level === 'Management' ? 'bg-rose-500/10 text-rose-400' :
+                                                        user.level === 'Approval' ? 'bg-indigo-500/10 text-indigo-400' :
+                                                            'bg-emerald-500/10 text-emerald-400'
+                                                        }`}>
+                                                        {user.level.charAt(0)}
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-white font-bold text-sm">{user.name}</div>
+                                                        <div className="text-slate-500 text-[10px] uppercase font-bold tracking-tight">{user.level}</div>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-6">
+                                                    <div className="text-slate-400 font-mono text-[10px] tracking-widest bg-slate-950 px-3 py-1 rounded-lg">{user.code}</div>
+                                                    <button onClick={() => handleDeleteAccessUser(user._id)} className="text-red-400/30 hover:text-red-400 transition p-2">
+                                                        <X size={18} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {accessUsers.length === 0 && (
+                                            <div className="text-center py-10 border border-dashed border-white/10 rounded-3xl">
+                                                <p className="text-slate-600 text-sm italic">No special access users created yet.</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
         </div>

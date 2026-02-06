@@ -406,25 +406,37 @@ router.get('/bank-files', auth, async (req, res) => {
 router.delete('/bank-file/:id', auth, async (req, res) => {
     try {
         const BankFile = require('../models/BankFile');
+        const Transaction = require('../models/Transaction');
         const { id } = req.params;
 
         const file = await BankFile.findOne({ _id: id, companyCode: req.user.companyCode });
         if (!file) return res.status(404).json({ message: 'File not found' });
 
-        // Delete from Drive
-        if (file.driveId) {
+        const driveId = file.driveId;
+
+        // 1. Delete associated Transactions FIRST
+        if (driveId) {
+            const txResult = await Transaction.deleteMany({
+                'originalData.driveId': driveId,
+                companyCode: req.user.companyCode
+            });
+            console.log(`[Delete] Removed ${txResult.deletedCount} transactions for file ${id}`);
+        }
+
+        // 2. Delete from Drive
+        if (driveId) {
             try {
                 // Use the shared delete helper which moves to "Deleted" folder
-                await deleteFile(file.driveId);
+                await deleteFile(driveId);
             } catch (ignore) {
                 console.warn("Drive delete failed, continuing DB delete:", ignore.message);
             }
         }
 
-        // Delete from DB
+        // 3. Delete from DB (File Registry)
         await BankFile.deleteOne({ _id: id });
 
-        res.json({ message: 'File deleted successfully' });
+        res.json({ message: 'File and all associated transactions deleted successfully' });
     } catch (err) {
         console.error('Delete Bank File Error:', err);
         res.status(500).json({ message: 'Error deleting bank file' });

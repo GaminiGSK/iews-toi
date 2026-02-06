@@ -21,7 +21,7 @@ router.post('/message', auth, async (req, res) => {
 
         // Fetch Company Name (Fallback)
         const user = await User.findById(req.user.id);
-        const companyName = profile.companyNameEn || user.companyName || companyCode;
+        const companyName = profile.companyNameEn || (user ? user.companyName : null) || companyCode;
 
         // Fetch recent transactions (Limit 15 for context)
         const transactions = await Transaction.find({ companyCode })

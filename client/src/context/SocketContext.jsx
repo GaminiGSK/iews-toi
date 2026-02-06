@@ -14,29 +14,40 @@ export const SocketProvider = ({ children }) => {
     const [socket, setSocket] = useState(null);
 
     useEffect(() => {
+        // DETECT ENVIRONMENT
+        const isLocal = window.location.hostname === 'localhost';
+        const defaultUrl = isLocal ? 'http://localhost:5000' : window.location.origin;
+        const finalUrl = import.meta.env.VITE_API_URL || defaultUrl;
+
+        console.log(`[Logic Link] Base URL: ${finalUrl} (Environment: ${isLocal ? 'Local' : 'Production'})`);
+
         // Initialize Socket Connection
-        // withCredentials: true might be needed if using cookies, 
-        // but for JWT auth via headers or just open socket, this is fine.
-        const newSocket = io(SOCKET_URL, {
-            transports: ['websocket'], // force websocket
-            reconnectionAttempts: 5,
+        const newSocket = io(finalUrl, {
+            // FIREBASE HOSTING NOTE: Firebase rewrites to Cloud Run DO NOT support WebSockets.
+            // We MUST use polling as the primary transport on production.
+            transports: isLocal ? ['websocket', 'polling'] : ['polling', 'websocket'],
+            reconnectionAttempts: 20, // Be more persistent for Cloud Run cold starts
+            reconnectionDelay: 2000,
+            timeout: 30000, // 30s timeout for cold starts
+            autoConnect: true
         });
 
-        console.log(`[Neural Link] Connecting to ${SOCKET_URL}...`);
+        console.log(`[Logic Link] Attempting connection to: ${finalUrl}/socket.io/`);
 
         newSocket.on('connect', () => {
-            console.log(`[Neural Link] Connected. ID: ${newSocket.id}`);
+            console.log(`[Logic Link] ONLINE. Protocol: ${newSocket.io.engine.transport.name} | ID: ${newSocket.id}`);
         });
 
         newSocket.on('connect_error', (err) => {
-            console.error(`[Neural Link] Connection Error:`, err);
+            console.error(`[Logic Link] UNREACHABLE:`, err.message);
+            console.log(`[Logic Link] Retrying (${newSocket.io.reconnectionAttempts} attempts left)...`);
         });
 
         setSocket(newSocket);
 
         // Cleanup on unmount
         return () => {
-            console.log('[Neural Link] Disconnecting...');
+            console.log('[Logic Link] Terminating Connection...');
             newSocket.disconnect();
         };
     }, []);

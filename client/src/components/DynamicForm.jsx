@@ -131,26 +131,7 @@ const SectionRow = ({ number, labelKh, labelEn, children, className = "" }) => (
 const DynamicForm = ({ schema = {}, data = {}, onChange = () => { }, onSubmit = () => { }, activeSheet = 1, onSheetChange = () => { } }) => {
     return (
         <div className="bg-white shadow-2xl mx-auto w-full max-w-[1000px] text-black font-sans leading-normal relative min-h-[1414px]">
-            {/* Header / Top Navigation */}
-            <div className="sticky top-0 z-[60] bg-slate-900 px-6 py-3 flex items-center justify-between border-b border-white/10 print:hidden text-white">
-                <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-2">
-                        <Calculator className="text-rose-400" size={20} />
-                        <span className="font-bold text-sm tracking-widest hidden md:block">TAX LIVE WORKSPACE</span>
-                    </div>
-                    <div className="flex gap-2 bg-slate-800 p-1 rounded-lg">
-                        {[1, 2, 3, 4, 5].map(p => (
-                            <button
-                                key={p}
-                                onClick={() => onSheetChange(p)}
-                                className={`px-3 py-1.5 rounded-md text-xs font-bold transition ${activeSheet === p ? 'bg-rose-600 text-white shadow-lg' : 'hover:bg-slate-700 text-slate-400'}`}
-                            >
-                                PAGE {p}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </div>
+            {/* Removed Legacy Header */}
 
             {/* Paper Container */}
             <div className="p-8 print:p-0">

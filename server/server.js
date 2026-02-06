@@ -22,10 +22,12 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(express.json({
+    limit: '50mb', // Increased for Excel JSON
     verify: (req, res, buf) => {
         req.rawBody = buf ? buf.toString() : '';
     }
 }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cors());
 app.use(helmet({
     contentSecurityPolicy: {
@@ -39,6 +41,12 @@ app.use(helmet({
 }));
 app.use(morgan('dev'));
 
+// Health Check (For Cloud Run Self-Healing)
+app.get('/health', (req, res) => {
+    const dbStatus = mongoose.connection.readyState === 1 ? 'DB Connected' : 'DB Disconnected';
+    res.status(200).json({ status: 'OK', database: dbStatus, timestamp: new Date() });
+});
+
 // Routes
 console.log('[Startup] Loading API Routes...');
 app.use('/api/auth', authRoutes);
@@ -47,6 +55,8 @@ app.use('/api/chat', require('./routes/chat'));
 app.use('/api/tax', require('./routes/tax'));
 app.use('/api/copilotkit', require('./routes/copilot'));
 app.use('/api/management', require('./routes/management'));
+app.use('/api/excel', require('./routes/excel')); // Register Excel Route
+app.use('/api/vision', require('./routes/vision')); // Register Vision Route
 console.log('[Startup] API Routes Loaded.');
 app.use('/uploads', express.static('uploads')); // Enabled for Local Fallback Access
 
@@ -118,10 +128,10 @@ const startServer = async () => {
         global.io = io; // Make accessible to Agents
 
         io.on('connection', (socket) => {
-            console.log(`[Neural Link] Client Connected: ${socket.id}`);
+            console.log(`[Logic Link] Client Connected: ${socket.id}`);
 
             socket.on('disconnect', () => {
-                console.log(`[Neural Link] Client Disconnected: ${socket.id}`);
+                console.log(`[Logic Link] Client Disconnected: ${socket.id}`);
             });
 
             // Tax Workspace Events
@@ -145,7 +155,7 @@ const startServer = async () => {
 
         // --- 2. Start Listening Immediately (Fixes deployment timeouts) ---
         server.listen(PORT, () => {
-            console.log(`Server running on port ${PORT} (with Neural Link active)`);
+            console.log(`Server running on port ${PORT} (with Logic Link active)`);
         });
 
         // --- 3. Database Connection ---
@@ -214,7 +224,15 @@ const startServer = async () => {
         };
 
     } catch (err) {
-        console.error('MongoDB Connection Failed:', err.message);
+        console.error('!!! CRITICAL STARTUP ERROR !!!');
+        console.error(err);
+
+        // Automated Error Reporting (Step 3)
+        try {
+            const errorLog = `[${new Date().toISOString()}] CRITICAL: ${err.stack || err.message}\n`;
+            fs.appendFileSync(path.join(__dirname, 'server-error.log'), errorLog);
+        } catch (e) { }
+
         process.exit(1); // Exit if DB fails so Cloud Run restarts the container
     }
 };

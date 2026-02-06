@@ -10,15 +10,9 @@ const SiteGate = ({ children }) => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Bypass gate for subagent testing on localhost
-        if (window.location.hostname === 'localhost') {
-            localStorage.setItem('site_access', 'granted');
-            setAccessGranted(true);
-            return;
-        }
-
-        const storedAccess = localStorage.getItem('site_access');
-        if (storedAccess === 'granted' || storedAccess === 'admin') {
+        // Check if access was already granted in this session
+        const status = localStorage.getItem('site_access');
+        if (status === 'granted' || status === 'admin') {
             setAccessGranted(true);
         }
     }, []);

@@ -80,63 +80,7 @@ router.get('/templates', async (req, res) => {
     }
 });
 
-const googleAI = require('../services/googleAI');
 
-// Analyze Template (AI Auto-Scan)
-router.post('/templates/:id/analyze', async (req, res) => {
-    try {
-        const template = await TaxTemplate.findById(req.params.id);
-        if (!template) return res.status(404).json({ message: 'Template not found' });
-
-        // Restore file from Base64 for AI processing
-        let tempFilePath = template.path;
-        // Logic to write temp file if missing
-        if (!fs.existsSync(tempFilePath)) {
-            try {
-                // Determine a safe temp path
-                // If template.data exists, write it.
-                if (template.data) {
-                    const useLocal = !fs.existsSync('/tmp');
-                    const tempDir = useLocal ? path.join(__dirname, '../uploads') : '/tmp';
-                    if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
-
-                    tempFilePath = path.join(tempDir, template.filename);
-                    fs.writeFileSync(tempFilePath, Buffer.from(template.data, 'base64'));
-                } else {
-                    return res.status(400).json({ message: 'Template content missing.' });
-                }
-            } catch (e) {
-                console.error("Failed to write temp file for AI", e);
-                return res.status(500).json({ message: 'Server Write Failure' });
-            }
-        }
-
-        console.log(`Starting AI Analysis for ${template.name}...`);
-        const { mappings: aiMappings, rawText } = await googleAI.analyzeTaxForm(tempFilePath);
-
-        // Convert to our Schema format
-        const newMappings = aiMappings.map((m, index) => ({
-            id: Date.now() + index,
-            label: m.label || `Field ${index + 1}`,
-            x: m.x,
-            y: m.y,
-            w: m.w,
-            h: m.h,
-            semanticLabel: m.label // Store the AI's semantic label
-        }));
-
-        // Merge with existing? Or overwrite? Overwrite for now as it's an "Analyze" action.
-        template.mappings = newMappings;
-        // Optional: Save rawText to model if you add it later. For now, just send to UI.
-        template.status = 'Configured';
-        await template.save();
-
-        res.json({ message: 'Analysis Complete', mappings: newMappings, rawText });
-    } catch (err) {
-        console.error('Error analyzing template:', err);
-        res.status(500).json({ message: 'AI Analysis Failed' });
-    }
-});
 
 // Serve Template File
 router.get('/file/:filename', async (req, res) => {

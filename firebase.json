@@ -1,0 +1,20 @@
+{
+    "hosting": {
+        "site": "gksmart-ai",
+        "public": "public",
+        "ignore": [
+            "firebase.json",
+            "**/.*",
+            "**/node_modules/**"
+        ],
+        "rewrites": [
+            {
+                "source": "**",
+                "run": {
+                    "serviceId": "iews-toi",
+                    "region": "asia-southeast1"
+                }
+            }
+        ]
+    }
+}

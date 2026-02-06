@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const AccessUser = require('../models/AccessUser');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
@@ -16,10 +17,18 @@ const initGateCodes = async () => {
         );
         console.log('Enforced admin_gate_code: 999999');
 
-        const userCode = await SystemSetting.findOne({ key: 'user_gate_code' });
-        if (!userCode) {
-            await new SystemSetting({ key: 'user_gate_code', value: '112233' }).save();
-            console.log('Initialized default user_gate_code: 112233');
+        // Enforce 666666 as the user gate code
+        await SystemSetting.findOneAndUpdate(
+            { key: 'user_gate_code' },
+            { value: '666666' },
+            { upsert: true }
+        );
+        console.log('Enforced user_gate_code: 666666');
+
+        const accessCode = await SystemSetting.findOne({ key: 'access_control_code' });
+        if (!accessCode) {
+            await new SystemSetting({ key: 'access_control_code', value: '888888' }).save();
+            console.log('Initialized default access_control_code: 888888');
         }
     } catch (err) {
         console.error('Error initializing gate codes:', err);
@@ -269,6 +278,70 @@ router.post('/update-gate-code', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).send('Server Error');
+    }
+});
+
+// Access Control Verify (888888)
+router.post('/access-verify', async (req, res) => {
+    const { code } = req.body;
+    try {
+        const setting = await SystemSetting.findOne({ key: 'access_control_code' });
+        const validCode = setting ? setting.value : '888888';
+        if (code === validCode) {
+            res.json({ success: true });
+        } else {
+            res.status(401).json({ message: 'Invalid control code' });
+        }
+    } catch (err) {
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Update Access Control Code
+router.post('/update-access-control-code', async (req, res) => {
+    const { newCode } = req.body;
+    if (!newCode || newCode.length !== 6) return res.status(400).json({ message: '6-digit code required' });
+    try {
+        await SystemSetting.findOneAndUpdate(
+            { key: 'access_control_code' },
+            { value: newCode },
+            { upsert: true }
+        );
+        res.json({ message: 'Control code updated' });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Get Access Users
+router.get('/access-users', async (req, res) => {
+    try {
+        const users = await AccessUser.find().sort({ createdAt: -1 });
+        res.json(users);
+    } catch (err) {
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Create Access User
+router.post('/access-users', async (req, res) => {
+    const { name, level, code } = req.body;
+    try {
+        const newUser = new AccessUser({ name, level, code });
+        await newUser.save();
+        res.json(newUser);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Delete Access User
+router.delete('/access-users/:id', async (req, res) => {
+    try {
+        await AccessUser.findByIdAndDelete(req.params.id);
+        res.json({ message: 'User deleted' });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error' });
     }
 });
 

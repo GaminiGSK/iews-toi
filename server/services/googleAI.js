@@ -33,45 +33,7 @@ function fileToGenerativePart(path, mimeType) {
     };
 }
 
-exports.extractDocumentData = async (filePath, docType) => {
-    console.log(`[GeminiAI] Processing Document: ${filePath} (Type: ${docType})`);
-    try {
-        let prompt = "";
 
-        switch (docType) {
-            case 'moc_cert':
-                prompt = "Extract from MOC Certificate (JSON): companyNameEn, companyNameKh, registrationNumber, oldRegistrationNumber, incorporationDate (DD/MM/YYYY), companyType (e.g. Sole Proprietorship, PLC), address.";
-                break;
-            case 'kh_extract':
-            case 'en_extract':
-                prompt = "Extract from Business Extract (JSON): companyNameEn, registrationNumber, businessActivity, directorName, capitalAmount.";
-                break;
-            case 'tax_patent':
-            case 'tax_id':
-                prompt = "Extract from Tax/VAT Certificate (JSON): vatTin, companyNameKh, taxRegistrationDate.";
-                break;
-            case 'bank_opening':
-                prompt = "Extract from Bank Account Letter (JSON): bankName, bankAccountNumber, bankAccountName, bankCurrency.";
-                break;
-            default:
-                prompt = "Extract all visible business details from this image as JSON: companyNameEn, companyNameKh, registrationNumber, address, vatTin.";
-        }
-
-        prompt += " Return ONLY raw JSON, no markdown.";
-
-        // Vision Model supports JPEG/PNG directly
-        const imagePart = fileToGenerativePart(filePath, "image/jpeg");
-
-        const result = await getModel().generateContent([prompt, imagePart]);
-        const response = await result.response;
-        const text = response.text();
-
-        return cleanAndParseJSON(text);
-    } catch (error) {
-        console.error("Gemini API Error (Doc):", error);
-        return { rawText: "Error extracting data." };
-    }
-};
 
 exports.extractBankStatement = async (filePath) => {
     console.log(`[GeminiAI] Scanning Bank Statement (Vision 2.0): ${filePath}`);
@@ -80,16 +42,14 @@ exports.extractBankStatement = async (filePath) => {
         // AGENTIC PROMPT: STAGE 1 (Layout) & STAGE 2 (Structure)
         const prompt = `
             Analyze this Bank Statement image visually.
-            1. **Layout Detection**: Locate the main "Account Activity" or "Transaction History" table. Ignore headers/footers outside the table.
-            2. **Data Extraction**: Extract every single row from the table into a JSON Array.
+            1. **Layout Detection**: Locate the main "Account Activity" or "Transaction History" table. IGNORE headers, footers, and carry-forward noise.
+            2. **Data Extraction**: Extract every single TRANSACTION row from the table into a JSON Array.
             
             JSON Schema:
             [
-            JSON Schema:
-            [
               {
-                "date": "DD-MMM-YYYY", // CRITICAL: Return format like "01-Jul-2025". Use English Month Abbr.
-                "description": "Full verbatim description text. Do NOT summarize. Include REF#, Time, Remarks, and all details.",
+                "date": "YYYY-MM-DD", // REQUIRED. Inferred Year from header + Date in row. Use ISO format YYYY-MM-DD.
+                "description": "Full verbatim description text. Do NOT summarize. Include REF#, Time, Remarks.",
                 "moneyIn": 0.00, // Number. If empty/dash, use 0.
                 "moneyOut": 0.00, // Number. If empty/dash, use 0.
                 "balance": "0.00" // String representation of the balance column
@@ -97,11 +57,10 @@ exports.extractBankStatement = async (filePath) => {
             ]
 
             Rules:
-            - **CRITICAL**: Look for the 'Statement Date', 'Period', or 'Date' header at the top of the image to determine the correct YEAR. 
-            - If the transaction rows only show 'DD MMM' (e.g. 15 Feb), use the YEAR found in the header. 
-            - Do NOT default to the current year unless no year is found in the entire document.
-            - Look strictly at the columns. Don't hallucinate data.
-            - If "Money In" and "Money Out" are in one column (Signed), separate them based on sign (- is Out).
+            - **CRITICAL**: If a row does NOT have a clear transaction date, SKIP IT.
+            - **YEAR DETECTION**: Look for 'Statement Date', 'Period', or 'Date' header at the top to determine the correct YEAR. 
+            - If rows only show 'DD MMM' (e.g. 15 Feb), append the YEAR found in the header. 
+            - If "Money In" and "Money Out" are in one column (Signed), separate them based on sign.
             - Output ONLY the JSON Array. No Markdown blocks.
         `;
 
@@ -120,24 +79,22 @@ exports.extractBankStatement = async (filePath) => {
         const text = response.text();
 
         console.log("[GeminiAI] Raw Output Length:", text.length);
-        const data = cleanAndParseJSON(text);
+        let data = cleanAndParseJSON(text);
 
         if (!Array.isArray(data) || data.length === 0) {
             console.warn("[GeminiAI] Output Invalid/Empty. Raw:", text.substring(0, 100));
-            // DEBUG FALLBACK: Return the raw text as a transaction so user can see it
             return [{
                 date: "DEBUG_ERR",
-                description: "AI Parse Failed. Raw Output: " + text.substring(0, 200).replace(/\n/g, ' '),
+                description: "AI Parse Failed. Please try another image or check the file quality. Raw: " + text.substring(0, 200).replace(/\n/g, ' '),
                 moneyIn: 0,
                 moneyOut: 0,
                 balance: "0.00"
             }];
         }
 
-        // AGENTIC STAGE 3: LOGICAL VALIDATION (Math Check)
-        // We can optionally verify here, or just mark them for the UI.
-        // For now, we return the raw data and let the UI handle display.
-        // We could calculate a 'verified' flag if needed.
+        // AGENTIC STAGE 3: DATA VALIDATION
+        // Be more liberal with dates - as long as it looks like a date, keep it.
+        data = data.filter(tx => tx.date && tx.date.length >= 6);
 
         return data;
 
@@ -333,73 +290,7 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
 };
 
 
-exports.analyzeTaxForm = async (filePath) => {
-    console.log(`[GeminiAI] Analyzing Tax Form Layout: ${filePath}`);
-    try {
-        // Use standard model (not forced JSON mode) for better reasoning on Layout
-        const apiKey = getApiKey();
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const visionModel = genAI.getGenerativeModel({
-            model: "gemini-2.0-flash",
-            systemInstruction: "You are a professional Document Archeologist. You are excellent at finding OCR fields and their pixel coordinates."
-        });
 
-        const prompt = `
-            Analyze this Cambodian TOI Tax Form. 
-            Identify every single white box, digit-strip (TIN), or checkbox. 
-            
-            YOU MUST FIND AT LEAST 20 FIELDS.
-            Focus on:
-            1. Fiscal Year (4 boxes at top right)
-            2. Tax Period (top left)
-            3. TIN (1. Tax Identification Number) - 9 digit squares
-            4. Enterpise Details (2, 3, 4, 5, 8, 9, 10 - Name, Phone, Email, Address)
-            5. Business Activities (6, 7)
-            6. Checkboxes (11, 12, 13, 14)
-            7. Amounts (Table columns 15, 16, 17)
-
-            For each field, provide:
-            - label: Title of the field.
-            - x, y, w, h: Percentage coordinates (0 to 100).
-            - type: "text" or "checkbox".
-
-            Reply ONLY with a JSON object:
-            {
-                "fields": [ { "label": "...", "x": ..., "y": ..., "w": ..., "h": ..., "type": "..." }, ... ],
-                "rawText": "Harvest all text you see here."
-            }
-        `;
-
-        const ext = path.extname(filePath).toLowerCase();
-        let mimeType = 'image/jpeg';
-        if (ext === '.png') mimeType = 'image/png';
-        if (ext === '.pdf') mimeType = 'application/pdf';
-        if (ext === '.jpg' || ext === '.jpeg') mimeType = 'image/jpeg';
-
-        const filePart = fileToGenerativePart(filePath, mimeType);
-
-        const result = await visionModel.generateContent([prompt, filePart]);
-        const response = await result.response;
-        const text = response.text();
-
-        console.log("[GeminiAI] Raw Layout Analysis Output (Full Text):", text);
-
-        const data = cleanAndParseJSON(text);
-
-        if (!data) throw new Error("AI returned unparseable output.");
-
-        // Handle various JSON shapes from Gemini
-        const mappings = data.fields || data.mappings || (Array.isArray(data) ? data : []);
-        const rawText = data.rawText || data.text || "Summary available in mappings.";
-
-        console.log(`[GeminiAI] Detected ${mappings.length} fields and harvested text.`);
-        return { mappings, rawText };
-
-    } catch (e) {
-        console.error("Gemini Tax Analysis Error:", e);
-        return { mappings: [], rawText: "Error during analysis." };
-    }
-};
 
 // Utilities
 function cleanAndParseJSON(text) {

@@ -34,14 +34,21 @@ const AIAssistant = () => {
         scrollToBottom();
     }, [messages, isOpen, isThinking]);
 
-    // Socket Listeners
+    // Socket Listeners - Correctly handle connection state and clean up
     useEffect(() => {
         if (!socket) return;
 
+        // Synchronize initial state
         setIsConnected(socket.connected);
 
-        const onConnect = () => setIsConnected(true);
-        const onDisconnect = () => setIsConnected(false);
+        const onConnect = () => {
+            console.log("[AIAssistant] Socket Connected");
+            setIsConnected(true);
+        };
+        const onDisconnect = (reason) => {
+            console.log("[AIAssistant] Socket Disconnected:", reason);
+            setIsConnected(false);
+        };
         const onAgentMessage = (data) => {
             setMessages(prev => [...prev, {
                 role: 'assistant',
@@ -49,19 +56,24 @@ const AIAssistant = () => {
                 isSystem: data.isSystem,
                 toolAction: data.toolAction
             }]);
-            if (!isOpen) setIsOpen(true); // Auto-open on message
+            // If the chat is closed, we might want to show a badge rather than auto-opening
+            // but for now keeping your logic
+            if (!isOpen) setIsOpen(true);
         };
 
         socket.on('connect', onConnect);
         socket.on('disconnect', onDisconnect);
         socket.on('agent:message', onAgentMessage);
 
+        // If socket is already connected when effect runs, fire onConnect logic
+        if (socket.connected) onConnect();
+
         return () => {
             socket.off('connect', onConnect);
             socket.off('disconnect', onDisconnect);
             socket.off('agent:message', onAgentMessage);
         };
-    }, [socket, isOpen]);
+    }, [socket]); // Only depend on socket instance
 
     // HANDLERS
     const handleSend = async () => {

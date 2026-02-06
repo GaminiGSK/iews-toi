@@ -1,20 +1,18 @@
-require('dotenv').config({ path: './server/.env' });
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const key = "AIzaSyChPOMe6tCoxVOwgxwszhRaWr4Vsbw3iB0";
 
-const API_KEY = process.env.GEMINI_API_KEY;
-
-async function listModels() {
+async function list() {
     try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${API_KEY}`;
-        const response = await fetch(url);
-        const data = await response.json();
+        console.log("Listing models via REST (fetch)...");
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+        const data = await res.json();
 
-        const generateModels = data.models.filter(m => m.supportedGenerationMethods.includes('generateContent'));
-        console.log("Generate Content Models:");
-        generateModels.forEach(m => console.log(`- ${m.name} (${m.displayName})`));
+        if (data.error) {
+            console.error("API Error:", JSON.stringify(data.error, null, 2));
+        } else {
+            console.log("Models:", data.models?.map(m => m.name));
+        }
     } catch (e) {
-        console.error("Error listing models:", e);
+        console.error("Network Error:", e);
     }
 }
-
-listModels();
+list();
