@@ -168,21 +168,25 @@ const startServer = async () => {
         });
         console.log('MongoDB Connected Successfully');
 
-        // Seed Admins
+        // Seed Master Accounts (Ensure GK SMART exists)
         const User = require('./models/User');
         const bcrypt = require('bcryptjs');
-        const adminCount = await User.countDocuments({ role: 'admin' });
-        if (adminCount === 0) {
-            console.log('Seeding initial admins...');
-            const salt = await bcrypt.genSalt(10);
-            const hashedPassword = await bcrypt.hash('admin123', salt);
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash('ggmt1235#', salt);
 
-            await User.create([
-                { companyCode: 'ADMIN01', password: hashedPassword, role: 'admin', isFirstLogin: true },
-                { companyCode: 'ADMIN02', password: hashedPassword, role: 'admin', isFirstLogin: true }
-            ]);
-            console.log('Admins seeded');
+        const masterAccounts = [
+            { companyName: 'GK SMART & Ai', companyCode: 'ADMIN_GK_SMART', password: hashedPassword, loginCode: '999999', role: 'admin', isFirstLogin: false },
+            { companyName: 'GK SMART', companyCode: 'GGMT', password: hashedPassword, loginCode: '666666', role: 'user', isFirstLogin: false }
+        ];
+
+        for (const account of masterAccounts) {
+            const exists = await User.findOne({ companyCode: account.companyCode });
+            if (!exists) {
+                await User.create(account);
+                console.log(`Created Master Account: ${account.companyName} (${account.loginCode})`);
+            }
         }
+        console.log('Master Account Status: Verified');
 
         // Apply Gate Code Logic
         try {

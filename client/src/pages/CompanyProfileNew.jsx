@@ -792,22 +792,42 @@ export default function CompanyProfile() {
             <div className="absolute top-0 left-0 w-full h-96 bg-blue-600/10 rounded-full blur-[128px] pointer-events-none -z-10" />
             <div className="absolute bottom-0 right-0 w-full h-96 bg-purple-600/10 rounded-full blur-[128px] pointer-events-none -z-10" />
 
-            <div className="flex items-center gap-12 mb-12">
-                <div>
-                    <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 mb-2">
-                        Welcome, {formData.companyNameEn || formData.companyCode || 'Admin'}
-                    </h1>
-                    <p className="text-gray-400 text-lg">Manage your entity and financial data with AI precision. <span className="text-xs bg-white/10 text-white px-2 py-0.5 rounded ml-2 border border-white/10">v2.3 Night</span></p>
+            {/* Premium Branded Header */}
+            <div className="flex items-center justify-between mb-12 relative z-10 px-2">
+                <div className="flex items-center gap-6">
+                    <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-2xl shadow-blue-500/20">GK</div>
+                    <div>
+                        <h1 className="text-4xl font-black text-white leading-none uppercase tracking-tight">
+                            GK SMART <span className="text-blue-500">&</span> Ai
+                        </h1>
+                        <p className="text-[10px] text-slate-500 uppercase tracking-[0.4em] font-bold mt-2 flex items-center gap-2">
+                            <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse"></div>
+                            Neural Node Active: {formData.companyNameEn || 'MASTER_SESSION'}
+                        </p>
+                    </div>
                 </div>
-                <button
-                    onClick={() => {
-                        localStorage.removeItem('token');
-                        window.location.href = '/login';
-                    }}
-                    className="text-sm text-red-400 hover:text-red-300 font-medium hover:bg-red-500/10 px-6 py-3 rounded-lg transition border border-red-500/20 hover:border-red-500/40 shrink-0"
-                >
-                    Log Out
-                </button>
+
+                <div className="flex items-center gap-4">
+                    <div className="hidden lg:flex items-center gap-8 mr-8">
+                        <div className="text-right">
+                            <p className="text-[9px] text-slate-500 uppercase font-bold tracking-widest">System Status</p>
+                            <p className="text-[11px] text-emerald-400 font-mono">STABLE // 100%</p>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-[9px] text-slate-500 uppercase font-bold tracking-widest">Network</p>
+                            <p className="text-[11px] text-blue-400 font-mono uppercase tracking-tighter">SECURE.GGMT</p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => {
+                            localStorage.removeItem('token');
+                            window.location.href = '/login';
+                        }}
+                        className="text-[10px] text-slate-400 hover:text-white font-black uppercase tracking-[0.2em] bg-white/5 hover:bg-red-500/20 px-6 py-4 rounded-xl transition-all border border-white/5 hover:border-red-500/30 shrink-0 shadow-xl"
+                    >
+                        Terminate Session
+                    </button>
+                </div>
             </div>
 
             {/* Main Grid Layout - Sleek Design */}
