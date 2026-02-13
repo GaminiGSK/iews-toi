@@ -115,8 +115,12 @@ router.post('/login', async (req, res) => {
 
         res.json({ token, user: { id: user._id, companyCode: user.companyCode, role: user.role, isFirstLogin: user.isFirstLogin } });
     } catch (err) {
-        console.error(err);
-        res.status(500).send('Server error');
+        console.error('[Auth Error]', err);
+        res.status(500).json({
+            message: 'Server error',
+            error: err.message,
+            stack: process.env.NODE_ENV === 'production' ? 'REDACTED' : err.stack
+        });
     }
 });
 
