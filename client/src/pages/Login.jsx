@@ -1,32 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Building } from 'lucide-react';
+import { Lock, User } from 'lucide-react';
 
 export default function Login() {
+    const [username, setUsername] = useState('');
     const [code, setCode] = useState('');
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-
-    // Auto-login removed to allow access to main account
-    /*
-    useEffect(() => {
-        if (window.location.hostname === 'localhost') {
-            axios.post('/api/auth/dev-login')
-                .then(res => {
-                    localStorage.setItem('token', res.data.token);
-                    localStorage.setItem('user', JSON.stringify(res.data.user));
-                    navigate('/admin'); 
-                })
-                .catch(err => console.error("Dev auto-login failed:", err));
-        }
-    }, [navigate]);
-    */
 
     const handleLogin = async (e) => {
         e.preventDefault();
+        setError('');
+        setLoading(true);
         try {
-            const res = await axios.post('/api/auth/login', { code });
+            const res = await axios.post('/api/auth/login', { username, code });
             localStorage.setItem('token', res.data.token);
             localStorage.setItem('user', JSON.stringify(res.data.user));
 
@@ -36,12 +25,14 @@ export default function Login() {
                 navigate('/dashboard');
             }
         } catch (err) {
-            setError(err.response?.data?.message || 'Invalid Access Code');
+            setError(err.response?.data?.message || 'Invalid Credentials');
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-[#0f172a] p-4 font-sansSelection">
+        <div className="min-h-screen flex items-center justify-center bg-[#0f172a] p-4 font-sans">
             <div className="bg-slate-800/50 backdrop-blur-2xl border border-white/10 p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md relative overflow-hidden group">
                 {/* Decorative Glow */}
                 <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-600/10 blur-[80px] rounded-full group-hover:bg-blue-600/20 transition-all duration-700"></div>
@@ -61,7 +52,22 @@ export default function Login() {
                     </div>
                 )}
 
-                <form onSubmit={handleLogin} className="space-y-8 relative z-10">
+                <form onSubmit={handleLogin} className="space-y-6 relative z-10">
+                    <div className="group/input">
+                        <label className="block text-[10px] font-black text-slate-500 mb-2 uppercase tracking-widest pl-1">Target Account</label>
+                        <div className="relative">
+                            <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within/input:text-blue-400 transition-colors" />
+                            <input
+                                type="text"
+                                className="w-full pl-14 pr-6 py-4 bg-slate-900/50 border border-white/5 rounded-2xl text-white placeholder:text-slate-600 focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 outline-none transition-all font-medium"
+                                placeholder="Username (e.g. Admin)"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                required
+                            />
+                        </div>
+                    </div>
+
                     <div className="group/input">
                         <label className="block text-[10px] font-black text-slate-500 mb-2 uppercase tracking-widest pl-1">Authorization Code</label>
                         <div className="relative">
@@ -79,13 +85,14 @@ export default function Login() {
 
                     <button
                         type="submit"
-                        className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-blue-600/10 active:scale-[0.98] uppercase tracking-[0.3em] text-[11px] flex items-center justify-center gap-3 border border-white/5"
+                        disabled={loading}
+                        className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-blue-600/10 active:scale-[0.98] uppercase tracking-[0.3em] text-[11px] flex items-center justify-center gap-3 border border-white/5 disabled:opacity-50"
                     >
-                        Initialize Session
+                        {loading ? 'Processing...' : 'Initialize Session'}
                     </button>
 
                     <div className="text-center mt-6">
-                        <a href="/admin" className="text-[9px] font-black text-slate-500 hover:text-blue-400 uppercase tracking-[0.2em] transition-colors border-b border-transparent hover:border-blue-400/30 pb-1">Admin Command Center</a>
+                        <p className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em]">Secure Entry Protocol Alpha-9</p>
                     </div>
                 </form>
 

@@ -29,17 +29,16 @@ app.use(express.json({
 }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cors());
+
+// Relaxed Helmet for Debugging White Screen
 app.use(helmet({
-    contentSecurityPolicy: {
-        directives: {
-            ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-            "img-src": ["'self'", "data:", "blob:", "https:", "http:"],
-            "connect-src": ["'self'", "ws:", "wss:", "https:", "http:"],
-        },
-    },
+    contentSecurityPolicy: false, // Disable CSP for now to test if it's blocking Vite assets
     crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
+
 app.use(morgan('dev'));
+
+console.log(`[Startup] Port: ${PORT}, Node Env: ${process.env.NODE_ENV}`);
 
 // Health Check (For Cloud Run Self-Healing)
 app.get('/health', (req, res) => {
@@ -175,15 +174,38 @@ const startServer = async () => {
         const hashedPassword = await bcrypt.hash('ggmt1235#', salt);
 
         const masterAccounts = [
-            { companyName: 'GK SMART & Ai', companyCode: 'ADMIN_GK_SMART', password: hashedPassword, loginCode: '999999', role: 'admin', isFirstLogin: false },
-            { companyName: 'GK SMART', companyCode: 'GGMT', password: hashedPassword, loginCode: '666666', role: 'user', isFirstLogin: false }
+            {
+                username: 'Admin',
+                companyName: 'GK SMART & Ai',
+                companyCode: 'ADMIN_GK_SMART',
+                password: hashedPassword,
+                loginCode: '999999',
+                role: 'admin',
+                isFirstLogin: false
+            },
+            {
+                username: 'GKSMART',
+                companyName: 'GK SMART',
+                companyCode: 'GGMT',
+                password: hashedPassword,
+                loginCode: '666666',
+                role: 'user',
+                isFirstLogin: false
+            }
         ];
 
         for (const account of masterAccounts) {
-            const exists = await User.findOne({ companyCode: account.companyCode });
+            const exists = await User.findOne({ username: account.username });
             if (!exists) {
                 await User.create(account);
-                console.log(`Created Master Account: ${account.companyName} (${account.loginCode})`);
+                console.log(`Created Master Account: ${account.username} (${account.loginCode})`);
+            } else {
+                // Update code if it exists but is different (optional, but good for enforcement)
+                if (exists.loginCode !== account.loginCode && (account.username === 'Admin' || account.username === 'GKSMART')) {
+                    exists.loginCode = account.loginCode;
+                    await exists.save();
+                    console.log(`Restored/Updated code for ${account.username}`);
+                }
             }
         }
         console.log('Master Account Status: Verified');

@@ -41,12 +41,17 @@ router.get('/profile', auth, async (req, res) => {
         // If no profile, return minimal data based on User ID
         if (!profile) {
             return res.json({
+                username: req.user.username,
                 companyCode: req.user.companyCode,
                 companyNameEn: req.user.companyName || '',
             });
         }
 
-        res.json(profile);
+        // Sync username into response
+        const profileData = profile.toObject();
+        profileData.username = req.user.username;
+
+        res.json(profileData);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server Error' });

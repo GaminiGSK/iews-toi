@@ -168,7 +168,7 @@ const LiveTaxWorkspace = () => {
 
                                 {/* Footer */}
                                 <div className="mt-auto pt-8 border-t border-gray-100 text-center">
-                                    <span className="text-[8px] text-gray-300 uppercase tracking-[0.3em] font-bold">GK Smart Business Integrity Logic v.2.7</span>
+                                    <span className="text-[8px] text-gray-300 uppercase tracking-[0.3em] font-bold">GK SMART & Ai Integrity Logic v.2.7</span>
                                 </div>
                             </div>
                         </div>

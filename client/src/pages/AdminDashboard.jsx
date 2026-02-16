@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
-    UserPlus, LogOut, Building, Mail, Lock, Unlock, Edit2, Trash2,
+    UserPlus, User, LogOut, Building, Mail, Lock, Unlock, Edit2, Trash2,
     FileText, CloudUpload, X, CheckCircle, Save, Loader2, Sparkles,
-    FileSpreadsheet, Table, Combine
+    FileSpreadsheet, Table, Combine, Plus, Calendar
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { useNavigate } from 'react-router-dom';
@@ -14,7 +14,7 @@ export default function AdminDashboard() {
     const [isCreating, setIsCreating] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editingId, setEditingId] = useState(null);
-    const [formData, setFormData] = useState({ companyName: '', password: '' });
+    const [formData, setFormData] = useState({ username: '', companyName: '', password: '' });
     const [isChangingCode, setIsChangingCode] = useState(false);
     const [newAdminCode, setNewAdminCode] = useState('');
     const [message, setMessage] = useState('');
@@ -47,6 +47,13 @@ export default function AdminDashboard() {
     const [contextMenu, setContextMenu] = useState(null);
     const [isAiAnalyzing, setIsAiAnalyzing] = useState(false);
 
+    // Manual Mapping State (Foam Arrangement)
+    const [isManualMapping, setIsManualMapping] = useState(false);
+    const [isDrawing, setIsDrawing] = useState(false);
+    const [currentBox, setCurrentBox] = useState(null);
+    const [toiPackages, setToiPackages] = useState([]);
+    const [newPkgYear, setNewPkgYear] = useState('');
+
 
     // --- Fetching Logic ---
     const fetchUsers = async () => {
@@ -76,15 +83,23 @@ export default function AdminDashboard() {
         } catch (err) { console.error("Failed to load templates", err); }
     };
 
+    const fetchPackages = async () => {
+        try {
+            const res = await axios.get('/api/tax/packages');
+            setToiPackages(res.data);
+        } catch (err) { console.error("Failed to load packages", err); }
+    };
+
     useEffect(() => {
         fetchUsers();
         fetchExcelFiles();
         fetchTemplates();
+        fetchPackages();
     }, []);
 
     // --- User Management Handlers ---
     const resetForm = () => {
-        setFormData({ companyName: '', password: '' });
+        setFormData({ username: '', companyName: '', password: '' });
         setIsCreating(false);
         setIsEditing(false);
         setEditingId(null);
@@ -94,7 +109,12 @@ export default function AdminDashboard() {
     const handleCreateUser = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('/api/auth/create-user', formData);
+            // Map 'password' field in form to 'loginCode' and 'companyCode' in backend if needed
+            // Actually the backend expect 'password' and 'companyName' but we need 'username' too
+            await axios.post('/api/auth/create-user', {
+                ...formData,
+                companyCode: formData.username.toUpperCase() // Fallback
+            });
             resetForm();
             fetchUsers();
         } catch (err) { setMessage(err.response?.data?.message || 'Error creating user'); }
@@ -110,7 +130,11 @@ export default function AdminDashboard() {
     };
 
     const startEdit = (user) => {
-        setFormData({ companyName: user.companyName, password: user.loginCode });
+        setFormData({
+            username: user.username,
+            companyName: user.companyName,
+            password: user.loginCode
+        });
         setEditingId(user._id);
         setIsEditing(true);
     };
@@ -123,14 +147,27 @@ export default function AdminDashboard() {
         } catch (err) { alert('Error deleting user'); }
     };
 
+    const [oldAdminCode, setOldAdminCode] = useState('');
     const handleUpdateCode = async (e) => {
         e.preventDefault();
+        if (newAdminCode.length !== 6) return alert('New code must be exactly 6 digits');
         try {
-            await axios.post('/api/auth/update-gate-code', { type: 'admin', newCode: newAdminCode });
-            alert('Admin Login Code Updated Successfully!');
+            const token = localStorage.getItem('token');
+            await axios.post('/api/auth/update-login-code',
+                { oldCode: oldAdminCode, newCode: newAdminCode },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            alert('Admin Login Code Updated Successfully! Please log in again.');
             setIsChangingCode(false);
             setNewAdminCode('');
-        } catch (err) { alert('Error updating code'); }
+            setOldAdminCode('');
+            // Forced logout to verify new code
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+        } catch (err) {
+            alert(err.response?.data?.message || 'Error updating code');
+        }
     };
 
     // --- Document AI Handlers ---
@@ -180,6 +217,20 @@ export default function AdminDashboard() {
             alert(err.response?.data?.error || "Extraction Failed. Is your API key configured?");
         } finally {
             setIsAnalyzing(false);
+        }
+    };
+
+    const handleSaveMappings = async () => {
+        if (!activeTemplate) return;
+        try {
+            await axios.put(`/api/tax/templates/${activeTemplate._id}`, {
+                mappings: activeTemplate.mappings || []
+            });
+            alert("Mappings saved successfully!");
+            fetchTemplates();
+        } catch (err) {
+            console.error(err);
+            alert("Failed to save mappings.");
         }
     };
 
@@ -406,13 +457,30 @@ export default function AdminDashboard() {
         window.location.href = '/login';
     };
 
+    const handleCreatePackage = async (e) => {
+        e.preventDefault();
+        try {
+            await axios.post('/api/tax/packages', { year: newPkgYear });
+            setNewPkgYear('');
+            fetchPackages();
+        } catch (err) { alert(err.response?.data?.message || "Failed to create package"); }
+    };
+
+    const handleDeletePackage = async (id) => {
+        if (!window.confirm("Delete this package and all associated data?")) return;
+        try {
+            await axios.delete(`/api/tax/packages/${id}`);
+            fetchPackages();
+        } catch (err) { alert("Delete failed"); }
+    };
+
     // --- Template ---
     return (
         <div className="min-h-screen bg-black text-white p-10 font-sans">
             <div className="max-w-6xl mx-auto flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3 shrink-0">
                     <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">GK</div>
-                    <span className="font-bold text-lg tracking-tight">GK SMART <span className="text-gray-400 font-normal">& Ai</span></span>
+                    <span className="font-bold text-lg tracking-tight">GK SMART <span className="text-gray-400 font-normal">& Ai</span> <span className="text-2xl text-red-500 ml-4 font-black animate-pulse">DEPLOYMENT v3.5.1</span></span>
                 </div>
                 <div className="flex gap-4">
                     <button onClick={() => setIsChangingCode(true)} className="text-gray-400 hover:text-white transition text-sm font-medium px-4 py-2">Change Admin Code</button>
@@ -429,6 +497,9 @@ export default function AdminDashboard() {
                 </button>
                 <button onClick={() => setActiveTab('excel_merge')} className={`pb-4 text-sm uppercase tracking-widest font-black flex items-center gap-2 border-b-2 transition-all ${activeTab === 'excel_merge' ? 'border-amber-500 text-amber-400' : 'border-transparent text-gray-500'}`}>
                     <FileSpreadsheet size={16} /> Excel Merging
+                </button>
+                <button onClick={() => setActiveTab('design')} className={`pb-4 text-sm uppercase tracking-widest font-black flex items-center gap-2 border-b-2 transition-all ${activeTab === 'design' ? 'border-cyan-500 text-cyan-400' : 'border-transparent text-gray-500'}`}>
+                    <Combine size={16} /> Design Pane
                 </button>
             </div>
 
@@ -447,8 +518,11 @@ export default function AdminDashboard() {
                         {users.map((user) => (
                             <div key={user._id} className="bg-gray-900 border border-gray-800 rounded-xl p-6 flex justify-between items-center group hover:border-blue-500/50 transition">
                                 <div>
-                                    <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors uppercase">{user.companyName}</h3>
-                                    <div className="flex items-center gap-2 text-sm text-gray-500 font-mono mt-1"><Lock size={12} /> {user.loginCode}</div>
+                                    <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors uppercase">{user.companyName || 'No Name'}</h3>
+                                    <div className="flex flex-col gap-1 mt-2">
+                                        <div className="flex items-center gap-2 text-[10px] text-slate-500 font-black uppercase tracking-widest"><User size={10} className="text-blue-500" /> {user.username}</div>
+                                        <div className="flex items-center gap-2 text-[10px] text-slate-500 font-mono"><Lock size={10} className="text-slate-600" /> {user.loginCode}</div>
+                                    </div>
                                 </div>
                                 <div className="flex gap-3">
                                     <button onClick={() => startEdit(user)} className="p-2 text-gray-400 hover:text-blue-400 rounded-lg transition"><Edit2 size={18} /></button>
@@ -524,14 +598,59 @@ export default function AdminDashboard() {
 
                                 {activeTemplate.filename ? (
                                     <div className="relative w-full h-full flex items-center justify-center p-8 overflow-auto no-scrollbar">
-                                        <div className="relative animate-in zoom-in duration-500">
+                                        <div
+                                            className={`relative animate-in zoom-in duration-500 ${isManualMapping ? 'cursor-crosshair' : ''}`}
+                                            onMouseDown={(e) => {
+                                                if (!isManualMapping || !activeTemplate) return;
+                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                const x = ((e.clientX - rect.left) / rect.width) * 100;
+                                                const y = ((e.clientY - rect.top) / rect.height) * 100;
+                                                setIsDrawing(true);
+                                                setCurrentBox({ startX: x, startY: y, x, y, w: 0, h: 0 });
+                                            }}
+                                            onMouseMove={(e) => {
+                                                if (!isDrawing || !activeTemplate) return;
+                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                const currentX = ((e.clientX - rect.left) / rect.width) * 100;
+                                                const currentY = ((e.clientY - rect.top) / rect.height) * 100;
+
+                                                const x = Math.min(currentBox.startX, currentX);
+                                                const y = Math.min(currentBox.startY, currentY);
+                                                const w = Math.abs(currentX - currentBox.startX);
+                                                const h = Math.abs(currentY - currentBox.startY);
+
+                                                setCurrentBox(prev => ({ ...prev, x, y, w, h }));
+                                            }}
+                                            onMouseUp={() => {
+                                                if (!isDrawing || !activeTemplate) return;
+                                                if (currentBox.w > 1 && currentBox.h > 1) {
+                                                    const newMapping = {
+                                                        id: Date.now(),
+                                                        x: currentBox.x,
+                                                        y: currentBox.y,
+                                                        w: currentBox.w,
+                                                        h: currentBox.h,
+                                                        label: `Field ${(activeTemplate.mappings || []).length + 1}`
+                                                    };
+                                                    const updatedTemplate = {
+                                                        ...activeTemplate,
+                                                        mappings: [...(activeTemplate.mappings || []), newMapping]
+                                                    };
+                                                    setActiveTemplate(updatedTemplate);
+                                                    setTemplates(prev => prev.map(t => t._id === activeTemplate._id ? updatedTemplate : t));
+                                                }
+                                                setIsDrawing(false);
+                                                setCurrentBox(null);
+                                            }}
+                                        >
                                             <img
                                                 src={`/api/tax/file/${activeTemplate.filename}`}
                                                 alt="Review"
                                                 className={`max-w-none w-auto h-[700px] object-contain shadow-2xl rounded-sm transition-all duration-1000 ${isAnalyzing ? 'blur-md opacity-30 grayscale' : 'opacity-100'}`}
+                                                draggable="false"
                                             />
-                                            {/* Simulated Bounding Boxes */}
-                                            {!isAnalyzing && extractedData.ocr.length > 0 && extractedData.ocr.map((box, i) => (
+                                            {/* Simulated Bounding Boxes (OCR) */}
+                                            {!isManualMapping && !isAnalyzing && extractedData.ocr.length > 0 && extractedData.ocr.map((box, i) => (
                                                 <div
                                                     key={i}
                                                     className="absolute border border-emerald-500/40 bg-emerald-500/5 hover:border-emerald-400 hover:bg-emerald-500/10 cursor-alias transition-all"
@@ -545,6 +664,52 @@ export default function AdminDashboard() {
                                                     title={`${box.eng}\n${box.khr}`}
                                                 ></div>
                                             ))}
+
+                                            {/* Manual Mappings (Foam) */}
+                                            {isManualMapping && activeTemplate.mappings?.map(m => (
+                                                <div
+                                                    key={m.id}
+                                                    className="absolute border-2 border-blue-500 bg-blue-500/20 group/box transition flex items-center justify-center cursor-pointer"
+                                                    style={{
+                                                        left: `${m.x}%`,
+                                                        top: `${m.y}%`,
+                                                        width: `${m.w}%`,
+                                                        height: `${m.h}%`,
+                                                        zIndex: 40
+                                                    }}
+                                                >
+                                                    <span className="text-[8px] font-black text-white bg-blue-600 px-1 rounded shadow-lg uppercase">
+                                                        {m.label}
+                                                    </span>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            const updated = {
+                                                                ...activeTemplate,
+                                                                mappings: activeTemplate.mappings.filter(map => map.id !== m.id)
+                                                            };
+                                                            setActiveTemplate(updated);
+                                                            setTemplates(prev => prev.map(t => t._id === activeTemplate._id ? updated : t));
+                                                        }}
+                                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover/box:opacity-100 transition"
+                                                    >
+                                                        <X size={8} />
+                                                    </button>
+                                                </div>
+                                            ))}
+
+                                            {/* Current Drawing Box */}
+                                            {isDrawing && currentBox && (
+                                                <div
+                                                    className="absolute border-2 border-dashed border-blue-400 bg-blue-400/10 z-[100]"
+                                                    style={{
+                                                        left: `${currentBox.x}%`,
+                                                        top: `${currentBox.y}%`,
+                                                        width: `${currentBox.w}%`,
+                                                        height: `${currentBox.h}%`
+                                                    }}
+                                                />
+                                            )}
                                         </div>
                                     </div>
                                 ) : (
@@ -576,6 +741,21 @@ export default function AdminDashboard() {
                                 <button onClick={handleAnalyze} className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest shadow-xl shadow-emerald-500/20 flex items-center gap-2 transition active:scale-95">
                                     <Sparkles size={14} /> Run Neural Extract
                                 </button>
+                                <button
+                                    onClick={() => {
+                                        const next = !isManualMapping;
+                                        setIsManualMapping(next);
+                                        if (next) setActiveFeatureTab('MAPPINGS');
+                                    }}
+                                    className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition flex items-center gap-2 ${isManualMapping ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'}`}
+                                >
+                                    <Edit2 size={14} /> {isManualMapping ? 'Exit Manual Mode' : 'Manual Mapping'}
+                                </button>
+                                {isManualMapping && (
+                                    <button onClick={handleSaveMappings} className="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest shadow-xl shadow-blue-500/20 flex items-center gap-2 transition active:scale-95">
+                                        <Save size={14} /> Save Mappings
+                                    </button>
+                                )}
                                 <button className="bg-white/10 hover:bg-white/20 text-white border border-white/10 px-4 py-2 rounded-xl text-[9px] font-medium uppercase tracking-widest transition">
                                     Khmer Logic Detect
                                 </button>
@@ -592,7 +772,7 @@ export default function AdminDashboard() {
                         <div className="flex-1 bg-white/5 rounded-[40px] border border-white/10 flex flex-col overflow-hidden shadow-2xl">
                             {/* Tabs Header */}
                             <div className="flex bg-white/5 border-b border-white/10 shrink-0">
-                                {['FIELDS', 'KV PAIRS', 'TABLES', 'OCR'].map((tab) => (
+                                {['FIELDS', 'KV PAIRS', 'TABLES', 'OCR', 'MAPPINGS'].map((tab) => (
                                     <button
                                         key={tab}
                                         onClick={() => setActiveFeatureTab(tab)}
@@ -680,6 +860,65 @@ export default function AdminDashboard() {
                                                 </tbody>
                                             </table>
                                         </div>
+                                    </div>
+                                )}
+
+                                {activeFeatureTab === 'MAPPINGS' && (
+                                    <div className="space-y-3 animate-in fade-in">
+                                        <div className="flex justify-between items-center mb-6">
+                                            <h5 className="text-[10px] font-black text-white/40 uppercase tracking-widest">Active Form Layout</h5>
+                                            <div className="text-[8px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded border border-blue-500/30 font-black">
+                                                {activeTemplate?.mappings?.length || 0} CELLS
+                                            </div>
+                                        </div>
+
+                                        {activeTemplate?.mappings?.length > 0 ? activeTemplate.mappings.map(m => (
+                                            <div key={m.id} className="p-4 bg-white/[0.03] rounded-xl border border-white/5 group hover:border-blue-500/30 transition flex flex-col gap-3">
+                                                <div className="flex justify-between items-center">
+                                                    <div className="flex flex-col gap-1 flex-1 mr-4">
+                                                        <span className="text-[8px] text-gray-500 font-black uppercase tracking-tighter">Field Identity</span>
+                                                        <input
+                                                            className="bg-black/40 border border-white/5 text-[11px] font-black text-blue-400 uppercase outline-none focus:border-blue-500/50 px-2 py-1.5 rounded-lg w-full transition-all"
+                                                            value={m.label}
+                                                            onChange={(e) => {
+                                                                const updated = {
+                                                                    ...activeTemplate,
+                                                                    mappings: activeTemplate.mappings.map(map => map.id === m.id ? { ...map, label: e.target.value } : map)
+                                                                };
+                                                                setActiveTemplate(updated);
+                                                                setTemplates(prev => prev.map(t => t._id === activeTemplate._id ? updated : t));
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div className="text-right shrink-0">
+                                                        <span className="text-[9px] text-gray-500 font-mono block">X: {Math.round(m.x)}%</span>
+                                                        <span className="text-[9px] text-gray-500 font-mono block">Y: {Math.round(m.y)}%</span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex justify-between items-center pt-2 border-t border-white/5">
+                                                    <span className="text-[7px] text-gray-600 font-black uppercase tracking-widest">Dimensions: {Math.round(m.w)}x{Math.round(m.h)}</span>
+                                                    <button
+                                                        onClick={() => {
+                                                            const updated = {
+                                                                ...activeTemplate,
+                                                                mappings: activeTemplate.mappings.filter(map => map.id !== m.id)
+                                                            };
+                                                            setActiveTemplate(updated);
+                                                            setTemplates(prev => prev.map(t => t._id === activeTemplate._id ? updated : t));
+                                                        }}
+                                                        className="text-[8px] font-black text-red-400/50 hover:text-red-400 uppercase tracking-widest transition"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )) : (
+                                            <div className="py-20 text-center opacity-20 flex flex-col items-center">
+                                                <Table size={32} className="mb-4" />
+                                                <span className="text-[10px] font-black uppercase tracking-widest">No Manual Mappings</span>
+                                                <p className="text-[8px] mt-2 max-w-[150px] mx-auto leading-relaxed">Switch to Manual Mode and drag to draw mapping boxes.</p>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -775,28 +1014,165 @@ export default function AdminDashboard() {
                 </div>
             )}
 
+            {activeTab === 'design' && (
+                <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">
+                    <div className="flex justify-between items-center bg-gray-900/50 p-8 rounded-[32px] border border-white/5">
+                        <div>
+                            <h2 className="text-2xl font-black text-white mb-2 uppercase tracking-tight">IEWS Management</h2>
+                            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em]">Deploy Tax Compliance Packages by Fiscal Year</p>
+                        </div>
+                        <form onSubmit={handleCreatePackage} className="flex gap-3">
+                            <input
+                                type="text"
+                                placeholder="YEAR (e.g. 2025)"
+                                className="bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-cyan-400 font-mono tracking-widest outline-none focus:border-cyan-500/50 w-40 transition-all"
+                                value={newPkgYear}
+                                onChange={e => setNewPkgYear(e.target.value)}
+                                required
+                            />
+                            <button className="bg-cyan-600 hover:bg-cyan-500 text-white font-black px-6 py-3 rounded-xl transition shadow-lg shadow-cyan-500/20 uppercase text-[10px] tracking-widest flex items-center gap-2">
+                                <Plus size={16} /> New Package
+                            </button>
+                        </form>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {toiPackages.length > 0 ? toiPackages.map(pkg => (
+                            <div key={pkg._id} className="bg-gradient-to-br from-slate-900 to-black border border-white/5 p-6 rounded-[32px] group hover:border-cyan-500/30 transition-all relative overflow-hidden">
+                                <div className="absolute -top-10 -right-10 w-32 h-32 bg-cyan-500/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition"></div>
+                                <div className="flex justify-between items-start mb-6">
+                                    <div className="w-12 h-12 bg-cyan-500/10 rounded-2xl flex items-center justify-center text-cyan-400">
+                                        <Calendar size={24} />
+                                    </div>
+                                    <span className={`text-[8px] font-black px-2 py-1 rounded border uppercase tracking-widest ${pkg.status === 'Filed' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'}`}>
+                                        {pkg.status}
+                                    </span>
+                                </div>
+                                <h3 className="text-3xl font-black text-white mb-1">{pkg.year}</h3>
+                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-6">Fiscal Compliance Set</p>
+
+                                <div className="space-y-4 mb-8">
+                                    <div className="flex justify-between items-center text-[10px]">
+                                        <span className="text-gray-500 font-bold uppercase tracking-tighter">Neural Progress</span>
+                                        <span className="text-cyan-400 font-black">{pkg.progress}%</span>
+                                    </div>
+                                    <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                                        <div className="h-full bg-cyan-500 transition-all duration-1000" style={{ width: `${pkg.progress}%` }}></div>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-2">
+                                    <button className="flex-1 bg-white/5 hover:bg-white/10 text-white font-black py-3 rounded-xl text-[9px] uppercase tracking-widest transition border border-white/5">
+                                        Configure
+                                    </button>
+                                    <button onClick={() => handleDeletePackage(pkg._id)} className="p-3 bg-red-500/10 text-red-500/50 hover:text-red-500 transition rounded-xl border border-red-500/10 hover:border-red-500/30">
+                                        <Trash2 size={14} />
+                                    </button>
+                                </div>
+                            </div>
+                        )) : (
+                            <div className="col-span-full py-32 text-center opacity-20 flex flex-col items-center">
+                                <Combine size={64} className="mb-4" />
+                                <h3 className="text-xl font-black uppercase tracking-[0.3em]">No Active Packages</h3>
+                                <p className="text-[10px] mt-2 font-bold max-w-[300px] leading-relaxed">Initialize a new fiscal year package to begin compliance mapping and AI training.</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
             {isChangingCode && (
-                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-                    <div className="bg-white text-black p-8 rounded-lg shadow-xl w-full max-w-md relative">
-                        <button onClick={() => setIsChangingCode(false)} className="absolute top-4 right-4 text-gray-500 hover:text-black font-black">X</button>
-                        <h2 className="text-xl font-bold mb-6">Change Admin Code</h2>
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100]">
+                    <div className="bg-slate-900 border border-white/10 p-8 rounded-3xl shadow-2xl w-full max-w-md relative animate-fade-in">
+                        <button onClick={() => setIsChangingCode(false)} className="absolute top-6 right-6 text-slate-500 hover:text-white transition">
+                            <X size={20} />
+                        </button>
+                        <div className="mb-6">
+                            <h2 className="text-xl font-black text-white uppercase tracking-tight">Security Gateway Update</h2>
+                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Provide credentials to modify access node</p>
+                        </div>
                         <form onSubmit={handleUpdateCode} className="space-y-4">
-                            <input className="w-full border p-2 rounded" value={newAdminCode} onChange={e => setNewAdminCode(e.target.value)} placeholder="New 6-Digit Code" type="text" maxLength="6" required />
-                            <button className="w-full bg-black text-white py-2 rounded mt-4">Update Code</button>
+                            <div className="space-y-1">
+                                <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Current Code</label>
+                                <input
+                                    className="w-full bg-black/50 border border-white/5 p-4 rounded-xl text-white font-mono tracking-[0.3em] focus:ring-1 focus:ring-blue-500 outline-none transition"
+                                    value={oldAdminCode}
+                                    onChange={e => setOldAdminCode(e.target.value)}
+                                    placeholder="••••••"
+                                    type="password"
+                                    maxLength="6"
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">New Access Code</label>
+                                <input
+                                    className="w-full bg-black/50 border border-white/5 p-4 rounded-xl text-white font-mono tracking-[0.3em] focus:ring-1 focus:ring-emerald-500 outline-none transition"
+                                    value={newAdminCode}
+                                    onChange={e => setNewAdminCode(e.target.value)}
+                                    placeholder="••••••"
+                                    type="password"
+                                    maxLength="6"
+                                    required
+                                />
+                            </div>
+                            <button className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-4 rounded-xl font-black uppercase text-[10px] tracking-[0.2em] shadow-lg shadow-emerald-600/20 active:scale-95 transition mt-4">
+                                Authorize Change
+                            </button>
                         </form>
                     </div>
                 </div>
             )}
 
             {(isCreating || isEditing) && (
-                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-                    <div className="bg-white text-black p-8 rounded-xl shadow-lg w-full max-w-md relative">
-                        <button onClick={resetForm} className="absolute top-4 right-4 text-gray-500 hover:text-black font-black">X</button>
-                        <h2 className="text-2xl font-bold text-center mb-8 text-blue-600">{isEditing ? 'Edit Company' : 'Create Company'}</h2>
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100]">
+                    <div className="bg-slate-900 border border-white/10 p-10 rounded-[40px] shadow-2xl w-full max-w-md relative animate-in zoom-in duration-300">
+                        <button onClick={resetForm} className="absolute top-8 right-8 text-slate-500 hover:text-white transition">
+                            <X size={24} />
+                        </button>
+                        <div className="mb-10 text-center">
+                            <h2 className="text-2xl font-black text-white uppercase tracking-tight">{isEditing ? 'Modify Access Node' : 'Initialize Access Node'}</h2>
+                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-2">{isEditing ? 'Updating authorized entity credentials' : 'Creating new departmental entry point'}</p>
+                        </div>
                         <form onSubmit={isEditing ? handleUpdateUser : handleCreateUser} className="space-y-6">
-                            <input className="w-full p-2 border rounded" value={formData.companyName} onChange={e => setFormData({ ...formData, companyName: e.target.value.toUpperCase() })} placeholder="COMPANY NAME" required />
-                            <input className="w-full p-2 border rounded" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} placeholder="PASSWORD" required />
-                            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg">SAVE</button>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Entity Name</label>
+                                <input
+                                    className="w-full bg-black/50 border border-white/5 p-4 rounded-2xl text-white font-bold uppercase placeholder:text-slate-700 outline-none focus:ring-1 focus:ring-blue-500 transition"
+                                    value={formData.companyName}
+                                    onChange={e => setFormData({ ...formData, companyName: e.target.value.toUpperCase() })}
+                                    placeholder="e.g. PHNOM PENH LOGISTICS"
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Universal Username</label>
+                                <input
+                                    className="w-full bg-black/50 border border-white/5 p-4 rounded-2xl text-white font-bold placeholder:text-slate-700 outline-none focus:ring-1 focus:ring-blue-500 transition"
+                                    value={formData.username}
+                                    onChange={e => setFormData({ ...formData, username: e.target.value })}
+                                    placeholder="e.g. GKSMART_USER1"
+                                    disabled={isEditing}
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">6-Digit Access Code</label>
+                                <input
+                                    className="w-full bg-black/50 border border-white/5 p-4 rounded-2xl text-white font-mono tracking-[0.4em] text-lg placeholder:text-slate-700 outline-none focus:ring-1 focus:ring-emerald-500 transition"
+                                    value={formData.password}
+                                    onChange={e => setFormData({ ...formData, password: e.target.value })}
+                                    placeholder="••••••"
+                                    maxLength="6"
+                                    required
+                                />
+                            </div>
+
+                            {message && <div className="text-red-400 text-[10px] font-black uppercase text-center bg-red-400/10 py-3 rounded-xl border border-red-400/20 animate-pulse">{message}</div>}
+
+                            <button className="w-full bg-blue-600 hover:bg-blue-50 text-white hover:text-blue-600 font-black py-5 rounded-2xl transition-all shadow-xl shadow-blue-600/20 active:scale-95 uppercase tracking-widest text-[11px] mt-4">
+                                {isEditing ? 'COMMIT CHANGES' : 'DEPLOY ACCESS NODE'}
+                            </button>
                         </form>
                     </div>
                 </div>

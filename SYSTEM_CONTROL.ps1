@@ -42,6 +42,8 @@ function Show-Menu {
     Write-Host " 9. PERMANENT ACCESS: Setup Service Account"
     Write-Host " 10. CHECKPOINT: Mark Current Version as 'Safe'"
     Write-Host " 11. ROLLBACK: Restore Last 'Safe' Version"
+    Write-Host " 12. DISASTER RECOVERY: Create 'backup911'"
+    Write-Host " 13. EMERGENCY 911: Restore 'backup911' (RESTORES SYSTEM)"
     Write-Host " Q. Quit"
     Write-Host "------------------------------------------"
     Write-Host " Active Project: $projectId" -ForegroundColor Gray
@@ -114,6 +116,8 @@ while ($running) {
         "9" { New-ServiceAccount }
         "10" { Set-Checkpoint }
         "11" { Restore-Checkpoint }
+        "12" { Set-Backup911 }
+        "13" { Restore-Backup911 }
         "Q" { 
             Write-Host "Exiting Control Panel..." -ForegroundColor Cyan
             $running = $false
@@ -154,7 +158,7 @@ function Invoke-CloudDeploy {
     }
     else {
         Write-Host "✅ SYSTEM DEPLOYED SUCCESSFULLY!" -ForegroundColor Green
-        Write-Host "URL: https://gksmart-ai.web.app (via Firebase)" -ForegroundColor Gray
+        Write-Host "URL: https://gksmart-ai-app.web.app (via Firebase)" -ForegroundColor Gray
     }
 }
 
@@ -254,4 +258,28 @@ function Restore-Checkpoint {
     gcloud run services update-traffic $serviceName --project $projectId --region $region --to-revisions=$("${safeRev}=100")
     
     Write-Host "✅ Rollback Complete! Your site is back to its last known safe state." -ForegroundColor Green
+}
+
+function Set-Backup911 {
+    Write-Host "[911] CREATING EMERGENCY BACKUP..." -ForegroundColor Red
+    $activeRev = gcloud run services describe $serviceName --project $projectId --region $region --format="value(status.latestReadyRevisionName)"
+    if ($activeRev) {
+        $activeRev | Out-File ".backup911_revision.txt"
+        Write-Host "✅ EMERGENCY BACKUP CREATED: $activeRev is now saved as 'backup911'." -ForegroundColor White -BackgroundColor Red
+    }
+}
+
+function Restore-Backup911 {
+    if (-not (Test-Path ".backup911_revision.txt")) {
+        Write-Host "❌ No emergency backup found!" -ForegroundColor Red
+        return
+    }
+    $safeRev = Get-Content ".backup911_revision.txt" | Out-String
+    $safeRev = $safeRev.Trim()
+    
+    Write-Host "[911] !! EMERGENCY RESTORATION !!: $safeRev..." -ForegroundColor White -BackgroundColor Red
+    
+    gcloud run services update-traffic $serviceName --project $projectId --region $region --to-revisions=$("${safeRev}=100")
+    
+    Write-Host "✅ RESTORATION SUCCESSFUL: System reverted to backup911." -ForegroundColor Green
 }

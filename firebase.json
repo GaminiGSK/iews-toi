@@ -1,6 +1,6 @@
 {
     "hosting": {
-        "site": "gksmart-ai",
+        "site": "gksmart-ai-app",
         "public": "public",
         "ignore": [
             "firebase.json",
