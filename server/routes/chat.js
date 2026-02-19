@@ -113,11 +113,13 @@ router.post('/message', auth, async (req, res) => {
         let toolAction = null;
 
         try {
-            const cleanJson = aiResponse.replace(/```json/g, '').replace(/```/g, '').trim();
-            if (cleanJson.startsWith('{') && cleanJson.includes('"tool_use"')) {
+            // Advanced JSON extraction for model robustness
+            const jsonMatch = aiResponse.match(/\{[\s\S]*"tool_use"[\s\S]*\}/);
+            if (jsonMatch) {
+                const cleanJson = jsonMatch[0];
                 const toolPayload = JSON.parse(cleanJson);
                 toolAction = toolPayload;
-                finalText = toolPayload.reply_text; // Default reply
+                finalText = toolPayload.reply_text || "Suggestion received.";
 
                 if (toolPayload.tool_use === 'create_rule') {
                     const ruleData = toolPayload.rule_data;

@@ -5,17 +5,14 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
 const FinancialStatements = ({ onBack }) => {
-    // UI State
-    const [activeTab, setActiveTab] = useState('pl'); // 'pl' | 'bs' | 'cf'
-    const [viewMode, setViewMode] = useState('annual'); // 'annual' | 'monthly'
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [inThousands, setInThousands] = useState(false); // Scale
-    const [companyName, setCompanyName] = useState('Company Name');
-
-    // Data State
+    const [viewMode, setViewMode] = useState('annual'); // 'annual' | 'monthly'
+    const [companyName, setCompanyName] = useState('Your Company');
+    const [inThousands, setInThousands] = useState(false);
     const [report, setReport] = useState([]); // Annual Data
     const [monthlyData, setMonthlyData] = useState({ pl: [], bs: [] }); // Monthly Data
+    const [activeTab, setActiveTab] = useState('pl'); // 'pl' | 'bs' | 'cf' | 'sce' | 'notes'
 
     useEffect(() => {
         if (viewMode === 'annual') {
@@ -116,6 +113,21 @@ const FinancialStatements = ({ onBack }) => {
     const mTotalExp = sumMonthlyRows(mExpenses);
     const mNetProfit = mGrossProfit.map((v, i) => v - mTotalExp[i]);
 
+    // Helpers to find specific account values for Cash Flow
+    const findBalance = (keywords) => {
+        const matches = report.filter(r => keywords.some(k => r.description.toLowerCase().includes(k.toLowerCase())));
+        return matches.reduce((sum, r) => sum + (r.drKHR - r.crKHR), 0) / scale;
+    };
+
+    const deprExp = findBalance(['depreciation', 'amortization']);
+    const intExp = findBalance(['interest expense', 'finance cost']);
+    const intInc = -findBalance(['interest income', 'investment income']); // Credit balance, so negate for display
+
+    // Working Capital Changes (Simplified: Diff between current accounts if they exist)
+    const receivables = findBalance(['receivable', 'debtor']);
+    const payables = -findBalance(['payable', 'creditor']); // Credit balance
+    const inventory = findBalance(['inventory', 'stock']);
+
     // Helpers for Render
     const renderRow = (label, value, bold = false, indent = false) => (
         <tr className={`border-b border-gray-100 hover:bg-gray-50 ${bold ? 'font-bold bg-gray-50' : ''}`}>
@@ -150,14 +162,50 @@ const FinancialStatements = ({ onBack }) => {
     );
 
     const handleDownloadPDF = () => {
-        const doc = new jsPDF(viewMode === 'monthly' ? 'l' : 'p'); // Landscape for monthly
-        doc.setFontSize(18);
-        doc.text(activeTab === 'pl' ? "Statement of Profit or Loss" : "Statement of Financial Position", 14, 20);
+        const doc = new jsPDF(viewMode === 'monthly' ? 'l' : 'p');
+        const titleMap = {
+            pl: "STATEMENT OF PROFIT OR LOSS",
+            bs: "STATEMENT OF FINANCIAL POSITION",
+            cf: "STATEMENT OF CASH FLOWS",
+            sce: "STATEMENT OF CHANGES IN EQUITY",
+            notes: "NOTES TO THE FINANCIAL STATEMENTS"
+        };
+
+        // Header
+        doc.setFontSize(16);
+        doc.setFont('serif', 'bold');
+        doc.text(companyName.toUpperCase(), 14, 20);
+        doc.setFontSize(12);
+        doc.text(titleMap[activeTab] || "FINANCIAL REPORT", 14, 28);
         doc.setFontSize(10);
-        doc.text(`As of ${new Date().toLocaleDateString()}`, 14, 28);
-        doc.text(companyName, 14, 34);
-        doc.text(viewMode === 'monthly' ? '(Monthly Breakdown)' : '(Annual Report)', 14, 40);
-        doc.save(`Financial_Statement_${viewMode}.pdf`);
+        doc.setFont('serif', 'normal');
+        doc.text(`For the year ended 31 December ${new Date().getFullYear()}`, 14, 34);
+        doc.text(`Expressed in ${inThousands ? "thousands of " : ""}Cambodian Riel (KHR)`, 14, 40);
+
+        // Content
+        if (activeTab === 'notes') {
+            doc.setFontSize(10);
+            const notesText = `
+                1. BASIS OF PREPARATION
+                These financial statements have been prepared in accordance with International Financial Reporting Standards (IFRS) as issued by the International Accounting Standards Board (IASB).
+                
+                2. SIGNIFICANT ACCOUNTING POLICIES
+                Revenue is recognized when control of goods or services is transferred to the customer. PPE is stated at cost less accumulated depreciation.
+            `;
+            const splitText = doc.splitTextToSize(notesText, 180);
+            doc.text(splitText, 14, 50);
+        } else {
+            doc.autoTable({
+                html: 'table',
+                startY: 50,
+                styles: { font: 'serif', fontSize: 9 },
+                headStyles: { fillColor: [41, 128, 185], textColor: 255 },
+                alternateRowStyles: { fillColor: [245, 245, 245] },
+                margin: { top: 50 }
+            });
+        }
+
+        doc.save(`${companyName}_${activeTab}_${viewMode}.pdf`);
     };
 
     if (loading) return (
@@ -254,12 +302,26 @@ const FinancialStatements = ({ onBack }) => {
                         Balance Sheet
                     </button>
                     {viewMode === 'annual' && (
-                        <button
-                            onClick={() => setActiveTab('cf')}
-                            className={`px-6 py-3 rounded-t-xl font-medium text-sm transition-all ${activeTab === 'cf' ? 'bg-white text-blue-700 shadow-sm border-t border-x border-gray-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
-                        >
-                            Cash Flow Statement
-                        </button>
+                        <>
+                            <button
+                                onClick={() => setActiveTab('cf')}
+                                className={`px-6 py-3 rounded-t-xl font-medium text-sm transition-all ${activeTab === 'cf' ? 'bg-white text-blue-700 shadow-sm border-t border-x border-gray-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                            >
+                                Cash Flow
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('sce')}
+                                className={`px-6 py-3 rounded-t-xl font-medium text-sm transition-all ${activeTab === 'sce' ? 'bg-white text-blue-700 shadow-sm border-t border-x border-gray-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                            >
+                                Equity Changes
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('notes')}
+                                className={`px-6 py-3 rounded-t-xl font-medium text-sm transition-all ${activeTab === 'notes' ? 'bg-white text-blue-700 shadow-sm border-t border-x border-gray-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                            >
+                                Notes (IAS)
+                            </button>
+                        </>
                     )}
                 </div>
 
@@ -273,9 +335,15 @@ const FinancialStatements = ({ onBack }) => {
                     <div className="text-center mb-8">
                         <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-widest mb-2">{companyName}</h2>
                         <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight">
-                            {activeTab === 'pl' ? 'INCOME STATEMENT' : activeTab === 'bs' ? 'STATEMENT OF FINANCIAL POSITION' : 'STATEMENT OF CASH FLOWS'}
+                            {activeTab === 'pl' ? 'INCOME STATEMENT'
+                                : activeTab === 'bs' ? 'STATEMENT OF FINANCIAL POSITION'
+                                    : activeTab === 'cf' ? 'STATEMENT OF CASH FLOWS'
+                                        : activeTab === 'sce' ? 'STATEMENT OF CHANGES IN EQUITY'
+                                            : 'NOTES TO THE FINANCIAL STATEMENTS'}
                         </h3>
-                        <p className="text-sm text-gray-500 italic">For the year ended 31 December {new Date().getFullYear()}</p>
+                        <p className="text-sm text-gray-500 italic">
+                            {activeTab === 'bs' ? 'As at' : 'For the year ended'} 31 December {new Date().getFullYear()}
+                        </p>
                         <p className="text-xs text-gray-400 mt-2 uppercase font-sans">
                             (Expressed in {inThousands ? "thousands of Cambodian Riel" : "Cambodian Riel"}) - {viewMode === 'monthly' ? 'Monthly Breakdown' : 'Annual Total'}
                         </p>
@@ -346,13 +414,18 @@ const FinancialStatements = ({ onBack }) => {
                             {viewMode === 'annual' && activeTab === 'cf' && (
                                 <tbody>
                                     {renderSectionHeader("CASH FLOWS FROM OPERATING ACTIVITIES")}
-                                    {renderRow("Net Profit for the Year", netProfit, true, true)}
-                                    {/* Simplified Adjustments */}
-                                    {renderRow("Depreciation & Amortization", 0, false, true)}
-                                    {renderRow("Change in Receivables", 0, false, true)}
-                                    {renderRow("Change in Payables", 0, false, true)}
+                                    {renderRow("Net Profit before Tax", netProfit, true)}
+                                    {renderRow("Adjustments for:", 0, false, true)}
+                                    {renderRow(" - Depreciation and Amortization", deprExp, false, true)}
+                                    {renderRow(" - Interest Income", -intInc, false, true)}
+                                    {renderRow(" - Interest Expense", intExp, false, true)}
+                                    <tr className="h-2"></tr>
+                                    {renderRow("Changes in Working Capital:", 0, false, true)}
+                                    {renderRow(" - (Increase)/Decrease in Inventories", -inventory, false, true)}
+                                    {renderRow(" - (Increase)/Decrease in Receivables", -receivables, false, true)}
+                                    {renderRow(" - Increase/(Decrease) in Payables", payables, false, true)}
                                     <tr className="border-t border-gray-300"><td colSpan="2"></td></tr>
-                                    {renderRow("Net Cash from Operating Activities", netProfit, true)}
+                                    {renderRow("Net Cash from Operating Activities", netProfit + deprExp + intExp - intInc - inventory - receivables + payables, true)}
 
                                     <tr className="h-6"></tr>
 
@@ -360,21 +433,24 @@ const FinancialStatements = ({ onBack }) => {
                                     {assets.filter(a => a.description.toLowerCase().includes('fixed') || a.description.toLowerCase().includes('equipment')).map(r =>
                                         renderRow(`Purchase of ${r.description}`, -(r.drKHR - r.crKHR) / scale, false, true)
                                     )}
+                                    {renderRow("Interest Received", intInc, false, true)}
                                     <tr className="border-t border-gray-300"><td colSpan="2"></td></tr>
-                                    {renderRow("Net Cash used in Investing Activities", assets.filter(a => a.description.toLowerCase().includes('fixed') || a.description.toLowerCase().includes('equipment')).reduce((sum, r) => sum - ((r.drKHR - r.crKHR) / scale), 0), true)}
+                                    {renderRow("Net Cash generated from/(used in) Investing Activities", assets.filter(a => a.description.toLowerCase().includes('fixed') || a.description.toLowerCase().includes('equipment')).reduce((sum, r) => sum - ((r.drKHR - r.crKHR) / scale), 0) + intInc, true)}
 
                                     <tr className="h-6"></tr>
 
                                     {renderSectionHeader("CASH FLOWS FROM FINANCING ACTIVITIES")}
                                     {equity.filter(e => e.description.toLowerCase().includes('capital')).map(r =>
-                                        renderRow(`Proceeds from ${r.description}`, (r.crKHR - r.drKHR) / scale, false, true)
+                                        renderRow(`Issuance of ${r.description}`, (r.crKHR - r.drKHR) / scale, false, true)
                                     )}
+                                    {renderRow("Dividends Paid", 0, false, true)}
+                                    {renderRow("Interest Paid", -intExp, false, true)}
                                     <tr className="border-t border-gray-300"><td colSpan="2"></td></tr>
-                                    {renderRow("Net Cash from Financing Activities", equity.filter(e => e.description.toLowerCase().includes('capital')).reduce((sum, r) => sum + ((r.crKHR - r.drKHR) / scale), 0), true)}
+                                    {renderRow("Net Cash generated from/(used in) Financing Activities", equity.filter(e => e.description.toLowerCase().includes('capital')).reduce((sum, r) => sum + ((r.crKHR - r.drKHR) / scale), 0) - intExp, true)}
 
-                                    <tr className="h-6"></tr>
+                                    <tr className="h-8"></tr>
                                     <tr className="border-t-2 border-black border-b-2 border-double">
-                                        <td className="p-4 font-bold text-lg">NET INCREASE/(DECREASE) IN CASH</td>
+                                        <td className="p-4 font-bold text-lg">NET INCREASE IN CASH AND CASH EQUIVALENTS</td>
                                         <td className="p-4 text-right font-bold font-mono text-lg">
                                             {(
                                                 netProfit +
@@ -383,12 +459,82 @@ const FinancialStatements = ({ onBack }) => {
                                             ).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                                         </td>
                                     </tr>
-                                    {renderRow("Cash at Beginning of Year", 0, false, true)}
-                                    {renderRow("Cash at End of Year", (
+                                    {renderRow("Cash and Cash Equivalents at Beginning of Year", 0, false, true)}
+                                    {renderRow("Cash and Cash Equivalents at End of Year", (
                                         netProfit +
                                         assets.filter(a => a.description.toLowerCase().includes('fixed') || a.description.toLowerCase().includes('equipment')).reduce((sum, r) => sum - ((r.drKHR - r.crKHR) / scale), 0) +
                                         equity.filter(e => e.description.toLowerCase().includes('capital')).reduce((sum, r) => sum + ((r.crKHR - r.drKHR) / scale), 0)
                                     ), true)}
+                                </tbody>
+                            )}
+
+                            {/* --- STATEMENT OF CHANGES IN EQUITY (IFRS) --- */}
+                            {viewMode === 'annual' && activeTab === 'sce' && (
+                                <tbody>
+                                    <tr className="bg-gray-50 font-bold border-b border-gray-300">
+                                        <td className="p-3">Description</td>
+                                        <td className="p-3 text-right">Share Capital</td>
+                                        <td className="p-3 text-right">Retained Earnings</td>
+                                        <td className="p-3 text-right">Total Equity</td>
+                                    </tr>
+                                    <tr className="border-b border-gray-100">
+                                        <td className="p-3 pl-4">Balance at 1 January {new Date().getFullYear()}</td>
+                                        <td className="p-3 text-right font-mono">{totalEquity.toLocaleString()}</td>
+                                        <td className="p-3 text-right font-mono">0</td>
+                                        <td className="p-3 text-right font-mono">{totalEquity.toLocaleString()}</td>
+                                    </tr>
+                                    <tr className="border-b border-gray-100">
+                                        <td className="p-3 pl-4">Profit for the year</td>
+                                        <td className="p-3 text-right font-mono">-</td>
+                                        <td className="p-3 text-right font-mono">{netProfit.toLocaleString()}</td>
+                                        <td className="p-3 text-right font-mono">{netProfit.toLocaleString()}</td>
+                                    </tr>
+                                    <tr className="border-b border-gray-100">
+                                        <td className="p-3 pl-4">Other Comprehensive Income</td>
+                                        <td className="p-3 text-right font-mono">0</td>
+                                        <td className="p-3 text-right font-mono">0</td>
+                                        <td className="p-3 text-right font-mono">0</td>
+                                    </tr>
+                                    <tr className="h-4"></tr>
+                                    <tr className="border-t-2 border-black border-b-2 border-double bg-gray-50 font-bold">
+                                        <td className="p-3">Balance at 31 December {new Date().getFullYear()}</td>
+                                        <td className="p-3 text-right font-mono">{totalEquity.toLocaleString()}</td>
+                                        <td className="p-3 text-right font-mono">{netProfit.toLocaleString()}</td>
+                                        <td className="p-3 text-right font-mono">{(totalEquity + netProfit).toLocaleString()}</td>
+                                    </tr>
+                                </tbody>
+                            )}
+
+                            {/* --- NOTES TO THE FINANCIAL STATEMENTS (IFRS/ACCA) --- */}
+                            {viewMode === 'annual' && activeTab === 'notes' && (
+                                <tbody className="font-sans">
+                                    <tr>
+                                        <td colSpan="2" className="p-6">
+                                            <h4 className="font-bold text-gray-900 border-b pb-2 mb-4">1. BASIS OF PREPARATION</h4>
+                                            <p className="text-gray-700 leading-relaxed mb-6">
+                                                These financial statements have been prepared in accordance with International Financial Reporting Standards (IFRS) as issued by the International Accounting Standards Board (IASB).
+                                                The financial statements have been prepared under the historical cost convention, modified by the revaluation of certain financial instruments.
+                                            </p>
+
+                                            <h4 className="font-bold text-gray-900 border-b pb-2 mb-4">2. SIGNIFICANT ACCOUNTING POLICIES</h4>
+                                            <div className="space-y-4 text-gray-700">
+                                                <p>
+                                                    <strong>Revenue Recognition:</strong> Revenue is recognized when control of goods or services is transferred to the customer at an amount that reflects the consideration to which the entity expects to be entitled.
+                                                </p>
+                                                <p>
+                                                    <strong>Property, Plant, and Equipment:</strong> PPE is stated at cost less accumulated depreciation. Depreciation is calculated on a straight-line basis over the estimated useful lives of the assets.
+                                                </p>
+                                                <p>
+                                                    <strong>Foreign Currencies:</strong> The functional and presentation currency is the Cambodian Riel (KHR). Transactions in foreign currencies are translated into the functional currency using the exchange rates prevailing at the dates of the transactions.
+                                                </p>
+                                            </div>
+
+                                            <h4 className="font-bold text-gray-900 border-b pb-2 mb-4 mt-8">3. CRITICAL ACCOUNTING ESTIMATES AND JUDGEMENTS</h4>
+                                            <p className="text-gray-700 leading-relaxed">
+                                                The preparation of financial statements requires the use of certain critical accounting estimates. It also requires management to exercise its judgement in the process of applying the entity's accounting policies.
+                                            </p>
+                                        </td>
+                                    </tr>
                                 </tbody>
                             )}
 

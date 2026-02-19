@@ -153,6 +153,9 @@ function Invoke-CloudDeploy {
         --allow-unauthenticated `
         --quiet
 
+    Write-Host "[3/3] Syncing Firebase Hosting Config..." -ForegroundColor Cyan
+    npx firebase-tools deploy --only hosting --project $projectId --non-interactive
+
     if ($LASTEXITCODE -ne 0) {
         Write-Host "❌ Deployment Failed!" -ForegroundColor Red
     }

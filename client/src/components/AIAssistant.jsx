@@ -50,14 +50,30 @@ const AIAssistant = () => {
             setIsConnected(false);
         };
         const onAgentMessage = (data) => {
+            const { text, toolAction, isSystem } = data;
             setMessages(prev => [...prev, {
                 role: 'assistant',
-                text: data.text || "Update received.",
-                isSystem: data.isSystem,
-                toolAction: data.toolAction
+                text: text || "Update received.",
+                isSystem: isSystem,
+                toolAction: toolAction
             }]);
-            // If the chat is closed, we might want to show a badge rather than auto-opening
-            // but for now keeping your logic
+
+            // AUTONOMOUS EXECUTION (Socket Path)
+            if (toolAction && toolAction.tool_use === 'workspace_action') {
+                const searchParams = new URLSearchParams(window.location.search);
+                const packageId = searchParams.get('packageId') || searchParams.get('year');
+
+                console.log("[AI Assistant] Autonomous Execution: Triggering Workspace Action:", toolAction.action);
+                socket.emit('workspace:perform_action', {
+                    action: toolAction.action,
+                    packageId: packageId,
+                    params: {
+                        year: packageId,
+                        companyCode: localStorage.getItem('companyCode')
+                    }
+                });
+            }
+
             if (!isOpen) setIsOpen(true);
         };
 
@@ -108,29 +124,41 @@ const AIAssistant = () => {
             );
 
             const { text, toolAction } = res.data;
-
-            setMessages(prev => [...prev, {
+            const assistantMsg = {
                 role: 'assistant',
                 text: text,
                 toolAction: toolAction
-            }]);
+            };
 
-            // AUTO-EXECUTE Workspace Actions
-            if (toolAction && toolAction.tool_use === 'workspace_action' && socket) {
-                console.log("[AI Assistant] Triggering Workspace Action:", toolAction.action);
+            setMessages(prev => [...prev, assistantMsg]);
+
+            // AUTONOMOUS EXECUTION ENGINE
+            if (toolAction && socket && toolAction.tool_use === 'workspace_action') {
+                const searchParams = new URLSearchParams(window.location.search);
+                const packageId = searchParams.get('packageId') || searchParams.get('year');
+
+                console.log("[AI Assistant] Autonomous Execution: Triggering Workspace Action:", toolAction.action);
                 socket.emit('workspace:perform_action', {
                     action: toolAction.action,
                     packageId: packageId,
                     params: {
                         year: packageId,
-                        companyCode: localStorage.getItem('companyCode') // Pass if available
+                        companyCode: localStorage.getItem('companyCode')
                     }
                 });
             }
 
         } catch (err) {
             console.error("Chat Error:", err);
-            setMessages(prev => [...prev, { role: 'assistant', text: "Sorry, I am unable to connect to the server right now." }]);
+            if (err.response?.status === 401 || err.response?.status === 400) {
+                setMessages(prev => [...prev, {
+                    role: 'assistant',
+                    text: "Your session has expired or is invalid. Please Log Out and log back in to reconnect to the GK Blue Agent.",
+                    isSystem: true
+                }]);
+            } else {
+                setMessages(prev => [...prev, { role: 'assistant', text: "Sorry, I am unable to connect to the server right now." }]);
+            }
         } finally {
             setIsThinking(false);
         }
@@ -156,6 +184,27 @@ const AIAssistant = () => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             handleSend();
+        }
+    };
+
+    const handleApproveAction = (actionData) => {
+        const searchParams = new URLSearchParams(window.location.search);
+        const packageId = searchParams.get('packageId') || searchParams.get('year');
+
+        if (socket) {
+            socket.emit('workspace:perform_action', {
+                action: actionData.action,
+                packageId: packageId,
+                params: {
+                    ...actionData.params,
+                    companyCode: localStorage.getItem('companyCode')
+                }
+            });
+            setMessages(prev => [...prev, {
+                role: 'assistant',
+                text: `⚙️ Initializing ${actionData.action.replace(/_/g, ' ')}...`,
+                isSystem: true
+            }]);
         }
     };
 
@@ -275,6 +324,28 @@ const AIAssistant = () => {
                                                     <Sparkles size={20} /> Approve & Post
                                                 </button>
                                             </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Tool Action: Generic Action Proposal Card */}
+                                {msg.toolAction && msg.toolAction.tool_use === 'propose_action' && (
+                                    <div className="w-[85%] bg-slate-900 border border-cyan-500/40 rounded-2xl shadow-2xl mt-4 overflow-hidden animate-in fade-in zoom-in-95 duration-300">
+                                        <div className="bg-cyan-900/40 px-6 py-3 border-b border-cyan-500/30 flex justify-between items-center text-cyan-300">
+                                            <span className="text-sm font-bold uppercase tracking-widest flex items-center gap-2 font-mono"><Bot size={16} /> BA Suggestion</span>
+                                        </div>
+                                        <div className="p-6 flex flex-col items-center text-center">
+                                            <div className="w-16 h-16 bg-cyan-500/10 rounded-full flex items-center justify-center mb-4 ring-2 ring-cyan-500/20">
+                                                <Sparkles className="text-cyan-400" size={32} />
+                                            </div>
+                                            <h4 className="text-xl font-bold text-white mb-2">{msg.toolAction.reply_text || "Automated Action Detected"}</h4>
+                                            <p className="text-gray-400 mb-6 text-sm">{msg.text}</p>
+                                            <button
+                                                onClick={() => handleApproveAction(msg.toolAction)}
+                                                className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-black py-4 rounded-xl transition shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:scale-[1.02] active:scale-95"
+                                            >
+                                                PROCESS NOW
+                                            </button>
                                         </div>
                                     </div>
                                 )}

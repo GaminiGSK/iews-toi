@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, ShieldCheck, FileText, Table, ChevronRight, Loader2 } from 'lucide-react';
 import axios from 'axios';
+import { useSocket } from '../context/SocketContext';
+import { useLocation } from 'react-router-dom';
 
 const ToiAcar = ({ onBack }) => {
-    const [activeTab, setActiveTab] = useState('TOI'); // 'TOI' or 'ACAR'
+    const socket = useSocket();
+    const location = useLocation();
+    const [activeTab, setActiveTab] = useState('TOI');
     const [templates, setTemplates] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [activePageIndex, setActivePageIndex] = useState(0);
@@ -33,6 +37,27 @@ const ToiAcar = ({ onBack }) => {
         };
         fetchTemplates();
     }, []);
+
+    useEffect(() => {
+        if (!socket) return;
+
+        // Listen for Agent-Driven Form Updates
+        const onFormData = (data) => {
+            console.log("[Blue Agent] Receiving Autonomous form data:", data);
+            setFormValues(prev => ({ ...prev, ...data }));
+        };
+
+        socket.on('form:data', onFormData);
+
+        // Join the workspace room (using packageId/year from URL)
+        const searchParams = new URLSearchParams(window.location.search);
+        const packageId = searchParams.get('packageId') || "2024"; // Default for now
+        socket.emit('workspace:join', { packageId });
+
+        return () => {
+            socket.off('form:data', onFormData);
+        };
+    }, [socket]);
 
     const activeTemplate = templates[activePageIndex];
 

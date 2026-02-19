@@ -11,30 +11,29 @@ const TaxAgent = {
             const pkg = await TaxPackage.findById(packageId);
             if (!pkg) return;
 
-            // Step 1: Greeting
-            socket.emit('agent:message', {
-                text: `Welcome to your **${pkg.year} Tax Workspace**. I see you've loaded Page 1 of the TOI-01 form.`,
-                isSystem: false
-            });
-
-            // Step 2: Assessment
-            const hasData = pkg.data && pkg.data.size > 0;
+            // Step 2: Assessment & Proposal
             const hasYear = pkg.data && pkg.data.get('taxYear');
+            const hasData = pkg.data && pkg.data.get('tin');
 
             if (!hasYear) {
-                setTimeout(() => {
-                    socket.emit('agent:message', {
-                        text: `The year field is currently empty. **Do you want me to fill the fiscal context (Year ${pkg.year}) across all pages for you?**`,
-                        isSystem: false
-                    });
-                }, 1500);
+                socket.emit('agent:message', {
+                    text: `I noticed the Fiscal Context for **${pkg.year}** is missing. Shall I process the auto-fill for all pages?`,
+                    toolAction: {
+                        tool_use: 'propose_action',
+                        action: 'fill_year',
+                        params: { year: pkg.year },
+                        reply_text: "Process fiscal auto-fill?"
+                    }
+                });
             } else if (!hasData) {
-                setTimeout(() => {
-                    socket.emit('agent:message', {
-                        text: `I've found your Company Profile in our central registry. **Should I auto-complete the identification details (TIN, Name, Address) on this form?**`,
-                        isSystem: false
-                    });
-                }, 1500);
+                socket.emit('agent:message', {
+                    text: `Identification details (TIN, Name) are missing. Should I pull your Company Profile records and populate the form?`,
+                    toolAction: {
+                        tool_use: 'propose_action',
+                        action: 'fill_company',
+                        reply_text: "Process company info auto-fill?"
+                    }
+                });
             }
 
         } catch (e) {

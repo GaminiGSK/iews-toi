@@ -6,6 +6,7 @@ import CompanyProfile from './pages/CompanyProfileNew';
 import PrivateRoute from './components/PrivateRoute';
 import AIAssistant from './components/AIAssistant';
 import LiveTaxWorkspace from './pages/LiveTaxWorkspace';
+import TaxFormWorkbench from './pages/TaxFormWorkbench';
 
 import SiteGate from './components/SiteGate';
 
@@ -32,6 +33,7 @@ function App() {
 
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/dashboard" element={<CompanyProfile />} />
+            <Route path="/workbench" element={<TaxFormWorkbench />} />
 
             <Route element={<PrivateRoute />}>
               <Route path="/change-password" element={<ChangePassword />} />

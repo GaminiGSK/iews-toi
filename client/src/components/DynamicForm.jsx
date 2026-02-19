@@ -130,7 +130,7 @@ const SectionRow = ({ number, labelKh, labelEn, children, className = "" }) => (
 
 const DynamicForm = ({ schema = {}, data = {}, onChange = () => { }, onSubmit = () => { }, activeSheet = 1, onSheetChange = () => { } }) => {
     return (
-        <div className="bg-white shadow-2xl mx-auto w-full max-w-[1000px] text-black font-sans leading-normal relative min-h-[1414px]">
+        <div className="bg-white mx-auto w-full text-black font-sans leading-normal relative">
             {/* Removed Legacy Header */}
 
             {/* Paper Container */}
@@ -205,12 +205,25 @@ const DynamicForm = ({ schema = {}, data = {}, onChange = () => { }, onSubmit = 
                             <SectionRow number="03" labelKh="សកម្មភាពអាជីវកម្មចម្បង" labelEn="Principal Business Activity" className="!border-b-0">
                                 <input
                                     type="text"
-                                    value={data.businessActivity || ""}
-                                    onChange={(e) => onChange('businessActivity', e.target.value)}
+                                    value={data.mainActivity || ""}
+                                    onChange={(e) => onChange('mainActivity', e.target.value)}
                                     className="w-full bg-transparent border-b border-dotted border-black outline-none text-sm font-bold"
                                 />
                             </SectionRow>
                         </div>
+
+                        {/* Section 2: Business Information */}
+                        <div className="bg-slate-50 border-y border-black py-2 px-6">
+                            <h3 className="font-bold text-xs uppercase tracking-widest">Section 2: Business Information</h3>
+                        </div>
+                        <SectionRow number="04" labelKh="ឈ្មោះប្រធានក្រុមប្រឹក្សាភិបាល/នាយក" labelEn="Chairman / Director Name">
+                            <input
+                                type="text"
+                                value={data.directorName || ""}
+                                onChange={(e) => onChange('directorName', e.target.value)}
+                                className="w-full bg-transparent border-b border-dotted border-black outline-none font-bold text-lg text-blue-900 uppercase"
+                            />
+                        </SectionRow>
                     </div>
                 )}
 

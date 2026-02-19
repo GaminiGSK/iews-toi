@@ -8,10 +8,10 @@ const MONGO_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/iews_toi
 async function checkUsers() {
     try {
         await mongoose.connect(MONGO_URI);
-        const users = await User.find({}, 'username role loginCode');
+        const users = await User.find({}, 'username role loginCode _id');
         console.log('Available Users:');
         users.forEach(u => {
-            console.log(`- ${u.username} (${u.role}): Code ${u.loginCode}`);
+            console.log(`- ${u.username} (${u.role}): Code ${u.loginCode} (ID: ${u._id})`);
         });
         process.exit(0);
     } catch (err) {

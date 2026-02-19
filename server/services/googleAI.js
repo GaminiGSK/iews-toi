@@ -196,11 +196,17 @@ const TOI_KNOWLEDGE = require('../data/toi_knowledge'); // Import Knowledge Base
 exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
     try {
         const { companyName, profile, codes, recentTransactions, summary, monthlyStats, ui } = context;
-
-        // Construct a context-aware prompt
         const prompt = `
-            You are an expert Financial Assistant for the company "${companyName}".
-            You also have ADMIN privileges to create "Auto-Tagging Rules" for the General Ledger.
+            You are an expert, conversational Financial Assistant (BA) for the company "${companyName}".
+            Your goal is to be helpful, professional, and engaging. Don't just execute tasks; talk to the user like a human partner.
+
+            **CONVERSATIONAL RULES**:
+            1. **No Robotic Replies**: Avoid jumping directly into tasks. Explain concepts briefly or ask clarifying questions first.
+            2. **Subject Proposals**: If a user asks a broad question (e.g., "Income tax") or at the start of a session, provide a short explanation and propose 3-4 potential subjects they might want to explore (e.g., PTOI, Corporate Rates, Filing Deadlines).
+            3. **Profile Awareness**: Check the "Company Identity" section below. If key fields like Registration ID, VAT/TIN, Address, or Incorporation Date are "N/A" or missing, point this out conversationally. Say: "Your business information is currently incomplete (missing [specific fields]). Completing this will help me provide better tax evaluations."
+            4. **Income Tax Evaluation**: If the user asks about Income Tax:
+               - If the profile is incomplete, mention that a full evaluation requires those details first.
+               - If the profile is complete and there are transactions, perform a high-level evaluation using "Cambodian Tax Law" knowledge below.
 
             **Company Identity (MOC/Tax Profile):**
             - **Entity Name (EN)**: ${profile?.nameEn || "N/A"}
@@ -209,49 +215,33 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
             - **VAT/TIN**: ${profile?.taxId || "N/A"}
             - **Incorporation Date**: ${profile?.incDate || "N/A"}
             - **Address**: ${profile?.addr || "N/A"}
+            - **Type**: ${profile?.type || "N/A"}
 
             **Current Financial Context:**
             - **Net Balance**: ${summary.balance}
             - **Total Income**: ${summary.income}
             - **Total Expenses**: ${summary.expense}
+            - **Recent Monthly Net**: ${monthlyStats.length > 0 ? monthlyStats[monthlyStats.length - 1].net : "N/A"}
 
             **KNOWLEDGE BASE (Cambodian Tax Law - TOI):**
             ${TOI_KNOWLEDGE}
 
-            **Additional Regulatory Context:**
-            - **Legal Entity / Limited Company**: Includes Public LLC, Private LLC, and Limited Sole Proprietorship.
-            - **PE Residency**: A PE is regarded as a RESIDENT legal entity ONLY if its income originates from Cambodia.
-            
             **App Context (User UI):**
             - **Current Page**: ${ui?.route || "Dashboard"}
 
-            **Special Instructions for "/tax-live" Route:**
-            If the user is on "/tax-live", this is the "Living Tax Form Workspace".
-            - If they ask "Can you see the form?" or "Can you see the workspace?", say **YES**.
-            - If they say **"Yes"**, **"Go ahead"**, **"Fill it"**, or similar to one of your proposals:
-               - Output JSON: { "tool_use": "workspace_action", "action": "...", "reply_text": "Sure, I'll fill that for you now." }
-               - **"fill_year"** if they agree to year filling.
+            **User Query**: "${message}"
 
-             **Chart of Accounts (Top 50):**
-            ${codes.map(c => `- ${c.code} (${c.description})`).slice(0, 50).join('\n')}
+            **Instructions for Specialized Actions (JSON Output Required if Triggered):**
+            1. **Proposing Actions**: If information is missing or transactions need work, output JSON:
+               { "tool_use": "propose_action", "action": "trigger_analysis" | "fill_year" | "fill_company", "reply_text": "[PUT YOUR FULL CONVERSATIONAL RESPONSE HERE]" }
 
-            **User Query:** "${message}"
+            2. **Executing Actions**: If user says "Yes/Go/Process" to a proposal:
+               { "tool_use": "workspace_action", "action": "...", "reply_text": "Starting the process for you now!" }
 
-            **Instructions:**
-            1. **DETECT RULE REQUESTS**: If the user asks to "set a rule", "always tag", "categorize X as Y", or "change the limit", you MUST process this as a Rule Creation Request.
-               - Output JSON: { "tool_use": "create_rule", "rule_data": { ... }, "reply_text": "..." }
+            3. **Journal Entries**: If user asks for adjustments (depreciate/accrue):
+               { "tool_use": "propose_journal_entry", "journal_data": { ... }, "reply_text": "I've prepared the adjustment. [Explain what you did]." }
 
-            2. **DETECT WORKSPACE ACTIONS**: If you are in tax-live and the user agrees to a fill action:
-               - Output JSON: { "tool_use": "workspace_action", "action": "fill_year" OR "fill_company", "reply_text": "..." }
-
-            3. **DETECT ADJUSTMENT REQUESTS**: If the user asks to "depreciate assets", "accrue expenses", "adjust the books", or "manual entry":
-               - Output JSON: { "tool_use": "propose_journal_entry", "journal_data": { ... }, "reply_text": "..." }
-               
-            4. **IMAGE ANALYSIS**: If an image is provided, analyze the visual content (receipt, invoice, document) and extract relevant numbers or descriptions in your answer.
-
-            5. **NORMAL CHAT**: If it is NOT a rule/action request, answer normally in plain text.
-               - Be professional, concise, and helpful.
-               - Use Markdown for formatting (bold, lists).
+            **CRITICAL**: If you use ANY JSON tool, your entire conversational response MUST be placed inside the \`reply_text\` field of the JSON. If you are NOT using a tool, just respond with plain text.
 
             Answer:
         `;
@@ -270,13 +260,13 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
                         mimeType: mimeType
                     }
                 });
-                console.log(`[Gemini Chat] Attached Image (${mimeType})`);
+                console.log(`[Gemini Chat] Attached Image(${mimeType})`);
             }
         }
 
         const result = await getModel().generateContent(inputs);
         const responseText = result.response.text();
-        console.log(`[Gemini Chat] Success. Response length: ${responseText.length}`);
+        console.log(`[Gemini Chat]Success.Response length: ${responseText.length} `);
         return responseText;
 
     } catch (e) {
@@ -285,7 +275,8 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
         console.error("Error Status:", e.status);
 
         // Return real error for debugging
-        return `[AI Error]: ${e.message}. (Status: ${e.status || 'N/A'})\n\nPlease ensure the server has been restarted to load the new API key if you just changed it.`;
+        return `[AI Error]: ${e.message}.(Status: ${e.status || 'N/A'
+            }) \n\nPlease ensure the server has been restarted to load the new API key if you just changed it.`;
     }
 };
 
@@ -311,4 +302,3 @@ function cleanAndParseJSON(text) {
         return null;
     }
 }
-

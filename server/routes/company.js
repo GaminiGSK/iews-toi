@@ -359,11 +359,18 @@ router.post('/upload-bank-statement', auth, upload.array('files'), async (req, r
                 console.error("Auto-Tag Error:", tagErr);
             }
 
+            // --- SMART RENAMING ---
+            // If we have a valid date range, use it as the display name
+            let displayName = file.originalname;
+            if (dateRange && dateRange !== "Unknown Date Range" && !dateRange.includes("FATAL_ERR")) {
+                displayName = dateRange;
+            }
+
             // --- SAVE FILE METADATA TO DB ---
             const newFile = new BankFile({
                 user: req.user.id,
                 companyCode: req.user.companyCode,
-                originalName: file.originalname,
+                originalName: displayName, // Store the date range as the primary name
                 driveId: driveId,
                 mimeType: file.mimetype,
                 size: file.size,
@@ -1330,6 +1337,26 @@ router.post('/delete-file', auth, async (req, res) => {
     }
 });
 
+// POST Tag Transaction (Manual)
+router.post('/transactions/tag', auth, async (req, res) => {
+    try {
+        const { transactionId, accountCodeId } = req.body;
+        const Transaction = require('../models/Transaction');
+
+        const tx = await Transaction.findById(transactionId);
+        if (!tx) return res.status(404).json({ message: 'Transaction not found' });
+
+        tx.accountCode = accountCodeId || null;
+        tx.tagSource = accountCodeId ? 'manual' : null;
+        await tx.save();
+
+        res.json({ message: 'Transaction tagged', transaction: tx });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error tagging transaction' });
+    }
+});
+
 // POST Auto-Tag Transactions (AI)
 router.post('/transactions/auto-tag', auth, async (req, res) => {
     try {
@@ -1390,6 +1417,7 @@ router.post('/transactions/auto-tag', auth, async (req, res) => {
 
                 if (match) {
                     tx.accountCode = rule.targetAccountCode;
+                    tx.tagSource = 'rule';
                     await tx.save();
                     updatedCount++;
                     ruleApplied = true;
@@ -1404,6 +1432,7 @@ router.post('/transactions/auto-tag', auth, async (req, res) => {
             if (tx.amount > 0) {
                 if (cashCode) {
                     tx.accountCode = cashCode._id;
+                    tx.tagSource = 'rule';
                     await tx.save();
                     updatedCount++;
                 }
@@ -1415,20 +1444,38 @@ router.post('/transactions/auto-tag', auth, async (req, res) => {
                 if (absAmount < 10 && feesCode) {
                     // Less than $10 -> Bank Fees
                     tx.accountCode = feesCode._id;
+                    tx.tagSource = 'rule';
                     await tx.save();
                     updatedCount++;
-                } else if (salaryCode) {
-                    // All other Money Out -> Salary Expenses
-                    tx.accountCode = salaryCode._id;
-                    await tx.save();
-                    updatedCount++;
+                } else {
+                    // FALLBACK: Use AI for everything else that didn't match a strict rule
+                    try {
+                        const aiTag = await googleAI.classifyTransaction(tx.description, codes);
+                        if (aiTag && aiTag.codeId) {
+                            tx.accountCode = aiTag.codeId;
+                            tx.tagSource = 'ai'; // Mark as AI tagged for UI indicator
+                            await tx.save();
+                            updatedCount++;
+                        } else if (salaryCode) {
+                            // Secondary Fallback if AI fails
+                            tx.accountCode = salaryCode._id;
+                            await tx.save();
+                            updatedCount++;
+                        }
+                    } catch (aiErr) {
+                        console.error("AI Classification failed for:", tx.description, aiErr);
+                        // Final Fallback
+                        if (salaryCode) {
+                            tx.accountCode = salaryCode._id;
+                            await tx.save();
+                            updatedCount++;
+                        }
+                    }
                 }
             }
         }
 
-        // Note: AI is skipped entirely as rules cover 100% of cases requested.
-
-        res.json({ message: `Auto-Tag complete. ${updatedCount} transactions updated based on strict rules.`, count: updatedCount });
+        res.json({ message: `Auto-Tag complete. ${updatedCount} transactions updated.`, count: updatedCount });
 
     } catch (err) {
         console.error("Auto-Tag API Error:", err);

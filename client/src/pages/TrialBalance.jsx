@@ -205,14 +205,12 @@ const TrialBalance = ({ onBack }) => {
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 divide-y md:divide-y-0 md:divide-x divide-gray-700">
                                 <div className="px-2">
                                     <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Net Profit (Est)</p>
-                                    <div className="flex items-baseline gap-2">
-                                        <p className="text-4xl font-bold text-teal-400">
-                                            ${(
-                                                activeAccounts.filter(r => r.code.startsWith('4')).reduce((sum, r) => sum + r.crUSD, 0) -
-                                                activeAccounts.filter(r => r.code.startsWith('6')).reduce((sum, r) => sum + r.drUSD, 0)
-                                            ).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                        </p>
-                                    </div>
+                                    <p className="text-4xl font-bold text-teal-400">
+                                        ${(
+                                            activeAccounts.filter(r => ['4', '7', '8', '9'].some(p => r.code.startsWith(p))).reduce((sum, r) => sum + r.crUSD, 0) -
+                                            activeAccounts.filter(r => ['5', '6'].some(p => r.code.startsWith(p))).reduce((sum, r) => sum + r.drUSD, 0)
+                                        ).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    </p>
                                     <p className="text-xs text-gray-500 mt-2">Income - Expenses</p>
                                 </div>
                                 <div className="px-2">
@@ -348,15 +346,15 @@ const TrialBalance = ({ onBack }) => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {['1', '2', '3', '4', '6'].map(prefix => {
+                                        {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map(prefix => {
                                             const groupName = {
                                                 '1': 'ASSETS', '2': 'LIABILITIES', '3': 'EQUITY',
-                                                '4': 'INCOME', '6': 'EXPENSES'
+                                                '4': 'INCOME', '5': 'COST OF SALES', '6': 'EXPENSES',
+                                                '7': 'OTHER INCOME', '8': 'OTHER EXPENSES', '9': 'NON-OPERATING'
                                             }[prefix] || 'OTHER';
 
                                             // Filter rows for this section
-                                            const groupRows = report.filter(r => r.code.startsWith(prefix) ||
-                                                (prefix === '6' && ['5', '7', '8', '9'].some(p => r.code.startsWith(p)))).sort((a, b) => a.code.localeCompare(b.code));
+                                            const groupRows = report.filter(r => r.code.startsWith(prefix)).sort((a, b) => a.code.localeCompare(b.code));
 
                                             if (groupRows.length === 0) return null;
 

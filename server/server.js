@@ -134,9 +134,20 @@ const startServer = async () => {
             });
 
             // Tax Workspace Events
-            socket.on('workspace:join', (data) => {
+            socket.on('workspace:join', async (data) => {
                 const { packageId } = data;
-                console.log(`[Tax Workspace] Client joined package ${packageId}`);
+                socket.join(packageId); // Joining the room for collaboration
+                console.log(`[Tax Workspace] Client ${socket.id} joined package ${packageId}`);
+
+                // Fetch current data and send to joining client
+                try {
+                    const TaxPackage = require('./models/TaxPackage');
+                    const pkg = await TaxPackage.findById(packageId);
+                    if (pkg) {
+                        socket.emit('form:data', pkg.data);
+                    }
+                } catch (e) { }
+
                 require('./agents/TaxAgent').onWorkspaceEnter(socket, packageId);
             });
 
@@ -148,6 +159,27 @@ const startServer = async () => {
                     await TaxAgent.fillFiscalContext(socket, packageId, params.year);
                 } else if (action === 'fill_company') {
                     await TaxAgent.fillCompanyDetails(socket, packageId, params.companyCode);
+                } else if (action === 'trigger_analysis') {
+                    console.log(`[Admin] AI requested analysis trigger for ${packageId}`);
+                    io.emit('admin:trigger_analysis', { packageId });
+                }
+            });
+
+            socket.on('workspace:update_data', async (data) => {
+                const { packageId, update } = data;
+                try {
+                    const TaxPackage = require('./models/TaxPackage');
+                    const pkg = await TaxPackage.findById(packageId);
+                    if (pkg) {
+                        for (let [key, val] of Object.entries(update)) {
+                            pkg.data.set(key, val);
+                        }
+                        await pkg.save();
+                        // Broadcast to others in the same package room
+                        socket.to(packageId).emit('form:update', update);
+                    }
+                } catch (e) {
+                    console.error("Workspace update error:", e);
                 }
             });
         });

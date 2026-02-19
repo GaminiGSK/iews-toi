@@ -214,7 +214,7 @@ const GeneralLedger = ({ onBack }) => {
                         <tr>
                             <th className="px-6 py-4 w-[120px]" rowSpan="2">Date</th>
                             <th className="px-6 py-4 w-[200px]" rowSpan="2">Account Code</th>
-                            <th className="px-6 py-4 min-w-[300px]" rowSpan="2">Description</th>
+                            <th className="px-6 py-4 w-full" rowSpan="2">Description</th>
                             <th className="px-6 py-4 text-center border-l border-gray-200" colSpan="3">USD ($)</th>
                             <th className="px-6 py-4 text-center border-l border-gray-200" colSpan="3">KHR (៛)</th>
                         </tr>
@@ -236,18 +236,30 @@ const GeneralLedger = ({ onBack }) => {
                                 {tx.rateUsed > 0 && <div className="text-[10px] text-teal-600 mt-1 font-normal">@{tx.rateUsed}</div>}
                             </td>
                             <td className="px-6 py-4 text-xs align-top">
-                                <select
-                                    value={tx.accountCode || ''}
-                                    onChange={(e) => handleTagChange(tx._id, e.target.value)}
-                                    className="w-full border border-gray-200 rounded-lg px-2 py-1 text-xs font-mono focus:ring-2 focus:ring-blue-500 outline-none bg-white"
-                                >
-                                    <option value="">-- Select Code --</option>
-                                    {codes.map(c => (
-                                        <option key={c._id} value={c._id}>
-                                            {c.code} - {c.description}
-                                        </option>
-                                    ))}
-                                </select>
+                                <div className="flex items-center gap-2">
+                                    <select
+                                        value={tx.accountCode || ''}
+                                        onChange={(e) => handleTagChange(tx._id, e.target.value)}
+                                        className={`flex-1 border rounded-lg px-2 py-1 text-xs font-mono focus:ring-2 focus:ring-blue-500 outline-none bg-white transition-colors ${tx.tagSource === 'ai' ? 'border-purple-300 text-purple-700 bg-purple-50/30' : 'border-gray-200 text-gray-700'}`}
+                                    >
+                                        <option value="">-- Select Code --</option>
+                                        {codes.map(c => (
+                                            <option key={c._id} value={c._id}>
+                                                {c.code} - {c.description}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {tx.tagSource === 'ai' && (
+                                        <div title="Tagged by AI Logic" className="text-purple-500 animate-pulse">
+                                            <Wand2 size={14} />
+                                        </div>
+                                    )}
+                                    {tx.tagSource === 'rule' && (
+                                        <div title="Tagged by Keyword Rule" className="text-blue-500">
+                                            <Sparkles size={14} />
+                                        </div>
+                                    )}
+                                </div>
                             </td>
                             <td className="px-6 py-4 text-xs text-gray-700 font-medium align-top leading-relaxed whitespace-pre-wrap">
                                 {tx.description}

@@ -42,42 +42,48 @@ export default function CompanyProfile() {
 
     // Helper: Parse Date (Handles DD/MM/YYYY and standard formats)
     const parseDate = (dateStr) => {
-        if (!dateStr) return new Date(0);
-        // Try standard parsing
-        let d = new Date(dateStr);
-        if (!isNaN(d.getTime())) return d;
+        if (!dateStr || String(dateStr).trim() === '') return null;
 
-        // Try parsing DD/MM/YYYY
-        if (typeof dateStr === 'string') {
-            if (dateStr.match(/^\d{1,2}\/\d{1,2}\/\d{4}/)) {
-                const [day, month, year] = dateStr.split('/');
-                d = new Date(`${year}-${month}-${day}`);
-                if (!isNaN(d.getTime())) return d;
-            }
-            // Try parsing YYYY-MM-DD
-            if (dateStr.match(/^\d{4}-\d{2}-\d{2}/)) {
-                d = new Date(dateStr);
-                if (!isNaN(d.getTime())) return d;
-            }
-            // Try parsing MMM DD YYYY (e.g. Jul 01 2025 or Jul 01, 2025)
-            if (dateStr.match(/^[A-Za-z]{3}\s\d{1,2},?\s\d{4}/)) {
-                d = new Date(dateStr.replace(',', '')); // Remove comma for reliable parsing
-                if (!isNaN(d.getTime())) return d;
-            }
-            // Try parsing DD-MMM-YYYY (e.g. 01-Jul-2025)
-            if (dateStr.match(/^\d{1,2}-[A-Za-z]{3}-\d{4}/)) {
-                d = new Date(dateStr);
-                if (!isNaN(d.getTime())) return d;
-            }
+        // 1. Try native Date first (ISO strings)
+        let d = new Date(dateStr);
+        if (!isNaN(d.getTime()) && d.getFullYear() > 1970) return d;
+
+        const s = String(dateStr).trim();
+        // Clean common error strings
+        const cleanS = s.replace(/^(FATAL_ERR|DEBUG_ERR|Unknown Date Range)\s*[-]*/i, '').trim();
+        if (!cleanS) return null;
+
+        // 2. Specific Format Parsers
+        // DD/MM/YYYY
+        if (cleanS.match(/^\d{1,2}\/\d{1,2}\/\d{4}/)) {
+            const [day, month, year] = cleanS.split('/');
+            d = new Date(`${year}-${month}-${day}`);
+            if (!isNaN(d.getTime())) return d;
         }
-        return new Date(0); // Fallback
+        // YYYY-MM-DD
+        if (cleanS.match(/^\d{4}-\d{2}-\d{2}/)) {
+            d = new Date(cleanS.substring(0, 10));
+            if (!isNaN(d.getTime())) return d;
+        }
+        // MMM DD YYYY
+        if (cleanS.match(/^[A-Za-z]{3}\s\d{1,2},?\s\d{4}/)) {
+            d = new Date(cleanS.replace(',', ''));
+            if (!isNaN(d.getTime())) return d;
+        }
+        // DD-MMM-YYYY
+        if (cleanS.match(/^\d{1,2}-[A-Za-z]{3}-\d{4}/)) {
+            d = new Date(cleanS);
+            if (!isNaN(d.getTime())) return d;
+        }
+
+        return null;
     };
 
     // Helper: Safe Date Formatting
     const formatDateSafe = (dateStr) => {
         if (!dateStr) return '-';
-        const d = parseDate(dateStr); // Use the robust parser
-        if (d.getTime() === 0 || isNaN(d.getTime())) return dateStr; // Fallback to raw string if still invalid
+        const d = parseDate(dateStr);
+        if (!d) return dateStr;
         return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     };
 
@@ -505,87 +511,110 @@ export default function CompanyProfile() {
                 });
                 const allTxs = txRes.data.transactions || [];
 
-                // 3. Map Transactions to Registry Files
+                // 3. Smart Processing: Map, Dedup, and Sort
                 let usedTxIds = new Set();
 
-                const mappedFiles = registryFiles.map(file => {
-                    // Filter transactions that match this file's Drive ID
-                    const fileTxs = allTxs.filter(tx =>
-                        tx.originalData && tx.originalData.driveId === file.driveId
-                    );
+                // Dedup and Pre-process Registry Files
+                const finalRegistryMap = new Map();
+                registryFiles.forEach(f => {
+                    const key = `${f.originalName}_${f.dateRange}`;
+                    // If multiple duplicates exist, prioritize one WITH a valid Drive ID
+                    if (!finalRegistryMap.has(key) || (f.driveId && f.driveId !== 'mock_drive_id')) {
+                        finalRegistryMap.set(key, f);
+                    }
+                });
 
-                    // Mark IDs as used
+                const processedFiles = Array.from(finalRegistryMap.values()).map(file => {
+                    const fileTxs = allTxs.filter(tx => {
+                        if (usedTxIds.has(tx._id)) return false;
+
+                        const txDriveId = tx.originalData?.driveId;
+                        const fileDriveId = file.driveId;
+
+                        // RULE 1: Strict Drive ID Match (Ignore junk/mock IDs)
+                        if (txDriveId && fileDriveId && txDriveId === fileDriveId && txDriveId !== 'mock_drive_id') return true;
+
+                        // RULE 2: Strict Date Range Check (Crucial for Timeline Accuracy)
+                        const rangeStr = file.dateRange || "";
+                        if (rangeStr.includes(" - ") && !rangeStr.includes("FATAL_ERR")) {
+                            const txDate = parseDate(tx.date)?.getTime();
+                            const [s, e] = rangeStr.split(' - ');
+                            const start = parseDate(s.trim())?.getTime();
+                            const end = parseDate(e.trim())?.getTime();
+
+                            if (txDate && start && end) {
+                                const buffer = 86400000; // 1 day buffer
+                                if (txDate >= (start - buffer) && txDate <= (end + buffer)) return true;
+                            }
+                        }
+                        return false;
+                    });
+
                     fileTxs.forEach(tx => usedTxIds.add(tx._id));
 
-                    // Restore moneyIn/moneyOut for UI convenience
-                    fileTxs.forEach(tx => {
+                    // Internal Transaction Sort: Newest at Top
+                    const sortedTxs = fileTxs.sort((a, b) => (parseDate(b.date)?.getTime() || 0) - (parseDate(a.date)?.getTime() || 0));
+
+                    // Restore moneyIn/moneyOut for sorted transactions
+                    sortedTxs.forEach(tx => {
                         const amount = parseFloat(tx.amount || 0);
                         tx.moneyIn = amount > 0 ? amount : 0;
                         tx.moneyOut = amount < 0 ? Math.abs(amount) : 0;
                     });
 
-                    return {
-                        ...file,
-                        status: 'Saved', // It's from DB
-                        transactions: fileTxs.sort((a, b) => (a.sequence || 0) - (b.sequence || 0))
-                    };
+                    return { ...file, status: 'Saved', transactions: sortedTxs };
                 });
 
-                // 4. Handle Legacy/Orphan Transactions (No Registry File)
-                // These are transactions that don't belong to any uploaded BankFile (legacy data)
+                // 4. Handle Orphans
                 const orphans = allTxs.filter(tx => !usedTxIds.has(tx._id));
-
+                const extraFiles = [];
                 if (orphans.length > 0) {
-                    // Group orphans by Month (Legacy "Virtual Files")
-                    const groups = {};
+                    const months = {};
                     orphans.forEach(tx => {
                         const amount = parseFloat(tx.amount || 0);
                         tx.moneyIn = amount > 0 ? amount : 0;
                         tx.moneyOut = amount < 0 ? Math.abs(amount) : 0;
 
-                        const dateObj = new Date(tx.date);
-                        const key = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}`;
-                        if (!groups[key]) groups[key] = [];
-                        groups[key].push(tx);
+                        const d = parseDate(tx.date);
+                        const key = d ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` : 'Unknown';
+                        if (!months[key]) months[key] = [];
+                        months[key].push(tx);
                     });
+                    Object.keys(months).forEach(key => {
+                        const groupTxs = months[key].sort((a, b) => (parseDate(b.date)?.getTime() || 0) - (parseDate(a.date)?.getTime() || 0));
 
-                    const virtualFiles = Object.keys(groups).sort((a, b) => a.localeCompare(b)).map(key => {
-                        const [year, month] = key.split('-');
-                        const monthName = new Date(year, month - 1).toLocaleString('default', { month: 'short' });
-                        const groupTxs = groups[key].sort((a, b) => new Date(a.date) - new Date(b.date));
+                        // Date Range for virtual files
+                        const dates = groupTxs.map(t => parseDate(t.date)?.getTime()).filter(Boolean);
+                        let dateRange = 'Unknown Date Range';
+                        if (dates.length > 0) {
+                            const start = new Date(Math.min(...dates)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+                            const end = new Date(Math.max(...dates)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                            dateRange = `${start} - ${end}`;
+                        }
 
-                        // Date Range
-                        const dates = groupTxs.map(t => new Date(t.date).getTime());
-                        const start = new Date(Math.min(...dates)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
-                        const end = new Date(Math.max(...dates)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-
-                        return {
-                            originalName: `Saved History: ${monthName} ${year}`,
-                            dateRange: `${start} - ${end}`,
+                        extraFiles.push({
+                            originalName: `Historical: ${key}`,
+                            dateRange: dateRange,
                             status: 'Saved',
                             transactions: groupTxs,
-                            path: null, // No real file
-                            isVirtual: true, // Flag for UI distinctions
-                            _id: 'virtual-' + key // Temporary ID
-                        };
+                            isVirtual: true,
+                            _id: 'virtual-' + key
+                        });
                     });
-
-                    mappedFiles.push(...virtualFiles);
                 }
 
-                // 5. Final Critical Sync: Sort all files by First Transaction Date (Oldest at Top)
-                const sortedFiles = mappedFiles.sort((a, b) => {
-                    const d1 = a.transactions?.[0]?.date ? parseDate(a.transactions[0].date) : null;
-                    const d2 = b.transactions?.[0]?.date ? parseDate(b.transactions[0].date) : null;
-
-                    const timeA = (d1 && d1.getTime() > 0) ? d1.getTime() : 9999999999999;
-                    const timeB = (d2 && d2.getTime() > 0) ? d2.getTime() : 9999999999999;
-
-                    return timeA - timeB;
+                // 5. Final Global Sort: Newest at TOP
+                const finalFiles = [...processedFiles, ...extraFiles].sort((a, b) => {
+                    const getRefTime = (f) => {
+                        // Prioritize transaction date if available, otherwise use dateRange
+                        const d = parseDate(f.transactions?.[0]?.date) || parseDate(f.dateRange?.split(' - ')[0]);
+                        return d?.getTime() || 0;
+                    };
+                    return getRefTime(b) - getRefTime(a);
                 });
 
-                setBankFiles(sortedFiles);
-
+                setBankFiles(finalFiles);
+                if (finalFiles.length > 0 && activeFileIndex === 0) setActiveFileIndex(0); // Ensure active index is valid
             } catch (txErr) {
                 console.error("Error fetching bank data:", txErr);
             }
@@ -825,47 +854,56 @@ export default function CompanyProfile() {
                         }}
                         className="text-[10px] text-slate-400 hover:text-white font-black uppercase tracking-[0.2em] bg-white/5 hover:bg-red-500/20 px-6 py-4 rounded-xl transition-all border border-white/5 hover:border-red-500/30 shrink-0 shadow-xl"
                     >
-                        Terminate Session
+                        Log Out
                     </button>
                 </div>
             </div>
 
-            {/* Main Grid Layout - Sleek Design */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-
-                {/* --- ROW 1: CORE WORKFLOW --- */}
-
-                {/* 1. IEWS (Income, Expenses, Withholding, Salaries) */}
-                <div onClick={() => setView('iews')} className="group relative bg-gradient-to-br from-indigo-900/40 to-slate-800/50 hover:bg-slate-800/80 border border-indigo-500/30 hover:border-indigo-400 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-indigo-900/30">
-                    <div className="absolute top-0 right-0 p-3">
-                        <span className="bg-indigo-500 text-white text-[10px] uppercase font-bold px-2 py-1 rounded-full animate-pulse shadow-lg shadow-indigo-500/50">New</span>
+            {/* --- SECTION 1: PROCESSING WORKBENCH (High Priority) --- */}
+            <div className="mb-10">
+                <h2 className="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em] mb-4 ml-2">Processing Workbench</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* 1. IEWS (Income, Expenses, Withholding, Salaries) */}
+                    <div onClick={() => setView('iews')} className="group relative bg-indigo-900/10 hover:bg-slate-800/80 border border-indigo-500/20 hover:border-indigo-400 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl">
+                        <div className="absolute top-0 right-0 p-3">
+                            <span className="bg-indigo-500 text-white text-[8px] uppercase font-bold px-2 py-1 rounded-full animate-pulse">New Workflow</span>
+                        </div>
+                        <div className="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center mb-4 border border-indigo-500/20">
+                            <ShieldCheck className="text-indigo-400 w-5 h-5" />
+                        </div>
+                        <h3 className="text-sm font-bold text-white mb-1">IEWS Compliance</h3>
+                        <p className="text-gray-500 text-[10px] leading-tight">Income, Expenses, Withholding, Salaries. Manage monthly packages.</p>
                     </div>
-                    <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-indigo-500/20">
-                        <ShieldCheck className="text-indigo-400 w-6 h-6" />
+
+                    {/* 2. Bank Statements */}
+                    <div onClick={() => setView('bank')} className="group relative bg-emerald-900/10 hover:bg-slate-800/80 border border-emerald-500/20 hover:border-emerald-400 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl">
+                        <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center mb-4 border border-emerald-500/20">
+                            <Table className="text-emerald-400 w-5 h-5" />
+                        </div>
+                        <h3 className="text-sm font-bold text-white mb-1">Bank Statements</h3>
+                        <p className="text-gray-500 text-[10px] leading-tight">Upload monthly statements, parse transactions via Ai, and sync data.</p>
                     </div>
-                    <h3 className="text-lg font-bold text-white mb-2 group-hover:text-indigo-300 transition-colors">IEWS</h3>
-                    <p className="text-gray-400 text-xs leading-relaxed">Income, Expenses, Withholding, Salaries. Manage workflow packages.</p>
+
+                    {/* 3. General Ledger */}
+                    <div onClick={() => setView('ledger')} className="group relative bg-purple-900/10 hover:bg-slate-800/80 border border-purple-500/20 hover:border-purple-400 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl">
+                        <div className="w-10 h-10 bg-purple-500/10 rounded-xl flex items-center justify-center mb-4 border border-purple-500/20">
+                            <Book className="text-purple-400 w-5 h-5" />
+                        </div>
+                        <h3 className="text-sm font-bold text-white mb-1">General Ledger</h3>
+                        <p className="text-gray-500 text-[10px] leading-tight">View chronological history of all audited transactions.</p>
+                    </div>
                 </div>
+            </div>
 
-                {/* 2. Bank Statements */}
-                <div onClick={() => setView('bank')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-green-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-green-900/20">
-                    <div className="w-12 h-12 bg-green-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-green-500/20">
-                        <Table className="text-green-400 w-6 h-6" />
-                    </div>
-                    <h3 className="text-lg font-bold text-white mb-2 group-hover:text-green-300 transition-colors">Bank Statements</h3>
-                    <p className="text-gray-400 text-xs leading-relaxed">Upload monthly statements, parse transactions via AI, and sync data.</p>
-                </div>
+            {/* --- SECTION 2: PRIMARY DASHBOARD (6 Core Modules) --- */}
+            <div className="mb-4 ml-2 flex items-center gap-3">
+                <h2 className="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em]">Accounting & Reports</h2>
+                <div className="flex-1 h-px bg-white/5" />
+            </div>
 
-                {/* 3. General Ledger */}
-                <div onClick={() => setView('ledger')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-purple-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-purple-900/20">
-                    <div className="w-12 h-12 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-purple-500/20">
-                        <Book className="text-purple-400 w-6 h-6" />
-                    </div>
-                    <h3 className="text-lg font-bold text-white mb-2 group-hover:text-purple-300 transition-colors">General Ledger</h3>
-                    <p className="text-gray-400 text-xs leading-relaxed">View chronological financial history of all audited transactions.</p>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-                {/* 4. Trial Balance */}
+                {/* 1. Trial Balance */}
                 <div onClick={() => setView('report')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-cyan-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-cyan-900/20">
                     <div className="w-12 h-12 bg-cyan-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-cyan-500/20">
                         <Scale className="text-cyan-400 w-6 h-6" />
@@ -874,9 +912,7 @@ export default function CompanyProfile() {
                     <p className="text-gray-400 text-xs leading-relaxed">View Unadjusted & Adjusted Trial Balance reports.</p>
                 </div>
 
-                {/* --- ROW 2: REPORTING & SETTINGS --- */}
-
-                {/* 5. Financial Statements */}
+                {/* 2. Financial Statements */}
                 <div onClick={() => setView('financials')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-indigo-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-indigo-900/20">
                     <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-indigo-500/20">
                         <TrendingUp className="text-indigo-400 w-6 h-6" />
@@ -885,7 +921,7 @@ export default function CompanyProfile() {
                     <p className="text-gray-400 text-xs leading-relaxed">Generate final audited reports (Income, Balance Sheet, Cash Flow).</p>
                 </div>
 
-                {/* 6. TOI & ACAR */}
+                {/* 3. TOI & ACAR */}
                 <div onClick={() => setView('tax_packages')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-rose-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-rose-900/20">
                     <div className="w-12 h-12 bg-rose-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-rose-500/20">
                         <ShieldCheck className="text-rose-400 w-6 h-6" />
@@ -894,7 +930,7 @@ export default function CompanyProfile() {
                     <p className="text-gray-400 text-xs leading-relaxed">Live Tax Form, Tax on Income & ACAR Compliance.</p>
                 </div>
 
-                {/* 7. Company Profile */}
+                {/* 4. Company Profile */}
                 <div onClick={() => setView('profile')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-blue-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-blue-900/20">
                     <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-blue-500/20">
                         <FileText className="text-blue-400 w-6 h-6" />
@@ -903,16 +939,16 @@ export default function CompanyProfile() {
                     <p className="text-gray-400 text-xs leading-relaxed">Update official registration details, MOC certificates, and shareholders.</p>
                 </div>
 
-                {/* 8. Accounting Codes */}
+                {/* 5. Accounting Codes */}
                 <div onClick={() => setView('codes')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-orange-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-orange-900/20">
                     <div className="w-12 h-12 bg-orange-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-orange-500/20">
                         <Tag className="text-orange-400 w-6 h-6" />
                     </div>
                     <h3 className="text-lg font-bold text-white mb-2 group-hover:text-orange-300 transition-colors">Accounting Codes</h3>
-                    <p className="text-gray-400 text-xs leading-relaxed">Manage Chart of Accounts codes and standard descriptions.</p>
+                    <p className="text-gray-400 text-xs leading-relaxed">Manage Chart of Accounts codes and Ai Enhanced mapping rules.</p>
                 </div>
 
-                {/* 9. Currency Exchange */}
+                {/* 6. Currency Exchange */}
                 <div onClick={() => setView('currency')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-teal-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-teal-900/20">
                     <div className="w-12 h-12 bg-teal-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-teal-500/20">
                         <DollarSign className="text-teal-400 w-6 h-6" />
@@ -1644,9 +1680,24 @@ export default function CompanyProfile() {
                                     <div className="flex-1 min-w-0 mr-2">
                                         {/* Primary Title: Date Range */}
                                         <p className="font-bold text-gray-800 text-xs truncate mb-1">
-                                            {file.transactions?.length > 0
-                                                ? `${formatDateSafe(file.transactions[0].date)} - ${formatDateSafe(file.transactions[file.transactions.length - 1].date)}`
-                                                : file.originalName}
+                                            {(() => {
+                                                const rangeStr = file.dateRange || "";
+                                                // Priority 1: Meta Date Range (Formatted)
+                                                if (rangeStr.includes(" - ") && !rangeStr.includes("FATAL_ERR")) {
+                                                    const parts = rangeStr.split(' - ');
+                                                    const s = formatDateSafe(parts[0].trim());
+                                                    const e = formatDateSafe(parts[1].trim());
+                                                    if (s !== '-' && e !== '-') return `${s} - ${e}`;
+                                                }
+                                                // Priority 2: Use actual transaction range
+                                                if (file.transactions?.length > 0) {
+                                                    const start = file.transactions[file.transactions.length - 1].date; // Oldest
+                                                    const end = file.transactions[0].date; // Newest
+                                                    return `${formatDateSafe(start)} - ${formatDateSafe(end)}`;
+                                                }
+                                                // Priority 3: Fallback
+                                                return file.originalName || 'Untitled Statement';
+                                            })()}
                                         </p>
 
                                         {/* Metdata: Original Name + Count */}
@@ -1727,13 +1778,12 @@ export default function CompanyProfile() {
                         <table className="w-full text-left">
                             <thead className="bg-white text-gray-800 text-xs font-bold uppercase sticky top-0 z-10 border-b border-gray-200 shadow-sm">
                                 <tr>
-                                    <th className="px-4 py-4 whitespace-nowrap w-[100px]">Date</th>
-                                    <th className="px-4 py-4 w-[700px]">Transaction Details</th>
+                                    <th className="px-4 py-4 whitespace-nowrap w-[80px]">Date</th>
+                                    <th className="px-4 py-4 w-full">Transaction Details</th>
                                     <th className="px-4 py-4 text-right w-[110px]">Money In</th>
                                     <th className="px-4 py-4 text-right w-[110px]">Money Out</th>
                                     <th className="px-4 py-4 text-right w-[110px]">Balance</th>
-                                    <th className="px-4 py-4 w-[80px]">Actions</th>
-                                    <th className="px-4 py-4 w-full"></th> {/* SPACER */}
+                                    <th className="px-4 py-4 w-[100px]">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
@@ -1764,7 +1814,6 @@ export default function CompanyProfile() {
                                             <td className="px-4 py-4 text-xs align-top">
                                                 {/* Actions */}
                                             </td>
-                                            <td className="px-4 py-4"></td> {/* SPACER */}
                                         </tr>
                                     ))
                                 )}
