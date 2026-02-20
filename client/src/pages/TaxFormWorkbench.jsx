@@ -654,7 +654,7 @@ const TaxFormWorkbench = () => {
                                         </div>
 
                                         <div className="bg-white/10 border-b-[2px] border-white px-4 py-4 font-bold text-[25px] uppercase text-white flex flex-col">
-                                             <span style={{ fontFamily: "Kantumruy Pro, sans-serif" }}>ក. មូលធន/មូលធនភាគហ៊ុនចុះបញ្ជី</span>
+                                            <span style={{ fontFamily: "Kantumruy Pro, sans-serif" }}>ក. មូលធន/មូលធនភាគហ៊ុនចុះបញ្ជី</span>
                                             <span className="text-white text-[18px] font-black tracking-tight">A. Registered Capital / Share Capital</span>
                                         </div>
                                         {[1, 2, 3, 4, 5].map((r) => (
@@ -680,7 +680,7 @@ const TaxFormWorkbench = () => {
 
                                         <div className="flex h-12 bg-white/10 border-b-[2px] border-white">
                                             <div className="w-[50%] border-r-[2px] border-white flex flex-col items-center justify-center">
-                                                 <span className="text-white font-bold text-[23px]" style={{ fontFamily: "Kantumruy Pro, sans-serif" }}>សរុប</span>
+                                                <span className="text-white font-bold text-[23px]" style={{ fontFamily: "Kantumruy Pro, sans-serif" }}>សរុប</span>
                                                 <span className="text-white text-[16px] font-black uppercase">Total</span>
                                             </div>
                                             <div className="flex-1 flex">
@@ -696,7 +696,7 @@ const TaxFormWorkbench = () => {
                                         </div>
 
                                         <div className="bg-white/10 border-y-[2px] border-white px-4 py-4 font-bold text-[25px] uppercase text-white flex flex-col">
-                                             <span style={{ fontFamily: "Kantumruy Pro, sans-serif" }}>ខ. មូលធន/មូលធនភាគហ៊ុន (បានបង់)</span>
+                                            <span style={{ fontFamily: "Kantumruy Pro, sans-serif" }}>ខ. មូលធន/មូលធនភាគហ៊ុន (បានបង់)</span>
                                             <span className="text-white text-[18px] font-black tracking-tight">B. Paid up Capital / Share Capital</span>
                                         </div>
                                         {[1, 2, 3, 4, 5].map((r) => (
@@ -722,7 +722,7 @@ const TaxFormWorkbench = () => {
 
                                         <div className="flex h-12 bg-white/10">
                                             <div className="w-[50%] border-r-[2px] border-white flex flex-col items-center justify-center">
-                                                 <span className="text-white font-bold text-[23px]" style={{ fontFamily: "Kantumruy Pro, sans-serif" }}>សរុប</span>
+                                                <span className="text-white font-bold text-[23px]" style={{ fontFamily: "Kantumruy Pro, sans-serif" }}>សរុប</span>
                                                 <span className="text-white text-[16px] font-black uppercase">Total</span>
                                             </div>
                                             <div className="flex-1 flex">
@@ -743,7 +743,7 @@ const TaxFormWorkbench = () => {
                                 <div className="flex flex-col">
                                     {/* EMPLOYEE INFO BOXED HEADER */}
                                     <div className="w-full border-[2px] border-white p-6 flex flex-col items-center bg-white/5 relative group">
-                                         <h2 className="text-white font-bold text-[48px] tracking-tight leading-none mb-1" style={{ fontFamily: "Kantumruy Pro, sans-serif" }}>ព័ត៌មានអំពីនិយោជិតសហគ្រាសនៅក្នុងការិយបរិច្ឆេទ</h2>
+                                        <h2 className="text-white font-bold text-[48px] tracking-tight leading-none mb-1" style={{ fontFamily: "Kantumruy Pro, sans-serif" }}>ព័ត៌មានអំពីនិយោជិតសហគ្រាសនៅក្នុងការិយបរិច្ឆេទ</h2>
                                         <h1 className="text-white font-black text-[35px] uppercase tracking-tighter">Information About Employees During the Period</h1>
                                     </div>
 
@@ -751,23 +751,23 @@ const TaxFormWorkbench = () => {
                                     <div className="w-full mt-10 border-[2px] border-white overflow-hidden bg-white/5 backdrop-blur-sm shadow-2xl">
                                         <div className="flex border-b-[2px] border-white h-[120px] bg-white/10">
                                             <div className="w-[30%] border-r-[2px] border-white p-3 flex flex-col items-center justify-center text-center">
-                                                 <span className="text-white font-bold text-[23px] leading-tight mb-1" style={{ fontFamily: "Kantumruy Pro, sans-serif" }}>បរិយាយ</span>
+                                                <span className="text-white font-bold text-[23px] leading-tight mb-1" style={{ fontFamily: "Kantumruy Pro, sans-serif" }}>បរិយាយ</span>
                                                 <span className="text-white text-[18px] font-black uppercase tracking-tight">Description</span>
                                             </div>
                                             <div className="w-[18%] border-r-[2px] border-white p-3 flex flex-col items-center justify-center text-center">
-                                                 <span className="text-white font-bold text-[23px] leading-tight mb-1" style={{ fontFamily: "Kantumruy Pro, sans-serif" }}>តួនាទី</span>
+                                                <span className="text-white font-bold text-[23px] leading-tight mb-1" style={{ fontFamily: "Kantumruy Pro, sans-serif" }}>តួនាទី</span>
                                                 <span className="text-white text-[18px] font-black uppercase tracking-tight">Position</span>
                                             </div>
                                             <div className="w-[10%] border-r-[2px] border-white p-3 flex flex-col items-center justify-center text-center">
-                                                 <span className="text-white font-bold text-[23px] leading-tight mb-1" style={{ fontFamily: "Kantumruy Pro, sans-serif" }}>ចំនួន</span>
-                                                    <span className="text-white text-[18px] font-black uppercase tracking-tight">Number</span>
+                                                <span className="text-white font-bold text-[23px] leading-tight mb-1" style={{ fontFamily: "Kantumruy Pro, sans-serif" }}>ចំនួន</span>
+                                                <span className="text-white text-[18px] font-black uppercase tracking-tight">Number</span>
                                             </div>
                                             <div className="w-[22%] border-r-[2px] border-white p-3 flex flex-col items-center justify-center text-center bg-white/5">
-                                                 <span className="text-white font-bold text-[19px] leading-tight mb-1" style={{ fontFamily: "Kantumruy Pro, sans-serif" }}>ប្រាក់បៀវត្សក្រៅពីអត្ថប្រយោជន៍បន្ថែម</span>
-                                                    <span className="text-white text-[14px] font-black uppercase leading-tight">Salary Excluding<br />Fringe Benefits</span>
+                                                <span className="text-white font-bold text-[19px] leading-tight mb-1" style={{ fontFamily: "Kantumruy Pro, sans-serif" }}>ប្រាក់បៀវត្សក្រៅពីអត្ថប្រយោជន៍បន្ថែម</span>
+                                                <span className="text-white text-[14px] font-black uppercase leading-tight">Salary Excluding<br />Fringe Benefits</span>
                                             </div>
                                             <div className="flex-1 p-3 flex flex-col items-center justify-center text-center">
-                                                 <span className="text-white font-bold text-[19px] leading-tight mb-1" style={{ fontFamily: "Kantumruy Pro, sans-serif" }}>អត្ថប្រយោជន៍បន្ថែម</span>
+                                                <span className="text-white font-bold text-[19px] leading-tight mb-1" style={{ fontFamily: "Kantumruy Pro, sans-serif" }}>អត្ថប្រយោជន៍បន្ថែម</span>
                                                 <span className="text-white text-[14px] font-black uppercase leading-tight">Fringe Benefits</span>
                                             </div>
                                         </div>
@@ -775,7 +775,7 @@ const TaxFormWorkbench = () => {
                                         {/* SECTION 1: SHAREHOLDING MANAGERS */}
                                         <div className="flex border-b border-white/10 h-16 hover:bg-white/5 transition-colors">
                                             <div className="w-[30%] border-r border-white/10 px-4 flex flex-col justify-center">
-                                                 <span className="text-white font-bold text-[23px]" style={{ fontFamily: "Kantumruy Pro, sans-serif" }}>១- អ្នកគ្រប់គ្រងជាម្ចាស់ភាគហ៊ុន</span>
+                                                <span className="text-white font-bold text-[23px]" style={{ fontFamily: "Kantumruy Pro, sans-serif" }}>១- អ្នកគ្រប់គ្រងជាម្ចាស់ភាគហ៊ុន</span>
                                                 <span className="text-white text-[16px] font-black uppercase">1- Shareholding Managers</span>
                                             </div>
                                             <div className="flex-1 flex">
@@ -798,7 +798,7 @@ const TaxFormWorkbench = () => {
                                         {/* SECTION 2: NON-SHAREHOLDING MANAGERS */}
                                         <div className="flex border-b border-white/10 h-16 hover:bg-white/5 transition-colors">
                                             <div className="w-[30%] border-r border-white/10 px-4 flex flex-col justify-center">
-                                                 <span className="text-white font-bold text-[23px]" style={{ fontFamily: "Kantumruy Pro, sans-serif" }}>២- អ្នកគ្រប់គ្រងមិនមែនជាម្ចាស់ភាគហ៊ុន</span>
+                                                <span className="text-white font-bold text-[23px]" style={{ fontFamily: "Kantumruy Pro, sans-serif" }}>២- អ្នកគ្រប់គ្រងមិនមែនជាម្ចាស់ភាគហ៊ុន</span>
                                                 <span className="text-white text-[16px] font-black uppercase">2- Non-Shareholding Managers</span>
                                             </div>
                                             <div className="flex-1 flex">
@@ -821,8 +821,8 @@ const TaxFormWorkbench = () => {
                                         {/* SUMMARY ROWS */}
                                         <div className="flex border-b-[2px] border-white h-14 bg-white/10">
                                             <div className="w-[48%] border-r-[1px] border-white/30 px-4 flex flex-col justify-center bg-rose-500/5">
-                                                 <span className="text-white font-bold text-[20px]" style={{ fontFamily: "Kantumruy Pro, sans-serif" }}>៣- សរុបបុគ្គលិក-កម្មករ</span>
-                                                    <span className="text-white text-[15px] font-black uppercase">3- Total Employees and Workers</span>
+                                                <span className="text-white font-bold text-[20px]" style={{ fontFamily: "Kantumruy Pro, sans-serif" }}>៣- សរុបបុគ្គលិក-កម្មករ</span>
+                                                <span className="text-white text-[15px] font-black uppercase">3- Total Employees and Workers</span>
                                             </div>
                                             <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center font-black text-rose-400">0</div>
                                             <div className="w-[22%] border-r border-white/10 flex items-center justify-end px-4 font-black text-white">-</div>
@@ -830,7 +830,7 @@ const TaxFormWorkbench = () => {
                                         </div>
                                         <div className="flex h-14 bg-white/10">
                                             <div className="w-[48%] border-r-[1px] border-white/30 px-4 flex flex-col justify-center bg-emerald-500/5">
-                                                 <span className="text-white font-bold text-[20px]" style={{ fontFamily: "Kantumruy Pro, sans-serif" }}>៤- បុគ្គលិក-កម្មករជាប់ពន្ធលើប្រាក់បៀវត្ស</span>
+                                                <span className="text-white font-bold text-[20px]" style={{ fontFamily: "Kantumruy Pro, sans-serif" }}>៤- បុគ្គលិក-កម្មករជាប់ពន្ធលើប្រាក់បៀវត្ស</span>
                                                 <span className="text-white text-[15px] font-black uppercase">4- Taxable Salary for Employees and Workers</span>
                                             </div>
                                             <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center font-black text-emerald-400">0</div>
@@ -848,7 +848,7 @@ const TaxFormWorkbench = () => {
                             </div>
                         )}
 
-                        {activePage > 2 && (
+                        {activePage >= 3 && (
                             <div className="flex flex-col items-center justify-center py-40">
                                 <h3 className="text-white font-black uppercase tracking-widest">Page {activePage}</h3>
                                 <p className="text-white text-xs mt-2 italic text-center">Canvas is currently empty for this page.<br />Ready for development.</p>

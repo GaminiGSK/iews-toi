@@ -70,16 +70,21 @@ if (fs.existsSync(clientDist)) {
     console.log(`[Server] Serving Static Frontend from ${clientDist}`);
     app.use(express.static(clientDist));
 
-    app.get(/.*/, (req, res) => {
-        // Don't interfere with API routes or uploads
-        if (req.path.startsWith('/api')) return res.status(404).send('API not found');
-        if (req.path.startsWith('/uploads')) return res.status(404).send('File not found');
-
+    app.get('*', (req, res) => {
+        // Prevent API and uploads from being caught by the wild-card frontend route
+        if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
+            return res.status(404).json({ error: 'Route not found' });
+        }
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
         res.sendFile(path.resolve(clientDist, 'index.html'));
     });
 } else if (process.env.NODE_ENV === 'production') {
     console.error('Frontend build not found in production!');
 }
+
+// BUILD VERSION: 2026-02-18_0432 (Force Sync)
 
 // Database Connection
 // Database Connection & Server Start
