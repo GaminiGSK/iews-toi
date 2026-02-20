@@ -87,7 +87,7 @@ if (fs.existsSync(clientDist)) {
     console.error('Frontend build not found in production!');
 }
 
-// CACHE BUSTER VERSION: 2026-02-20_1838_LIVE_PAGE2_PORT
+// CACHE BUSTER VERSION: 2026-02-20_1920_EMERALD_SYNC
 
 // Database Connection
 // Database Connection & Server Start

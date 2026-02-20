@@ -99,10 +99,10 @@ export default function AdminDashboard() {
             {/* ── TOP HEADER ── */}
             <div className="flex items-center justify-between px-10 py-5 border-b border-white/5 shrink-0">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-sm">GK</div>
+                    <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center font-bold text-sm text-black">GK</div>
                     <div className="flex flex-col leading-none">
                         <span className="font-bold text-lg tracking-tight">GK SMART <span className="text-gray-400 font-normal">& Ai</span></span>
-                        <span className="text-[9px] text-red-500 font-black tracking-[0.2em] mt-0.5">CORE DEPLOYMENT v4.5.2_PAGE2_READY</span>
+                        <span className="text-[9px] text-emerald-400 font-black tracking-[0.2em] mt-0.5">CORE DEPLOYMENT v4.5.3_FORCE_SYNC</span>
                     </div>
                 </div>
 
