@@ -65,16 +65,19 @@ const path = require('path');
 const clientDist = path.join(__dirname, '../client/dist');
 const fs = require('fs');
 
-// Always serve 'dist' if it exists (allows verifying build locally)
 if (fs.existsSync(clientDist)) {
     console.log(`[Server] Serving Static Frontend from ${clientDist}`);
-    app.use(express.static(clientDist));
+
+    // Serve static assets EXCEPT index.html through express.static
+    app.use(express.static(clientDist, { index: false }));
 
     app.get('*', (req, res) => {
-        // Prevent API and uploads from being caught by the wild-card frontend route
+        // Skip for API and uploads
         if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
-            return res.status(404).json({ error: 'Route not found' });
+            return res.status(404).json({ error: 'Endpoint not found' });
         }
+
+        // Force no-cache for index.html (the entry point)
         res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
         res.setHeader('Pragma', 'no-cache');
         res.setHeader('Expires', '0');
@@ -84,7 +87,7 @@ if (fs.existsSync(clientDist)) {
     console.error('Frontend build not found in production!');
 }
 
-// BUILD VERSION: 2026-02-18_0432 (Force Sync)
+// CACHE BUSTER VERSION: 2026-02-20_1832_ULTIMATE_SYNC
 
 // Database Connection
 // Database Connection & Server Start
