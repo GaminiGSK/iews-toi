@@ -864,7 +864,7 @@ const TaxFormWorkbench = () => {
                     <span className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-sm bg-blue-500" /> Layout: IFRS/GDT Standard</span>
                     <span className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-sm bg-indigo-500" /> Engine: GGMT Logic Link</span>
                 </div>
-                <div className="text-white italic font-mono lowercase tracking-normal">workbench_v_2.7.0.final</div>
+                <div className="text-white italic font-mono lowercase tracking-normal">workbench_v_2.8.1_sync</div>
             </div>
         </div>
     );
