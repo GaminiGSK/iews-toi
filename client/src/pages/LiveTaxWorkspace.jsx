@@ -66,13 +66,13 @@ const INITIAL_SCHEMA = {
     ]
 };
 
-const LiveTaxWorkspace = () => {
+const LiveTaxWorkspace = ({ embedded = false }) => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const packageId = searchParams.get('packageId') || searchParams.get('year');
+    const packageId = searchParams.get('packageId') || searchParams.get('year') || 'admin_preview';
     const socket = useSocket();
     const [isSyncing, setIsSyncing] = useState(false);
-    const [activePage, setActivePage] = useState(1);
+    const [activePage, setActivePage] = useState(2);
     const [formData, setFormData] = useState({});
 
     useEffect(() => {
@@ -111,59 +111,61 @@ const LiveTaxWorkspace = () => {
     return (
         <div className="min-h-screen bg-slate-950 flex flex-col">
             {/* Header / Navigation */}
-            <div className="bg-slate-900/50 border-b border-white/5 backdrop-blur-md sticky top-0 z-20 px-10 py-4">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-6">
-                        <button
-                            onClick={() => navigate('/dashboard')}
-                            className="p-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl transition border border-white/10"
-                        >
-                            <ArrowLeft size={20} />
-                        </button>
-                        <div>
-                            <h1 className="text-xl font-bold text-white leading-none mb-1">TOI Compliance Package</h1>
-                            <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">27 Pages Document Suite</p>
-                        </div>
-                    </div>
-
-                    {/* 27 PAGE SELECTION */}
-                    <div className="flex-1 flex overflow-x-auto mx-12 py-2 no-scrollbar gap-1.5 justify-center">
-                        {Array.from({ length: 27 }, (_, i) => (
+            {!embedded && (
+                <div className="bg-slate-900/50 border-b border-white/5 backdrop-blur-md sticky top-0 z-20 px-10 py-4">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-6">
                             <button
-                                key={i}
-                                onClick={() => setActivePage(i + 1)}
-                                className={`px-2.5 py-1.5 rounded-lg text-[10px] font-bold border transition-all shrink-0 ${activePage === i + 1
-                                    ? 'bg-rose-500 border-rose-400 text-white shadow-lg shadow-rose-900/40'
-                                    : 'bg-slate-800/50 border-white/5 text-slate-400 hover:text-white hover:border-white/10'
-                                    }`}
+                                onClick={() => navigate('/dashboard')}
+                                className="p-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl transition border border-white/10"
                             >
-                                P.{i + 1}
+                                <ArrowLeft size={20} />
                             </button>
-                        ))}
-                    </div>
+                            <div>
+                                <h1 className="text-xl font-bold text-white leading-none mb-1">TOI Compliance Package</h1>
+                                <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">27 Pages Document Suite</p>
+                            </div>
+                        </div>
 
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => socket.emit('workspace:perform_action', { action: 'fill_year', packageId, params: { year: 2026 } })}
-                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest transition shadow-lg shadow-blue-900/40"
-                        >
-                            <RefreshCw size={14} className={isSyncing ? "animate-spin" : ""} />
-                            Auto-Fill Fiscal
-                        </button>
-                        <button
-                            onClick={() => socket.emit('workspace:perform_action', { action: 'fill_company', packageId, params: { companyCode: 'GK_SMART_AI' } })}
-                            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest transition shadow-lg shadow-indigo-900/40"
-                        >
-                            <CheckCircle2 size={14} />
-                            Pull Profile
-                        </button>
-                        <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold border uppercase tracking-tighter transition-colors ${socket?.connected ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'}`}>
-                            <Radio size={12} className={socket?.connected ? "animate-pulse" : ""} />
-                            <span>{socket?.connected ? 'Logic Link Online' : 'Logic Link Offline'}</span>
+                        {/* 27 PAGE SELECTION */}
+                        <div className="flex-1 flex overflow-x-auto mx-12 py-2 no-scrollbar gap-1.5 justify-center">
+                            {Array.from({ length: 27 }, (_, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => setActivePage(i + 1)}
+                                    className={`px-2.5 py-1.5 rounded-lg text-[10px] font-bold border transition-all shrink-0 ${activePage === i + 1
+                                        ? 'bg-rose-500 border-rose-400 text-white shadow-lg shadow-rose-900/40'
+                                        : 'bg-slate-800/50 border-white/5 text-slate-400 hover:text-white hover:border-white/10'
+                                        }`}
+                                >
+                                    P.{i + 1}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={() => socket.emit('workspace:perform_action', { action: 'fill_year', packageId, params: { year: 2026 } })}
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest transition shadow-lg shadow-blue-900/40"
+                            >
+                                <RefreshCw size={14} className={isSyncing ? "animate-spin" : ""} />
+                                Auto-Fill Fiscal
+                            </button>
+                            <button
+                                onClick={() => socket.emit('workspace:perform_action', { action: 'fill_company', packageId, params: { companyCode: 'GK_SMART_AI' } })}
+                                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest transition shadow-lg shadow-indigo-900/40"
+                            >
+                                <CheckCircle2 size={14} />
+                                Pull Profile
+                            </button>
+                            <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold border uppercase tracking-tighter transition-colors ${socket?.connected ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'}`}>
+                                <Radio size={12} className={socket?.connected ? "animate-pulse" : ""} />
+                                <span>{socket?.connected ? 'Logic Link Online' : 'Logic Link Offline'}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            )}
 
             {/* MAIN CONTENT AREA: REPLICA OF THE LUXURY WORKBENCH DESIGN */}
             <div className="flex-1 bg-[#0f172a] overflow-y-auto px-10 py-10 flex justify-start no-scrollbar">

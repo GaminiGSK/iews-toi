@@ -4,6 +4,7 @@ import {
     UserPlus, User, Edit2, Trash2, X, Lock, Users, FileSpreadsheet
 } from 'lucide-react';
 import TaxFormWorkbench from './TaxFormWorkbench';
+import LiveTaxWorkspace from './LiveTaxWorkspace';
 
 export default function AdminDashboard() {
     // --- State ---
@@ -183,10 +184,10 @@ export default function AdminDashboard() {
                     </div>
                 )}
 
-                {/* TOI TAB — Workbench Embedded */}
+                {/* TOI TAB — Live Workspace Embedded */}
                 {activeTab === 'toi' && (
                     <div className="w-full h-full animate-in fade-in duration-500">
-                        <TaxFormWorkbench embedded={true} />
+                        <LiveTaxWorkspace embedded={true} />
                     </div>
                 )}
             </div>
