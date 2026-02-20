@@ -101,7 +101,7 @@ export default function AdminDashboard() {
                     <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-sm">GK</div>
                     <div className="flex flex-col leading-none">
                         <span className="font-bold text-lg tracking-tight">GK SMART <span className="text-gray-400 font-normal">& Ai</span></span>
-                        <span className="text-[9px] text-red-500 font-black tracking-[0.2em] mt-0.5">CORE DEPLOYMENT v4.5.1</span>
+                        <span className="text-[9px] text-red-500 font-black tracking-[0.2em] mt-0.5">CORE DEPLOYMENT v4.5.2_PAGE2_READY</span>
                     </div>
                 </div>
 
