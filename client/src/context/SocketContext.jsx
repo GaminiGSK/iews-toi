@@ -5,10 +5,10 @@ const SocketContext = createContext();
 
 export const useSocket = () => useContext(SocketContext);
 
-// In production, this should be the URL of your backend.
-// For now, we default to localhost:5000 if not set.
-// If deployed, ensure VITE_API_URL is set in your build environment.
-const SOCKET_URL = import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:5000' : window.location.origin);
+// Socket connects to window.location.origin so the Vite proxy (/socket.io → :5000) is used in dev.
+// In production the origin is the Cloud Run service URL, which is also correct.
+// Override with VITE_API_URL only when connecting to a separate host is explicitly required.
+const SOCKET_URL = import.meta.env.VITE_API_URL || window.location.origin;
 
 export const SocketProvider = ({ children }) => {
     const [socket, setSocket] = useState(null);
@@ -16,8 +16,9 @@ export const SocketProvider = ({ children }) => {
     useEffect(() => {
         // DETECT ENVIRONMENT
         const isLocal = window.location.hostname === 'localhost';
-        const defaultUrl = isLocal ? 'http://localhost:5000' : window.location.origin;
-        const finalUrl = import.meta.env.VITE_API_URL || defaultUrl;
+        // Always connect to origin so Vite's /socket.io proxy routes it to :5000 in dev,
+        // and Cloud Run's own origin is used in production.
+        const finalUrl = import.meta.env.VITE_API_URL || window.location.origin;
 
         console.log(`[Logic Link] Base URL: ${finalUrl} (Environment: ${isLocal ? 'Local' : 'Production'})`);
 
