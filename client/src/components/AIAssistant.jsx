@@ -1,6 +1,6 @@
 ﻿import axios from 'axios';
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquare, X, Send, Sparkles, Bot, Paperclip } from 'lucide-react';
+import { MessageSquare, X, Send, Sparkles, Bot, Paperclip, Minus, ChevronDown } from 'lucide-react';
 
 import { useLocation } from 'react-router-dom';
 import { useSocket } from '../context/SocketContext'; // Import Context
@@ -241,48 +241,64 @@ const AIAssistant = () => {
             {/* Chat Window */}
             {isOpen && (
                 <div
-                    className="bg-slate-900 pointer-events-auto rounded-2xl shadow-2xl border border-blue-500/30 w-[650px] flex flex-col mb-4 overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-200"
+                    className="bg-slate-900 pointer-events-auto rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.7)] border-2 border-blue-500/40 w-[650px] max-w-[calc(100vw-48px)] flex flex-col mb-4 overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300"
                     style={{ height: '85vh', maxHeight: '950px' }}
                 >
                     {/* Header - Enforce Blue Gradient */}
-                    <div className="bg-gradient-to-r from-blue-700 via-blue-800 to-blue-900 p-6 shrink-0 flex justify-between items-center text-white shadow-lg border-b border-blue-500/30">
-                        <div className="flex items-center gap-5">
-                            {/* Logo - Doubled Size */}
-                            <div className="p-1 bg-white ring-4 ring-blue-400/30 rounded-full h-24 w-24 flex items-center justify-center overflow-hidden shadow-xl relative z-10">
-                                {/* Use Logo if available, else Fallback */}
+                    <div className="bg-gradient-to-tr from-blue-700 via-blue-800 to-indigo-900 p-6 shrink-0 flex justify-between items-center text-white shadow-2xl border-b border-white/10 relative z-30">
+                        <div className="flex items-center gap-6 overflow-hidden">
+                            {/* Logo - Premium Circular Frame */}
+                            <div className="p-1 bg-white ring-4 ring-blue-500/40 rounded-full h-24 w-24 shrink-0 flex items-center justify-center overflow-hidden shadow-2xl relative">
                                 <img src={GK_LOGO} alt="GK" className="object-cover w-full h-full" onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }} />
                                 <div className="hidden w-full h-full bg-blue-600 items-center justify-center font-bold text-white text-3xl">GK</div>
                             </div>
-                            <div>
-                                <h3 className="font-extrabold text-2xl tracking-wide text-white drop-shadow-sm">GK BLUE AGENT</h3>
-                                <div className="flex items-center gap-2 opacity-90 mt-1">
-                                    <span className={`w-3 h-3 rounded-full ${isConnected ? 'bg-emerald-400' : 'bg-red-500'} animate-pulse box-shadow-glow`}></span>
-                                    <span className={`text-xl font-bold uppercase tracking-wider ${isConnected ? 'text-blue-200' : 'text-red-400'}`}>{isConnected ? 'Online' : 'Offline'}</span>
+                            <div className="flex flex-col min-w-0">
+                                <h3 className="font-extrabold text-3xl tracking-tight text-white drop-shadow-lg truncate">GK BLUE AGENT</h3>
+                                <div className="flex items-center gap-3 mt-2 min-w-0">
+                                    <div className="flex items-center gap-2 bg-black/30 px-3 py-1 rounded-full border border-white/10">
+                                        <span className={`w-3 h-3 rounded-full ${isConnected ? 'bg-emerald-400' : 'bg-red-500'} animate-pulse shadow-[0_0_10px_rgba(52,211,153,0.5)]`}></span>
+                                        <span className={`text-[16px] font-black uppercase tracking-widest ${isConnected ? 'text-emerald-300' : 'text-red-400'}`}>{isConnected ? 'Online' : 'Offline'}</span>
+                                    </div>
 
-                                    {/* Model Selector */}
-                                    <select
-                                        value={selectedModel}
-                                        onChange={(e) => setSelectedModel(e.target.value)}
-                                        className="ml-4 bg-blue-900/50 border border-blue-400/30 text-[20px] font-black uppercase tracking-widest rounded-lg px-2 py-1 outline-none cursor-pointer hover:bg-blue-800/60 transition-all text-blue-100"
-                                    >
-                                        <option value="gemini-2.0">Gemini 3.1 Pro (High) New</option>
-                                        <option value="gemini-flash">Gemini 3 Flash</option>
-                                        <option value="claude-sonnet">Claude Sonnet 4.6 (Thinking)</option>
-                                        <option value="claude-opus">Claude Opus 4.6 (Thinking)</option>
-                                        <option value="gpt-oss">GPT-OSS 120B (Medium)</option>
-                                        <option value="ollama-v3">Ollama: Deepseek V3.1</option>
-                                        <option value="ollama-coder">Ollama: Deepseek Coder</option>
-                                    </select>
-
+                                    {/* Model Selector - Refined */}
+                                    <div className="relative group min-w-0 flex-1">
+                                        <select
+                                            value={selectedModel}
+                                            onChange={(e) => setSelectedModel(e.target.value)}
+                                            className="appearance-none bg-blue-950/60 border border-white/20 text-[16px] font-black uppercase tracking-wider rounded-xl pl-4 pr-10 py-1.5 outline-none cursor-pointer hover:bg-blue-800/80 transition-all text-blue-50 w-full truncate"
+                                        >
+                                            <option value="gemini-2.0">Gemini 3.1 Pro (High) New</option>
+                                            <option value="gemini-flash">Gemini 3 Flash</option>
+                                            <option value="claude-sonnet">Claude Sonnet 4.6 (Thinking)</option>
+                                            <option value="claude-opus">Claude Opus 4.6 (Thinking)</option>
+                                            <option value="gpt-oss">GPT-OSS 120B (Medium)</option>
+                                            <option value="ollama-v3">Ollama: Deepseek V3.1</option>
+                                            <option value="ollama-coder">Ollama: Deepseek Coder</option>
+                                        </select>
+                                        <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 pointer-events-none group-hover:text-white transition-colors" />
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <button
-                            onClick={() => setIsOpen(false)}
-                            className="p-3 hover:bg-white/10 rounded-full transition text-white/80 hover:text-white"
-                        >
-                            <X size={28} />
-                        </button>
+
+                        {/* Action Buttons: MINIMIZE and CLOSE */}
+                        <div className="flex items-center gap-3 shrink-0 ml-6">
+                            <button
+                                onClick={() => setIsOpen(false)}
+                                className="flex items-center gap-2 px-4 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-2xl transition-all shadow-lg active:scale-95 group"
+                                title="Minimize to icon"
+                            >
+                                <Minus size={24} className="group-hover:scale-110 transition-transform" />
+                                <span className="hidden md:block font-black text-[14px] uppercase tracking-tighter">Minimize</span>
+                            </button>
+                            <button
+                                onClick={() => setIsOpen(false)}
+                                className="p-3 bg-red-500/20 hover:bg-red-500 border border-red-500/40 rounded-2xl transition-all shadow-lg active:scale-95 group text-red-100"
+                                title="Close Agent"
+                            >
+                                <X size={24} className="group-hover:rotate-90 transition-transform" />
+                            </button>
+                        </div>
                     </div>
 
 
