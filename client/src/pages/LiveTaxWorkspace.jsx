@@ -195,9 +195,19 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                         <h1 className="text-white font-black text-[43px] uppercase tracking-tighter">Annual Income Tax Return <span className="text-white font-bold uppercase ml-2">For the Year Ended</span></h1>
                                     </div>
                                     <div className="flex gap-2">
-                                        {Array.from({ length: 4 }).map((_, i) => (
+                                        {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
                                             <div key={i} className="w-12 h-14 border-[1px] border-white flex items-center justify-center bg-white/5">
-                                                <input type="text" maxLength="1" className="w-full h-full text-center text-2xl font-black outline-none bg-transparent text-white" placeholder="0" />
+                                                <input
+                                                    type="text"
+                                                    maxLength="1"
+                                                    className="w-full h-full text-center text-2xl font-black outline-none bg-transparent text-white"
+                                                    value={char}
+                                                    onChange={(e) => {
+                                                        const newDate = (formData.untilDate || "31122026").split('');
+                                                        newDate[4 + i] = e.target.value;
+                                                        handleFormChange('untilDate', newDate.join(''));
+                                                    }}
+                                                />
                                             </div>
                                         ))}
                                     </div>
@@ -213,9 +223,9 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 <span className="text-white text-[26px] font-black uppercase tracking-widest leading-none">Tax Period (Number of Month)</span>
                                             </div>
                                             <div className="flex gap-2">
-                                                {Array.from({ length: 2 }).map((_, i) => (
+                                                {(formData.taxMonths || "12").split('').map((char, i) => (
                                                     <div key={i} className="w-12 h-14 border border-white flex items-center justify-center bg-white/5 shadow-inner">
-                                                        <input type="text" maxLength="1" className="w-full h-full text-center text-white bg-transparent outline-none font-black text-2xl" placeholder="0" />
+                                                        <input type="text" maxLength="1" className="w-full h-full text-center text-white bg-transparent outline-none font-black text-2xl" value={char} onChange={(e) => handleFormChange('taxMonths', (formData.taxMonths || "12").substring(0, i) + e.target.value + (formData.taxMonths || "12").substring(i + 1))} />
                                                     </div>
                                                 ))}
                                             </div>
@@ -228,9 +238,26 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 <span className="text-white text-[26px] font-black uppercase tracking-widest leading-none">From</span>
                                             </div>
                                             <div className="flex gap-4">
-                                                <div className="flex gap-1">{Array.from({ length: 2 }).map((_, i) => <div key={i} className="w-12 h-14 border border-white flex items-center justify-center bg-white/5"><input type="text" maxLength="1" className="w-full h-full text-center text-white bg-transparent outline-none font-black text-2xl" placeholder="0" /></div>)}</div>
-                                                <div className="flex gap-1">{Array.from({ length: 2 }).map((_, i) => <div key={i} className="w-12 h-14 border border-white flex items-center justify-center bg-white/5"><input type="text" maxLength="1" className="w-full h-full text-center text-white bg-transparent outline-none font-black text-2xl" placeholder="0" /></div>)}</div>
-                                                <div className="flex gap-1">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="w-12 h-14 border border-white flex items-center justify-center bg-white/5"><input type="text" maxLength="1" className="w-full h-full text-center text-white bg-transparent outline-none font-black text-2xl" placeholder="0" /></div>)}</div>
+                                                {[
+                                                    { start: 0, len: 2 }, // Day
+                                                    { start: 2, len: 2 }, // Month
+                                                    { start: 4, len: 4 }  // Year
+                                                ].map((section, sIdx) => (
+                                                    <div key={sIdx} className="flex gap-1">
+                                                        {Array.from({ length: section.len }).map((_, i) => {
+                                                            const charIdx = section.start + i;
+                                                            return (
+                                                                <div key={i} className="w-12 h-14 border border-white flex items-center justify-center bg-white/5">
+                                                                    <input type="text" maxLength="1" className="w-full h-full text-center text-white bg-transparent outline-none font-black text-2xl" value={formData.fromDate?.[charIdx] || ''} onChange={(e) => {
+                                                                        const newDate = (formData.fromDate || "01012026").split('');
+                                                                        newDate[charIdx] = e.target.value;
+                                                                        handleFormChange('fromDate', newDate.join(''));
+                                                                    }} />
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                ))}
                                             </div>
                                         </div>
                                     </div>
@@ -241,9 +268,26 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                             <span className="text-white text-[26px] font-black uppercase tracking-widest leading-none">Until</span>
                                         </div>
                                         <div className="flex gap-4">
-                                            <div className="flex gap-1">{Array.from({ length: 2 }).map((_, i) => <div key={i} className="w-12 h-14 border border-white flex items-center justify-center bg-white/5"><input type="text" maxLength="1" className="w-full h-full text-center text-white bg-transparent outline-none font-black text-2xl" placeholder="0" /></div>)}</div>
-                                            <div className="flex gap-1">{Array.from({ length: 2 }).map((_, i) => <div key={i} className="w-12 h-14 border border-white flex items-center justify-center bg-white/5"><input type="text" maxLength="1" className="w-full h-full text-center text-white bg-transparent outline-none font-black text-2xl" placeholder="0" /></div>)}</div>
-                                            <div className="flex gap-1">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="w-12 h-14 border border-white flex items-center justify-center bg-white/5"><input type="text" maxLength="1" className="w-full h-full text-center text-white bg-transparent outline-none font-black text-2xl" placeholder="0" /></div>)}</div>
+                                            {[
+                                                { start: 0, len: 2 }, // Day
+                                                { start: 2, len: 2 }, // Month
+                                                { start: 4, len: 4 }  // Year
+                                            ].map((section, sIdx) => (
+                                                <div key={sIdx} className="flex gap-1">
+                                                    {Array.from({ length: section.len }).map((_, i) => {
+                                                        const charIdx = section.start + i;
+                                                        return (
+                                                            <div key={i} className="w-12 h-14 border border-white flex items-center justify-center bg-white/5">
+                                                                <input type="text" maxLength="1" className="w-full h-full text-center text-white bg-transparent outline-none font-black text-2xl" value={formData.untilDate?.[charIdx] || ''} onChange={(e) => {
+                                                                    const newDate = (formData.untilDate || "31122026").split('');
+                                                                    newDate[charIdx] = e.target.value;
+                                                                    handleFormChange('untilDate', newDate.join(''));
+                                                                }} />
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
                                 </div>
@@ -1270,6 +1314,38 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                         </div>
                                     </div>
 
+                                    {/* SUBSIDIARY REVENUES (B8:B11) */}
+                                    <div className="border-[2px] border-white overflow-hidden text-white bg-white/5">
+                                        <div className="flex bg-white/15 border-b-[2px] border-white h-14 items-center">
+                                            <div className="w-[50%] border-r-[2px] border-white px-4">
+                                                <span className="font-bold text-[18px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណូលបន្ទាប់បន្សំ [B8 = សរុប(B9:B11)]</span>
+                                                <span className="text-[11px] block font-black uppercase">Subsidiary Revenues</span>
+                                            </div>
+                                            <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center font-black text-[14px]">B 8</div>
+                                            <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-4 font-black text-[18px]">$ 0.00</div>
+                                            <div className="flex-1 flex items-center justify-end px-4 font-black text-[18px]">$ 0.00</div>
+                                        </div>
+                                        {[
+                                            { ref: "B 9", kh: "ចំណូលពីការដូរភតិសន្យា ទទួល ឬត្រូវទទួល", en: "Rental fees received or receivable", key: "b9" },
+                                            { ref: "B 10", kh: "ចំណូលពីសិទ្ធិប្រើប្រាស់ ទទួល ឬត្រូវទទួល", en: "Royalties received or receivable", key: "b10" },
+                                            { ref: "B 11", kh: "ចំណូលបន្ទាប់បន្សំផ្សេងទៀត", en: "Other subsidiary revenues", key: "b11" }
+                                        ].map((row, idx) => (
+                                            <div key={idx} className="flex border-b border-white/10 h-12 items-center last:border-0 hover:bg-white/5 transition-colors">
+                                                <div className="w-[50%] border-r-[2px] border-white px-6 flex flex-col">
+                                                    <span className="font-bold text-[14px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
+                                                    <span className="text-[10px] font-bold opacity-70">{row.en}</span>
+                                                </div>
+                                                <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center opacity-40 text-[10px] font-black">{row.ref}</div>
+                                                <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-4 font-black text-[14px]">
+                                                    {formData[row.key + '_n'] || '-'}
+                                                </div>
+                                                <div className="flex-1 flex items-center justify-end px-4 font-black text-[14px]">
+                                                    {formData[row.key + '_n1'] || '-'}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
                                     {/* OTHER REVENUES (B12:B21) */}
                                     <div className="border-[2px] border-white overflow-hidden text-white bg-white/5">
                                         <div className="flex bg-white/15 border-b-[2px] border-white h-14 items-center">
@@ -1278,13 +1354,16 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 <span className="text-[11px] block font-black uppercase">Other Revenues</span>
                                             </div>
                                             <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center font-black text-[14px]">B 12</div>
-                                            <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-4 font-black">$ 0.00</div>
-                                            <div className="flex-1 flex items-center justify-end px-4 font-black">$ 0.00</div>
+                                            <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-4 font-black text-[18px]">$ 0.00</div>
+                                            <div className="flex-1 flex items-center justify-end px-4 font-black text-[18px]">$ 0.00</div>
                                         </div>
                                         {[
                                             { ref: "B 13", kh: "ជំនួយ/ឧបត្ថម្ភ", en: "Grants/Subsidies", key: "b13" },
                                             { ref: "B 14", kh: "ភាគលាភ ទទួល ឬត្រូវទទួល", en: "Dividends received or receivable", key: "b14" },
                                             { ref: "B 15", kh: "ការប្រាក់ ទទួល ឬត្រូវទទួល", en: "Interests received or receivable", key: "b15" },
+                                            { ref: "B 16", kh: "លាភពីការលក់ទ្រព្យសកម្មថេរ", en: "Gain on disposal of fixed assets", key: "b16" },
+                                            { ref: "B 17", kh: "លាភពីការលក់មូលបត្រ", en: "Gain on disposal of securities", key: "b17" },
+                                            { ref: "B 18", kh: "ចំណែកប្រាក់ចំណេញពីសហគ្រាសចម្រុះ", en: "Share of profits from joint venture", key: "b18" },
                                             { ref: "B 19", kh: "លាភ (ចំណេញ) សម្រេចពីប្តូររូបិយប័ណ្ណ", en: "Gain on realized currency translation", key: "b19" },
                                             { ref: "B 20", kh: "លាភ (ចំណេញ) មិនទាន់សម្រេចពីប្តូររូបិយប័ណ្ណ", en: "Gain on unrealized currency translation", key: "b20" },
                                             { ref: "B 21", kh: "ចំណូលផ្សេងទៀត", en: "Other revenues", key: "b21" }
@@ -1323,10 +1402,21 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 { ref: "B 23", kh: "ចំណាយប្រាក់បៀវត្ស", en: "Salary expenses", key: "b23" },
                                                 { ref: "B 24", kh: "ចំណាយប្រេង ហ្គាស អគ្គិសនី និងទឹក", en: "Fuel, gas, electricity and water expenses", key: "b24" },
                                                 { ref: "B 25", kh: "ចំណាយជួល", en: "Rent expenses", key: "b25" },
+                                                { ref: "B 26", kh: "ចំណាយជួសជុល និងថែទាំ", en: "Repairs and maintenance expenses", key: "b26" },
+                                                { ref: "B 27", kh: "ចំណាយធ្វើដំណើរ និងដឹកជញ្ជូន", en: "Travel and transportation expenses", key: "b27" },
+                                                { ref: "B 28", kh: "ចំណាយប្រៃសណីយ៍ និងទូរគមនាគមន៍", en: "Post and telecommunication expenses", key: "b28" },
+                                                { ref: "B 29", kh: "ចំណាយសម្ភារៈការិយាល័យ", en: "Office supplies expenses", key: "b29" },
                                                 { ref: "B 30", kh: "ចំណាយឃោសនា និងផ្សព្វផ្សាយ", en: "Marketing and advertising expenses", key: "b30" },
                                                 { ref: "B 31", kh: "កម្រៃសេវាវិជ្ជាជីវៈ", en: "Professional fees", key: "b31" },
+                                                { ref: "B 32", kh: "បុព្វលាភធានារ៉ាប់រង", en: "Insurance premiums", key: "b32" },
                                                 { ref: "B 33", kh: "ពន្ធ-អាករ និងកម្រៃផ្សេងៗ", en: "Taxes, duties and other fees", key: "b33" },
+                                                { ref: "B 34", kh: "ចំណាយការប្រាក់", en: "Interest expenses", key: "b34" },
                                                 { ref: "B 35", kh: "រំលស់ទ្រព្យសកម្មរូបវន្ត", en: "Depreciation of tangible assets", key: "b35" },
+                                                { ref: "B 36", kh: "រំលស់ទ្រព្យសកម្មអរូបវន្ត", en: "Amortization of intangible assets", key: "b36" },
+                                                { ref: "B 37", kh: "ចំណាយសំវិធានធន", en: "Provision expenses", key: "b37" },
+                                                { ref: "B 38", kh: "វិភាគទានសប្បុរសធម៌", en: "Charitable contributions", key: "b38" },
+                                                { ref: "B 39", kh: "ចំណាយកម្សាន្ត ការទទួលភ្ញៀវ", en: "Entertainment and hospitality expenses", key: "b39" },
+                                                { ref: "B 40", kh: "បំណុលអាក្រក់", en: "Bad debts", key: "b40" },
                                                 { ref: "B 41", kh: "ចំណាយប្រតិបត្តិការផ្សេងទៀត", en: "Other operating expenses", key: "b41" }
                                             ].map((row, idx) => (
                                                 <div key={idx} className="flex border-b border-white/10 h-10 items-center last:border-0 hover:bg-white/5 transition-colors">

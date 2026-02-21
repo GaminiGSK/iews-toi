@@ -161,13 +161,18 @@ const TaxFormWorkbench = () => {
 
                                         {/* 4 SQUARE BOXES - PURE WHITE */}
                                         <div className="flex gap-2">
-                                            {Array.from({ length: 4 }).map((_, i) => (
+                                            {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
                                                 <div key={i} className="w-12 h-14 border-[1px] border-white flex items-center justify-center transition shadow-inner">
                                                     <input
                                                         type="text"
                                                         maxLength="1"
                                                         className="w-full h-full text-center text-2xl font-black outline-none bg-transparent text-white"
-                                                        placeholder="0"
+                                                        value={char}
+                                                        onChange={(e) => {
+                                                            const newDate = (formData.untilDate || "31122026").split('');
+                                                            newDate[4 + i] = e.target.value;
+                                                            handleFormChange('untilDate', newDate.join(''));
+                                                        }}
                                                     />
                                                 </div>
                                             ))}
@@ -184,9 +189,20 @@ const TaxFormWorkbench = () => {
                                                     <span className="text-white text-[22px] font-black uppercase tracking-widest leading-none">Tax Period (Number of Month)</span>
                                                 </div>
                                                 <div className="flex gap-2">
-                                                    {Array.from({ length: 2 }).map((_, i) => (
+                                                    {(formData.taxMonths || "12").split('').map((char, i) => (
                                                         <div key={i} className="w-12 h-14 border border-white flex items-center justify-center bg-white/5 shadow-inner">
-                                                            <input type="text" maxLength="1" className="w-full h-full text-center text-white bg-transparent outline-none font-black text-2xl" placeholder="0" />
+                                                            <input
+                                                                type="text"
+                                                                maxLength="1"
+                                                                className="w-full h-full text-center text-white bg-transparent outline-none font-black text-2xl"
+                                                                value={char}
+                                                                onChange={(e) => {
+                                                                    const val = e.target.value;
+                                                                    const newMonths = (formData.taxMonths || "12").split('');
+                                                                    newMonths[i] = val;
+                                                                    handleFormChange('taxMonths', newMonths.join(''));
+                                                                }}
+                                                            />
                                                         </div>
                                                     ))}
                                                 </div>
@@ -204,35 +220,71 @@ const TaxFormWorkbench = () => {
                                                     <span className="text-white text-[22px] font-black uppercase tracking-widest leading-none">From</span>
                                                 </div>
                                                 <div className="flex gap-4">
-                                                    <div className="flex gap-1">
-                                                        {Array.from({ length: 2 }).map((_, i) => <div key={i} className="w-12 h-14 border border-white flex items-center justify-center bg-white/5"><input type="text" maxLength="1" className="w-full h-full text-center text-white bg-transparent outline-none font-black text-2xl" placeholder="0" /></div>)}
-                                                    </div>
-                                                    <div className="flex gap-1">
-                                                        {Array.from({ length: 2 }).map((_, i) => <div key={i} className="w-12 h-14 border border-white flex items-center justify-center bg-white/5"><input type="text" maxLength="1" className="w-full h-full text-center text-white bg-transparent outline-none font-black text-2xl" placeholder="0" /></div>)}
-                                                    </div>
-                                                    <div className="flex gap-1">
-                                                        {Array.from({ length: 4 }).map((_, i) => <div key={i} className="w-12 h-14 border border-white flex items-center justify-center bg-white/5"><input type="text" maxLength="1" className="w-full h-full text-center text-white bg-transparent outline-none font-black text-2xl" placeholder="0" /></div>)}
-                                                    </div>
+                                                    {[
+                                                        { start: 0, len: 2 }, // Day
+                                                        { start: 2, len: 2 }, // Month
+                                                        { start: 4, len: 4 }  // Year
+                                                    ].map((section, sIdx) => (
+                                                        <div key={sIdx} className="flex gap-1">
+                                                            {Array.from({ length: section.len }).map((_, i) => {
+                                                                const charIdx = section.start + i;
+                                                                return (
+                                                                    <div key={i} className="w-12 h-14 border border-white flex items-center justify-center bg-white/5">
+                                                                        <input
+                                                                            type="text"
+                                                                            maxLength="1"
+                                                                            className="w-full h-full text-center text-white bg-transparent outline-none font-black text-2xl"
+                                                                            value={formData.fromDate?.[charIdx] || ''}
+                                                                            onChange={(e) => {
+                                                                                const val = e.target.value;
+                                                                                const newDate = (formData.fromDate || "01012026").split('');
+                                                                                newDate[charIdx] = val;
+                                                                                handleFormChange('fromDate', newDate.join(''));
+                                                                            }}
+                                                                        />
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    ))}
                                                 </div>
                                             </div>
                                         </div>
 
-                                        {/* END DATE ROW (Separate line for maximum space if needed, or keeping row) */}
+                                        {/* END DATE ROW */}
                                         <div className="flex items-center gap-6">
                                             <div className="flex flex-col gap-1">
                                                 <span className="text-white font-bold text-[26px] tracking-tight leading-none mb-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ដល់ថ្ងៃ</span>
                                                 <span className="text-white text-[22px] font-black uppercase tracking-widest leading-none">Until</span>
                                             </div>
                                             <div className="flex gap-4">
-                                                <div className="flex gap-1">
-                                                    {Array.from({ length: 2 }).map((_, i) => <div key={i} className="w-12 h-14 border border-white flex items-center justify-center bg-white/5"><input type="text" maxLength="1" className="w-full h-full text-center text-white bg-transparent outline-none font-black text-2xl" placeholder="0" /></div>)}
-                                                </div>
-                                                <div className="flex gap-1">
-                                                    {Array.from({ length: 2 }).map((_, i) => <div key={i} className="w-12 h-14 border border-white flex items-center justify-center bg-white/5"><input type="text" maxLength="1" className="w-full h-full text-center text-white bg-transparent outline-none font-black text-2xl" placeholder="0" /></div>)}
-                                                </div>
-                                                <div className="flex gap-1">
-                                                    {Array.from({ length: 4 }).map((_, i) => <div key={i} className="w-12 h-14 border border-white flex items-center justify-center bg-white/5"><input type="text" maxLength="1" className="w-full h-full text-center text-white bg-transparent outline-none font-black text-2xl" placeholder="0" /></div>)}
-                                                </div>
+                                                {[
+                                                    { start: 0, len: 2 }, // Day
+                                                    { start: 2, len: 2 }, // Month
+                                                    { start: 4, len: 4 }  // Year
+                                                ].map((section, sIdx) => (
+                                                    <div key={sIdx} className="flex gap-1">
+                                                        {Array.from({ length: section.len }).map((_, i) => {
+                                                            const charIdx = section.start + i;
+                                                            return (
+                                                                <div key={i} className="w-12 h-14 border border-white flex items-center justify-center bg-white/5">
+                                                                    <input
+                                                                        type="text"
+                                                                        maxLength="1"
+                                                                        className="w-full h-full text-center text-white bg-transparent outline-none font-black text-2xl"
+                                                                        value={formData.untilDate?.[charIdx] || ''}
+                                                                        onChange={(e) => {
+                                                                            const val = e.target.value;
+                                                                            const newDate = (formData.untilDate || "31122026").split('');
+                                                                            newDate[charIdx] = val;
+                                                                            handleFormChange('untilDate', newDate.join(''));
+                                                                        }}
+                                                                    />
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                ))}
                                             </div>
                                         </div>
                                     </div>
