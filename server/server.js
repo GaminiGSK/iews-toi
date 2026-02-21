@@ -75,7 +75,12 @@ const startServer = async () => {
 
     } catch (err) {
         console.error('MongoDB Connection Failed:', err.message);
-        process.exit(1); // Exit if DB fails so Cloud Run restarts the container
+        console.warn('Server will continue to start without some database features.');
+
+        // Start Server anyway so it doesn't crash Cloud Run
+        app.listen(PORT, () => {
+            console.log(`Server running on port ${PORT} (DB DISCONNECTED)`);
+        });
     }
 };
 

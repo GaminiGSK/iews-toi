@@ -1,5 +1,5 @@
 # Base image
-FROM node:18-bullseye-slim
+FROM node:20-slim
 
 # Workspace setup
 WORKDIR /app
