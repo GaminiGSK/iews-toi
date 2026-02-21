@@ -995,203 +995,165 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                     {activePage === 4 && (
                         <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center">
                             {/* PAGE HEADER */}
-                            <div className="w-full max-w-5xl bg-white/5 backdrop-blur-md border-[2px] border-white p-10 shadow-2xl">
-                                <div className="flex justify-between items-start mb-6">
+                            <div className="w-full max-w-7xl bg-white/5 backdrop-blur-md border-[2px] border-white p-8 shadow-2xl mb-6">
+                                <div className="flex justify-between items-start">
                                     <div className="flex flex-col gap-4">
-                                        {/* TIN ROW */}
                                         <div className="flex items-center gap-4 text-white">
                                             <div className="flex items-center gap-2">
-                                                <div className="w-0 h-0 border-t-[10px] border-t-transparent border-l-[15px] border-l-white border-b-[10px] border-b-transparent"></div>
+                                                <div className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[12px] border-l-white border-b-[8px] border-b-transparent"></div>
                                                 <div className="flex flex-col">
-                                                    <span className="text-[14px] font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ :</span>
-                                                    <span className="text-[10px] font-black uppercase tracking-tighter">Tax Identification Number (TIN) :</span>
+                                                    <span className="text-[13px] font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ :</span>
+                                                    <span className="text-[9px] font-black uppercase tracking-tighter">Tax Identification Number (TIN) :</span>
                                                 </div>
                                             </div>
                                             <div className="flex gap-1">
                                                 {['', '', '', '', '', '-', '', '', '', '', '', '', ''].map((char, i) => (
-                                                    <div key={i} className={`w-8 h-10 border-[1px] border-white flex items-center justify-center bg-white/5 ${char === '-' ? 'border-0 w-4' : ''}`}>
-                                                        {char === '-' ? <span className="font-black">-</span> : <span className="text-lg font-black">{formData[`tin_${i}`] || ''}</span>}
+                                                    <div key={i} className={`w-7 h-9 border-[1px] border-white flex items-center justify-center bg-white/5 ${char === '-' ? 'border-0 w-3' : ''}`}>
+                                                        {char === '-' ? <span className="font-black">-</span> : <span className="text-base font-black">{formData[`tin_${i}`] || ''}</span>}
                                                     </div>
                                                 ))}
                                             </div>
                                         </div>
                                     </div>
-
                                     <div className="flex flex-col items-end gap-2 text-white">
                                         <div className="flex items-center gap-2">
-                                            <div className="w-0 h-0 border-t-[10px] border-t-transparent border-l-[15px] border-l-white border-b-[10px] border-b-transparent"></div>
+                                            <div className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[12px] border-l-white border-b-[8px] border-b-transparent"></div>
                                             <div className="flex flex-col">
-                                                <span className="text-[14px] font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំជាប់ពន្ធ</span>
-                                                <span className="text-[10px] font-black uppercase tracking-tighter">Tax Year</span>
+                                                <span className="text-[13px] font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំជាប់ពន្ធ</span>
+                                                <span className="text-[9px] font-black uppercase tracking-tighter">Tax Year</span>
                                             </div>
                                             <div className="flex gap-1">
-                                                {Array.from({ length: 4 }).map((_, i) => (
-                                                    <div key={i} className="w-10 h-12 border-[1px] border-white flex items-center justify-center bg-white/10">
-                                                        <span className="text-xl font-black">{formData[`tax_year_${i}`] || '0'}</span>
+                                                {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
+                                                    <div key={i} className="w-8 h-10 border-[1px] border-white flex items-center justify-center bg-white/10">
+                                                        <span className="text-lg font-black">{char}</span>
                                                     </div>
                                                 ))}
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
 
-                                {/* MAIN TABLE */}
-                                <div className="w-full border-[2px] border-white overflow-hidden text-white">
-                                    {/* HEADER */}
-                                    <div className="flex bg-white/10 border-b-[2px] border-white h-16">
-                                        <div className="w-[50%] border-r-[2px] border-white p-3 flex flex-col justify-center items-center text-center">
-                                            <span className="font-bold text-[18px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បរិយាយ</span>
-                                            <span className="text-[12px] font-black uppercase">Description</span>
-                                        </div>
-                                        <div className="w-[10%] border-r-[2px] border-white p-3 flex flex-col justify-center items-center text-center">
-                                            <span className="font-bold text-[18px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខ</span>
-                                            <span className="text-[12px] font-black uppercase">Ref.</span>
-                                        </div>
-                                        <div className="w-[20%] border-r-[2px] border-white p-3 flex flex-col justify-center items-center text-center">
-                                            <div className="w-full border-b border-white/30 mb-1 pb-1">
-                                                <span className="font-black text-[14px]">ឆ្នាំជាប់ពន្ធ (N)</span>
-                                            </div>
-                                            <span className="font-black text-[12px]">Current Year (N)</span>
-                                        </div>
-                                        <div className="flex-1 p-3 flex flex-col justify-center items-center text-center">
-                                            <div className="w-full border-b border-white/30 mb-1 pb-1">
-                                                <span className="font-black text-[14px]">ឆ្នាំមុន (N-1)</span>
-                                            </div>
-                                            <span className="font-black text-[12px]">Last Year (N-1)</span>
-                                        </div>
-                                    </div>
-
-                                    {/* SECTION II HEADING */}
-                                    <div className="flex border-b-[2px] border-white h-16 bg-white/10 items-center">
+                            <div className="w-full max-w-7xl grid grid-cols-2 gap-6 items-start">
+                                {/* LEFT COLUMN: EQUITY */}
+                                <div className="border-[2px] border-white overflow-hidden text-white bg-white/5 backdrop-blur-sm">
+                                    <div className="flex border-b-[2px] border-white h-14 bg-white/10 items-center">
                                         <div className="w-[50%] border-r-[2px] border-white px-4 flex flex-col">
-                                            <span className="font-bold text-[18px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>II- មូលនិធិ/ឧបត្ថម្ភទ្រព្យ និងបំណុល [A28 = សរុប(A29 + A37 + A42)]</span>
-                                            <span className="text-[12px] font-black uppercase tracking-tight">Equity and Liabilities [A28 = Sum(A29 + A37 + A42)]</span>
+                                            <span className="font-bold text-[16px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>មូលនិធិ/ឧបត្ថម្ភទ្រព្យ</span>
+                                            <span className="text-[11px] font-black uppercase">Equity (A29)</span>
                                         </div>
-                                        <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center font-black text-[18px]">A 28</div>
-                                        <div className="w-[20%] border-r-[2px] border-white flex items-center justify-end px-4 font-black">
-                                            <span>{formData.a28_n || '-'}</span>
-                                        </div>
-                                        <div className="flex-1 flex items-center justify-end px-4 font-black">
-                                            <span>{formData.a28_n1 || '-'}</span>
-                                        </div>
+                                        <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center font-black text-[14px]">REF</div>
+                                        <div className="w-[20%] border-r-[2px] border-white flex items-center justify-center text-[11px] font-bold">YEAR N</div>
+                                        <div className="flex-1 flex items-center justify-center text-[11px] font-bold">YEAR N-1</div>
                                     </div>
 
-                                    {/* EQUITY SUBSECTION */}
-                                    <div className="flex border-b-[1px] border-white/30 h-14 bg-white/5 items-center">
-                                        <div className="w-[50%] border-r-[2px] border-white px-8 flex flex-col italic">
-                                            <span className="font-bold text-[16px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>មូលនិធិ/ឧបត្ថម្ភទ្រព្យ [A29 = សរុប(A30:A36)]</span>
-                                            <span className="text-[11px] font-bold">Equity [A29 = Sum(A30:A36)]</span>
-                                        </div>
-                                        <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center font-black opacity-50 text-[14px]">A 29</div>
-                                        <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-4 font-black">
-                                            <span>{formData.a29_n || '-'}</span>
-                                        </div>
-                                        <div className="flex-1 flex items-center justify-end px-4 font-black">
-                                            <span>{formData.a29_n1 || '-'}</span>
-                                        </div>
+                                    <div className="bg-white/5 border-b-[1px] border-white/30 h-10 flex items-center px-4 italic">
+                                        <span className="text-[12px] font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>A29 = សរុប(A30:A36)</span>
                                     </div>
 
                                     {[
-                                        { ref: "A 30", kh: "មូលធន/មូលធនភាគហ៊ុន/ មូលនិធិសាខាក្រុមហ៊ុនបរទេស ឬការិយាល័យតំណាង", en: "Capital / Share capital / Fund of Foreign Branch or Representative Office", key: "a30" },
-                                        { ref: "A 31", kh: "តម្លៃលើសនៃការលក់ភាគហ៊ុន", en: "Share premium", key: "a31" },
-                                        { ref: "A 32", kh: "មូលធនបម្រុងតាមច្បាប់", en: "Legal reserve capital", key: "a32" },
-                                        { ref: "A 33", kh: "លាភលើសនៃការវាយតម្លៃឡើងវិញទ្រព្យសកម្ម", en: "Gain on revaluation of assets", key: "a33" },
-                                        { ref: "A 34", kh: "មូលធនបម្រុងផ្សេងៗ", en: "Other reserve capital", key: "a34" },
-                                        { ref: "A 35", kh: "លទ្ធផលចំណេញ / (ខាត) យកមកពីមុន (+ ឬ -)", en: "Profit / (loss) brought forward (+ or -)", key: "a35" },
-                                        { ref: "A 36", kh: "លទ្ធផលចំណេញ / (ខាត) នៃការិយបរិច្ឆេទនេះ (+ ឬ -)", en: "Profit / (loss) for the period (+ or -)", key: "a36" }
-                                    ].map((row, idx) => (
-                                        <div key={idx} className="flex border-b border-white/10 h-16 items-center last:border-0 hover:bg-white/5 transition-colors">
-                                            <div className="w-[50%] border-r-[2px] border-white px-10 flex flex-col">
-                                                <span className="font-bold text-[14px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
-                                                <span className="text-[11px] font-bold opacity-80">{row.en}</span>
-                                            </div>
-                                            <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center font-black opacity-40 text-[13px]">{row.ref}</div>
-                                            <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-4 font-black">
-                                                <span>{formData[row.key + '_n'] || '-'}</span>
-                                            </div>
-                                            <div className="flex-1 flex items-center justify-end px-4 font-black">
-                                                <span>{formData[row.key + '_n1'] || '-'}</span>
-                                            </div>
-                                        </div>
-                                    ))}
-
-                                    {/* NON-CURRENT LIABILITIES SUBSECTION */}
-                                    <div className="flex border-y-[2px] border-white h-14 bg-white/10 items-center">
-                                        <div className="w-[50%] border-r-[2px] border-white px-8 flex flex-col italic">
-                                            <span className="font-bold text-[16px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បំណុលរយៈពេលវែង [A37 = សរុប(A38:A41)]</span>
-                                            <span className="text-[11px] font-bold">Non-Current Liabilities [A37 = Sum(A38:A41)]</span>
-                                        </div>
-                                        <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center font-black text-[14px]">A 37</div>
-                                        <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-4 font-black">
-                                            <span>{formData.a37_n || '-'}</span>
-                                        </div>
-                                        <div className="flex-1 flex items-center justify-end px-4 font-black">
-                                            <span>{formData.a37_n1 || '-'}</span>
-                                        </div>
-                                    </div>
-
-                                    {[
-                                        { ref: "A 38", kh: "បំណុលភាគីជាប់ទាក់ទង", en: "Loan from related parties", key: "a38" },
-                                        { ref: "A 39", kh: "បំណុលធនាគារ និងបំណុលភាគីមិនជាប់ទាក់ទងផ្សេងៗ", en: "Loan from banks and other external parties", key: "a39" },
-                                        { ref: "A 40", kh: "សំវិធានធន", en: "Provisions", key: "a40" },
-                                        { ref: "A 41", kh: "បំណុលរយៈពេលវែងផ្សេងៗ", en: "Other non-current liabilities", key: "a41" }
+                                        { ref: "A 30", kh: "មូលធន/មូលធនភាគហ៊ុន", en: "Capital / Share capital", key: "a30" },
+                                        { ref: "A 31", kh: "តម្លៃលើសការលក់ភាគហ៊ុន", en: "Share premium", key: "a31" },
+                                        { ref: "A 32", kh: "មូលធនបម្រុងតាមច្បាប់", en: "Legal reserve", key: "a32" },
+                                        { ref: "A 33", kh: "លាភវាយតម្លៃឡើងវិញ", en: "Revaluation gain", key: "a33" },
+                                        { ref: "A 34", kh: "បម្រុងផ្សេងៗ", en: "Other reserves", key: "a34" },
+                                        { ref: "A 35", kh: "ចំណេញ/ខាតពីមុន", en: "Result forward", key: "a35" },
+                                        { ref: "A 36", kh: "ចំណេញ/ខាតគ្រានេះ", en: "Period result", key: "a36" }
                                     ].map((row, idx) => (
                                         <div key={idx} className="flex border-b border-white/10 h-14 items-center last:border-0 hover:bg-white/5 transition-colors">
-                                            <div className="w-[50%] border-r-[2px] border-white px-10 flex flex-col">
-                                                <span className="font-bold text-[15px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
-                                                <span className="text-[11px] font-bold opacity-80">{row.en}</span>
+                                            <div className="w-[50%] border-r-[2px] border-white px-4 flex flex-col">
+                                                <span className="font-bold text-[13px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
+                                                <span className="text-[10px] font-bold opacity-70">{row.en}</span>
                                             </div>
-                                            <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center font-black opacity-40 text-[13px]">{row.ref}</div>
-                                            <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-4 font-black">
+                                            <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center font-black opacity-40 text-[11px]">{row.ref}</div>
+                                            <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-3 font-black text-[13px]">
                                                 <span>{formData[row.key + '_n'] || '-'}</span>
                                             </div>
-                                            <div className="flex-1 flex items-center justify-end px-4 font-black">
+                                            <div className="flex-1 flex items-center justify-end px-3 font-black text-[13px]">
                                                 <span>{formData[row.key + '_n1'] || '-'}</span>
                                             </div>
                                         </div>
                                     ))}
 
-                                    {/* CURRENT LIABILITIES SUBSECTION */}
-                                    <div className="flex border-y-[2px] border-white h-14 bg-white/10 items-center">
-                                        <div className="w-[50%] border-r-[2px] border-white px-8 flex flex-col italic">
-                                            <span className="font-bold text-[16px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បំណុលរយៈពេលខ្លី [A42 = សរុប(A43:A52)]</span>
-                                            <span className="text-[11px] font-bold">Current Liabilities [A42 = Sum(A43:A52)]</span>
+                                    <div className="flex border-t-[2px] border-white h-12 bg-white/10 items-center font-black">
+                                        <div className="w-[60%] border-r-[2px] border-white px-4 text-[13px]">TOTAL EQUITY (A29)</div>
+                                        <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-3">{formData.a29_n || '-'}</div>
+                                        <div className="flex-1 flex items-center justify-end px-3">{formData.a29_n1 || '-'}</div>
+                                    </div>
+                                </div>
+
+                                {/* RIGHT COLUMN: LIABILITIES */}
+                                <div className="flex flex-col gap-6">
+                                    {/* NON-CURRENT LIABILITIES */}
+                                    <div className="border-[2px] border-white overflow-hidden text-white bg-white/5">
+                                        <div className="flex border-b-[2px] border-white h-12 bg-white/10 items-center">
+                                            <div className="w-[50%] border-r-[2px] border-white px-4">
+                                                <span className="font-bold text-[14px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បំណុលរយៈពេលវែង</span>
+                                                <span className="text-[10px] block font-black uppercase">Non-Current (A37)</span>
+                                            </div>
+                                            <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center font-black text-[11px]">REF</div>
+                                            <div className="w-[20%] border-r-[2px] border-white flex items-center justify-center text-[10px] font-bold">N</div>
+                                            <div className="flex-1 flex items-center justify-center text-[10px] font-bold">N-1</div>
                                         </div>
-                                        <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center font-black text-[14px]">A 42</div>
-                                        <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-4 font-black">
-                                            <span>{formData.a42_n || '-'}</span>
-                                        </div>
-                                        <div className="flex-1 flex items-center justify-end px-4 font-black">
-                                            <span>{formData.a42_n1 || '-'}</span>
-                                        </div>
+                                        {[
+                                            { ref: "A 38", kh: "បំណុលភាគីពាក់ព័ន្ធ", en: "Related parties", key: "a38" },
+                                            { ref: "A 39", kh: "បំណុលធនាគារ/ក្រៅ", en: "Banks/External", key: "a39" },
+                                            { ref: "A 40", kh: "សំវិធានធន", en: "Provisions", key: "a40" },
+                                            { ref: "A 41", kh: "បំណុលវែងផ្សេងៗ", en: "Other LTS", key: "a41" }
+                                        ].map((row, idx) => (
+                                            <div key={idx} className="flex border-b border-white/10 h-10 items-center last:border-0">
+                                                <div className="w-[50%] border-r-[2px] border-white px-4 flex flex-col">
+                                                    <span className="font-bold text-[12px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
+                                                    <span className="text-[9px] opacity-70">{row.en}</span>
+                                                </div>
+                                                <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center opacity-40 text-[10px]">{row.ref}</div>
+                                                <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-3 text-[12px] font-bold">{formData[row.key + '_n'] || '-'}</div>
+                                                <div className="flex-1 flex items-center justify-end px-3 text-[12px] font-bold">{formData[row.key + '_n1'] || '-'}</div>
+                                            </div>
+                                        ))}
                                     </div>
 
-                                    {[
-                                        { ref: "A 43", kh: "សាច់ប្រាក់ក្នុងធនាគារលើសប្រាក់បញ្ញើ (ឥណទានវិបារូប៍)", en: "Bank overdraft", key: "a43" },
-                                        { ref: "A 44", kh: "ចំណែកបច្ចុប្បន្ននៃបំណុលមានការប្រាក់", en: "Short-term borrowing-current portion of interest bearing borrowing", key: "a44" },
-                                        { ref: "A 45", kh: "គណនីត្រូវសងបុគ្គលជាប់ទាក់ទង (ភាគីសម្ព័ន្ធភាព)", en: "Accounts payable to related parties", key: "a45" },
-                                        { ref: "A 46", kh: "គណនីត្រូវសងផ្សេងៗ", en: "Other accounts payable", key: "a46" },
-                                        { ref: "A 47", kh: "ចំណូលកក់មុន", en: "Unearned revenues", key: "a47" },
-                                        { ref: "A 48", kh: "គណនីចំណាយបង្គរ និងបំណុលរយៈពេលខ្លីផ្សេងៗ", en: "Accrual expenses and other current liabilities", key: "a48" },
-                                        { ref: "A 49", kh: "សំវិធានធន", en: "Provisions", key: "a49" },
-                                        { ref: "A 50", kh: "ពន្ធលើប្រាក់ចំណូលត្រូវបង់", en: "Income tax payable", key: "a50" },
-                                        { ref: "A 51", kh: "ពន្ធ-អាករផ្សេងៗត្រូវបង់", en: "Other taxes payable", key: "a51" },
-                                        { ref: "A 52", kh: "លទ្ធផល (ចំណេញ/ខាត) ពីបរិវត្តរូបិយប័ណ្ណនៃបំណុល", en: "Gain/(Loss) on currency translation of liabilities", key: "a52" }
-                                    ].map((row, idx) => (
-                                        <div key={idx} className="flex border-b border-white/10 h-14 items-center last:border-0 hover:bg-white/5 transition-colors">
-                                            <div className="w-[50%] border-r-[2px] border-white px-10 flex flex-col">
-                                                <span className="font-bold text-[14px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
-                                                <span className="text-[11px] font-bold opacity-80">{row.en}</span>
+                                    {/* CURRENT LIABILITIES */}
+                                    <div className="border-[2px] border-white overflow-hidden text-white bg-white/5">
+                                        <div className="flex border-b-[2px] border-white h-12 bg-white/10 items-center">
+                                            <div className="w-[50%] border-r-[2px] border-white px-4">
+                                                <span className="font-bold text-[14px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បំណុលរយៈពេលខ្លី</span>
+                                                <span className="text-[10px] block font-black uppercase">Current (A42)</span>
                                             </div>
-                                            <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center font-black opacity-40 text-[13px]">{row.ref}</div>
-                                            <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-4 font-black">
-                                                <span>{formData[row.key + '_n'] || '-'}</span>
-                                            </div>
-                                            <div className="flex-1 flex items-center justify-end px-4 font-black">
-                                                <span>{formData[row.key + '_n1'] || '-'}</span>
-                                            </div>
+                                            <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center font-black text-[11px]">REF</div>
+                                            <div className="w-[20%] border-r-[2px] border-white flex items-center justify-center text-[10px] font-bold">N</div>
+                                            <div className="flex-1 flex items-center justify-center text-[10px] font-bold">N-1</div>
                                         </div>
-                                    ))}
+                                        {[
+                                            { ref: "A 43", kh: "ឥណទានវិបារូប៍", en: "Bank overdraft", key: "a43" },
+                                            { ref: "A 44", kh: "បំណុលមានការប្រាក់", en: "Interest bearing", key: "a44" },
+                                            { ref: "A 45", kh: "សងភាគីពាក់ព័ន្ធ", en: "To related parties", key: "a45" },
+                                            { ref: "A 46", kh: "គណនីត្រូវសងផ្សេងៗ", en: "Other accounts payable", key: "a46" },
+                                            { ref: "A 48", kh: "បង្គរ/ខ្លីផ្សេងៗ", en: "Accruals/Other", key: "a48" },
+                                            { ref: "A 50", kh: "ពន្ធ/អាករត្រូវបង់", en: "Taxes payable", key: "a50" },
+                                            { ref: "A 52", kh: "ខាតបរិវត្តរូបិយប័ណ្ណ", en: "Currency loss", key: "a52" }
+                                        ].map((row, idx) => (
+                                            <div key={idx} className="flex border-b border-white/10 h-10 items-center last:border-0">
+                                                <div className="w-[50%] border-r-[2px] border-white px-4 flex flex-col">
+                                                    <span className="font-bold text-[12px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
+                                                    <span className="text-[9px] opacity-70">{row.en}</span>
+                                                </div>
+                                                <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center opacity-40 text-[10px]">{row.ref}</div>
+                                                <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-3 text-[12px] font-bold">{formData[row.key + '_n'] || '-'}</div>
+                                                <div className="flex-1 flex items-center justify-end px-3 text-[12px] font-bold">{formData[row.key + '_n1'] || '-'}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* GRAND TOTAL ROW */}
+                                    <div className="border-[2px] border-white h-16 bg-white/20 flex items-center font-black text-white shadow-xl">
+                                        <div className="w-[60%] border-r-[2px] border-white px-6">
+                                            <span className="text-[16px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សរុបបំណុល និងមូលធន (A28)</span>
+                                            <span className="text-[12px] block opacity-80 uppercase">Total Equity & Liabilities</span>
+                                        </div>
+                                        <div className="w-[20%] border-r-[2px] border-white flex items-center justify-end px-4 text-[18px]">{formData.a28_n || '-'}</div>
+                                        <div className="flex-1 flex items-center justify-end px-4 text-[18px]">{formData.a28_n1 || '-'}</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1199,38 +1161,200 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
 
                     {/* PAGE 5 CONTENT - PROFIT & LOSS */}
                     {activePage === 5 && (
-                        <div className="animate-fade-in relative px-10 py-16 grid grid-cols-2 gap-20">
-                            <div className="flex flex-col">
-                                <div className="flex justify-between items-center border-b-[1px] border-white pb-10 text-white">
+                        <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center">
+                            {/* PAGE HEADER */}
+                            <div className="w-full max-w-7xl bg-white/5 backdrop-blur-md border-[2px] border-white p-8 shadow-2xl mb-10">
+                                <div className="flex justify-between items-start">
                                     <div className="flex flex-col gap-2">
-                                        <h2 className="text-[36px] font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>របាយការណ៍លទ្ធផល</h2>
-                                        <h1 className="text-[32px] font-black uppercase tracking-tighter">Profit and Loss Statement</h1>
+                                        <h2 className="text-[34px] font-bold text-white leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>របាយការណ៍លទ្ធផលសម្រាប់គ្រាជាប់ពន្ធ</h2>
+                                        <h1 className="text-[28px] font-black text-white uppercase tracking-tighter">INCOME STATEMENT FOR THE YEAR ENDED</h1>
+                                    </div>
+                                    <div className="flex flex-col items-end gap-4">
+                                        <div className="flex gap-1">
+                                            {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
+                                                <div key={i} className="w-10 h-12 border-[2px] border-white flex items-center justify-center bg-white/10">
+                                                    <span className="text-xl font-black text-white">{char}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="flex items-center gap-4 text-white">
+                                            <div className="flex flex-col items-end">
+                                                <span className="text-[13px] font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ :</span>
+                                                <span className="text-[9px] font-black uppercase tracking-tighter">Tax Identification Number (TIN) :</span>
+                                            </div>
+                                            <div className="flex gap-1">
+                                                {['L', '0', '0', '1', '-', '1', '2', '3', '4', '5', '6', '7', '8'].map((char, i) => (
+                                                    <div key={i} className={`w-6 h-8 border-[1px] border-white flex items-center justify-center bg-white/5 ${char === '-' ? 'border-0 w-3' : ''}`}>
+                                                        {char === '-' ? <span className="font-black text-white">-</span> : <span className="text-[14px] font-black">{formData[`tin_${i}`] || char}</span>}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="w-full max-w-[1600px] grid grid-cols-2 gap-10 items-start">
+                                {/* LEFT COLUMN: REVENUES & COGS */}
+                                <div className="flex flex-col gap-8">
+                                    {/* SECTION III: OPERATING REVENUES */}
+                                    <div className="border-[2px] border-white overflow-hidden text-white bg-white/5">
+                                        <div className="flex bg-white/15 border-b-[2px] border-white h-16 items-center">
+                                            <div className="w-[50%] border-r-[2px] border-white px-4">
+                                                <span className="font-bold text-[20px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>III- ចំណូលប្រតិបត្តិការ [B0 = សរុប(B1:B3)]</span>
+                                                <span className="text-[12px] block font-black uppercase">Operating Revenues [B0 = Sum(B1:B3)]</span>
+                                            </div>
+                                            <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center font-black text-[14px]">B 0</div>
+                                            <div className="w-[20%] border-r-[2px] border-white flex items-center justify-center text-[12px] font-bold">YEAR N</div>
+                                            <div className="flex-1 flex items-center justify-center text-[12px] font-bold">YEAR N-1</div>
+                                        </div>
+                                        {[
+                                            { ref: "B 1", kh: "ការលក់ផលិតផល", en: "Sales of products", key: "b1" },
+                                            { ref: "B 2", kh: "ការលក់ទំនិញ", en: "Sales of goods", key: "b2" },
+                                            { ref: "B 3", kh: "ការផ្គត់ផ្គង់សេវា", en: "Supplies of services", key: "b3" }
+                                        ].map((row, idx) => (
+                                            <div key={idx} className="flex border-b border-white/10 h-14 items-center last:border-0 hover:bg-white/5 transition-colors">
+                                                <div className="w-[50%] border-r-[2px] border-white px-6 flex flex-col">
+                                                    <span className="font-bold text-[16px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
+                                                    <span className="text-[11px] font-bold opacity-70">{row.en}</span>
+                                                </div>
+                                                <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center opacity-40 text-[12px] font-black">{row.ref}</div>
+                                                <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-4 font-black text-[16px]">
+                                                    {formData[row.key + '_n'] || '-'}
+                                                </div>
+                                                <div className="flex-1 flex items-center justify-end px-4 font-black text-[16px]">
+                                                    {formData[row.key + '_n1'] || '-'}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* SECTION IV: COGS & GROSS PROFIT */}
+                                    <div className="border-[2px] border-white overflow-hidden text-white bg-white/5">
+                                        <div className="flex bg-white/15 border-b-[2px] border-white h-16 items-center">
+                                            <div className="w-[50%] border-r-[2px] border-white px-4">
+                                                <span className="font-bold text-[20px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>IV- ថ្លៃដើមផលិតផល និង Gross Profit</span>
+                                                <span className="text-[12px] block font-black uppercase">COGS & Gross Profit (B7)</span>
+                                            </div>
+                                            <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center font-black text-[14px]">REF</div>
+                                            <div className="w-[20%] border-r-[2px] border-white flex items-center justify-center text-[12px] font-bold">YEAR N</div>
+                                            <div className="flex-1 flex items-center justify-center text-[12px] font-bold">YEAR N-1</div>
+                                        </div>
+                                        {[
+                                            { ref: "B 4", kh: "ថ្លៃដើមលក់ផលិតផល (សហគ្រាសផលិត)", en: "COPS (Production enterprises)", key: "b4" },
+                                            { ref: "B 5", kh: "ថ្លៃដើមលក់ទំនិញ (សហគ្រាសមិនមែនផលិត)", en: "COGS (Non-production enterprises)", key: "b5" },
+                                            { ref: "B 6", kh: "ថ្លៃដើមសេវាផ្គត់ផ្គង់", en: "Cost of services supplied", key: "b6" }
+                                        ].map((row, idx) => (
+                                            <div key={idx} className="flex border-b border-white/10 h-14 items-center hover:bg-white/5 transition-colors">
+                                                <div className="w-[50%] border-r-[2px] border-white px-6 flex flex-col">
+                                                    <span className="font-bold text-[16px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
+                                                    <span className="text-[11px] font-bold opacity-70">{row.en}</span>
+                                                </div>
+                                                <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center opacity-40 text-[12px] font-black">{row.ref}</div>
+                                                <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-4 font-black text-[16px]">
+                                                    {formData[row.key + '_n'] || '-'}
+                                                </div>
+                                                <div className="flex-1 flex items-center justify-end px-4 font-black text-[16px]">
+                                                    {formData[row.key + '_n1'] || '-'}
+                                                </div>
+                                            </div>
+                                        ))}
+                                        <div className="flex bg-rose-500/20 border-t-[2px] border-white h-16 items-center">
+                                            <div className="w-[50%] border-r-[2px] border-white px-6">
+                                                <span className="font-bold text-[18px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លទ្ធផលដុល (B7 = B0 - B4 - B5 - B6)</span>
+                                                <span className="text-[11px] block font-black uppercase">Gross Profit</span>
+                                            </div>
+                                            <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center font-black text-[16px]">B 7</div>
+                                            <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-4 font-black text-[18px] text-rose-400">$ 0.00</div>
+                                            <div className="flex-1 flex items-center justify-end px-4 font-black text-[18px] text-rose-400">$ 0.00</div>
+                                        </div>
+                                    </div>
+
+                                    {/* OTHER REVENUES (B12:B21) */}
+                                    <div className="border-[2px] border-white overflow-hidden text-white bg-white/5">
+                                        <div className="flex bg-white/15 border-b-[2px] border-white h-14 items-center">
+                                            <div className="w-[50%] border-r-[2px] border-white px-4">
+                                                <span className="font-bold text-[18px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណូលផ្សេងៗ [B12 = សរុប(B13:B21)]</span>
+                                                <span className="text-[11px] block font-black uppercase">Other Revenues</span>
+                                            </div>
+                                            <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center font-black text-[14px]">B 12</div>
+                                            <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-4 font-black">$ 0.00</div>
+                                            <div className="flex-1 flex items-center justify-end px-4 font-black">$ 0.00</div>
+                                        </div>
+                                        {[
+                                            { ref: "B 13", kh: "ជំនួយ/ឧបត្ថម្ភ", en: "Grants/Subsidies", key: "b13" },
+                                            { ref: "B 14", kh: "ភាគលាភ ទទួល ឬត្រូវទទួល", en: "Dividends received or receivable", key: "b14" },
+                                            { ref: "B 15", kh: "ការប្រាក់ ទទួល ឬត្រូវទទួល", en: "Interests received or receivable", key: "b15" },
+                                            { ref: "B 19", kh: "លាភ (ចំណេញ) សម្រេចពីប្តូររូបិយប័ណ្ណ", en: "Gain on realized currency translation", key: "b19" },
+                                            { ref: "B 20", kh: "លាភ (ចំណេញ) មិនទាន់សម្រេចពីប្តូររូបិយប័ណ្ណ", en: "Gain on unrealized currency translation", key: "b20" },
+                                            { ref: "B 21", kh: "ចំណូលផ្សេងទៀត", en: "Other revenues", key: "b21" }
+                                        ].map((row, idx) => (
+                                            <div key={idx} className="flex border-b border-white/10 h-12 items-center last:border-0 hover:bg-white/5 transition-colors">
+                                                <div className="w-[50%] border-r-[2px] border-white px-6 flex flex-col">
+                                                    <span className="font-bold text-[14px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
+                                                    <span className="text-[10px] font-bold opacity-70">{row.en}</span>
+                                                </div>
+                                                <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center opacity-40 text-[10px] font-black">{row.ref}</div>
+                                                <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-4 font-black text-[14px]">
+                                                    {formData[row.key + '_n'] || '-'}
+                                                </div>
+                                                <div className="flex-1 flex items-center justify-end px-4 font-black text-[14px]">
+                                                    {formData[row.key + '_n1'] || '-'}
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
 
-                                <div className="mt-8 border-[2px] border-white overflow-hidden text-white">
-                                    <div className="flex border-b-[2px] border-white h-14 bg-emerald-500/10 items-center">
-                                        <div className="w-[48%] border-r-[2px] border-white px-4 flex flex-col">
-                                            <span className="font-bold text-[22px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>III- ចំណូល (B1 - B2)</span>
-                                            <span className="text-[14px] font-black uppercase tracking-wide">Revenue</span>
+                                {/* RIGHT COLUMN: OPERATING EXPENSES */}
+                                <div className="flex flex-col gap-8">
+                                    <div className="border-[2px] border-white overflow-hidden text-white bg-white/5">
+                                        <div className="flex bg-indigo-500/20 border-b-[2px] border-white h-16 items-center">
+                                            <div className="w-[50%] border-r-[2px] border-white px-4">
+                                                <span className="font-bold text-[20px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>V- ចំណាយប្រតិបត្តិការសរុប [B22 = សរុប(B23:B41)]</span>
+                                                <span className="text-[12px] block font-black uppercase">Total Operating Expenses</span>
+                                            </div>
+                                            <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center font-black text-[14px]">B 22</div>
+                                            <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-4 font-black text-[18px]">$ 0.00</div>
+                                            <div className="flex-1 flex items-center justify-end px-4 font-black text-[18px]">$ 0.00</div>
                                         </div>
-                                        <div className="w-[12%] border-r-[2px] border-white flex items-center justify-center font-black text-emerald-400 text-[18px]">B 3</div>
-                                        <div className="w-[40%] flex items-center justify-end px-4 font-black text-emerald-400 text-[18px]">$ 0.00</div>
+                                        <div className="grid grid-cols-1">
+                                            {[
+                                                { ref: "B 23", kh: "ចំណាយប្រាក់បៀវត្ស", en: "Salary expenses", key: "b23" },
+                                                { ref: "B 24", kh: "ចំណាយប្រេង ហ្គាស អគ្គិសនី និងទឹក", en: "Fuel, gas, electricity and water expenses", key: "b24" },
+                                                { ref: "B 25", kh: "ចំណាយជួល", en: "Rent expenses", key: "b25" },
+                                                { ref: "B 30", kh: "ចំណាយឃោសនា និងផ្សព្វផ្សាយ", en: "Marketing and advertising expenses", key: "b30" },
+                                                { ref: "B 31", kh: "កម្រៃសេវាវិជ្ជាជីវៈ", en: "Professional fees", key: "b31" },
+                                                { ref: "B 33", kh: "ពន្ធ-អាករ និងកម្រៃផ្សេងៗ", en: "Taxes, duties and other fees", key: "b33" },
+                                                { ref: "B 35", kh: "រំលស់ទ្រព្យសកម្មរូបវន្ត", en: "Depreciation of tangible assets", key: "b35" },
+                                                { ref: "B 41", kh: "ចំណាយប្រតិបត្តិការផ្សេងទៀត", en: "Other operating expenses", key: "b41" }
+                                            ].map((row, idx) => (
+                                                <div key={idx} className="flex border-b border-white/10 h-10 items-center last:border-0 hover:bg-white/5 transition-colors">
+                                                    <div className="w-[50%] border-r-[2px] border-white px-6 flex flex-col">
+                                                        <span className="font-bold text-[13px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
+                                                        <span className="text-[9px] font-bold opacity-70">{row.en}</span>
+                                                    </div>
+                                                    <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center opacity-40 text-[9px] font-black">{row.ref}</div>
+                                                    <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-4 font-black text-[13px]">
+                                                        {formData[row.key + '_n'] || '-'}
+                                                    </div>
+                                                    <div className="flex-1 flex items-center justify-end px-4 font-black text-[13px]">
+                                                        {formData[row.key + '_n1'] || '-'}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
 
-                                    {[
-                                        { ref: "B 1", kh: "លក់សរុប", en: "Gross sales" },
-                                        { ref: "B 2", kh: "បង្វិលសង", en: "Sales returns" }
-                                    ].map((row, idx) => (
-                                        <div key={idx} className="flex border-b border-white/10 h-14 items-center">
-                                            <div className="w-[48%] border-r-[2px] border-white px-6 flex flex-col">
-                                                <span className="font-bold text-[19px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
-                                                <span className="text-[14px] font-bold">{row.en}</span>
-                                            </div>
-                                            <div className="w-[12%] border-r-[2px] border-white flex items-center justify-center font-black text-white/50 text-[14px]">{row.ref}</div>
-                                            <div className="w-[40%] flex items-center justify-end px-4 font-black text-white">$ 0.00</div>
+                                    {/* SECTION VI: NET RESULT */}
+                                    <div className="border-[2px] border-white h-24 bg-emerald-500/20 flex items-center font-black text-white shadow-2xl">
+                                        <div className="w-[60%] border-r-[2px] border-white px-8">
+                                            <span className="text-[24px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>VI- លទ្ធផលជារួម (ចំណេញ/ខាត) : B42</span>
+                                            <span className="text-[16px] block opacity-80 uppercase">Overall Result (Net Profit / Loss)</span>
                                         </div>
-                                    ))}
+                                        <div className="w-[20%] border-r-[2px] border-white flex items-center justify-end px-6 text-[24px] text-emerald-400">$ 0.00</div>
+                                        <div className="flex-1 flex items-center justify-end px-6 text-[24px] text-emerald-400">$ 0.00</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
