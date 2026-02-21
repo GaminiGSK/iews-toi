@@ -18,6 +18,7 @@ app.use(morgan('dev'));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/company', require('./routes/company'));
+app.use('/api/bridge', require('./routes/bridge'));
 app.use('/uploads', express.static('uploads'));
 
 // Serve Frontend in Production

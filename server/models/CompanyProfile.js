@@ -20,7 +20,7 @@ const CompanyProfileSchema = new mongoose.Schema({
         originalName: String,
         path: String,
         status: { type: String, default: 'Pending' }, // 'Pending', 'Verified', 'Error'
-        extractedText: String, // Raw AI text if needed
+        extractedData: { type: mongoose.Schema.Types.Mixed }, // Structured AI Data
         uploadedAt: { type: Date, default: Date.now }
     }],
 
