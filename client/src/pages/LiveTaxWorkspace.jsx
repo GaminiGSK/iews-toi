@@ -2473,6 +2473,178 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
 
 
                     {activePage === 12 && (
+                        <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center overflow-x-auto">
+                            <div className="w-[1800px] flex flex-col items-center">
+                                {/* PAGE HEADER - TIN & YEAR AREA */}
+                                <div className="w-full flex flex-col items-end mb-16 px-10">
+                                    <div className="flex gap-16 items-start">
+                                        <div className="flex flex-col items-end">
+                                            <div className="flex items-center gap-6">
+                                                <span className="text-[28px] font-bold text-white" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំជាប់ពន្ធ</span>
+                                                <span className="text-[22px] font-black text-white/40 uppercase">Tax Year</span>
+                                            </div>
+                                            <div className="flex gap-2 mt-4">
+                                                {["2", "0", "2", "6"].map((char, i) => (
+                                                    <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                        <span className="text-[32px] font-black text-white">{char}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col items-end">
+                                            <div className="flex items-center gap-6">
+                                                <span className="text-[28px] font-bold text-white" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                                <span className="text-[22px] font-black text-white/40 uppercase">Tax Identification Number (TIN) :</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 mt-4">
+                                                <div className="flex gap-2">
+                                                    {["1", "2", "3", "4", "5", "6", "7", "8"].map((char, i) => (
+                                                        <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                            <span className="text-[32px] font-black text-white">{char}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                <div className="w-8 h-[3px] bg-white opacity-40 mx-2" />
+                                                <div className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                    <span className="text-[32px] font-black text-white">9</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="w-full flex flex-col gap-12 mt-10">
+                                    {/* TABLE B.1: INTEREST EXPENSES CARRIED FORWARD */}
+                                    <div className="flex flex-col gap-8">
+                                        <div className="flex flex-col border-l-[10px] border-emerald-500 pl-8">
+                                            <h3 className="text-white font-bold text-[36px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ខ.១-តារាងការអនុញ្ញាតលើចំណាយការប្រាក់ដែលបានបន្ត</h3>
+                                            <h4 className="text-white/60 font-black text-[28px] uppercase tracking-tight">B.1 Table of Interest Expenses Carried Forward</h4>
+                                        </div>
+
+                                        <div className="border-[4px] border-white bg-white/5 shadow-2xl overflow-hidden">
+                                            <table className="w-full border-collapse">
+                                                <thead>
+                                                    <tr className="bg-emerald-500/10 border-b-[4px] border-white text-white h-32 text-[22px]">
+                                                        <th className="border-r-[2px] border-white p-4 w-[12%]">
+                                                            <span className="block font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការិយបរិច្ឆេទ</span>
+                                                            <span className="font-black uppercase">Period</span>
+                                                        </th>
+                                                        <th className="border-r-[2px] border-white p-4 w-[20%]">
+                                                            <span className="block font-bold italic" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណាយការប្រាក់អតិបរមាដែលអាចដក <br /> កាត់បានជាមួយការប្រាក់យកមកពីឆ្នាំមុន</span>
+                                                            <span className="font-black uppercase opacity-70">Max Interest Deductible (G9)</span>
+                                                        </th>
+                                                        <th className="border-r-[2px] border-white p-4 w-[18%]">
+                                                            <span className="block font-bold italic" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>និយ័តកម្មការប្រាក់មិនអនុញ្ញាត <br /> កាត់កងក្នុងគ្រាការិយបរិច្ឆេទ</span>
+                                                            <span className="font-black uppercase opacity-70">Not-Allowed Interest (G10)</span>
+                                                        </th>
+                                                        <th className="border-r-[2px] border-white p-4 w-[16%]">
+                                                            <span className="block font-bold italic" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការប្រាក់អនុញ្ញាតប្រើប្រាស់ <br /> កាត់កងក្នុងគ្រាការិយបរិច្ឆេទ</span>
+                                                            <span className="font-black uppercase opacity-70">Interest Allowed (G11)*</span>
+                                                        </th>
+                                                        <th className="border-r-[2px] border-white p-4 w-[16%]">
+                                                            <span className="block font-bold italic" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការប្រាក់អនុញ្ញាតប្រើប្រាស់ <br /> កាត់កងសរុបបន្ត</span>
+                                                            <span className="font-black uppercase opacity-70">Accumulated Interest (G12)</span>
+                                                        </th>
+                                                        <th className="p-4 w-[18%]">
+                                                            <span className="block font-bold italic" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការប្រាក់ដែលនៅសល់អនុញ្ញាត <br /> ប្រើប្រាស់សរុបបន្តទៅមុខ</span>
+                                                            <span className="font-black uppercase opacity-70">Carried Forward (G13)</span>
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="text-white font-black text-[28px]">
+                                                    {["N-5", "N-4", "N-3", "N-2", "N-1", "N"].map((year, i) => (
+                                                        <tr key={i} className="border-b border-white/10 h-24 hover:bg-white/5 transition-colors">
+                                                            <td className="border-r-[2px] border-white p-4 text-center">
+                                                                <span className="block font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំ {year}</span>
+                                                                <span className="text-[20px] font-black opacity-50">Year {year}</span>
+                                                            </td>
+                                                            <td className="border-r-[2px] border-white p-4 relative">
+                                                                {i < 5 ? (
+                                                                    <div className="absolute inset-0 flex items-center justify-center opacity-20">
+                                                                        <div className="w-full h-1 bg-white rotate-[15deg]"></div>
+                                                                        <div className="w-full h-1 bg-white -rotate-[15deg]"></div>
+                                                                    </div>
+                                                                ) : <input type="text" className="w-full bg-transparent text-right outline-none text-white" placeholder="0.00" />}
+                                                            </td>
+                                                            <td className="border-r-[2px] border-white p-4"><input type="text" className="w-full bg-transparent text-right outline-none" placeholder="0.00" /></td>
+                                                            <td className="border-r-[2px] border-white p-4 font-black text-emerald-400 bg-emerald-500/10"><input type="text" className="w-full bg-transparent text-right outline-none" placeholder="0.00" /></td>
+                                                            <td className="border-r-[2px] border-white p-4"><input type="text" className="w-full bg-transparent text-right outline-none text-white/40" placeholder="0.00" /></td>
+                                                            <td className="p-4 font-black text-rose-300 bg-rose-500/5"><input type="text" className="w-full bg-transparent text-right outline-none" placeholder="0.00" /></td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <p className="text-[24px] text-white/40 italic">* Sum amount of column (G11) to be deducted from adjusted taxable income by filling in the box (E39)</p>
+                                    </div>
+
+                                    {/* TABLE C: TAXABLE ACCUMULATED LOSSES CARRIED FORWARD */}
+                                    <div className="flex flex-col gap-10 mt-10">
+                                        <div className="flex flex-col border-l-[10px] border-indigo-500 pl-8">
+                                            <h3 className="text-white font-bold text-[36px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>គ.តារាងការបន្តខាតដែលបានកើតពីពន្ធដារតាមរយៈបន្តទៅមុខ</h3>
+                                            <h4 className="text-white/60 font-black text-[28px] uppercase tracking-tight">C. Table of Taxable Accumulated Losses Carried Forward</h4>
+                                        </div>
+
+                                        <div className="border-[4px] border-white bg-white/5 shadow-2xl overflow-hidden">
+                                            <table className="w-full border-collapse">
+                                                <thead>
+                                                    <tr className="bg-indigo-500/10 border-b-[4px] border-white text-white h-32 text-[20px]">
+                                                        <th className="border-r-[2px] border-white p-4 w-[12%]">
+                                                            <span className="block font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការិយបរិច្ឆេទ</span>
+                                                            <span className="font-black uppercase">Period</span>
+                                                        </th>
+                                                        <th className="border-r-[2px] border-white p-4 w-[17.6%]">
+                                                            <span className="block font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លទ្ធផលចំណេញសារពើពន្ធ</span>
+                                                            <span className="font-black uppercase opacity-70">Taxable Profit (1)</span>
+                                                        </th>
+                                                        <th className="border-r-[2px] border-white p-4 w-[17.6%]">
+                                                            <span className="block font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លទ្ធផលខាតសារពើពន្ធ <br /> ក្នុងគ្រាការិយបរិច្ឆេទ</span>
+                                                            <span className="font-black uppercase opacity-70">Taxable Loss (2)</span>
+                                                        </th>
+                                                        <th className="border-r-[2px] border-white p-4 w-[17.6%]">
+                                                            <span className="block font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ខាតអនុញ្ញាតប្រើប្រាស់ <br /> ក្នុងគ្រាការិយបរិច្ឆេទ</span>
+                                                            <span className="font-black uppercase opacity-70">Loss Allowance (3)</span>
+                                                        </th>
+                                                        <th className="border-r-[2px] border-white p-4 w-[17.6%]">
+                                                            <span className="block font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ខាតអនុញ្ញាតប្រើប្រាស់ <br /> កាត់កងសរុបបន្ត</span>
+                                                            <span className="font-black uppercase opacity-70">Accu. Losses Allowance (4)*</span>
+                                                        </th>
+                                                        <th className="p-4 w-[17.6%]">
+                                                            <span className="block font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ខាតដែលនៅសេសសល់អនុញ្ញាត <br /> យកទៅប្រើប្រាស់បន្តទៅមុខ</span>
+                                                            <span className="font-black uppercase opacity-70">Losses Carried Forward (5)</span>
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="text-white font-black text-[28px]">
+                                                    {["N-5", "N-4", "N-3", "N-2", "N-1", "N**"].map((year, i) => (
+                                                        <tr key={i} className="border-b border-white/10 h-24 hover:bg-white/5 transition-colors">
+                                                            <td className="border-r-[2px] border-white p-4 text-center">
+                                                                <span className="block font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំ {year}</span>
+                                                                <span className="text-[20px] font-black opacity-50">Year {year}</span>
+                                                            </td>
+                                                            <td className="border-r-[2px] border-white p-4"><input type="text" className="w-full bg-transparent text-right outline-none text-white/40" placeholder="0.00" /></td>
+                                                            <td className="border-r-[2px] border-white p-4"><input type="text" className="w-full bg-transparent text-right outline-none text-white/40" placeholder="0.00" /></td>
+                                                            <td className="border-r-[2px] border-white p-4"><input type="text" className="w-full bg-transparent text-right outline-none text-white/40" placeholder="0.00" /></td>
+                                                            <td className="border-r-[2px] border-white p-4 font-black bg-indigo-500/10"><input type="text" className="w-full bg-transparent text-right outline-none text-emerald-400" placeholder="0.00" /></td>
+                                                            <td className="p-4 font-black text-indigo-300"><input type="text" className="w-full bg-transparent text-right outline-none" placeholder="0.00" /></td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div className="flex flex-col gap-4 p-10 bg-white/5 rounded-2xl border-[3px] border-white/10 text-[22px] text-white/40 italic leading-relaxed shadow-inner">
+                                            <p>(4)* គឺជាចំនួនទឹកប្រាក់ខាតពីអតីតការិយបរិច្ឆេទដែលត្រូវបានអនុញ្ញាតក្នុងឆ្នាំជាប់ពន្ធបច្ចុប្បន្ន និងក្នុងគ្រាការិយបរិច្ឆេទនេះ It is an accumulated taxable loss allowance from previous periods and current period.</p>
+                                            <p>** ឆ្នាំ N គឺជាឆ្នាំជាប់ពន្ធ Year N is the current tax year</p>
+                                            <p className="mt-4">ក្នុងករណីដែលមានខាតនៅគ្រាការិយបរិច្ឆេទជាប់ពន្ធណាមួយ ការខាតបង់នោះត្រូវបានទុកជាបន្ទុកសម្រាប់ឆ្នាំជាប់ពន្ធបន្តបន្ទាប់ ហើយត្រូវដកចេញពីប្រាក់ចំណេញសម្រេចបាននៅក្នុងឆ្នាំជាប់ពន្ធបន្តបន្ទាប់នោះ។</p>
+                                            <p className="mt-2 text-[20px]">In case of any loss in any tax year, this loss is considered as a charge for the following tax year and shall be deducted from the profit realized in that following year.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activePage === 13 && (
                         <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center">
                             {/* LANDSCAPE HEADER AREA */}
                             <div className="w-[2400px] flex flex-col items-center mb-10 px-10">
@@ -2510,7 +2682,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                         <span className="text-[32px] font-black text-white">{char}</span>
                                                     </div>
                                                 ))}
-                                                <div className="w-6 h-[3px] bg-white opacity-40 mx-2 self-center" />
+                                                <div className="w-8 h-[3px] bg-white opacity-40 mx-2 self-center" />
                                                 <div className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
                                                     <span className="text-[32px] font-black text-white">9</span>
                                                 </div>
@@ -2654,15 +2826,6 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                         </table>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {activePage === 13 && (
-                        <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center">
-                            <div className="flex flex-col items-center justify-center py-40 opacity-20">
-                                <h3 className="text-white font-black uppercase text-[40px] tracking-widest">Page 13</h3>
-                                <p className="text-white text-[24px] mt-2 italic">Schedule Content Pending Sync</p>
                             </div>
                         </div>
                     )}
