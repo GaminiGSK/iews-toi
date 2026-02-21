@@ -2098,17 +2098,25 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="flex items-center gap-4 text-white">
-                                            <div className="flex flex-col items-end">
-                                                <span className="text-[26px] font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ :</span>
-                                                <span className="text-[18px] font-black uppercase tracking-tighter">Tax Identification Number (TIN) :</span>
-                                            </div>
-                                            <div className="flex gap-1">
-                                                {['L', '0', '1', '2', '-', '1', '2', '3', '4', '5', '6', '7', '8'].map((char, i) => (
-                                                    <div key={i} className={`w-6 h-8 border-[1px] border-white flex items-center justify-center bg-white/5 ${char === '-' ? 'border-0 w-3' : ''}`}>
-                                                        {char === '-' ? <span className="font-black text-white">-</span> : <span className="text-[28px] font-black">{formData[`tin_${i}`] || char}</span>}
+                                        <div className="flex flex-col gap-6">
+                                            <div className="flex items-center gap-8 text-white">
+                                                <div className="flex flex-col items-end">
+                                                    <span className="text-[32px] font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ :</span>
+                                                    <span className="text-[22px] font-black uppercase tracking-tight text-white/40">Tax Identification Number (TIN) :</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="flex gap-2">
+                                                        {["1", "2", "3", "4", "5", "6", "7", "8"].map((char, i) => (
+                                                            <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                                <span className="text-[32px] font-black">{char}</span>
+                                                            </div>
+                                                        ))}
                                                     </div>
-                                                ))}
+                                                    <div className="w-8 h-[3px] bg-white opacity-40 mx-2" />
+                                                    <div className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                        <span className="text-[32px] font-black text-white">9</span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
