@@ -2832,6 +2832,133 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
 
                     {activePage === 14 && (
                         <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center">
+                            {/* PAGE 14: SPECIAL DEPRECIATION TABLE PER LOT */}
+                            <div className="w-[1800px] flex flex-col items-center mb-10 px-10">
+                                <div className="w-full flex justify-between items-start mb-16">
+                                    <div className="border-[6px] border-white p-10 bg-white/5 shadow-2xl">
+                                        <h2 className="text-[54px] font-bold text-white text-center leading-tight mb-4" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                            តារាងគណនារំលស់ពិសេសតាមច្បាប់ស្តីពីវិនិយោគ
+                                        </h2>
+                                        <h1 className="text-[44px] font-black text-white text-center uppercase tracking-wider">
+                                            SPECIAL DEPRECIATION TABLE PER LOT
+                                        </h1>
+                                    </div>
+                                    <div className="flex flex-col gap-8">
+                                        <div className="flex items-center gap-6 bg-slate-950 p-6 border-[3px] border-white/20">
+                                            <div className="flex flex-col items-end">
+                                                <span className="text-[28px] font-bold text-white" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំជាប់ពន្ធ</span>
+                                                <span className="text-[22px] font-black text-white/50 uppercase">Tax Year</span>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
+                                                    <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/10">
+                                                        <span className="text-[32px] font-black text-white">{char}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-6 bg-slate-950 p-6 border-[3px] border-white/20">
+                                            <div className="flex flex-col items-end">
+                                                <span className="text-[28px] font-bold text-white" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                                <span className="text-[22px] font-black text-white/50 uppercase whitespace-nowrap">Tax Identification Number (TIN) :</span>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                {["1", "2", "3", "4", "5", "6", "7", "8"].map((char, i) => (
+                                                    <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                        <span className="text-[32px] font-black text-white">{char}</span>
+                                                    </div>
+                                                ))}
+                                                <div className="w-8 h-[3px] bg-white opacity-40 mx-2 self-center" />
+                                                <div className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                    <span className="text-[32px] font-black text-white">9</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* SPECIAL DEPRECIATION TABLE */}
+                                <div className="w-full border-[4px] border-white bg-white/5 overflow-hidden shadow-2xl">
+                                    <table className="w-full border-collapse">
+                                        <thead>
+                                            <tr className="bg-blue-600/10 border-b-[4px] border-white text-white h-40 text-[20px]">
+                                                <th className="border-r-[2px] border-white p-4 w-[25%]">
+                                                    <span className="block font-bold mb-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ថ្នាក់នៃទ្រព្យសកម្មរូបី</span>
+                                                    <span className="font-black uppercase tracking-tight">Classification of Tangible Assets</span>
+                                                </th>
+                                                <th className="border-r-[2px] border-white p-4 w-[20%]">
+                                                    <span className="block font-bold mb-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រភេទទ្រព្យសកម្មរូបី</span>
+                                                    <span className="font-black uppercase tracking-tight">Types of Tangible Assets</span>
+                                                </th>
+                                                <th className="border-r-[2px] border-white p-4 w-[18%]">
+                                                    <span className="block font-bold mb-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>តម្លៃដើមទ្រព្យសកម្មរូបី</span>
+                                                    <span className="font-black uppercase tracking-tight">Acquisition Cost of Tangible Assets (1)</span>
+                                                </th>
+                                                <th className="border-r-[2px] border-white p-4 w-[18%]">
+                                                    <span className="block font-bold mb-2 text-blue-300" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>រំលស់ពិសេសក្នុងគ្រា</span>
+                                                    <span className="block font-bold mb-2 text-blue-400" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បញ្ចុះត្រឹមអត្រា ៤០%</span>
+                                                    <span className="font-black uppercase tracking-tight opacity-70">Special Depreciation During the Period at Rate 40% (2)</span>
+                                                </th>
+                                                <th className="p-4 w-[19%] bg-white/5">
+                                                    <span className="block font-bold mb-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>តម្លៃនៅសល់មិនទាន់រំលស់នៅចុងគ្រា</span>
+                                                    <span className="block font-bold mb-2 opacity-60" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការបន្តទៅផ្ទៃឧបសម្ព័ន្ធ(TOI 01/IX)</span>
+                                                    <span className="font-black uppercase tracking-tight">Undepreciated Value at the End (3) = (1) - (2)</span>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="text-white text-[28px]">
+                                            {[
+                                                { kh: "១-ទ្រព្យរូបីថ្នាក់១", en: "Tangible Assets Class 1", key: "sd_c1" },
+                                                { kh: "២-ទ្រព្យរូបីថ្នាក់២", en: "Tangible Assets Class 2", key: "sd_c2" },
+                                                { kh: "៣-ទ្រព្យរូបីថ្នាក់៣", en: "Tangible Assets Class 3", key: "sd_c3" },
+                                                { kh: "៤-ទ្រព្យរូបីថ្នាក់៤", en: "Tangible Assets Class 4", key: "sd_c4" }
+                                            ].map((row, idx) => (
+                                                <React.Fragment key={idx}>
+                                                    <tr className="bg-white/10 h-24 border-b-[2px] border-white">
+                                                        <td className="border-r-[2px] border-white px-8 font-bold flex flex-col justify-center h-24">
+                                                            <span style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
+                                                            <span className="text-[18px] opacity-60">{row.en}</span>
+                                                        </td>
+                                                        <td className="border-r-[2px] border-white px-4 h-24"></td>
+                                                        <td className="border-r-[2px] border-white px-4 h-24"></td>
+                                                        <td className="border-r-[2px] border-white px-4 h-24"></td>
+                                                        <td className="px-4 h-24 bg-white/5"></td>
+                                                    </tr>
+                                                    {[1, 2].map(line => (
+                                                        <tr key={line} className="h-20 border-b border-white/10 hover:bg-white/5 transition-colors">
+                                                            <td className="border-r-[2px] border-white px-8"></td>
+                                                            <td className="border-r-[2px] border-white px-6"><input className="w-full bg-transparent outline-none text-[24px]" placeholder="..." /></td>
+                                                            <td className="border-r-[2px] border-white px-6"><input className="w-full bg-transparent text-right outline-none font-black" placeholder="0.00" /></td>
+                                                            <td className="border-r-[2px] border-white px-6"><input className="w-full bg-transparent text-right outline-none font-black text-blue-400" placeholder="0.00" /></td>
+                                                            <td className="px-6 bg-white/5"><input className="w-full bg-transparent text-right outline-none font-black text-emerald-400" placeholder="0.00" /></td>
+                                                        </tr>
+                                                    ))}
+                                                </React.Fragment>
+                                            ))}
+                                            {/* GRAND TOTAL ROW */}
+                                            <tr className="h-28 bg-blue-600/30 border-t-[4px] border-white font-black">
+                                                <td colSpan="2" className="border-r-[2px] border-white px-8 text-center text-[32px]">
+                                                    <span style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សរុបរួម / </span> GRAND TOTAL
+                                                </td>
+                                                <td className="border-r-[2px] border-white px-6 text-right text-[32px]">0.00</td>
+                                                <td className="border-r-[2px] border-white px-6 text-right text-[32px] text-blue-300">0.00</td>
+                                                <td className="px-6 text-right text-[36px] text-emerald-300 bg-white/10 shadow-inner">0.00</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {/* FOOTER NOTICE */}
+                                <div className="mt-16 w-full max-w-7xl flex flex-col gap-6 p-10 bg-white/5 border-[3px] border-white/10 rounded-3xl text-[20px] italic text-white/50 leading-relaxed shadow-xl">
+                                    <p>• បំណុលពិសេសនៃទ្រព្យរូបី នឹងត្រូវបានកាត់បន្ថយទឹកប្រាក់ចំណេញជាប់ពន្ធសម្រាប់ឆ្នាំជាប់ពន្ធប្រសិនបើវិនិយោគិនដែលជាកម្មសិទ្ធិគ្រប់គ្រាន់សម្រាប់ឆ្នាំជាប់ពន្ធ ប្រសិនបើបង្កើនវិនិយោគដែលច្បាប់មិនបានអនុញ្ញាតឱ្យប្រើប្រាស់សិទ្ធិទទួលបានរយៈពេលលើកលែងដូចមានចែងក្នុងកថាខណ្ឌ ៤ នៃមាត្រា ២០ថ្មី នៃច្បាប់ស្តីពីវិនិយោគនៃព្រះរាជាណាចក្រកម្ពុជា ។</p>
+                                    <p>* A special depreciation of tangible assets shall be deducted in determining a QIP's taxable income for a taxation year if the investor elected not to use the entitlement under paragraph 4 of Article 20 (new) of the Law on the Amendment of the LOT (tax exempt period) as prescribed by paragraph 6 of Article 20 (new) of the Law on the Amendment of the LOT.</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activePage === 15 && (
+                        <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center">
                             {/* PAGE HEADER */}
                             <div className="w-full max-w-[2000px] bg-white/5 backdrop-blur-md border-[6px] border-white p-16 shadow-2xl mb-16">
                                 <div className="flex justify-between items-start">
@@ -2886,7 +3013,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                         </div>
                     )}
 
-                    {activePage === 15 && (
+                    {activePage === 16 && (
                         <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center">
                             {/* PAGE HEADER */}
                             <div className="w-full max-w-[2000px] bg-white/5 backdrop-blur-md border-[6px] border-white p-16 shadow-2xl mb-16">
@@ -2942,7 +3069,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                         </div>
                     )}
 
-                    {activePage > 15 && (
+                    {activePage > 16 && (
                         <div className="flex flex-col items-center justify-center py-40 opacity-20">
                             <h3 className="text-white font-black uppercase text-[40px] tracking-widest">Page {activePage}</h3>
                             <p className="text-white text-[24px] mt-2 italic">Schedule Content Pending Sync</p>
