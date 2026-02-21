@@ -1,0 +1,29 @@
+name: 🤖 24/7 Bridge Monitor
+
+on:
+  schedule:
+    - cron: '*/5 * * * *' # Every 5 minutes
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  check-bridge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Dependencies
+        run: |
+          cd server
+          npm install axios
+
+      - name: 🔍 Poll Bridge for Tasks
+        env:
+          BRIDGE_URL: ${{ secrets.BRIDGE_URL }}
+          BRIDGE_SECRET: ${{ secrets.BRIDGE_SECRET }}
+        run: node scripts/monitor-bridge-cloud.js

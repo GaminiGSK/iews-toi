@@ -20,6 +20,10 @@ router.post('/send', async (req, res) => {
 // GET unread bridge entries (Antigravity calls this)
 router.get('/unread', async (req, res) => {
     try {
+        const secret = req.headers['x-bridge-secret'];
+        if (process.env.BRIDGE_SECRET && secret !== process.env.BRIDGE_SECRET) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
         const entries = await Bridge.find({ status: 'unread' }).sort({ createdAt: 1 });
         res.json(entries);
     } catch (err) {
@@ -30,6 +34,10 @@ router.get('/unread', async (req, res) => {
 // GET latest bridge entries (External calls this to see status updates)
 router.get('/latest', async (req, res) => {
     try {
+        const secret = req.headers['x-bridge-secret'];
+        if (process.env.BRIDGE_SECRET && secret !== process.env.BRIDGE_SECRET) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
         const entries = await Bridge.find().sort({ createdAt: -1 }).limit(10);
         res.json(entries);
     } catch (err) {
