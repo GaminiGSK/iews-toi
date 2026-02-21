@@ -1,4 +1,4 @@
-import axios from 'axios';
+﻿import axios from 'axios';
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, X, Send, Sparkles, Bot, Paperclip } from 'lucide-react';
 
@@ -15,6 +15,7 @@ const AIAssistant = () => {
 
     // STATE
     const [isOpen, setIsOpen] = useState(true); // Default Open
+    const [selectedModel, setSelectedModel] = useState('gemini-2.0'); // Default
     const [messages, setMessages] = useState([
         { role: 'assistant', text: 'Hello! I am your GK Blue Agent. Describe your request or paste an image for analysis.' }
     ]);
@@ -115,6 +116,7 @@ const AIAssistant = () => {
                 {
                     message: userMsg.text,
                     image: userMsg.image,
+                    model: selectedModel, // <--- Send Model
                     context: {
                         route: location.pathname,
                         packageId: packageId
@@ -122,6 +124,7 @@ const AIAssistant = () => {
                 },
                 { headers: { 'Authorization': `Bearer ${token}` } }
             );
+
 
             const { text, toolAction } = res.data;
             const assistantMsg = {
@@ -254,7 +257,23 @@ const AIAssistant = () => {
                                 <h3 className="font-extrabold text-2xl tracking-wide text-white drop-shadow-sm">GK BLUE AGENT</h3>
                                 <div className="flex items-center gap-2 opacity-90 mt-1">
                                     <span className={`w-3 h-3 rounded-full ${isConnected ? 'bg-emerald-400' : 'bg-red-500'} animate-pulse box-shadow-glow`}></span>
-                                    <span className={`text-sm font-bold uppercase tracking-wider ${isConnected ? 'text-blue-200' : 'text-red-400'}`}>{isConnected ? 'Online' : 'Offline'}</span>
+                                    <span className={`text-xl font-bold uppercase tracking-wider ${isConnected ? 'text-blue-200' : 'text-red-400'}`}>{isConnected ? 'Online' : 'Offline'}</span>
+
+                                    {/* Model Selector */}
+                                    <select
+                                        value={selectedModel}
+                                        onChange={(e) => setSelectedModel(e.target.value)}
+                                        className="ml-4 bg-blue-900/50 border border-blue-400/30 text-[20px] font-black uppercase tracking-widest rounded-lg px-2 py-1 outline-none cursor-pointer hover:bg-blue-800/60 transition-all text-blue-100"
+                                    >
+                                        <option value="gemini-2.0">Gemini 3.1 Pro (High) New</option>
+                                        <option value="gemini-flash">Gemini 3 Flash</option>
+                                        <option value="claude-sonnet">Claude Sonnet 4.6 (Thinking)</option>
+                                        <option value="claude-opus">Claude Opus 4.6 (Thinking)</option>
+                                        <option value="gpt-oss">GPT-OSS 120B (Medium)</option>
+                                        <option value="ollama-v3">Ollama: Deepseek V3.1</option>
+                                        <option value="ollama-coder">Ollama: Deepseek Coder</option>
+                                    </select>
+
                                 </div>
                             </div>
                         </div>
@@ -265,6 +284,7 @@ const AIAssistant = () => {
                             <X size={28} />
                         </button>
                     </div>
+
 
                     {/* Messages Area */}
                     <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-slate-950 scrollbar-thin scrollbar-thumb-blue-900 scrollbar-track-transparent">
@@ -295,21 +315,21 @@ const AIAssistant = () => {
                                     <div className="max-w-[95%] bg-slate-900 border border-blue-500/40 rounded-2xl shadow-2xl mt-4 overflow-hidden animate-in fade-in zoom-in-95 duration-300">
                                         <div className="bg-blue-900/40 px-6 py-4 border-b border-blue-500/30 flex justify-between items-center">
                                             <span className="text-base font-bold text-blue-300 uppercase tracking-wide flex items-center gap-2"><Sparkles size={16} /> Proposed Adjustment</span>
-                                            <span className="text-sm text-blue-400 font-mono bg-blue-900/50 px-2 py-1 rounded">{msg.toolAction.journal_data.date}</span>
+                                            <span className="text-xl text-blue-400 font-mono bg-blue-900/50 px-2 py-1 rounded">{msg.toolAction.journal_data.date}</span>
                                         </div>
                                         <div className="p-6">
                                             <p className="text-lg font-medium text-gray-100 mb-6 border-l-4 border-blue-500 pl-4">{msg.toolAction.journal_data.description}</p>
-                                            <div className="bg-slate-950 rounded-xl border border-slate-700 text-sm overflow-hidden mb-6">
+                                            <div className="bg-slate-950 rounded-xl border border-slate-700 text-xl overflow-hidden mb-6">
                                                 {msg.toolAction.journal_data.lines.map((line, i) => (
                                                     <div key={i} className="flex justify-between items-center p-3 border-b border-slate-800 last:border-0 hover:bg-slate-900 transition">
                                                         <span className="text-gray-300 font-mono font-medium truncate flex-1 pr-4 text-base">{line.accountCode}</span>
                                                         <div className="flex gap-6 font-mono text-base">
                                                             <div className="min-w-[100px] text-right">
-                                                                <span className="text-xs text-gray-500 block">DR</span>
+                                                                <span className="text-lg text-gray-500 block">DR</span>
                                                                 <span className={line.debit > 0 ? "text-emerald-400 font-bold" : "text-gray-700"}>{line.debit > 0 ? line.debit.toFixed(2) : '-'}</span>
                                                             </div>
                                                             <div className="min-w-[100px] text-right">
-                                                                <span className="text-xs text-gray-500 block">CR</span>
+                                                                <span className="text-lg text-gray-500 block">CR</span>
                                                                 <span className={line.credit > 0 ? "text-emerald-400 font-bold" : "text-gray-700"}>{line.credit > 0 ? line.credit.toFixed(2) : '-'}</span>
                                                             </div>
                                                         </div>
@@ -332,14 +352,14 @@ const AIAssistant = () => {
                                 {msg.toolAction && msg.toolAction.tool_use === 'propose_action' && (
                                     <div className="w-[85%] bg-slate-900 border border-cyan-500/40 rounded-2xl shadow-2xl mt-4 overflow-hidden animate-in fade-in zoom-in-95 duration-300">
                                         <div className="bg-cyan-900/40 px-6 py-3 border-b border-cyan-500/30 flex justify-between items-center text-cyan-300">
-                                            <span className="text-sm font-bold uppercase tracking-widest flex items-center gap-2 font-mono"><Bot size={16} /> BA Suggestion</span>
+                                            <span className="text-xl font-bold uppercase tracking-widest flex items-center gap-2 font-mono"><Bot size={16} /> BA Suggestion</span>
                                         </div>
                                         <div className="p-6 flex flex-col items-center text-center">
                                             <div className="w-16 h-16 bg-cyan-500/10 rounded-full flex items-center justify-center mb-4 ring-2 ring-cyan-500/20">
                                                 <Sparkles className="text-cyan-400" size={32} />
                                             </div>
                                             <h4 className="text-xl font-bold text-white mb-2">{msg.toolAction.reply_text || "Automated Action Detected"}</h4>
-                                            <p className="text-gray-400 mb-6 text-sm">{msg.text}</p>
+                                            <p className="text-gray-400 mb-6 text-xl">{msg.text}</p>
                                             <button
                                                 onClick={() => handleApproveAction(msg.toolAction)}
                                                 className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-black py-4 rounded-xl transition shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:scale-[1.02] active:scale-95"
@@ -405,7 +425,7 @@ const AIAssistant = () => {
                             </button>
                         </div>
                         <div className="text-center mt-3">
-                            <p className="text-sm text-slate-500 flex items-center justify-center gap-2">
+                            <p className="text-xl text-slate-500 flex items-center justify-center gap-2">
                                 <Sparkles size={14} className="text-blue-400" /> GK Blue Agent - v3.0 Ultra
                             </p>
                         </div>

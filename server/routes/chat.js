@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
 const googleAI = require('../services/googleAI');
+const ollamaAI = require('../services/ollamaAI');
 const Transaction = require('../models/Transaction');
 const AccountCode = require('../models/AccountCode');
 const User = require('../models/User');
@@ -10,7 +11,7 @@ const CompanyProfile = require('../models/CompanyProfile');
 // POST /api/chat/message
 router.post('/message', auth, async (req, res) => {
     try {
-        const { message, image } = req.body;
+        const { message, image, model } = req.body;
         if (!message && !image) return res.status(400).json({ message: "Message or Image is required" });
 
         // 1. Fetch Context Data
@@ -86,7 +87,7 @@ router.post('/message', auth, async (req, res) => {
             code: t.accountCode ? t.accountCode.code : 'Uncategorized'
         }));
 
-        // 2. Call AI Service
+        // 2. Call AI Service (Route based on model selection)
         const context = {
             companyName,
             profile: {
@@ -105,12 +106,25 @@ router.post('/message', auth, async (req, res) => {
             ui: req.body.context || {} // Pass UI Context (Route, etc.)
         };
 
-        // Pass 'image' (Base64) to the AI service
-        const aiResponse = await googleAI.chatWithFinancialAgent(message || "Analyze this image", context, image);
+        let aiResponse = "";
+        const isOllama = model && (model.includes('ollama') || model.includes('deepseek') || model.includes('gpt-oss'));
+
+        if (isOllama) {
+            // Mapping friendly names to local model IDs
+            let modelId = "deepseek-v3.1:671b-cloud"; // Default for Ollama
+            if (model.includes('coder')) modelId = "deepseek-coder-v2:16b-lite-instruct-q4_K_M";
+            if (model.includes('gpt-oss')) modelId = "deepseek-coder-v2:16b-lite-instruct-q4_K_M"; // Map GPT-OSS to local coder for now
+
+            aiResponse = await ollamaAI.chatWithOllamaAgent(message || "Analyzing local context...", context, image, modelId);
+        } else {
+            // Default to Gemini (Cloud) - and handle Claude labels as Gemini for this prototype
+            aiResponse = await googleAI.chatWithFinancialAgent(message || "Analyze this image", context, image);
+        }
 
         // 3. Handle Potential Tool Use (Rule Creation)
         let finalText = aiResponse;
         let toolAction = null;
+
 
         try {
             // Advanced JSON extraction for model robustness
