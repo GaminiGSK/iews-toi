@@ -352,6 +352,25 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
 
                             {/* RIGHT COLUMN */}
                             <div className="flex flex-col border-l border-white/10">
+                                {/* STANDARDIZED TIN HEADER FOR PAGE 1 */}
+                                <div className="mb-10 flex items-center gap-6 bg-slate-950 p-6 border-[3px] border-white/20 shadow-2xl">
+                                    <div className="flex flex-col items-end">
+                                        <span className="text-[28px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                        <span className="text-[22px] font-black text-white/50 uppercase whitespace-nowrap">Tax Identification Number (TIN) :</span>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        {["1", "2", "3", "4", "5", "6", "7", "8"].map((char, i) => (
+                                            <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                <span className="text-[32px] font-black text-white">{(formData.tin || "123456789")[i]}</span>
+                                            </div>
+                                        ))}
+                                        <div className="w-8 h-[3px] bg-white opacity-40 mx-2 self-center" />
+                                        <div className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                            <span className="text-[32px] font-black text-white">{(formData.tin || "123456789")[8]}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 {/* SECTION: ACCOUNTING RECORDS */}
                                 <div className="border-[3px] border-white overflow-hidden bg-white/5 shadow-2xl">
                                     <div className="flex border-b-[2px] border-white min-h-[120px]">
@@ -579,30 +598,26 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                     </div>
                                 </div>
 
-                                {/* TIN INPUT SECTION */}
-                                <div className="w-full mt-10 flex items-center gap-6">
+                                {/* STANDARDIZED TIN SECTION FOR PAGE 2 */}
+                                <div className="w-full mt-10 flex items-center gap-10 bg-slate-950/50 p-8 border-[3px] border-white/10 rounded-2xl">
                                     <div className="shrink-0 flex items-center justify-center">
                                         <div className="w-0 h-0 border-t-[12px] border-t-transparent border-l-[24px] border-l-white border-b-[12px] border-b-transparent" />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-white font-bold text-[72px] tracking-tight leading-none mb-1" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
-                                        <span className="text-white text-[56px] font-black uppercase tracking-tight leading-none">Tax Identification Number (TIN) :</span>
+                                        <span className="text-white font-bold text-[36px] tracking-tight leading-none mb-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                        <span className="text-white text-[28px] font-black uppercase tracking-tight leading-none opacity-60">Tax Identification Number (TIN) :</span>
                                     </div>
-                                    <div className="flex items-center gap-2 ml-4">
-                                        <div className="flex gap-1.5">
-                                            {Array.from({ length: 4 }).map((_, i) => (
-                                                <div key={i} className="w-10 h-14 border border-white flex items-center justify-center bg-white/5">
-                                                    <input type="text" maxLength="1" className="w-full h-full text-center text-white bg-transparent outline-none font-black text-2xl" placeholder="0" />
+                                    <div className="flex items-center gap-3 ml-auto">
+                                        <div className="flex gap-2">
+                                            {["1", "2", "3", "4", "5", "6", "7", "8"].map((char, i) => (
+                                                <div key={i} className="w-14 h-20 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                    <span className="text-[40px] font-black text-white">{(formData.tin || "123456789")[i]}</span>
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="w-6 h-1 bg-white mx-1" />
-                                        <div className="flex gap-1.5">
-                                            {Array.from({ length: 9 }).map((_, i) => (
-                                                <div key={i} className="w-10 h-14 border border-white flex items-center justify-center bg-white/5">
-                                                    <input type="text" maxLength="1" className="w-full h-full text-center text-white bg-transparent outline-none font-black text-2xl" placeholder="0" />
-                                                </div>
-                                            ))}
+                                        <div className="w-10 h-1 bg-white mx-2" />
+                                        <div className="w-14 h-20 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                            <span className="text-[40px] font-black text-white">{(formData.tin || "123456789")[8]}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -884,17 +899,21 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="flex items-center gap-4 text-white">
+                                        <div className="flex items-center gap-6 bg-slate-950 p-6 border-[3px] border-white shadow-2xl">
                                             <div className="flex flex-col items-end">
-                                                <span className="text-[26px] font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ :</span>
-                                                <span className="text-[18px] font-black uppercase tracking-tighter">Tax Identification Number (TIN) :</span>
+                                                <span className="text-[28px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                                <span className="text-[22px] font-black text-white/50 uppercase whitespace-nowrap">Tax Identification Number (TIN) :</span>
                                             </div>
-                                            <div className="flex gap-1">
-                                                {['L', '0', '0', '1', '-', '1', '2', '3', '4', '5', '6', '7', '8'].map((char, i) => (
-                                                    <div key={i} className={`w-6 h-8 border-[1px] border-white flex items-center justify-center bg-white/5 ${char === '-' ? 'border-0 w-3' : ''}`}>
-                                                        {char === '-' ? <span className="font-black text-white">-</span> : <span className="text-[28px] font-black">{formData[`tin_${i}`] || char}</span>}
+                                            <div className="flex gap-2">
+                                                {["1", "2", "3", "4", "5", "6", "7", "8"].map((char, i) => (
+                                                    <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "123456789")[i]}</span>
                                                     </div>
                                                 ))}
+                                                <div className="w-8 h-[3px] bg-white opacity-40 mx-2 self-center" />
+                                                <div className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                    <span className="text-[32px] font-black text-white">{(formData.tin || "123456789")[8]}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -1026,17 +1045,21 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="flex items-center gap-4 text-white">
+                                        <div className="flex items-center gap-6 bg-slate-950 p-6 border-[3px] border-white shadow-2xl">
                                             <div className="flex flex-col items-end">
-                                                <span className="text-[26px] font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ :</span>
-                                                <span className="text-[18px] font-black uppercase tracking-tighter">Tax Identification Number (TIN) :</span>
+                                                <span className="text-[28px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                                <span className="text-[22px] font-black text-white/50 uppercase whitespace-nowrap">Tax Identification Number (TIN) :</span>
                                             </div>
-                                            <div className="flex gap-1">
-                                                {['L', '0', '0', '1', '-', '1', '2', '3', '4', '5', '6', '7', '8'].map((char, i) => (
-                                                    <div key={i} className={`w-6 h-8 border-[1px] border-white flex items-center justify-center bg-white/5 ${char === '-' ? 'border-0 w-3' : ''}`}>
-                                                        {char === '-' ? <span className="font-black text-white">-</span> : <span className="text-[28px] font-black">{formData[`tin_${i}`] || char}</span>}
+                                            <div className="flex gap-2">
+                                                {["1", "2", "3", "4", "5", "6", "7", "8"].map((char, i) => (
+                                                    <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "123456789")[i]}</span>
                                                     </div>
                                                 ))}
+                                                <div className="w-8 h-[3px] bg-white opacity-40 mx-2 self-center" />
+                                                <div className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                    <span className="text-[32px] font-black text-white">{(formData.tin || "123456789")[8]}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -1195,17 +1218,21 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="flex items-center gap-4 text-white">
+                                        <div className="flex items-center gap-6 bg-slate-950 p-6 border-[3px] border-white shadow-2xl">
                                             <div className="flex flex-col items-end">
-                                                <span className="text-[26px] font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ :</span>
-                                                <span className="text-[18px] font-black uppercase tracking-tighter">Tax Identification Number (TIN) :</span>
+                                                <span className="text-[28px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                                <span className="text-[22px] font-black text-white/50 uppercase whitespace-nowrap">Tax Identification Number (TIN) :</span>
                                             </div>
-                                            <div className="flex gap-1">
-                                                {['L', '0', '0', '1', '-', '1', '2', '3', '4', '5', '6', '7', '8'].map((char, i) => (
-                                                    <div key={i} className={`w-6 h-8 border-[1px] border-white flex items-center justify-center bg-white/5 ${char === '-' ? 'border-0 w-3' : ''}`}>
-                                                        {char === '-' ? <span className="font-black text-white">-</span> : <span className="text-[28px] font-black">{formData[`tin_${i}`] || char}</span>}
+                                            <div className="flex gap-2">
+                                                {["1", "2", "3", "4", "5", "6", "7", "8"].map((char, i) => (
+                                                    <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "123456789")[i]}</span>
                                                     </div>
                                                 ))}
+                                                <div className="w-8 h-[3px] bg-white opacity-40 mx-2 self-center" />
+                                                <div className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                    <span className="text-[32px] font-black text-white">{(formData.tin || "123456789")[8]}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -1425,17 +1452,21 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="flex items-center gap-4 text-white">
+                                        <div className="flex items-center gap-6 bg-slate-950 p-6 border-[3px] border-white shadow-2xl">
                                             <div className="flex flex-col items-end">
-                                                <span className="text-[26px] font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ :</span>
-                                                <span className="text-[18px] font-black uppercase tracking-tighter">Tax Identification Number (TIN) :</span>
+                                                <span className="text-[28px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                                <span className="text-[22px] font-black text-white/50 uppercase whitespace-nowrap">Tax Identification Number (TIN) :</span>
                                             </div>
-                                            <div className="flex gap-1">
-                                                {['L', '0', '0', '1', '-', '1', '2', '3', '4', '5', '6', '7', '8'].map((char, i) => (
-                                                    <div key={i} className={`w-6 h-8 border-[1px] border-white flex items-center justify-center bg-white/5 ${char === '-' ? 'border-0 w-3' : ''}`}>
-                                                        {char === '-' ? <span className="font-black text-white">-</span> : <span className="text-[28px] font-black">{formData[`tin_${i}`] || char}</span>}
+                                            <div className="flex gap-2">
+                                                {["1", "2", "3", "4", "5", "6", "7", "8"].map((char, i) => (
+                                                    <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "123456789")[i]}</span>
                                                     </div>
                                                 ))}
+                                                <div className="w-8 h-[3px] bg-white opacity-40 mx-2 self-center" />
+                                                <div className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                    <span className="text-[32px] font-black text-white">{(formData.tin || "123456789")[8]}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -1609,17 +1640,21 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="flex items-center gap-4 text-white">
+                                        <div className="flex items-center gap-6 bg-slate-950 p-6 border-[3px] border-white shadow-2xl">
                                             <div className="flex flex-col items-end">
-                                                <span className="text-[26px] font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ :</span>
-                                                <span className="text-[18px] font-black uppercase tracking-tighter">Tax Identification Number (TIN) :</span>
+                                                <span className="text-[28px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                                <span className="text-[22px] font-black text-white/50 uppercase whitespace-nowrap">Tax Identification Number (TIN) :</span>
                                             </div>
-                                            <div className="flex gap-1">
-                                                {['L', '0', '0', '1', '-', '1', '2', '3', '4', '5', '6', '7', '8'].map((char, i) => (
-                                                    <div key={i} className={`w-6 h-8 border-[1px] border-white flex items-center justify-center bg-white/5 ${char === '-' ? 'border-0 w-3' : ''}`}>
-                                                        {char === '-' ? <span className="font-black text-white">-</span> : <span className="text-[28px] font-black">{formData[`tin_${i}`] || char}</span>}
+                                            <div className="flex gap-2">
+                                                {["1", "2", "3", "4", "5", "6", "7", "8"].map((char, i) => (
+                                                    <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "123456789")[i]}</span>
                                                     </div>
                                                 ))}
+                                                <div className="w-8 h-[3px] bg-white opacity-40 mx-2 self-center" />
+                                                <div className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                    <span className="text-[32px] font-black text-white">{(formData.tin || "123456789")[8]}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -1824,17 +1859,21 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="flex items-center gap-4 text-white">
+                                        <div className="flex items-center gap-6 bg-slate-950 p-6 border-[3px] border-white shadow-2xl">
                                             <div className="flex flex-col items-end">
-                                                <span className="text-[26px] font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ :</span>
-                                                <span className="text-[18px] font-black uppercase tracking-tighter">Tax Identification Number (TIN) :</span>
+                                                <span className="text-[28px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                                <span className="text-[22px] font-black text-white/50 uppercase whitespace-nowrap">Tax Identification Number (TIN) :</span>
                                             </div>
-                                            <div className="flex gap-1">
-                                                {['L', '0', '0', '1', '-', '1', '2', '3', '4', '5', '6', '7', '8'].map((char, i) => (
-                                                    <div key={i} className={`w-6 h-8 border-[1px] border-white flex items-center justify-center bg-white/5 ${char === '-' ? 'border-0 w-3' : ''}`}>
-                                                        {char === '-' ? <span className="font-black text-white">-</span> : <span className="text-[28px] font-black">{formData[`tin_${i}`] || char}</span>}
+                                            <div className="flex gap-2">
+                                                {["1", "2", "3", "4", "5", "6", "7", "8"].map((char, i) => (
+                                                    <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "123456789")[i]}</span>
                                                     </div>
                                                 ))}
+                                                <div className="w-8 h-[3px] bg-white opacity-40 mx-2 self-center" />
+                                                <div className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                    <span className="text-[32px] font-black text-white">{(formData.tin || "123456789")[8]}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -1933,17 +1972,21 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="flex items-center gap-4 text-white">
+                                        <div className="flex items-center gap-6 bg-slate-950 p-6 border-[3px] border-white shadow-2xl">
                                             <div className="flex flex-col items-end">
-                                                <span className="text-[26px] font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ :</span>
-                                                <span className="text-[18px] font-black uppercase tracking-tighter">Tax Identification Number (TIN) :</span>
+                                                <span className="text-[28px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                                <span className="text-[22px] font-black text-white/50 uppercase whitespace-nowrap">Tax Identification Number (TIN) :</span>
                                             </div>
-                                            <div className="flex gap-1">
-                                                {['L', '0', '1', '2', '-', '1', '2', '3', '4', '5', '6', '7', '8'].map((char, i) => (
-                                                    <div key={i} className={`w-6 h-8 border-[1px] border-white flex items-center justify-center bg-white/5 ${char === '-' ? 'border-0 w-3' : ''}`}>
-                                                        {char === '-' ? <span className="font-black text-white">-</span> : <span className="text-[28px] font-black">{formData[`tin_${i}`] || char}</span>}
+                                            <div className="flex gap-2">
+                                                {["1", "2", "3", "4", "5", "6", "7", "8"].map((char, i) => (
+                                                    <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
+                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "123456789")[i]}</span>
                                                     </div>
                                                 ))}
+                                                <div className="w-8 h-[3px] bg-white opacity-40 mx-2 self-center" />
+                                                <div className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
+                                                    <span className="text-[32px] font-black text-white">{(formData.tin || "123456789")[8]}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -2099,22 +2142,20 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                             ))}
                                         </div>
                                         <div className="flex flex-col gap-6">
-                                            <div className="flex items-center gap-8 text-white">
+                                            <div className="flex items-center gap-6 bg-slate-950 p-6 border-[3px] border-white shadow-2xl">
                                                 <div className="flex flex-col items-end">
-                                                    <span className="text-[32px] font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ :</span>
-                                                    <span className="text-[22px] font-black uppercase tracking-tight text-white/40">Tax Identification Number (TIN) :</span>
+                                                    <span className="text-[28px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                                    <span className="text-[22px] font-black text-white/50 uppercase whitespace-nowrap">Tax Identification Number (TIN) :</span>
                                                 </div>
-                                                <div className="flex items-center gap-2">
-                                                    <div className="flex gap-2">
-                                                        {["1", "2", "3", "4", "5", "6", "7", "8"].map((char, i) => (
-                                                            <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
-                                                                <span className="text-[32px] font-black">{char}</span>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                    <div className="w-8 h-[3px] bg-white opacity-40 mx-2" />
-                                                    <div className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
-                                                        <span className="text-[32px] font-black text-white">9</span>
+                                                <div className="flex gap-2">
+                                                    {["1", "2", "3", "4", "5", "6", "7", "8"].map((char, i) => (
+                                                        <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
+                                                            <span className="text-[32px] font-black text-white">{(formData.tin || "123456789")[i]}</span>
+                                                        </div>
+                                                    ))}
+                                                    <div className="w-8 h-[3px] bg-white opacity-40 mx-2 self-center" />
+                                                    <div className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
+                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "123456789")[8]}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -2342,18 +2383,37 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                         ACCUMULATED LOSSES CARRIED FORWARD
                                     </h1>
 
-                                    {/* TIN BOX IN HEADER AREA */}
-                                    <div className="absolute -bottom-10 right-0 flex items-center gap-6 bg-slate-950 px-6 py-2 border-[2px] border-white/20">
-                                        <div className="flex flex-col items-end">
-                                            <span className="text-[18px] font-bold text-white" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំជាប់ពន្ធ</span>
-                                            <span className="text-[14px] font-black text-white/60 uppercase">Tax Year</span>
-                                        </div>
-                                        <div className="flex gap-1.5">
-                                            {["2", "0", "2", "6"].map((char, i) => (
-                                                <div key={i} className="w-10 h-12 border-[2px] border-white flex items-center justify-center bg-white/10">
-                                                    <span className="text-[24px] font-black text-white">{char}</span>
+                                    {/* TIN & TAX YEAR BOXES IN HEADER AREA */}
+                                    <div className="absolute -bottom-12 right-0 flex flex-col gap-4">
+                                        <div className="flex items-center gap-6 bg-slate-950 px-6 py-4 border-[3px] border-white shadow-2xl">
+                                            <div className="flex flex-col items-end">
+                                                <span className="text-[22px] font-bold text-white px-1" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                                <span className="text-[16px] font-black text-white/50 uppercase whitespace-nowrap">Tax Identification Number (TIN) :</span>
+                                            </div>
+                                            <div className="flex gap-1.5">
+                                                {["1", "2", "3", "4", "5", "6", "7", "8"].map((char, i) => (
+                                                    <div key={i} className="w-10 h-14 border-[2px] border-white flex items-center justify-center bg-white/5">
+                                                        <span className="text-[26px] font-black text-white">{(formData.tin || "123456789")[i]}</span>
+                                                    </div>
+                                                ))}
+                                                <div className="w-6 h-[2px] bg-white opacity-40 mx-1 self-center" />
+                                                <div className="w-10 h-14 border-[2px] border-white flex items-center justify-center bg-white/5">
+                                                    <span className="text-[26px] font-black text-white">{(formData.tin || "123456789")[8]}</span>
                                                 </div>
-                                            ))}
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-6 bg-slate-950 px-6 py-2 border-[2px] border-white/20 ml-auto">
+                                            <div className="flex flex-col items-end">
+                                                <span className="text-[18px] font-bold text-white" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំជាប់ពន្ធ</span>
+                                                <span className="text-[14px] font-black text-white/60 uppercase">Tax Year</span>
+                                            </div>
+                                            <div className="flex gap-1.5">
+                                                {["2", "0", "2", "6"].map((char, i) => (
+                                                    <div key={i} className="w-10 h-12 border-[2px] border-white flex items-center justify-center bg-white/10">
+                                                        <span className="text-[24px] font-black text-white">{char}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -2484,29 +2544,27 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 <span className="text-[22px] font-black text-white/40 uppercase">Tax Year</span>
                                             </div>
                                             <div className="flex gap-2 mt-4">
-                                                {["2", "0", "2", "6"].map((char, i) => (
+                                                {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
                                                     <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
                                                         <span className="text-[32px] font-black text-white">{char}</span>
                                                     </div>
                                                 ))}
                                             </div>
                                         </div>
-                                        <div className="flex flex-col items-end">
-                                            <div className="flex items-center gap-6">
-                                                <span className="text-[28px] font-bold text-white" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
-                                                <span className="text-[22px] font-black text-white/40 uppercase">Tax Identification Number (TIN) :</span>
+                                        <div className="flex items-center gap-6 bg-slate-950 p-6 border-[3px] border-white shadow-2xl">
+                                            <div className="flex flex-col items-end">
+                                                <span className="text-[28px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                                <span className="text-[22px] font-black text-white/50 uppercase whitespace-nowrap">Tax Identification Number (TIN) :</span>
                                             </div>
-                                            <div className="flex items-center gap-2 mt-4">
-                                                <div className="flex gap-2">
-                                                    {["1", "2", "3", "4", "5", "6", "7", "8"].map((char, i) => (
-                                                        <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
-                                                            <span className="text-[32px] font-black text-white">{char}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                                <div className="w-8 h-[3px] bg-white opacity-40 mx-2" />
-                                                <div className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
-                                                    <span className="text-[32px] font-black text-white">9</span>
+                                            <div className="flex gap-2">
+                                                {["1", "2", "3", "4", "5", "6", "7", "8"].map((char, i) => (
+                                                    <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
+                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "123456789")[i]}</span>
+                                                    </div>
+                                                ))}
+                                                <div className="w-8 h-[3px] bg-white opacity-40 mx-2 self-center" />
+                                                <div className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
+                                                    <span className="text-[32px] font-black text-white">{(formData.tin || "123456789")[8]}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -2658,33 +2716,20 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                         </h1>
                                     </div>
                                     <div className="flex flex-col gap-8">
-                                        <div className="flex items-center gap-6 bg-slate-950 p-6 border-[3px] border-white/20">
+                                        <div className="flex items-center gap-6 bg-slate-950 p-6 border-[3px] border-white shadow-2xl">
                                             <div className="flex flex-col items-end">
-                                                <span className="text-[28px] font-bold text-white" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំជាប់ពន្ធ</span>
-                                                <span className="text-[22px] font-black text-white/50 uppercase">Tax Year</span>
-                                            </div>
-                                            <div className="flex gap-2">
-                                                {["2", "0", "2", "6"].map((char, i) => (
-                                                    <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/10">
-                                                        <span className="text-[32px] font-black text-white">{char}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-6 bg-slate-950 p-6 border-[3px] border-white/20">
-                                            <div className="flex flex-col items-end">
-                                                <span className="text-[28px] font-bold text-white" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                                <span className="text-[28px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
                                                 <span className="text-[22px] font-black text-white/50 uppercase whitespace-nowrap">Tax Identification Number (TIN) :</span>
                                             </div>
                                             <div className="flex gap-2">
                                                 {["1", "2", "3", "4", "5", "6", "7", "8"].map((char, i) => (
-                                                    <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
-                                                        <span className="text-[32px] font-black text-white">{char}</span>
+                                                    <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
+                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "123456789")[i]}</span>
                                                     </div>
                                                 ))}
                                                 <div className="w-8 h-[3px] bg-white opacity-40 mx-2 self-center" />
-                                                <div className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
-                                                    <span className="text-[32px] font-black text-white">9</span>
+                                                <div className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
+                                                    <span className="text-[32px] font-black text-white">{(formData.tin || "123456789")[8]}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -2844,33 +2889,33 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                         </h1>
                                     </div>
                                     <div className="flex flex-col gap-8">
-                                        <div className="flex items-center gap-6 bg-slate-950 p-6 border-[3px] border-white/20">
+                                        <div className="flex items-center gap-6 bg-slate-950 p-6 border-[3px] border-white shadow-2xl">
                                             <div className="flex flex-col items-end">
-                                                <span className="text-[28px] font-bold text-white" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំជាប់ពន្ធ</span>
-                                                <span className="text-[22px] font-black text-white/50 uppercase">Tax Year</span>
+                                                <span className="text-[28px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំជាប់ពន្ធ / </span>
+                                                <span className="text-[22px] font-black text-white/50 uppercase whitespace-nowrap">Tax Year :</span>
                                             </div>
                                             <div className="flex gap-2">
                                                 {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
-                                                    <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/10">
+                                                    <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
                                                         <span className="text-[32px] font-black text-white">{char}</span>
                                                     </div>
                                                 ))}
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-6 bg-slate-950 p-6 border-[3px] border-white/20">
+                                        <div className="flex items-center gap-6 bg-slate-950 p-6 border-[3px] border-white shadow-2xl">
                                             <div className="flex flex-col items-end">
-                                                <span className="text-[28px] font-bold text-white" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                                <span className="text-[28px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
                                                 <span className="text-[22px] font-black text-white/50 uppercase whitespace-nowrap">Tax Identification Number (TIN) :</span>
                                             </div>
                                             <div className="flex gap-2">
                                                 {["1", "2", "3", "4", "5", "6", "7", "8"].map((char, i) => (
-                                                    <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
-                                                        <span className="text-[32px] font-black text-white">{char}</span>
+                                                    <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
+                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "123456789")[i]}</span>
                                                     </div>
                                                 ))}
                                                 <div className="w-8 h-[3px] bg-white opacity-40 mx-2 self-center" />
-                                                <div className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
-                                                    <span className="text-[32px] font-black text-white">9</span>
+                                                <div className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
+                                                    <span className="text-[32px] font-black text-white">{(formData.tin || "123456789")[8]}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -2959,55 +3004,178 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
 
                     {activePage === 15 && (
                         <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center">
-                            {/* PAGE HEADER */}
-                            <div className="w-full max-w-[2000px] bg-white/5 backdrop-blur-md border-[6px] border-white p-16 shadow-2xl mb-16">
-                                <div className="flex justify-between items-start">
-                                    <div className="flex flex-col gap-6">
-                                        <h2 className="text-[180px] font-bold text-white leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ផលចំណេញ/ខាតប្តូរប្រាក់</h2>
-                                        <h1 className="text-[140px] font-black text-white uppercase tracking-tighter">SCHEDULE 7: FOREIGN EXCHANGE RESULT</h1>
+                            {/* LANDSCAPE CONTAINER FOR WIDE TABLE */}
+                            <div className="w-[2400px] flex flex-col items-center">
+                                {/* STANDARDIZED HEADER FOR PAGE 15 */}
+                                <div className="w-full flex justify-between items-start mb-12 px-10">
+                                    <div className="border-[6px] border-white p-10 bg-white/5 shadow-2xl max-w-4xl">
+                                        <h2 className="text-[42px] font-bold text-white text-center leading-tight mb-4" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                            តារាងតម្លៃលើសឬចុះពីការលក់ចេញ ឬលក់ទ្រព្យសកម្មរយៈពេលវែងតាមច្បាប់ស្តីពីសារពើពន្ធ
+                                        </h2>
+                                        <h1 className="text-[32px] font-black text-white text-center uppercase tracking-wider">
+                                            TABLE OF GAIN/(LOSS) ON DISPOSAL OR SALES OF FIXED ASSETS AS PER LAW ON TAXATION
+                                        </h1>
                                     </div>
-                                    <div className="flex flex-col items-end gap-10">
-                                        <div className="flex gap-3">
-                                            {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
-                                                <div key={i} className="w-28 h-32 border-[6px] border-white flex items-center justify-center bg-white/10">
-                                                    <span className="text-[64px] font-black text-white">{char}</span>
+                                    <div className="flex flex-col gap-6">
+                                        {/* TIN & YEAR BOXES */}
+                                        <div className="flex items-center gap-6 bg-slate-950 p-6 border-[3px] border-white shadow-2xl">
+                                            <div className="flex flex-col items-end">
+                                                <span className="text-[24px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំជាប់ពន្ធ / </span>
+                                                <span className="text-[18px] font-black text-white/50 uppercase whitespace-nowrap">Tax Year :</span>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
+                                                    <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
+                                                        <span className="text-[32px] font-black text-white">{char}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-6 bg-slate-950 p-6 border-[3px] border-white shadow-2xl">
+                                            <div className="flex flex-col items-end">
+                                                <span className="text-[24px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                                <span className="text-[18px] font-black text-white/50 uppercase whitespace-nowrap">Tax Identification Number (TIN) :</span>
+                                            </div>
+                                            <div className="flex gap-1.5">
+                                                {["1", "2", "3", "4", "5", "6", "7", "8"].map((char, i) => (
+                                                    <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
+                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "123456789")[i]}</span>
+                                                    </div>
+                                                ))}
+                                                <div className="w-6 h-[2px] bg-white opacity-40 mx-1 self-center" />
+                                                <div className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
+                                                    <span className="text-[32px] font-black text-white">{(formData.tin || "123456789")[8]}</span>
                                                 </div>
-                                            ))}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div className="w-full max-w-6xl flex flex-col gap-12">
-                                <div className="border-[4px] border-white overflow-hidden text-white bg-white/5 shadow-2xl">
-                                    <div className="flex bg-amber-500/20 border-b-[4px] border-white h-24 items-center">
-                                        <div className="w-[60%] border-r-[4px] border-white px-8">
-                                            <span className="font-bold text-[36px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការបូកសរុបផលចំណេញ/ខាតប្តូរប្រាក់</span>
-                                            <span className="text-[26px] block font-black uppercase">Foreign Exchange Gain/Loss Summary</span>
-                                        </div>
-                                        <div className="w-[15%] border-r-[4px] border-white flex items-center justify-center font-black text-[28px]">REF</div>
-                                        <div className="flex-1 flex items-center justify-center text-[28px] font-bold">AMOUNT</div>
-                                    </div>
+                                {/* DISPOSAL TABLE */}
+                                <div className="w-full border-[4px] border-white bg-white/5 overflow-hidden shadow-2xl">
+                                    <table className="w-full border-collapse">
+                                        <thead>
+                                            <tr className="bg-slate-800 border-b-[4px] border-white text-white h-48 text-[20px]">
+                                                <th className="border-r-[2px] border-white p-3 w-[8%]">
+                                                    <span className="block font-bold mb-2">ថ្ងៃ ខែ ឆ្នាំ ទិញ</span>
+                                                    <span className="font-black uppercase text-[16px] opacity-60">Date of Acquisition</span>
+                                                </th>
+                                                <th className="border-r-[2px] border-white p-3 w-[8%]">
+                                                    <span className="block font-bold mb-2">ថ្ងៃ ខែ ឆ្នាំ លក់</span>
+                                                    <span className="font-black uppercase text-[16px] opacity-60">Date of Disposal/Sales</span>
+                                                </th>
+                                                <th className="border-r-[2px] border-white p-3 w-[15%]">
+                                                    <span className="block font-bold mb-2">ប្រភេទនៃទ្រព្យសកម្មរយៈពេលវែង</span>
+                                                    <span className="font-black uppercase text-[16px] opacity-60">Types of Fixed Assets</span>
+                                                </th>
+                                                <th className="border-r-[2px] border-white p-4 w-[12%]">
+                                                    <span className="block font-bold mb-2">ឈ្មោះនៃទ្រព្យសកម្មរយៈពេលវែង</span>
+                                                    <span className="font-black uppercase text-[16px] opacity-60">Name of Fixed Assets</span>
+                                                </th>
+                                                <th className="border-r-[2px] border-white p-3 w-[10%]">
+                                                    <span className="block font-bold mb-1">ថ្លៃដើមមូលដ្ឋានរូបី</span>
+                                                    <span className="font-black uppercase text-[16px] opacity-60">Historical Cost</span>
+                                                    <span className="block mt-2 font-black text-indigo-400">(1)</span>
+                                                </th>
+                                                <th className="border-r-[2px] border-white p-3 w-[10%]">
+                                                    <span className="block font-bold mb-1">រំលស់បង្គរ</span>
+                                                    <span className="font-black uppercase text-[16px] opacity-60">Accumulated Depreciation</span>
+                                                    <span className="block mt-2 font-black text-indigo-400">(2)</span>
+                                                </th>
+                                                <th className="border-r-[2px] border-white p-3 w-[11%] bg-white/5">
+                                                    <span className="block font-bold mb-1">តម្លៃនៅសល់</span>
+                                                    <span className="font-black uppercase text-[14px] opacity-60">Undepreciated Value (Net Book Value)</span>
+                                                    <span className="block mt-2 font-black text-indigo-400">(3) = (1) - (2)</span>
+                                                </th>
+                                                <th className="border-r-[2px] border-white p-3 w-[10%]">
+                                                    <span className="block font-bold mb-1">ផលពីការលក់ចេញ ឬលក់</span>
+                                                    <span className="font-black uppercase text-[16px] opacity-60">Proceeds of Disposal / Sales</span>
+                                                    <span className="block mt-2 font-black text-indigo-400">(4)</span>
+                                                </th>
+                                                <th className="p-3 w-[18%] bg-rose-500/10">
+                                                    <span className="block font-bold mb-1">កម្រៃលើសឬចុះ</span>
+                                                    <span className="font-black uppercase text-[16px] opacity-60">Gain / (Loss)</span>
+                                                    <span className="block mt-2 font-black text-rose-400">(5) = (4) - (3)</span>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="text-white text-[24px]">
+                                            {[
+                                                { id: "១", kh: "ដីធ្លី", en: "Land", key: "disp_land", grayCols: [5] }, // 5th data col (Accumulated Depre) is (2) which is Col 6 in display
+                                                { id: "២", kh: "ទ្រព្យអរូបី", en: "Intangible assets", key: "disp_intangible", grayCols: [] },
+                                                { id: "៣", kh: "កសិកម្ម ធនធានធម្មជាតិ", en: "Agriculture, natural resources", key: "disp_agri", grayCols: [] },
+                                                { id: "៤", kh: "ទ្រព្យរូបីថ្នាក់១រំលស់តាមវិធីសាស្ត្រខ្សែបន្ទាត់ត្រង់", en: "Straight-line depreciation assets (class 1)", key: "disp_c1", grayCols: [] },
+                                                { id: "៥", kh: "ទ្រព្យរូបីថ្នាក់២រំលស់តាមវិធីសាស្ត្រថយចុះតាមសមតុល្យ", en: "Declining balance depreciation assets (class 2)", key: "disp_c2", grayCols: [5, 6] },
+                                                { id: "៦", kh: "ទ្រព្យរូបីថ្នាក់៣រំលស់តាមវិធីសាស្ត្រថយចុះតាមសមតុល្យ", en: "Declining balance depreciation assets (class 3)", key: "disp_c3", grayCols: [5, 6] },
+                                                { id: "៧", kh: "ទ្រព្យរូបីថ្នាក់៤រំលស់តាមវិធីសាស្ត្រថយចុះតាមសមតុល្យ", en: "Declining balance depreciation assets (class 4)", key: "disp_c4", grayCols: [5, 6] }
+                                            ].map((row, idx) => (
+                                                <React.Fragment key={idx}>
+                                                    <tr className="bg-white/5 h-20 border-b border-white/20">
+                                                        <td className="border-r-[2px] border-white"></td>
+                                                        <td className="border-r-[2px] border-white"></td>
+                                                        <td className="border-r-[2px] border-white px-6 font-bold flex flex-col justify-center h-20">
+                                                            <div className="flex gap-2">
+                                                                <span className="text-indigo-400">{row.id}-</span>
+                                                                <span style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
+                                                            </div>
+                                                            <span className="text-[14px] opacity-50 uppercase font-black ml-6">{row.en}</span>
+                                                        </td>
+                                                        <td className="border-r-[2px] border-white"></td>
+                                                        <td className="border-r-[2px] border-white text-right px-4 opacity-40"></td>
+                                                        <td className={`border-r-[2px] border-white text-right px-4 ${row.grayCols.includes(5) ? 'bg-white/10' : 'opacity-40'}`}></td>
+                                                        <td className={`border-r-[2px] border-white text-right px-4 ${row.grayCols.includes(6) ? 'bg-white/10' : 'opacity-40'}`}></td>
+                                                        <td className="border-r-[2px] border-white text-right px-4 opacity-40"></td>
+                                                        <td className="text-right px-4 bg-rose-500/5 opacity-40"></td>
+                                                    </tr>
+                                                    {[1].map(line => (
+                                                        <tr key={line} className="h-16 border-b border-white/10 hover:bg-white/5 transition-colors group">
+                                                            <td className="border-r-[2px] border-white px-4 text-center">
+                                                                <input className="w-full bg-transparent text-center outline-none text-[20px] opacity-60" placeholder="DD/MM/YY" />
+                                                            </td>
+                                                            <td className="border-r-[2px] border-white px-4 text-center">
+                                                                <input className="w-full bg-transparent text-center outline-none text-[20px] opacity-60" placeholder="DD/MM/YY" />
+                                                            </td>
+                                                            <td className="border-r-[2px] border-white px-6"></td>
+                                                            <td className="border-r-[2px] border-white px-6">
+                                                                <input className="w-full bg-transparent outline-none text-[20px]" placeholder="..." />
+                                                            </td>
+                                                            <td className="border-r-[2px] border-white px-6">
+                                                                <input className="w-full bg-transparent text-right outline-none font-black" placeholder="0.00" />
+                                                            </td>
+                                                            <td className={`border-r-[2px] border-white px-6 ${row.grayCols.includes(5) ? 'bg-white/20 select-none' : ''}`}>
+                                                                {!row.grayCols.includes(5) && <input className="w-full bg-transparent text-right outline-none font-black text-indigo-300" placeholder="0.00" />}
+                                                            </td>
+                                                            <td className={`border-r-[2px] border-white px-6 ${row.grayCols.includes(6) ? 'bg-white/20 select-none' : 'bg-white/5 font-black text-right text-[22px]'}`}>
+                                                                {!row.grayCols.includes(6) && "0.00"}
+                                                            </td>
+                                                            <td className="border-r-[2px] border-white px-6">
+                                                                <input className="w-full bg-transparent text-right outline-none font-black text-emerald-400" placeholder="0.00" />
+                                                            </td>
+                                                            <td className="px-6 bg-rose-500/10 text-right font-black text-rose-300 text-[28px]">0.00</td>
+                                                        </tr>
+                                                    ))}
+                                                </React.Fragment>
+                                            ))}
+                                            {/* GRAND TOTAL ROW */}
+                                            <tr className="h-32 bg-slate-900 border-t-[4px] border-white font-black text-[32px]">
+                                                <td colSpan="4" className="border-r-[2px] border-white px-8 text-center uppercase tracking-tighter">
+                                                    <span style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សរុបរួម / </span> GRAND TOTAL
+                                                </td>
+                                                <td className="border-r-[2px] border-white px-6 text-right">0.00</td>
+                                                <td className="border-r-[2px] border-white px-6 text-right text-indigo-300">0.00</td>
+                                                <td className="border-r-[2px] border-white px-6 text-right opacity-60 bg-white/5">0.00</td>
+                                                <td className="border-r-[2px] border-white px-6 text-right text-emerald-400">0.00</td>
+                                                <td className="px-6 text-right text-rose-400 bg-rose-500/20 shadow-inner">0.00</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
 
-                                    {[
-                                        { ref: "H 1", kh: "ផលចំណេញសម្រេចពីការប្តូរប្រាក់", en: "Realised Gain on Foreign Exchange", key: "h1" },
-                                        { ref: "H 2", kh: "ខាតសម្រេចពីការប្តូរប្រាក់", en: "Realised Loss on Foreign Exchange", key: "h2" },
-                                        { ref: "H 3", kh: "ផលចំណេញមិនទាន់សម្រេចពីការប្តូរប្រាក់", en: "Unrealised Gain on Foreign Exchange", key: "h3" },
-                                        { ref: "H 4", kh: "ខាតមិនទាន់សម្រេចពីការប្តូរប្រាក់", en: "Unrealised Loss on Foreign Exchange", key: "h4" },
-                                        { ref: "H 5", kh: "លទ្ធផលសុទ្ធ (H5 = H1 - H2 + H3 - H4)", en: "Net FX Result", key: "h5", isGrandTotal: true },
-                                    ].map((row, idx) => (
-                                        <div key={idx} className={`flex border-b border-white/10 h-24 items-center last:border-0 hover:bg-white/5 transition-colors 
-                                            ${row.isGrandTotal ? 'bg-amber-500/30 h-32 border-t-[4px] border-white' : ''}`}>
-                                            <div className="w-[60%] border-r-[4px] border-white px-10 flex flex-col">
-                                                <span className={`${row.isGrandTotal ? 'text-[44px]' : 'text-[32px]'} font-bold leading-tight`} style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
-                                                <span className={`${row.isGrandTotal ? 'text-[28px]' : 'text-[22px]'} font-bold opacity-70`}>{row.en}</span>
-                                            </div>
-                                            <div className="w-[15%] border-r-[4px] border-white flex items-center justify-center opacity-40 text-[26px] font-black">{row.ref}</div>
-                                            <div className={`flex-1 flex items-center justify-end px-10 font-black ${row.isGrandTotal ? 'text-[48px] text-amber-300' : 'text-[36px]'}`}>
-                                                <input type="text" className="w-full bg-transparent text-right outline-none" value={formData[row.key] || ""} onChange={(e) => handleFormChange(row.key, e.target.value)} placeholder="0.00" />
-                                            </div>
-                                        </div>
-                                    ))}
+                                {/* FOOTER PAGE INDICATOR */}
+                                <div className="mt-10 self-end flex items-center gap-4 text-white/40 font-black italic">
+                                    <div className="w-12 h-[2px] bg-white/20"></div>
+                                    <span className="text-[24px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ទំព័រទី ១៥/១៦</span>
+                                    <span className="text-[18px] uppercase">Page 15/16</span>
                                 </div>
                             </div>
                         </div>
@@ -3015,61 +3183,1112 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
 
                     {activePage === 16 && (
                         <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center">
-                            {/* PAGE HEADER */}
-                            <div className="w-full max-w-[2000px] bg-white/5 backdrop-blur-md border-[6px] border-white p-16 shadow-2xl mb-16">
-                                <div className="flex justify-between items-start">
-                                    <div className="flex flex-col gap-6">
-                                        <h2 className="text-[180px] font-bold text-white leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ទ្រព្យសកម្មអរូបី</h2>
-                                        <h1 className="text-[140px] font-black text-white uppercase tracking-tighter">SCHEDULE 8: INTANGIBLE FIXED ASSETS</h1>
+                            {/* LANDSCAPE CONTAINER */}
+                            <div className="w-[2000px] flex flex-col items-center">
+                                {/* PAGE HEADER */}
+                                <div className="w-full flex justify-between items-start mb-12 px-10">
+                                    <div className="border-[6px] border-white p-10 bg-white/5 shadow-2xl max-w-4xl mx-auto flex flex-col items-center">
+                                        <h2 className="text-[48px] font-bold text-white text-center leading-tight mb-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                            ការគណនាបម្រុងទុក
+                                        </h2>
+                                        <h1 className="text-[36px] font-black text-white text-center uppercase tracking-[0.2em]">
+                                            PROVISION CALCULATION TABLE
+                                        </h1>
                                     </div>
-                                    <div className="flex flex-col items-end gap-10">
-                                        <div className="flex gap-3">
-                                            {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
-                                                <div key={i} className="w-28 h-32 border-[6px] border-white flex items-center justify-center bg-white/10">
-                                                    <span className="text-[64px] font-black text-white">{char}</span>
+                                    <div className="flex flex-col gap-6 absolute right-10 top-16">
+                                        {/* TIN & YEAR BOXES */}
+                                        <div className="flex items-center gap-6 bg-slate-950 p-6 border-[3px] border-white shadow-2xl">
+                                            <div className="flex flex-col items-end">
+                                                <span className="text-[24px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំជាប់ពន្ធ / </span>
+                                                <span className="text-[18px] font-black text-white/50 uppercase whitespace-nowrap">Tax Year :</span>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
+                                                    <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
+                                                        <span className="text-[32px] font-black text-white">{char}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-6 bg-slate-950 p-6 border-[3px] border-white shadow-2xl">
+                                            <div className="flex flex-col items-end">
+                                                <span className="text-[24px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                                <span className="text-[18px] font-black text-white/50 uppercase whitespace-nowrap">Tax Identification Number (TIN) :</span>
+                                            </div>
+                                            <div className="flex gap-1.5">
+                                                {["1", "2", "3", "4", "5", "6", "7", "8"].map((char, i) => (
+                                                    <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
+                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "123456789")[i]}</span>
+                                                    </div>
+                                                ))}
+                                                <div className="w-6 h-[2px] bg-white opacity-40 mx-1 self-center" />
+                                                <div className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
+                                                    <span className="text-[32px] font-black text-white">{(formData.tin || "123456789")[8]}</span>
                                                 </div>
-                                            ))}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div className="w-full max-w-6xl flex flex-col gap-12">
-                                <div className="border-[4px] border-white overflow-hidden text-white bg-white/5 shadow-2xl">
-                                    <div className="flex bg-indigo-500/20 border-b-[4px] border-white h-24 items-center">
-                                        <div className="w-[60%] border-r-[4px] border-white px-8">
-                                            <span className="font-bold text-[36px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ទ្រព្យសកម្មអរូបី និងការរំលស់</span>
-                                            <span className="text-[26px] block font-black uppercase">Intangible Assets & Amortisation</span>
-                                        </div>
-                                        <div className="w-[15%] border-r-[4px] border-white flex items-center justify-center font-black text-[28px]">RATE</div>
-                                        <div className="flex-1 flex items-center justify-center text-[28px] font-bold">AMOUNT</div>
-                                    </div>
+                                {/* PROVISION TABLE */}
+                                <div className="w-full border-[4px] border-white bg-white/5 overflow-hidden shadow-2xl mt-10">
+                                    <table className="w-full border-collapse">
+                                        <thead>
+                                            <tr className="bg-slate-800/80 border-b-[4px] border-white text-white h-44 text-[18px]">
+                                                <th className="border-r-[2px] border-white p-3 w-[5%]">
+                                                    <span className="block font-bold mb-2">ល.រ</span>
+                                                    <span className="font-black uppercase text-[14px] opacity-60">No.</span>
+                                                </th>
+                                                <th className="border-r-[2px] border-white p-3 w-[25%]">
+                                                    <span className="block font-bold mb-2">ប្រភេទបម្រុង (បញ្ជាក់ប្រភេទបម្រុងនីមួយៗ)</span>
+                                                    <span className="font-black uppercase text-[14px] opacity-60">Type of Provisions (Describe Each Provision)</span>
+                                                </th>
+                                                <th className="border-r-[2px] border-white p-3 w-[15%]">
+                                                    <span className="block font-bold mb-1">បម្រុងនៅដើមការិយបរិច្ឆេទ</span>
+                                                    <span className="font-black uppercase text-[14px] opacity-60 leading-tight">Provision Amount at the<br />Beginning of the Period</span>
+                                                    <span className="block mt-2 font-black text-blue-400">(1)</span>
+                                                </th>
+                                                <th className="border-r-[2px] border-white p-3 w-[15%]">
+                                                    <span className="block font-bold mb-1">ការកើនឡើងនៃបម្រុងក្នុងអំឡុងការិយបរិច្ឆេទ</span>
+                                                    <span className="font-black uppercase text-[14px] opacity-60 leading-tight">Increase in Provision<br />During the Period</span>
+                                                    <span className="block mt-2 font-black text-blue-400">(2)</span>
+                                                </th>
+                                                <th className="border-r-[2px] border-white p-3 w-[15%]">
+                                                    <span className="block font-bold mb-1">ការថយចុះនៃបម្រុងក្នុងអំឡុងការិយបរិច្ឆេទ</span>
+                                                    <span className="font-black uppercase text-[14px] opacity-60 leading-tight">Decrease in Provision<br />During the Period</span>
+                                                    <span className="block mt-2 font-black text-blue-400">(3)</span>
+                                                </th>
+                                                <th className="p-3 w-[20%] bg-white/5">
+                                                    <span className="block font-bold mb-1">សមតុល្យបម្រុងនៅចុងការិយបរិច្ឆេទ</span>
+                                                    <span className="font-black uppercase text-[14px] opacity-60 leading-tight">Balance of Provision at the<br />End of the Period</span>
+                                                    <span className="block mt-2 font-black text-emerald-400">(4) = (1) + (2) - (3)</span>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="text-white text-[24px]">
+                                            {[...Array(15)].map((_, idx) => (
+                                                <tr key={idx} className="h-16 border-b border-white/10 hover:bg-white/5 transition-colors group">
+                                                    <td className="border-r-[2px] border-white text-center text-white/40 font-bold">{idx + 1}</td>
+                                                    <td className="border-r-[2px] border-white px-6">
+                                                        <input className="w-full bg-transparent outline-none text-[22px]" placeholder="..." />
+                                                    </td>
+                                                    <td className="border-r-[2px] border-white px-6">
+                                                        <input className="w-full bg-transparent text-right outline-none font-black text-blue-300" placeholder="0.00" />
+                                                    </td>
+                                                    <td className="border-r-[2px] border-white px-6 text-right">
+                                                        <input className="w-full bg-transparent text-right outline-none font-black text-blue-300" placeholder="0.00" />
+                                                    </td>
+                                                    <td className="border-r-[2px] border-white px-6 text-right">
+                                                        <input className="w-full bg-transparent text-right outline-none font-black text-blue-300" placeholder="0.00" />
+                                                    </td>
+                                                    <td className="px-6 bg-white/5 text-right font-black text-emerald-400 text-[26px]">
+                                                        0.00
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                            {/* TOTAL ROW */}
+                                            <tr className="h-28 bg-blue-600/30 border-t-[4px] border-white font-black text-[28px]">
+                                                <td colSpan="2" className="border-r-[2px] border-white px-8 text-center uppercase tracking-widest">
+                                                    <span style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សរុប / </span> TOTAL
+                                                </td>
+                                                <td className="border-r-[2px] border-white px-6 text-right">0.00</td>
+                                                <td className="border-r-[2px] border-white px-6 text-right">0.00</td>
+                                                <td className="border-r-[2px] border-white px-6 text-right">0.00</td>
+                                                <td className="px-6 text-right text-emerald-300 bg-white/10 shadow-inner text-[34px]">0.00</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
 
-                                    {[
-                                        { kh: "កម្មសិទ្ធិបញ្ញា (Patents, Copyrights)", en: "Intellectual Property", rate: "10%", key: "ia1" },
-                                        { kh: "សិទ្ធិប្រើប្រាស់ទិន្នន័យ (Data rights)", en: "Software / Data Usage", rate: "25%", key: "ia2" },
-                                        { kh: "កេរ្តិ៍ឈ្មោះ (Goodwill)", en: "Goodwill", rate: "10%", key: "ia3" },
-                                        { kh: "ទ្រព្យសកម្មអរូបីផ្សេងទៀត", en: "Other Intangible Assets", rate: "Life", key: "ia4" },
-                                        { kh: "សរុបរំលស់អរូបី (IA5)", en: "Total Amortisation", key: "ia5", isGrandTotal: true },
-                                    ].map((row, idx) => (
-                                        <div key={idx} className={`flex border-b border-white/10 h-24 items-center last:border-0 hover:bg-white/5 transition-colors 
-                                            ${row.isGrandTotal ? 'bg-indigo-500/30 h-32 border-t-[4px] border-white' : ''}`}>
-                                            <div className="w-[60%] border-r-[4px] border-white px-10 flex flex-col">
-                                                <span className={`${row.isGrandTotal ? 'text-[44px]' : 'text-[32px]'} font-bold leading-tight`} style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
-                                                <span className={`${row.isGrandTotal ? 'text-[28px]' : 'text-[22px]'} font-bold opacity-70`}>{row.en}</span>
-                                            </div>
-                                            <div className="w-[15%] border-r-[4px] border-white flex items-center justify-center opacity-40 text-[32px] font-black text-indigo-300">{row.rate}</div>
-                                            <div className={`flex-1 flex items-center justify-end px-10 font-black ${row.isGrandTotal ? 'text-[48px] text-emerald-400' : 'text-[36px]'}`}>
-                                                <input type="text" className="w-full bg-transparent text-right outline-none" value={formData[row.key] || ""} onChange={(e) => handleFormChange(row.key, e.target.value)} placeholder="0.00" />
-                                            </div>
-                                        </div>
-                                    ))}
+                                {/* FOOTER NOTICE */}
+                                <div className="mt-12 w-full flex flex-col gap-4 p-8 bg-black/40 border-[3px] border-white/10 rounded-2xl shadow-xl">
+                                    <p className="text-[20px] text-white/80 leading-relaxed font-bold italic" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                        សម្គាល់៖ ធនាគារក្នុងស្រុក ត្រូវភ្ជាប់មកជាមួយនូវតារាងលំអិតនៃបម្រុងទុក។ បម្រុងទុកលើហានិភ័យជាក់លាក់របស់ធនាគារក្នុងស្រុក ជាចំណាយកាត់កងបាន (ប្រកាសស្តីពីពន្ធលើប្រាក់ចំណូល ប្រការ ១៥)
+                                    </p>
+                                    <p className="text-[18px] text-white/50 uppercase font-black italic">
+                                        NOTE: Domestic banks are required to attach detailed provision table. Specific provisions of these banks are deductible expenses (Praka 15 of Prakas Tax on Income).
+                                    </p>
+                                </div>
+
+                                {/* FOOTER PAGE INDICATOR */}
+                                <div className="mt-10 self-end flex items-center gap-4 text-white/40 font-black italic">
+                                    <div className="w-12 h-[2px] bg-white/20"></div>
+                                    <span className="text-[24px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ទំព័រទី ១៦/១៦</span>
+                                    <span className="text-[18px] uppercase">Page 16/16</span>
                                 </div>
                             </div>
                         </div>
                     )}
 
-                    {activePage > 16 && (
+                    {activePage === 17 && (
+                        <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center">
+                            {/* LUXURY CONTAINER */}
+                            <div className="w-[2200px] flex flex-col items-center">
+                                {/* PAGE HEADER */}
+                                <div className="w-full bg-slate-900 border-[6px] border-white p-12 shadow-2xl mb-12 flex flex-col items-center relative">
+                                    <h2 className="text-[54px] font-bold text-white text-center leading-tight mb-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                        ការបញ្ជាក់ប្រតិបត្តិការជាមួយភាគីពាក់ព័ន្ធ
+                                    </h2>
+                                    <h1 className="text-[38px] font-black text-white text-center uppercase tracking-[0.25em]">
+                                        LIST OF RELATED-PARTY TRANSACTIONS
+                                    </h1>
+
+                                    {/* YEAR BOXES TOP RIGHT */}
+                                    <div className="absolute right-12 top-1/2 -translate-y-1/2 flex items-center gap-6 bg-black/40 p-6 border-[3px] border-white/20">
+                                        <div className="flex flex-col items-end">
+                                            <span className="text-[20px] font-bold text-white" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំជាប់ពន្ធ / </span>
+                                            <span className="text-[16px] font-black text-white/40 uppercase">Tax Year :</span>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
+                                                <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                    <span className="text-[32px] font-black text-white">{char}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* ENTERPRISE DETAILS STRIP */}
+                                <div className="w-full grid grid-cols-2 gap-10 mb-12">
+                                    <div className="bg-white/5 border-[3px] border-white/20 p-8 flex flex-col gap-4">
+                                        <div className="flex items-center gap-4">
+                                            <span className="text-white font-bold text-[24px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឈ្មោះសហគ្រាស :</span>
+                                            <input className="flex-1 bg-transparent border-b-2 border-white/40 text-[28px] text-white font-bold outline-none px-2" defaultValue={formData.companyName} />
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                            <span className="text-white/60 font-black text-[18px] uppercase">Name of Enterprise :</span>
+                                        </div>
+                                    </div>
+                                    <div className="bg-white/5 border-[3px] border-white/20 p-8 flex flex-col gap-4">
+                                        <div className="flex items-center gap-4">
+                                            <span className="text-white font-bold text-[24px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឈ្មោះជាអក្សរឡាតាំង :</span>
+                                            <input className="flex-1 bg-transparent border-b-2 border-white/40 text-[28px] text-indigo-300 font-black outline-none px-2 uppercase" defaultValue={formData.companyNameLatin} />
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                            <span className="text-white/60 font-black text-[18px] uppercase">Name in Latin :</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* TIN SECTION */}
+                                <div className="w-full bg-slate-950 p-8 border-[3px] border-white mb-16 flex items-center gap-8 shadow-xl">
+                                    <div className="flex flex-col">
+                                        <span className="text-white font-bold text-[28px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                        <span className="text-white/40 font-black text-[18px] uppercase">Tax Identification Number (TIN) :</span>
+                                    </div>
+                                    <div className="flex gap-2 ml-auto">
+                                        {["1", "2", "3", "4", "5", "6", "7", "8"].map((char, i) => (
+                                            <div key={i} className="w-14 h-20 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                <span className="text-[40px] font-black text-white">{(formData.tin || "123456789")[i]}</span>
+                                            </div>
+                                        ))}
+                                        <div className="w-8 h-[3px] bg-white opacity-40 mx-2 self-center" />
+                                        <div className="w-14 h-20 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                            <span className="text-[40px] font-black text-white">{(formData.tin || "123456789")[8]}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* SECTION A & B: REVENUES AND EXPENSES */}
+                                <div className="w-full flex flex-col gap-16">
+                                    {[
+                                        { id: "ក", kh: "ប្រតិបត្តិការចំណូលលក់ (ទៅឱ្យភាគីពាក់ព័ន្ធ)", en: "REVENUES/SALES (TO RELATED PARTIES)", ref: "A" },
+                                        { id: "ខ", kh: "ប្រតិបត្តិការចំណាយទិញ (ពីភាគីពាក់ព័ន្ធ)", en: "EXPENSES/PURCHASES (FROM RELATED PARTIES)", ref: "B" }
+                                    ].map((section, sIdx) => (
+                                        <div key={sIdx} className="w-full">
+                                            <div className="bg-slate-800 border-l-[12px] border-white p-6 mb-6">
+                                                <h3 className="text-[32px] font-bold text-white mb-1" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{section.id}. {section.kh}</h3>
+                                                <h4 className="text-[24px] font-black text-white/50 uppercase">{section.ref}. {section.en}</h4>
+                                            </div>
+                                            <div className="border-[4px] border-white overflow-hidden shadow-2xl">
+                                                <table className="w-full border-collapse">
+                                                    <thead>
+                                                        <tr className="bg-white/10 h-28 border-b-[4px] border-white text-[18px]">
+                                                            <th className="border-r-[2px] border-white w-[5%]">No.</th>
+                                                            <th className="border-r-[2px] border-white w-[25%] px-4">
+                                                                <span className="block" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឈ្មោះភាគីពាក់ព័ន្ធ</span>
+                                                                <span className="text-[14px] opacity-60">Name of Related Party</span>
+                                                            </th>
+                                                            <th className="border-r-[2px] border-white w-[20%] px-4">
+                                                                <span className="block" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រទេសដែលភាគីពាក់ព័ន្ធចុះបញ្ជី</span>
+                                                                <span className="text-[14px] opacity-60">Country Where Registered</span>
+                                                            </th>
+                                                            <th className="border-r-[2px] border-white w-[30%] px-4">
+                                                                <span className="block" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បរិយាយពីលក្ខណៈ និងប្រភេទប្រតិបត្តិការ</span>
+                                                                <span className="text-[14px] opacity-60">Description of Transactions</span>
+                                                            </th>
+                                                            <th className="w-[20%] px-4">
+                                                                <span className="block" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំនួនទឹកប្រាក់ (រៀល)</span>
+                                                                <span className="text-[14px] opacity-60">Amounts (Riels)</span>
+                                                            </th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="text-white text-[22px]">
+                                                        {[1, 2, 3].map(rowIdx => (
+                                                            <tr key={rowIdx} className="h-16 border-b border-white/10 hover:bg-white/5">
+                                                                <td className="border-r-[2px] border-white text-center opacity-40">{rowIdx}</td>
+                                                                <td className="border-r-[2px] border-white px-4"><input className="w-full bg-transparent outline-none" placeholder="..." /></td>
+                                                                <td className="border-r-[2px] border-white px-4">
+                                                                    <select className="w-full bg-slate-900 border-none outline-none appearance-none">
+                                                                        <option>Cambodia</option>
+                                                                        <option>Vietnam</option>
+                                                                        <option>Thailand</option>
+                                                                        <option>China</option>
+                                                                        <option>Others...</option>
+                                                                    </select>
+                                                                </td>
+                                                                <td className="border-r-[2px] border-white px-4"><input className="w-full bg-transparent outline-none" placeholder="..." /></td>
+                                                                <td className="px-4"><input className="w-full bg-transparent text-right outline-none font-black text-amber-400" placeholder="0" /></td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <p className="mt-4 text-white/40 italic text-[18px]">
+                                                * Note: Enterprise must also record other revenues/expenses received/paid with related parties.
+                                            </p>
+                                        </div>
+                                    ))}
+
+                                    {/* SECTION C & D: LOANS */}
+                                    <div className="grid grid-cols-1 gap-16">
+                                        {[
+                                            { id: "គ", kh: "កម្ចីផ្តល់ឱ្យភាគីពាក់ព័ន្ធ", en: "LOANS TO RELATED PARTIES", ref: "C" },
+                                            { id: "ឃ", kh: "កម្ចីទទួលបានពីភាគីពាក់ព័ន្ធ", en: "LOANS FROM RELATED PARTIES", ref: "D" }
+                                        ].map((section, sIdx) => (
+                                            <div key={sIdx} className="w-full">
+                                                <div className="bg-slate-800 border-l-[12px] border-indigo-500 p-6 mb-6">
+                                                    <h3 className="text-[32px] font-bold text-white mb-1" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{section.id}. {section.kh}</h3>
+                                                    <h4 className="text-[24px] font-black text-indigo-400/50 uppercase">{section.ref}. {section.en}</h4>
+                                                </div>
+                                                <div className="border-[4px] border-indigo-500/50 overflow-hidden shadow-2xl">
+                                                    <table className="w-full border-collapse">
+                                                        <thead>
+                                                            <tr className="bg-indigo-500/10 h-28 border-b-[4px] border-indigo-500/50 text-[18px] text-white">
+                                                                <th className="border-r-[2px] border-indigo-500/30 w-[5%]">No.</th>
+                                                                <th className="border-r-[2px] border-indigo-500/30 w-[30%] px-4">Name of Related Party</th>
+                                                                <th className="border-r-[2px] border-indigo-500/30 w-[20%] px-4">Country Registered</th>
+                                                                <th className="border-r-[2px] border-indigo-500/30 w-[25%] px-4">Amount (Riels)</th>
+                                                                <th className="w-[20%] px-4">Interest Rate (%)</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="text-white text-[22px]">
+                                                            {[1, 2].map(rowIdx => (
+                                                                <tr key={rowIdx} className="h-16 border-b border-indigo-500/10 hover:bg-white/5">
+                                                                    <td className="border-r-[2px] border-indigo-500/30 text-center opacity-40">{rowIdx}</td>
+                                                                    <td className="border-r-[2px] border-indigo-500/30 px-4"><input className="w-full bg-transparent outline-none font-bold" placeholder="..." /></td>
+                                                                    <td className="border-r-[2px] border-indigo-500/30 px-4"><input className="w-full bg-transparent outline-none" placeholder="Country" /></td>
+                                                                    <td className="border-r-[2px] border-indigo-500/30 px-4"><input className="w-full bg-transparent text-right outline-none font-black text-blue-400" placeholder="0" /></td>
+                                                                    <td className="px-4"><input className="w-full bg-transparent text-center outline-none font-black text-emerald-400" placeholder="0.00 %" /></td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* SECTION E: TRANSFER PRICING */}
+                                    <div className="w-full mt-8">
+                                        <div className="bg-slate-900 border-[4px] border-white p-10 shadow-2xl flex items-center gap-12 group hover:bg-slate-800 transition-all cursor-pointer">
+                                            <div className="w-20 h-20 border-[4px] border-white flex items-center justify-center bg-white/5 group-hover:bg-white transition-all">
+                                                <div className="w-10 h-10 bg-white group-hover:bg-slate-900" />
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <h3 className="text-[36px] font-bold text-white mb-1" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ង. ឯកសារស្តីពីការផ្ទេរថ្លៃ</h3>
+                                                <h4 className="text-[28px] font-black text-white/50 uppercase">E. DOCUMENT OF TRANSFER PRICING</h4>
+                                            </div>
+                                            <div className="ml-auto px-8 py-4 bg-white/10 border-[2px] border-white/20 text-white/60 font-black italic uppercase">
+                                                Compliance Required
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* FOOTER PAGE INDICATOR */}
+                                <div className="mt-24 self-end flex items-center gap-4 text-white/40 font-black italic">
+                                    <div className="w-12 h-[2px] bg-white/20"></div>
+                                    <span className="text-[24px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ទំព័រទី ១៧/១៧</span>
+                                    <span className="text-[18px] uppercase">Page 17/17</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activePage === 18 && (
+                        <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center">
+                            {/* LUXURY WIDE CONTAINER */}
+                            <div className="w-[2000px] flex flex-col items-center">
+                                {/* HEADER BLOCK */}
+                                <div className="w-full flex justify-between items-end mb-10 pb-6 border-b-[4px] border-white/20">
+                                    <div className="flex flex-col gap-6 w-full max-w-4xl">
+                                        <div className="flex items-center gap-6">
+                                            <div className="flex flex-col">
+                                                <span className="text-white font-bold text-[22px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                                <span className="text-white/40 font-black text-[14px] uppercase tracking-tighter">Tax Identification Number (TIN) :</span>
+                                            </div>
+                                            <div className="flex gap-1.5 h-14 items-center">
+                                                {["1", "2", "3", "4", "5", "6", "7", "8"].map((char, i) => (
+                                                    <div key={i} className="w-10 h-14 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                        <span className="text-[28px] font-black text-white">{(formData.tin || "123456789")[i]}</span>
+                                                    </div>
+                                                ))}
+                                                <div className="w-6 h-[2.5px] bg-white opacity-40 mx-1" />
+                                                <div className="w-10 h-14 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                    <span className="text-[28px] font-black text-white">{(formData.tin || "123456789")[8]}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-6">
+                                            <div className="flex flex-col">
+                                                <span className="text-white font-bold text-[22px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឈ្មោះសហគ្រាស :</span>
+                                                <span className="text-white/40 font-black text-[14px] uppercase tracking-tighter">Name of Enterprise :</span>
+                                            </div>
+                                            <div className="flex-1 max-w-2xl border-b-[3px] border-white/40 pb-1">
+                                                <span className="text-[28px] font-black text-white uppercase">{formData.companyNameLatin || "...................................................................."}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col items-center gap-6">
+                                        <div className="bg-white text-slate-950 px-10 py-4 font-black text-[32px] skew-x-[-12deg] shadow-xl">
+                                            ឧបសម្ព័ន្ធ ២ / <span className="text-[24px]">Annex 2</span>
+                                        </div>
+                                        <div className="flex items-center gap-6 bg-slate-950 p-6 border-[3px] border-white shadow-2xl">
+                                            <div className="flex flex-col items-end">
+                                                <span className="text-[20px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំជាប់ពន្ធ</span>
+                                                <span className="text-[16px] font-black text-white/50 uppercase whitespace-nowrap">Tax Year</span>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
+                                                    <div key={i} className="w-10 h-14 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
+                                                        <span className="text-[28px] font-black text-white">{char}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* ANNEX 2 TABLE */}
+                                <div className="w-full border-[4px] border-white bg-white/5 overflow-hidden shadow-2xl">
+                                    <table className="w-full border-collapse">
+                                        <thead>
+                                            <tr className="bg-slate-800 border-b-[4px] border-white text-white text-center h-48">
+                                                <th className="border-r-[2px] border-white px-3 w-[10%]">
+                                                    <span className="block font-bold mb-2 text-[18px]">ថ្ងៃ ខែ ឆ្នាំ ទិញ</span>
+                                                    <span className="text-[13px] font-black uppercase opacity-60">Date of Acquisition</span>
+                                                </th>
+                                                <th className="border-r-[2px] border-white px-4 w-[20%]">
+                                                    <span className="block font-bold mb-2 text-[18px]">ប្រភេទនៃទ្រព្យសកម្មរយៈពេលវែង</span>
+                                                    <span className="text-[13px] font-black uppercase opacity-60">Types of Fixed Assets</span>
+                                                </th>
+                                                <th className="border-r-[2px] border-white px-3 w-[16%]">
+                                                    <span className="block font-bold mb-2 text-[18px]">ថ្លៃដើមមូលដ្ឋាននៅដើមគ្រា</span>
+                                                    <span className="text-[13px] font-black uppercase opacity-60">Historical Cost at Start</span>
+                                                    <span className="block mt-2 font-black text-blue-400">(1)</span>
+                                                </th>
+                                                <th className="border-r-[2px] border-white px-3 w-[18%]">
+                                                    <span className="block font-bold mb-2 text-[18px]">ទិញបន្ថែមក្នុងគ្រា</span>
+                                                    <span className="text-[13px] font-black uppercase opacity-60 leading-tight">Acquisition, Transfer-in during the Period</span>
+                                                    <span className="block mt-2 font-black text-blue-400">(2)</span>
+                                                </th>
+                                                <th className="border-r-[2px] border-white px-3 w-[16%]">
+                                                    <span className="block font-bold mb-2 text-[18px]">លក់ចេញក្នុងគ្រា</span>
+                                                    <span className="text-[13px] font-black uppercase opacity-60 leading-tight">Cost of Fixed Asset Disposal</span>
+                                                    <span className="block mt-2 font-black text-blue-400">(3)</span>
+                                                </th>
+                                                <th className="px-3 w-[20%] bg-white/5">
+                                                    <span className="block font-bold mb-2 text-[18px] text-emerald-300">តម្លៃមូលដ្ឋានគណនារំលស់</span>
+                                                    <span className="text-[13px] font-black uppercase opacity-60">Depreciation Base Value</span>
+                                                    <span className="block mt-2 font-black text-emerald-400">(4) = (1) + (2) - (3)</span>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="text-white text-[22px]">
+                                            {[
+                                                { title: "I. ទីស្នាក់ការកណ្តាល", sub: "I. Head Office", rows: 10, key: "ho" },
+                                                { title: "II. សាខាសហគ្រាសទី១", sub: "II. Branch 1", rows: 4, key: "b1" },
+                                                { title: "III. សាខាសហគ្រាសទី ...", sub: "III. Branch ...", rows: 8, key: "bn" }
+                                            ].map((section, sIdx) => (
+                                                <React.Fragment key={sIdx}>
+                                                    <tr className="bg-white/10 h-16 border-y-[2px] border-white">
+                                                        <td colSpan="6" className="px-8 font-black flex items-center h-16 gap-4">
+                                                            <span style={{ fontFamily: '"Kantumruy Pro", sans-serif' }} className="text-[28px]">{section.title}</span>
+                                                            <span className="text-[20px] opacity-40 uppercase tracking-widest">{section.sub}</span>
+                                                        </td>
+                                                    </tr>
+                                                    {[...Array(section.rows)].map((_, rIdx) => (
+                                                        <tr key={rIdx} className="h-14 border-b border-white/10 hover:bg-white/5 transition-colors group">
+                                                            <td className="border-r-[2px] border-white px-4 text-center">
+                                                                <input className="w-full bg-transparent text-center outline-none text-[18px] opacity-40" placeholder="DD/MM/YY" />
+                                                            </td>
+                                                            <td className="border-r-[2px] border-white px-6">
+                                                                <input className="w-full bg-transparent outline-none text-[18px]" placeholder="..." />
+                                                            </td>
+                                                            <td className="border-r-[2px] border-white px-4">
+                                                                <input className="w-full bg-transparent text-right outline-none font-black text-blue-400/60" placeholder="0" />
+                                                            </td>
+                                                            <td className="border-r-[2px] border-white px-4 text-right">
+                                                                <input className="w-full bg-transparent text-right outline-none font-black text-blue-400/60" placeholder="0" />
+                                                            </td>
+                                                            <td className="border-r-[2px] border-white px-4 text-right">
+                                                                <input className="w-full bg-transparent text-right outline-none font-black text-blue-400/60" placeholder="0" />
+                                                            </td>
+                                                            <td className="px-4 bg-white/5 text-right font-black text-emerald-400/70">
+                                                                0
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                    <tr className="h-16 bg-slate-900 border-b-[2px] border-white font-black text-[24px]">
+                                                        <td colSpan="2" className="border-r-[2px] border-white px-8 uppercase tracking-tighter text-center italic text-white/60">
+                                                            <span style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សរុប / </span> Sub-Total
+                                                        </td>
+                                                        <td className="border-r-[2px] border-white px-4 text-right">0</td>
+                                                        <td className="border-r-[2px] border-white px-4 text-right">0</td>
+                                                        <td className="border-r-[2px] border-white px-4 text-right">0</td>
+                                                        <td className="px-4 bg-emerald-500/10 text-right text-emerald-300">0</td>
+                                                    </tr>
+                                                </React.Fragment>
+                                            ))}
+                                            {/* GRAND TOTAL */}
+                                            <tr className="h-28 bg-white text-slate-950 font-black text-[32px] border-t-[4px] border-slate-950">
+                                                <td colSpan="2" className="px-8 text-center uppercase tracking-[0.2em]">
+                                                    <span style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សរុបរួម / </span> GRAND TOTAL
+                                                </td>
+                                                <td className="border-x-[2px] border-slate-950 px-4 text-right">0</td>
+                                                <td className="border-r-[2px] border-slate-950 px-4 text-right">0</td>
+                                                <td className="border-r-[2px] border-slate-950 px-4 text-right">0</td>
+                                                <td className="px-4 text-right bg-emerald-100/50">0</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {/* FOOTER NOTICE */}
+                                <div className="mt-10 w-full flex flex-col gap-4 p-8 bg-white/5 border-[3px] border-white/10 rounded-3xl shadow-2xl">
+                                    <p className="text-[20px] text-white/80 italic leading-relaxed" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                        ក្នុងករណី ទ្រព្យសកម្មរយៈពេលវែងមានចំនួនច្រើន អ្នកជាប់ពន្ធអាចភ្ជាប់បញ្ជីឈ្មោះទ្រព្យសកម្មរយៈពេលវែងដោយមិនចាំបាច់បំពេញតារាងខាងលើ ។
+                                    </p>
+                                    <p className="text-[16px] text-white/40 uppercase font-black italic tracking-tight">
+                                        In case there are too many fixed assets, taxpayers can attach lists of fixed assets without completing the above table.
+                                    </p>
+                                </div>
+
+                                {/* FOOTER PAGE INDICATOR */}
+                                <div className="mt-20 self-end flex items-center gap-4 text-white/40 font-black italic">
+                                    <div className="w-12 h-[2px] bg-white/20"></div>
+                                    <span className="text-[24px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ទំព័រទី ១៨/១៨</span>
+                                    <span className="text-[18px] uppercase">Page 18/18</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activePage === 19 && (
+                        <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center">
+                            {/* LUXURY WIDE CONTAINER */}
+                            <div className="w-[1800px] flex flex-col items-center">
+                                {/* PAGE TITLE */}
+                                <div className="w-full flex flex-col items-center mb-10">
+                                    <h2 className="text-[36px] font-bold text-white text-center mb-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                        ឧបសម្ព័ន្ធភ្ជាប់ជាមួយលិខិតប្រកាសពន្ធលើប្រាក់ចំណូលប្រចាំឆ្នាំ (សាខាសហគ្រាសក្នុងស្រុក)
+                                    </h2>
+                                    <h1 className="text-[28px] font-black text-white text-center uppercase tracking-tight">
+                                        ANNEX TO THE ANNUAL INCOME TAX RETURN (FOR LOCAL BRANCH)
+                                    </h1>
+                                </div>
+
+                                {/* TAX PERIOD SECTION */}
+                                <div className="w-full bg-white/5 border-[3px] border-white p-8 mb-10 flex items-center justify-between">
+                                    <div className="flex items-center gap-6">
+                                        <div className="flex flex-col">
+                                            <span className="text-white font-bold text-[18px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការិយបរិច្ឆេទសារពើពន្ធ ( ចំនួនខែ ) :</span>
+                                            <span className="text-white/40 font-black text-[14px] uppercase">Tax Period (Number of Month) :</span>
+                                        </div>
+                                        <div className="flex gap-1">
+                                            {[1, 2].map((_, i) => (
+                                                <div key={i} className="w-10 h-12 border-[2px] border-white flex items-center justify-center bg-white/10">
+                                                    <span className="text-white font-black text-[24px]">12</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-10">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-0 h-0 border-t-[10px] border-t-transparent border-l-[20px] border-l-white border-b-[10px] border-b-transparent" />
+                                            <div className="flex flex-col">
+                                                <span className="text-white font-bold text-[18px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចាប់ពី</span>
+                                                <span className="text-white/40 font-black text-[14px] uppercase">From</span>
+                                            </div>
+                                            <div className="flex gap-1">
+                                                {[...Array(8)].map((_, i) => (
+                                                    <div key={i} className="w-8 h-10 border-[2px] border-white flex items-center justify-center bg-white/10">
+                                                        <span className="text-white font-black text-[18px]">0</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                            <div className="flex flex-col items-end">
+                                                <span className="text-white font-bold text-[18px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ដល់</span>
+                                                <span className="text-white/40 font-black text-[14px] uppercase">Until</span>
+                                            </div>
+                                            <div className="flex gap-1">
+                                                {[...Array(8)].map((_, i) => (
+                                                    <div key={i} className="w-8 h-10 border-[2px] border-white flex items-center justify-center bg-white/10">
+                                                        <span className="text-white font-black text-[18px]">0</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* MAIN INFORMATION FORM */}
+                                <div className="w-full flex flex-col gap-6">
+                                    {/* 1. TIN */}
+                                    <div className="flex items-center gap-6">
+                                        <div className="w-[350px] flex flex-col">
+                                            <span className="text-white font-bold text-[18px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>១. លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
+                                            <span className="text-white/40 font-black text-[14px] uppercase">1. Tax Identification Number (TIN) :</span>
+                                        </div>
+                                        <div className="flex gap-1.5 items-center">
+                                            {["1", "2", "3", "4", "5", "6", "7", "8"].map((char, i) => (
+                                                <div key={i} className="w-10 h-14 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                    <span className="text-[28px] font-black text-white">{(formData.tin || "123456789")[i]}</span>
+                                                </div>
+                                            ))}
+                                            <div className="w-6 h-[3px] bg-white opacity-40 mx-1" />
+                                            <div className="w-10 h-14 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                <span className="text-[28px] font-black text-white">{(formData.tin || "123456789")[8]}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* 2. Barcode */}
+                                    <div className="flex items-center gap-6">
+                                        <div className="w-[350px] flex flex-col">
+                                            <span className="text-white font-bold text-[18px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>២. លេខបារកូដសម្គាល់សាខា ៖</span>
+                                            <span className="text-white/40 font-black text-[14px] uppercase">2. Tax Barcode Branch :</span>
+                                        </div>
+                                        <div className="flex gap-1.5 items-center">
+                                            {[...Array(8)].map((_, i) => (
+                                                <div key={i} className="w-10 h-14 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                    <span className="text-[28px] font-black text-white/20">0</span>
+                                                </div>
+                                            ))}
+                                            <div className="w-6 h-[3px] bg-white opacity-40 mx-1" />
+                                            {[...Array(4)].map((_, i) => (
+                                                <div key={i} className="w-10 h-14 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                    <span className="text-[28px] font-black text-white/20">0</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* 3. Name of Branch */}
+                                    <div className="flex items-center gap-6">
+                                        <div className="w-[350px] flex flex-col">
+                                            <span className="text-white font-bold text-[18px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>៣. ឈ្មោះសាខាសហគ្រាស ៖</span>
+                                            <span className="text-white/40 font-black text-[14px] uppercase">3. Name of Enterprise's Branch :</span>
+                                        </div>
+                                        <input className="flex-1 bg-white/5 border-b-[3px] border-white px-6 h-14 text-white font-black text-[24px] outline-none" placeholder="..." />
+                                    </div>
+
+                                    {/* 4. Name of Enterprise */}
+                                    <div className="flex items-center gap-6">
+                                        <div className="w-[350px] flex flex-col">
+                                            <span className="text-white font-bold text-[18px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>៤. ឈ្មោះសហគ្រាស ( ការិយាល័យកណ្តាល ) :</span>
+                                            <span className="text-white/40 font-black text-[14px] uppercase">4. Name of Enterprise (Head Office) :</span>
+                                        </div>
+                                        <input className="flex-1 bg-white/5 border-b-[3px] border-white px-6 h-14 text-white font-black text-[24px] outline-none" defaultValue={formData.companyNameLatin} />
+                                    </div>
+
+                                    {/* 5. Reg Dates */}
+                                    <div className="flex items-center gap-6">
+                                        <div className="w-[350px] flex flex-col">
+                                            <span className="text-white font-bold text-[18px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>៥. ថ្ងៃ ខែ ឆ្នាំចុះបញ្ជីជាមួយរដ្ឋបាលសារពើពន្ធជាសាខា ៖</span>
+                                            <span className="text-white/40 font-black text-[14px] uppercase">5. Registered Date with Tax Administration as Branch :</span>
+                                        </div>
+                                        <div className="w-[200px] h-14 border-[3px] border-white bg-white/5 flex items-center justify-center">
+                                            <input className="w-full bg-transparent text-center outline-none text-white font-black text-[22px]" placeholder="DD/MM/YYYY" />
+                                        </div>
+                                        <div className="flex flex-col ml-10">
+                                            <span className="text-white font-bold text-[18px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ថ្ងៃ ខែ ឆ្នាំ សុពលភាព លិខិតបញ្ជាក់សាខា ៖</span>
+                                            <span className="text-white/40 font-black text-[14px] uppercase">Valid Date of Branch Registration :</span>
+                                        </div>
+                                        <div className="w-[200px] h-14 border-[3px] border-white bg-white/5 flex items-center justify-center">
+                                            <input className="w-full bg-transparent text-center outline-none text-white font-black text-[22px]" placeholder="DD/MM/YYYY" />
+                                        </div>
+                                    </div>
+
+                                    {/* 6. Branch Director */}
+                                    <div className="flex items-center gap-6">
+                                        <div className="w-[350px] flex flex-col">
+                                            <span className="text-white font-bold text-[18px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>៦. ឈ្មោះនាយកសាខាសហគ្រាស ៖</span>
+                                            <span className="text-white/40 font-black text-[14px] uppercase">6. Name of Branch Director :</span>
+                                        </div>
+                                        <input className="flex-1 bg-white/5 border-b-[3px] border-white px-6 h-14 text-white font-black text-[24px] outline-none" placeholder="..." />
+                                    </div>
+
+                                    {/* 7. Activities */}
+                                    <div className="flex items-center gap-6">
+                                        <div className="w-[350px] flex flex-col">
+                                            <span className="text-white font-bold text-[18px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>៧. សកម្មភាពអាជីវកម្មចម្បងរបស់សាខា ៖</span>
+                                            <span className="text-white/40 font-black text-[14px] uppercase">7. Main Business Activities of the Branch :</span>
+                                        </div>
+                                        <input className="flex-1 bg-white/5 border-b-[3px] border-white px-6 h-14 text-white font-black text-[24px] outline-none" placeholder="..." />
+                                    </div>
+
+                                    {/* 8. Address */}
+                                    <div className="flex flex-col gap-2">
+                                        <div className="flex items-center gap-6">
+                                            <div className="w-[350px] flex flex-col">
+                                                <span className="text-white font-bold text-[18px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>៨. អាសយដ្ឋានសាកលបច្ចុប្បន្ន ៖</span>
+                                                <span className="text-white/40 font-black text-[14px] uppercase">8. Current Registered Address of the Branch :</span>
+                                            </div>
+                                            <input className="flex-1 bg-white/5 border-b-[3px] border-white px-6 h-14 text-white font-black text-[20px] outline-none" placeholder="..." />
+                                        </div>
+                                    </div>
+
+                                    {/* 9. Warehouse Address */}
+                                    <div className="flex flex-col gap-4">
+                                        <div className="flex items-start gap-6">
+                                            <div className="w-[350px] flex flex-col">
+                                                <span className="text-white font-bold text-[18px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>៩. អាសយដ្ឋានឃ្លាំងបច្ចុប្បន្នរបស់សាខា ៖</span>
+                                                <span className="text-white/40 font-black text-[14px] uppercase">9. Current Warehouse Address of the Branch :</span>
+                                            </div>
+                                            <div className="flex-1 flex flex-col gap-2">
+                                                {["ក / A", "ខ / B", "គ / C"].map((label, i) => (
+                                                    <div key={i} className="flex items-center gap-4">
+                                                        <div className="w-20 font-black text-white text-[18px] text-center border-[2px] border-white/40 p-1">{label} :</div>
+                                                        <input className="flex-1 bg-white/5 border-b-[2px] border-white/40 px-4 h-10 text-white outline-none" placeholder="..." />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* 10. Accounting Records */}
+                                    <div className="flex items-start gap-6 mt-4">
+                                        <div className="w-[350px] flex flex-col">
+                                            <span className="text-white font-bold text-[18px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>១០. ការកត់ត្រាបញ្ជីការគណនេយ្យ ៖</span>
+                                            <span className="text-white/40 font-black text-[14px] uppercase">10. Accounting Records :</span>
+                                        </div>
+                                        <div className="flex-1 flex flex-col gap-4">
+                                            <div className="flex items-center gap-6">
+                                                <div className="w-10 h-10 border-[4px] border-white bg-white/10 flex items-center justify-center cursor-pointer hover:bg-white/20">
+                                                    <div className="w-5 h-5 bg-white opacity-0" /> {/* Checkmark placeholder */}
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-white font-bold text-[16px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រើប្រាស់កម្មវិធីគណនេយ្យកុំព្យូទ័រ ( ឈ្មោះកម្មវិធី ) ៖</span>
+                                                    <span className="text-white/40 font-black text-[12px] uppercase">Using Accounting Software (Software's name) :</span>
+                                                </div>
+                                                <input className="flex-1 bg-white/5 border-b-[2px] border-white/40 px-4 h-10 text-white outline-none" placeholder="..." />
+                                            </div>
+                                            <div className="flex items-center gap-6">
+                                                <div className="w-10 h-10 border-[4px] border-white bg-white/10 flex items-center justify-center cursor-pointer hover:bg-white/20">
+                                                    <div className="w-5 h-5 bg-white opacity-0" />
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-white font-bold text-[16px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>មិនប្រើប្រាស់កម្មវិធីគណនេយ្យកុំព្យូទ័រ</span>
+                                                    <span className="text-white/40 font-black text-[12px] uppercase">Not Using Accounting Software</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* EMPLOYEE TABLE */}
+                                <div className="w-full mt-16 border-[4px] border-white bg-white/5 overflow-hidden shadow-2xl">
+                                    <table className="w-full border-collapse">
+                                        <thead>
+                                            <tr className="bg-slate-800 border-b-[4px] border-white text-white text-center h-28">
+                                                <th className="border-r-[2px] border-white w-[50%] p-4">
+                                                    <span className="block font-bold mb-2 text-[20px]">បរិយាយ</span>
+                                                    <span className="text-[14px] font-black uppercase opacity-60">Description</span>
+                                                </th>
+                                                <th className="border-r-[2px] border-white w-[12.5%] p-4">
+                                                    <span className="block font-bold mb-2 text-[18px]">តួនាទី</span>
+                                                    <span className="text-[14px] font-black uppercase opacity-60">Position</span>
+                                                </th>
+                                                <th className="border-r-[2px] border-white w-[10%] p-4">
+                                                    <span className="block font-bold mb-2 text-[18px]">ចំនួន</span>
+                                                    <span className="text-[14px] font-black uppercase opacity-60">Number</span>
+                                                </th>
+                                                <th className="border-r-[2px] border-white w-[15%] p-4">
+                                                    <span className="block font-bold mb-2 text-[18px]">ប្រាក់បៀវត្ស ក្រៅពីអត្ថប្រយោជន៍បន្ថែម</span>
+                                                    <span className="text-[12px] font-black uppercase opacity-60">Salary Excluded Fringe Benefits</span>
+                                                </th>
+                                                <th className="w-[12.5%] p-4">
+                                                    <span className="block font-bold mb-2 text-[18px]">អត្ថប្រយោជន៍បន្ថែម</span>
+                                                    <span className="text-[14px] font-black uppercase opacity-60">Fringe Benefits</span>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="text-white text-[20px]">
+                                            <tr className="h-20 border-b border-white/10">
+                                                <td className="border-r-[2px] border-white px-8 font-black">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-8 h-8 border-[2px] border-white/40 flex items-center justify-center text-[18px]">១</div>
+                                                        <div className="flex flex-col">
+                                                            <span style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឈ្មោះអ្នកគ្រប់គ្រង / ថ្នាក់ដឹកនាំសាខា</span>
+                                                            <span className="text-[14px] opacity-40 uppercase">Name of Branch Management</span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="border-r-[2px] border-white px-4 text-center">...</td>
+                                                <td className="border-r-[2px] border-white px-4 text-center">...</td>
+                                                <td className="border-r-[2px] border-white px-4 text-right">...</td>
+                                                <td className="px-4 text-right">...</td>
+                                            </tr>
+                                            {[
+                                                { id: "២", kh: "សរុបបុគ្គលិក-កម្មករ", en: "Total of Employees and Workers" },
+                                                { id: "៣", kh: "បុគ្គលិក-កម្មករដែលជាប់ពន្ធលើប្រាក់បៀវត្ស", en: "Employees and Workers Taxable Salary" }
+                                            ].map((row, i) => (
+                                                <tr key={i} className="h-20 border-b border-white/10 last:border-0 hover:bg-white/5">
+                                                    <td className="border-r-[2px] border-white px-8 font-black">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="w-8 h-8 border-[2px] border-white/40 flex items-center justify-center text-[18px]">{row.id}</div>
+                                                            <div className="flex flex-col">
+                                                                <span style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
+                                                                <span className="text-[14px] opacity-40 uppercase">{row.en}</span>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="border-r-[2px] border-white bg-slate-400 opacity-20" colSpan="2" />
+                                                    <td className="border-r-[2px] border-white px-4 text-right">0.00</td>
+                                                    <td className="px-4 text-right">0.00</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {/* FOOTER NOTICE */}
+                                <div className="mt-8 w-full flex flex-col gap-2 p-6 bg-white/5 border-[3px] border-white/10 rounded-2xl">
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex flex-col min-w-[100px]">
+                                            <span className="text-white font-bold text-[18px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សម្គាល់ ៖</span>
+                                            <span className="text-white/40 font-black text-[14px] uppercase">NOTE :</span>
+                                        </div>
+                                        <div className="flex flex-col gap-2">
+                                            <p className="text-white/70 italic text-[18px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                                ឧបសម្ព័ន្ធនេះត្រូវភ្ជាប់ជាមួយលិខិតប្រកាសពន្ធលើប្រាក់ចំណូលប្រចាំឆ្នាំ។ / <span className="text-[14px] uppercase font-black opacity-40">The annex has to be attached with the Annual Income Tax Return.</span>
+                                            </p>
+                                            <p className="text-white/70 italic text-[18px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                                សាខាសហគ្រាសនីមួយៗ ត្រូវបំពេញឧបសម្ព័ន្ធនេះដាច់ដោយឡែកពីគ្នា។ / <span className="text-[14px] uppercase font-black opacity-40">Each local branch must complete this annex individually.</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* FOOTER PAGE INDICATOR */}
+                                <div className="mt-16 self-end flex items-center gap-4 text-white/40 font-black italic">
+                                    <div className="w-12 h-[2px] bg-white/20"></div>
+                                    <span className="text-[24px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ទំព័រទី ១៩/១៩</span>
+                                    <span className="text-[18px] uppercase">Page 19/19</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activePage === 20 && (
+                        <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center">
+                            {/* LUXURY WIDE CONTAINER */}
+                            <div className="w-[1600px] flex flex-col items-center">
+                                {/* HEADER SECTION */}
+                                <div className="w-full flex justify-between items-start mb-10 pb-6 border-b-[4px] border-white/20">
+                                    <div className="flex flex-col gap-6 w-full max-w-3xl">
+                                        <div className="flex items-center gap-6">
+                                            <div className="flex flex-col">
+                                                <span className="text-white font-bold text-[20px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
+                                                <span className="text-white/40 font-black text-[14px] uppercase tracking-tighter">Tax Identification Number (TIN) :</span>
+                                            </div>
+                                            <div className="flex gap-1.5 h-12 items-center">
+                                                {["1", "2", "3", "4", "5", "6", "7", "8"].map((char, i) => (
+                                                    <div key={i} className="w-9 h-12 border-[2px] border-white flex items-center justify-center bg-white/5">
+                                                        <span className="text-[24px] font-black text-white">{(formData.tin || "123456789")[i]}</span>
+                                                    </div>
+                                                ))}
+                                                <div className="w-5 h-[2px] bg-white opacity-40 mx-1" />
+                                                <div className="w-9 h-12 border-[2px] border-white flex items-center justify-center bg-white/5">
+                                                    <span className="text-[24px] font-black text-white">{(formData.tin || "123456789")[8]}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-6">
+                                            <div className="flex flex-col min-w-[200px]">
+                                                <span className="text-white font-bold text-[20px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឈ្មោះសាខាសហគ្រាស ៖</span>
+                                                <span className="text-white/40 font-black text-[14px] uppercase tracking-tighter">Name of Enterprise's Branch :</span>
+                                            </div>
+                                            <input className="flex-1 bg-white/5 border-b-[2px] border-white/40 px-6 h-12 text-white font-black text-[22px] outline-none" placeholder="..." />
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-white/10 p-6 border-[4px] border-white shadow-2xl skew-x-[-10deg]">
+                                        <div className="skew-x-[10deg] flex flex-col items-center">
+                                            <span className="text-white font-bold text-[28px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឧបសម្ព័ន្ធ ៣ (ត)</span>
+                                            <span className="text-white/60 font-black text-[22px] uppercase">Annex 3 (Con't)</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* ANNEX 3 TABLE */}
+                                <div className="w-full border-[4px] border-white bg-white/5 overflow-hidden shadow-2xl">
+                                    <table className="w-full border-collapse">
+                                        <thead>
+                                            <tr className="bg-slate-800 border-b-[4px] border-white text-white text-center h-28">
+                                                <th className="border-r-[2px] border-white w-[50%] px-8">
+                                                    <span className="block font-bold text-[22px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បរិយាយ</span>
+                                                    <span className="text-[14px] font-black uppercase opacity-60">Description</span>
+                                                </th>
+                                                <th className="border-r-[2px] border-white w-[10%]">
+                                                    <span className="block font-bold text-[20px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>យោង</span>
+                                                    <span className="text-[14px] font-black uppercase opacity-60">Ref.</span>
+                                                </th>
+                                                <th className="border-r-[2px] border-white w-[20%]">
+                                                    <span className="block font-bold text-[20px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការិយបរិច្ឆេទនេះ (N)</span>
+                                                    <span className="text-[14px] font-black uppercase opacity-60">Current Year (N)</span>
+                                                </th>
+                                                <th className="w-[20%]">
+                                                    <span className="block font-bold text-[20px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការិយបរិច្ឆេទមុន (N-1)</span>
+                                                    <span className="text-[14px] font-black uppercase opacity-60">Last Year (N-1)</span>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="text-white text-[20px]">
+                                            {/* OPERATING REVENUES */}
+                                            <tr className="bg-white/10 h-16 font-black border-b border-white/20">
+                                                <td className="border-r-[2px] border-white px-8">
+                                                    <span style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណូលប្រតិបត្តិការ</span> / Operating Revenues
+                                                </td>
+                                                <td className="border-r-[2px] border-white text-center text-indigo-300">H 0</td>
+                                                <td className="border-r-[2px] border-white bg-white/5"></td>
+                                                <td></td>
+                                            </tr>
+                                            {[
+                                                { kh: "ការលក់ផលិតផល", en: "Sales of products", ref: "H 1" },
+                                                { kh: "ការលក់ទំនិញ", en: "Sales of goods", ref: "H 2" },
+                                                { kh: "ការផ្តល់សេវា", en: "Supplies of services", ref: "H 3" },
+                                                { kh: "ចំណូលផ្សេងទៀត", en: "Other revenues", ref: "H 4" },
+                                            ].map((row, i) => (
+                                                <tr key={i} className="h-14 border-b border-white/10 hover:bg-white/5 group">
+                                                    <td className="border-r-[2px] border-white px-12">
+                                                        <span className="font-bold text-[18px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
+                                                        <span className="block text-[14px] opacity-40 uppercase leading-none mt-1">{row.en}</span>
+                                                    </td>
+                                                    <td className="border-r-[2px] border-white text-center opacity-40 font-black">{row.ref}</td>
+                                                    <td className="border-r-[2px] border-white px-6">
+                                                        <input className="w-full bg-transparent text-right outline-none font-black text-emerald-400" placeholder="-" />
+                                                    </td>
+                                                    <td className="px-6">
+                                                        <input className="w-full bg-transparent text-right outline-none font-black text-white/30" placeholder="-" />
+                                                    </td>
+                                                </tr>
+                                            ))}
+
+                                            {/* OPERATING EXPENSES */}
+                                            <tr className="bg-white/10 h-16 font-black border-y border-white/20">
+                                                <td className="border-r-[2px] border-white px-8">
+                                                    <span style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណាយប្រតិបត្តិការ</span> / Operating Expenses
+                                                </td>
+                                                <td className="border-r-[2px] border-white text-center text-rose-300">H 5</td>
+                                                <td className="border-r-[2px] border-white bg-white/5"></td>
+                                                <td></td>
+                                            </tr>
+                                            {[
+                                                { kh: "ចំណាយបៀវត្ស", en: "Salary expenses", ref: "H 6" },
+                                                { kh: "ចំណាយប្រេង ឧស្ម័ន អគ្គិសនី និងទឹក", en: "Fuel, gas, electricity and water expenses", ref: "H 7" },
+                                                { kh: "ចំណាយធ្វើដំណើរ និងចំណាយស្នាក់នៅ", en: "Travelling and accommodation expenses", ref: "H 8" },
+                                                { kh: "ចំណាយដឹកជញ្ជូន", en: "Transportation expenses", ref: "H 9" },
+                                                { kh: "ចំណាយលើការជួល", en: "Rental expenses", ref: "H 10" },
+                                                { kh: "ចំណាយលើការថែទាំ និងជួសជុល", en: "Repair and maintenance expenses", ref: "H 11" },
+                                                { kh: "ចំណាយលើការកម្សាន្តសប្បាយ", en: "Entertainment expenses", ref: "H 12" },
+                                                { kh: "ចំណាយកម្រៃជើងសា ផ្សាយពាណិជ្ជកម្ម និងចំណាយការលក់", en: "Commission, advertising, and selling expenses", ref: "H 13" },
+                                                { kh: "ចំណាយសេវាគ្រប់គ្រង ពិគ្រោះយោបល់ បច្ចេកទេស និងសេវាប្រហាក់ប្រហែល", en: "Management, consulting, technical, and other similar service expenses", ref: "H 14" },
+                                                { kh: "ចំណាយលើបំណុលអាក្រក់បានបោះបង់", en: "Written-off bad debt expenses", ref: "H 15" },
+                                                { kh: "ចំណាយផ្សេងៗ", en: "Other expenses", ref: "H 16" },
+                                            ].map((row, i) => (
+                                                <tr key={i} className="h-14 border-b border-white/10 hover:bg-white/5 group last:border-0">
+                                                    <td className="border-r-[2px] border-white px-12">
+                                                        <span className="font-bold text-[18px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
+                                                        <span className="block text-[14px] opacity-40 uppercase leading-none mt-1">{row.en}</span>
+                                                    </td>
+                                                    <td className="border-r-[2px] border-white text-center opacity-40 font-black">{row.ref}</td>
+                                                    <td className="border-r-[2px] border-white px-6">
+                                                        <input className="w-full bg-transparent text-right outline-none font-black text-rose-400/80" placeholder="-" />
+                                                    </td>
+                                                    <td className="px-6">
+                                                        <input className="w-full bg-transparent text-right outline-none font-black text-white/30" placeholder="-" />
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {/* FOOTER PAGE INDICATOR */}
+                                <div className="mt-20 self-end flex items-center gap-4 text-white/40 font-black italic">
+                                    <div className="w-12 h-[2px] bg-white/20"></div>
+                                    <span className="text-[24px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ទំព័រទី ២០/២០</span>
+                                    <span className="text-[18px] uppercase">Page 20/20</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activePage === 21 && (
+                        <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center">
+                            {/* LUXURY WIDE CONTAINER */}
+                            <div className="w-[1400px] flex flex-col items-center">
+                                {/* TOP ANNEX BADGE */}
+                                <div className="self-end mb-8">
+                                    <div className="bg-white/10 px-8 py-3 border-[3px] border-white shadow-xl skew-x-[-12deg]">
+                                        <span className="text-white font-black text-[22px] skew-x-[12deg] block uppercase">Annex 4</span>
+                                    </div>
+                                </div>
+
+                                {/* MAIN TITLES */}
+                                <div className="w-full flex flex-col items-center mb-12">
+                                    <h2 className="text-[34px] font-bold text-white text-center leading-tight mb-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                        ពន្ធលើប្រាក់ចំណូលលើសកម្រិតលើប្រតិបត្តិការធនធានរ៉ែ / ប្រេងកាត
+                                    </h2>
+                                    <h1 className="text-[28px] font-black text-white text-center uppercase tracking-[0.15em]">
+                                        EXCESS INCOME TAX ON MINING / OIL AND GAS OPERATIONS
+                                    </h1>
+                                </div>
+
+                                {/* TIN & YEAR BLOCK */}
+                                <div className="w-full flex justify-between items-center mb-12">
+                                    <div className="flex items-center gap-6">
+                                        <div className="flex flex-col items-end">
+                                            <span className="text-[18px] font-bold text-white" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
+                                            <span className="text-[13px] font-black text-white/40 uppercase">Tax Identification Number (TIN) :</span>
+                                        </div>
+                                        <div className="flex gap-1.5 h-12">
+                                            {["1", "2", "3", "4", "5", "6", "7", "8"].map((char, i) => (
+                                                <div key={i} className="w-9 h-12 border-[2px] border-white flex items-center justify-center bg-white/5">
+                                                    <span className="text-[24px] font-black text-white">{(formData.tin || "123456789")[i]}</span>
+                                                </div>
+                                            ))}
+                                            <div className="w-6 h-[2px] bg-white opacity-40 mx-1 self-center" />
+                                            <div className="w-9 h-12 border-[2px] border-white flex items-center justify-center bg-white/5">
+                                                <span className="text-[24px] font-black text-white">{(formData.tin || "123456789")[8]}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-6 bg-slate-950 p-4 border-[2px] border-white shadow-xl">
+                                        <div className="flex flex-col items-end">
+                                            <span className="text-[16px] font-bold text-white" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំជាប់ពន្ធ</span>
+                                            <span className="text-[12px] font-black text-white/40 uppercase">Tax Year</span>
+                                        </div>
+                                        <div className="flex gap-1">
+                                            {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
+                                                <div key={i} className="w-8 h-10 border-[2px] border-white flex items-center justify-center bg-white/5">
+                                                    <span className="text-[22px] font-black text-white">{char}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* TABLE HEADER TITLE */}
+                                <div className="w-full mb-6">
+                                    <h3 className="text-[22px] font-bold text-white" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការគណនាពន្ធលើប្រាក់ចំណូលលើសកម្រិត</h3>
+                                    <h4 className="text-[16px] font-black text-white/50 uppercase">Excess Income Tax Calculation</h4>
+                                </div>
+
+                                {/* CALCULATION TABLE */}
+                                <div className="w-full border-[3px] border-white bg-white/5 overflow-hidden shadow-2xl mb-12">
+                                    <table className="w-full border-collapse">
+                                        <thead>
+                                            <tr className="bg-slate-800 border-b-[3px] border-white text-white text-center h-20">
+                                                <th className="border-r-[2px] border-white px-8 w-[60%]">
+                                                    <span className="block font-bold text-[18px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បរិយាយ</span>
+                                                    <span className="text-[12px] font-black uppercase opacity-60">Description</span>
+                                                </th>
+                                                <th className="border-r-[2px] border-white w-[10%] px-4">
+                                                    <span className="block font-bold text-[18px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>យោង</span>
+                                                    <span className="text-[12px] font-black uppercase opacity-60">Ref.</span>
+                                                </th>
+                                                <th className="px-8 w-[30%]">
+                                                    <span className="block font-bold text-[18px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំនួនទឹកប្រាក់</span>
+                                                    <span className="text-[12px] font-black uppercase opacity-60">Amount</span>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="text-white text-[18px]">
+                                            {[
+                                                { kh: "ប្រាក់ចំណូលជាប់ពន្ធ (E42)", en: "Taxable income (E42)", ref: "X 1" },
+                                                { kh: "ចំណូលបង្គរ ( ចំណូលបូកបន្ត )", en: "Accumulated income", ref: "X 2" },
+                                                { kh: "ចំណាយបង្គរ ( ចំណាយបូកបន្ត )", en: "Accumulated expenses", ref: "X 3" },
+                                                { kh: "សមាមាត្រនៃប្រាក់ចំណូលលើសកម្រិត (X4 = X2 / X3)", en: "Proportion of excess income (X4 = X2 / X3)", ref: "X 4" },
+                                                { kh: "ពន្ធលើប្រាក់ចំណូលលើសកម្រិត *", en: "Excess income tax *", ref: "X 5", isHighlight: true }
+                                            ].map((row, i) => (
+                                                <tr key={i} className={`h-16 border-b border-white/10 hover:bg-white/5 group ${row.isHighlight ? 'bg-white/10 h-20' : ''}`}>
+                                                    <td className="border-r-[2px] border-white px-10">
+                                                        <span className="font-bold text-[18px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
+                                                        <span className="block text-[14px] opacity-40 uppercase leading-none mt-1">{row.en}</span>
+                                                    </td>
+                                                    <td className="border-r-[2px] border-white text-center opacity-40 font-black text-indigo-300">{row.ref}</td>
+                                                    <td className={`px-10 text-right font-black ${row.isHighlight ? 'text-[28px] text-emerald-400' : 'text-white/80'}`}>
+                                                        0.00
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {/* LOGIC DESCRIPTION BLOCK */}
+                                <div className="w-full border-[3px] border-white bg-slate-900 p-10 flex flex-col gap-8 shadow-2xl relative overflow-hidden">
+                                    <div className="absolute right-0 top-0 w-24 h-24 bg-white/5 skew-x-[-45deg] translate-x-12 -translate-y-12" />
+
+                                    <div className="flex flex-col gap-2">
+                                        <h3 className="text-[22px] font-black text-white uppercase tracking-wider" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                            * ពន្ធលើប្រាក់ចំណូលលើសកម្រិត ៖
+                                        </h3>
+                                    </div>
+
+                                    <div className="flex flex-col gap-6 text-[16px] text-white/80 leading-relaxed italic">
+                                        <div className="flex flex-col gap-1 border-l-[3px] border-white/20 pl-6">
+                                            <p style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>- បើ X4 នៅចន្លោះពី ០ ដល់ ១,៣ អត្រាពន្ធគឺ ០%, X5=0</p>
+                                            <p className="text-white/40 uppercase text-[12px] font-black tracking-tight">- If X4 is between 0 to 1.3, tax rate is 0%, X5=0</p>
+                                        </div>
+
+                                        <div className="flex flex-col gap-1 border-l-[3px] border-white/20 pl-6">
+                                            <p style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>- បើ X4 លើសពី ១,៣ ដល់ ១,៦ អត្រាពន្ធគឺ ១០%, X5=X1 * ( ( X4-1.3 ) / X4 ) * 10%</p>
+                                            <p className="text-white/40 uppercase text-[12px] font-black tracking-tight">- If X4 is between over 1.3 to 1.6, tax rate is 10%, X5=X1 * ((X4-1.3)/X4) * 10%</p>
+                                        </div>
+
+                                        <div className="flex flex-col gap-1 border-l-[3px] border-white/20 pl-6">
+                                            <p style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>- បើ X4 លើសពី ១,៦ ដល់ ២ អត្រាពន្ធគឺ ២០%, X5=( X1 * ( ( 1.6-1.3 ) / 1.6 ) ) * 10% + ( X1 * ( ( X4-1.6 ) / X4 ) ) * 20%</p>
+                                            <p className="text-white/40 uppercase text-[12px] font-black tracking-tight">- If X4 is between over 1.6 to 2, tax rate is 20%, X5=(X1*((1.6-1.3)/1.6))*10%+(X1*((X4-1.6)/X4))*20%</p>
+                                        </div>
+
+                                        <div className="flex flex-col gap-1 border-l-[3px] border-white/20 pl-6">
+                                            <p style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>- បើ X4 លើសពី ២ អត្រាពន្ធគឺ ៣០%, X5=( X1 * ( ( 1.6-1.3 ) / 1.6 ) ) * 10% + ( X1 * ( ( 2-1.6 ) / 2 ) ) * 20% + ( X1 * ( ( X4-2 ) / X4 ) ) * 30%</p>
+                                            <p className="text-white/40 uppercase text-[12px] font-black tracking-tight">- If X4 is between over 2, tax rate is 30%, X5=(X1*((1.6-1.3)/1.6))*10%+(X1*((2-1.6)/2))*20%+(X1*((X4-2)/X4))*30%</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* FOOTER PAGE INDICATOR */}
+                                <div className="mt-20 self-end flex items-center gap-4 text-white/40 font-black italic">
+                                    <div className="w-12 h-[2px] bg-white/20"></div>
+                                    <span className="text-[24px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ទំព័រទី ២១/២១</span>
+                                    <span className="text-[18px] uppercase">Page 21/21</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activePage > 21 && (
                         <div className="flex flex-col items-center justify-center py-40 opacity-20">
                             <h3 className="text-white font-black uppercase text-[40px] tracking-widest">Page {activePage}</h3>
                             <p className="text-white text-[24px] mt-2 italic">Schedule Content Pending Sync</p>
