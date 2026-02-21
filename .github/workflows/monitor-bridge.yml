@@ -23,7 +23,23 @@ jobs:
           npm install axios
 
       - name: 🔍 Poll Bridge for Tasks
+        id: poll
         env:
           BRIDGE_URL: ${{ secrets.BRIDGE_URL }}
           BRIDGE_SECRET: ${{ secrets.BRIDGE_SECRET }}
-        run: node scripts/monitor-bridge-cloud.js
+        run: |
+          # The script will now output 'deploy=true' if it finds a deployment instruction
+          node scripts/monitor-bridge-cloud.js
+
+      - name: 🔑 Auth to Google Cloud
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      - name: 🚀 Cloud Deploy (If requested)
+        run: |
+          # This runs the same Cloud Build logic we defined in cloudbuild.yaml
+          gcloud builds submit --config cloudbuild.yaml .
