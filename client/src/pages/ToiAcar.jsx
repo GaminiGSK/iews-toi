@@ -131,19 +131,19 @@ const ToiAcar = ({ onBack }) => {
             </div>
 
             {/* Main Tabs (TOI vs ACAR) */}
-            <div className="flex bg-slate-800/50 p-1 rounded-xl w-fit mb-4 border border-white/5 backdrop-blur-sm">
+            <div className="flex bg-slate-800/50 p-1.5 rounded-2xl w-fit mb-6 border border-white/5 backdrop-blur-sm">
                 <button
                     onClick={() => setActiveTab('TOI')}
-                    className={`px-8 py-3 rounded-lg text-sm font-bold transition-all duration-300 flex items-center gap-2 ${activeTab === 'TOI' ? 'bg-rose-500 text-white shadow-lg shadow-rose-900/20' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+                    className={`px-12 py-5 rounded-xl text-xl font-bold transition-all duration-300 flex items-center gap-4 ${activeTab === 'TOI' ? 'bg-rose-500 text-white shadow-lg shadow-rose-900/20' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
                 >
-                    <FileText size={16} />
+                    <FileText size={32} />
                     TOI Form
                 </button>
                 <button
                     onClick={() => setActiveTab('ACAR')}
-                    className={`px-8 py-3 rounded-lg text-sm font-bold transition-all duration-300 flex items-center gap-2 ${activeTab === 'ACAR' ? 'bg-rose-500 text-white shadow-lg shadow-rose-900/20' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+                    className={`px-12 py-5 rounded-xl text-xl font-bold transition-all duration-300 flex items-center gap-4 ${activeTab === 'ACAR' ? 'bg-rose-500 text-white shadow-lg shadow-rose-900/20' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
                 >
-                    <Table size={16} />
+                    <Table size={32} />
                     ACAR
                 </button>
             </div>

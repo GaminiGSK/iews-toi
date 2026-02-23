@@ -95,86 +95,85 @@ export default function AdminDashboard() {
             </div>
 
             {/* ── TAB BAR ── */}
-            <div className="flex gap-0 border-b border-white/5 px-10 shrink-0">
+            <div className="flex gap-0 border-b border-white/5 px-10 shrink-0 bg-slate-900/50">
                 <button
                     onClick={() => setActiveTab('user')}
-                    className={`flex items-center gap-2.5 px-8 py-4 text-[11px] font-black uppercase tracking-[0.2em] border-b-2 transition-all ${activeTab === 'user' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-600 hover:text-gray-400'}`}
+                    className={`flex items-center gap-4 px-10 py-6 text-[22px] font-black uppercase tracking-[0.2em] border-b-4 transition-all ${activeTab === 'user' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-600 hover:text-gray-400'}`}
                 >
-                    <Users size={14} /> USER
+                    <Users size={28} /> USER
                 </button>
                 <button
                     onClick={() => setActiveTab('toi')}
-                    className={`flex items-center gap-2.5 px-8 py-4 text-[11px] font-black uppercase tracking-[0.2em] border-b-2 transition-all ${activeTab === 'toi' ? 'border-cyan-500 text-cyan-400' : 'border-transparent text-gray-600 hover:text-gray-400'}`}
+                    className={`flex items-center gap-4 px-10 py-6 text-[22px] font-black uppercase tracking-[0.2em] border-b-4 transition-all ${activeTab === 'toi' ? 'border-cyan-500 text-cyan-400' : 'border-transparent text-gray-600 hover:text-gray-400'}`}
                 >
-                    <FileSpreadsheet size={14} /> TOI
+                    <FileSpreadsheet size={28} /> TOI
                 </button>
             </div>
 
-            {/* ── TAB CONTENT ── */}
-            <div className="flex-1 overflow-hidden">
-
-                {/* USER TAB */}
-                {activeTab === 'user' && (
-                    <div className="p-10 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div className="max-w-6xl mx-auto">
-                            <div className="flex justify-between items-center bg-white/[0.03] p-8 rounded-[32px] border border-white/5 mb-8">
-                                <div>
-                                    <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-tight">User Matrix</h2>
-                                    <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.3em]">Authorized Access Control & Entitlement Engine</p>
+            {/* ── TAB CONTENT: SPLIT AREA ── */}
+            <div className="flex-1 overflow-hidden bg-slate-950 border-t border-white/5">
+                <div className="h-full w-full min-w-[1440px] overflow-x-auto">
+                    {/* USER TAB */}
+                    {activeTab === 'user' && (
+                        <div className="h-full overflow-y-auto p-10 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className="max-w-6xl mx-auto">
+                                <div className="flex justify-between items-center bg-white/[0.03] p-8 rounded-[32px] border border-white/5 mb-8">
+                                    <div>
+                                        <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-tight">User Matrix</h2>
+                                        <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.3em]">Authorized Access Control & Entitlement Engine</p>
+                                    </div>
+                                    <button
+                                        onClick={() => { resetForm(); setIsCreating(true); }}
+                                        className="bg-white text-black hover:bg-blue-600 hover:text-white px-8 py-4 rounded-2xl font-black shadow-2xl transition-all flex items-center gap-3 uppercase text-[11px] tracking-widest active:scale-95"
+                                    >
+                                        <UserPlus size={18} /> Deploy New Profile
+                                    </button>
                                 </div>
-                                <button
-                                    onClick={() => { resetForm(); setIsCreating(true); }}
-                                    className="bg-white text-black hover:bg-blue-600 hover:text-white px-8 py-4 rounded-2xl font-black shadow-2xl transition-all flex items-center gap-3 uppercase text-[11px] tracking-widest active:scale-95"
-                                >
-                                    <UserPlus size={18} /> Deploy New Profile
-                                </button>
-                            </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                                {users.map((user) => (
-                                    <div key={user._id} className="bg-slate-900/40 border border-white/5 rounded-[32px] p-8 flex justify-between items-center group hover:border-blue-500/30 hover:bg-slate-900/60 transition-all duration-500 relative overflow-hidden">
-                                        <div className="absolute -top-24 -left-24 w-48 h-48 bg-blue-600/5 rounded-full blur-[80px] opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                        <div className="relative z-10">
-                                            <h3 className="text-2xl font-black text-white group-hover:text-blue-400 transition-colors uppercase tracking-tight mb-4">{user.companyName || 'Restricted Entity'}</h3>
-                                            <div className="space-y-2">
-                                                <div className="flex items-center gap-3 text-[10px] text-slate-500 font-black uppercase tracking-widest">
-                                                    <div className="w-5 h-5 rounded-lg bg-blue-500/10 flex items-center justify-center"><User size={10} className="text-blue-400" /></div>
-                                                    {user.username}
-                                                </div>
-                                                <div className="flex items-center gap-3 text-[10px] text-slate-500 font-mono">
-                                                    <div className="w-5 h-5 rounded-lg bg-slate-500/10 flex items-center justify-center"><Lock size={10} /></div>
-                                                    {user.loginCode}
+                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                                    {users.map((user) => (
+                                        <div key={user._id} className="bg-slate-900/40 border border-white/5 rounded-[32px] p-8 flex justify-between items-center group hover:border-blue-500/30 hover:bg-slate-900/60 transition-all duration-500 relative overflow-hidden">
+                                            <div className="absolute -top-24 -left-24 w-48 h-48 bg-blue-600/5 rounded-full blur-[80px] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                            <div className="relative z-10">
+                                                <h3 className="text-2xl font-black text-white group-hover:text-blue-400 transition-colors uppercase tracking-tight mb-4">{user.companyName || 'Restricted Entity'}</h3>
+                                                <div className="space-y-2">
+                                                    <div className="flex items-center gap-3 text-[10px] text-slate-500 font-black uppercase tracking-widest">
+                                                        <div className="w-5 h-5 rounded-lg bg-blue-500/10 flex items-center justify-center"><User size={10} className="text-blue-400" /></div>
+                                                        {user.username}
+                                                    </div>
+                                                    <div className="flex items-center gap-3 text-[10px] text-slate-500 font-mono">
+                                                        <div className="w-5 h-5 rounded-lg bg-slate-500/10 flex items-center justify-center"><Lock size={10} /></div>
+                                                        {user.loginCode}
+                                                    </div>
                                                 </div>
                                             </div>
+                                            <div className="flex gap-3 relative z-10">
+                                                <button onClick={() => startEdit(user)} className="w-12 h-12 flex items-center justify-center bg-white/5 text-gray-500 hover:bg-blue-600 hover:text-white rounded-2xl transition-all duration-300"><Edit2 size={18} /></button>
+                                                <button onClick={() => deleteUser(user._id)} className="w-12 h-12 flex items-center justify-center bg-white/5 text-gray-500 hover:bg-red-600 hover:text-white rounded-2xl transition-all duration-300"><Trash2 size={18} /></button>
+                                            </div>
                                         </div>
-                                        <div className="flex gap-3 relative z-10">
-                                            <button onClick={() => startEdit(user)} className="w-12 h-12 flex items-center justify-center bg-white/5 text-gray-500 hover:bg-blue-600 hover:text-white rounded-2xl transition-all duration-300"><Edit2 size={18} /></button>
-                                            <button onClick={() => deleteUser(user._id)} className="w-12 h-12 flex items-center justify-center bg-white/5 text-gray-500 hover:bg-red-600 hover:text-white rounded-2xl transition-all duration-300"><Trash2 size={18} /></button>
-                                        </div>
-                                    </div>
-                                ))}
+                                    ))}
 
-                                {users.length === 0 && (
-                                    <div className="col-span-full py-40 text-center opacity-20 flex flex-col items-center">
-                                        <User size={64} className="mb-4" />
-                                        <h3 className="text-xl font-black uppercase tracking-[0.4em]">Matrix Empty</h3>
-                                        <p className="text-[10px] mt-2 font-bold uppercase tracking-widest">Awaiting first entity deployment...</p>
-                                    </div>
-                                )}
+                                    {users.length === 0 && (
+                                        <div className="col-span-full py-40 text-center opacity-20 flex flex-col items-center">
+                                            <User size={64} className="mb-4" />
+                                            <h3 className="text-xl font-black uppercase tracking-[0.4em]">Matrix Empty</h3>
+                                            <p className="text-[10px] mt-2 font-bold uppercase tracking-widest">Awaiting first entity deployment...</p>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                {/* TOI TAB — Live Workspace Embedded */}
-                {activeTab === 'toi' && (
-                    <div className="w-full h-full animate-in fade-in duration-500">
-                        <LiveTaxWorkspace embedded={true} />
-                    </div>
-                )}
+                    {/* TOI TAB — Live Workspace Embedded */}
+                    {activeTab === 'toi' && (
+                        <div className="w-full h-full overflow-y-auto animate-in fade-in duration-500">
+                            <LiveTaxWorkspace embedded={true} />
+                        </div>
+                    )}
+                </div>
             </div>
-
-
 
             {/* ── MODAL: Create / Edit User ── */}
             {(isCreating || isEditing) && (
@@ -208,4 +207,4 @@ export default function AdminDashboard() {
             )}
         </div>
     );
-}
+};

@@ -99,10 +99,14 @@ export default function CompanyProfile() {
     const [bankFiles, setBankFiles] = useState([]);
     const [activeFileIndex, setActiveFileIndex] = useState(0);
 
-    const [formData, setFormData] = useState({
-        companyNameKh: '',
-        companyNameEn: '',
-        companyCode: ''
+    const [formData, setFormData] = useState(() => {
+        const savedUser = JSON.parse(localStorage.getItem('user') || '{}');
+        return {
+            companyNameKh: '',
+            companyNameEn: '',
+            companyCode: '',
+            username: savedUser.username || ''
+        };
     });
 
     // --- ENTITY DOC TEMPLATE STATE (Mirrors AdminDashboard) ---
@@ -827,11 +831,11 @@ export default function CompanyProfile() {
                     <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-2xl shadow-blue-500/20">GK</div>
                     <div>
                         <h1 className="text-4xl font-black text-white leading-none uppercase tracking-tight">
-                            {formData.username || 'Admin'} <span className="text-blue-500">&</span> Ai
+                            {formData.username || 'User'} <span className="text-blue-500">&</span> Ai
                         </h1>
                         <p className="text-[10px] text-slate-500 uppercase tracking-[0.4em] font-bold mt-2 flex items-center gap-2">
                             <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse"></div>
-                            Neural Node Active: {formData.username || 'MASTER_SESSION'}
+                            Neural Node Active: {formData.username?.toUpperCase() || 'MASTER_SESSION'}
                         </p>
                     </div>
                 </div>

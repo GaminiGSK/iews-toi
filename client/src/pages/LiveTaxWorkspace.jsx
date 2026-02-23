@@ -765,13 +765,33 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                 <div className="flex gap-1 p-1 bg-black/40 rounded-lg border border-white/10 shadow-inner scale-90 origin-left">
                                     {Array.from({ length: 4 }).map((_, i) => (
                                         <div key={i} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)]">
-                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i]}</span>
+                                            <input
+                                                type="text"
+                                                maxLength="1"
+                                                className="w-full h-full text-center bg-transparent border-none outline-none text-lg font-black text-white"
+                                                value={(formData.tin || "")[i] || ""}
+                                                onChange={(e) => {
+                                                    const current = (formData.tin || "             ").split('');
+                                                    current[i] = e.target.value;
+                                                    handleFormChange('tin', current.join(''));
+                                                }}
+                                            />
                                         </div>
                                     ))}
                                     <div className="w-4 h-[2px] bg-white opacity-40 mx-1 self-center" />
                                     {Array.from({ length: 9 }).map((_, i) => (
                                         <div key={i + 4} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)]">
-                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i + 4]}</span>
+                                            <input
+                                                type="text"
+                                                maxLength="1"
+                                                className="w-full h-full text-center bg-transparent border-none outline-none text-lg font-black text-white"
+                                                value={(formData.tin || "")[i + 4] || ""}
+                                                onChange={(e) => {
+                                                    const current = (formData.tin || "             ").split('');
+                                                    current[i + 4] = e.target.value;
+                                                    handleFormChange('tin', current.join(''));
+                                                }}
+                                            />
                                         </div>
                                     ))}
                                 </div>
@@ -794,7 +814,11 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                     maxLength="1"
                                                     className="w-full h-full text-center text-xl font-black outline-none bg-transparent text-white"
                                                     value={(formData.untilDate?.slice(-4) || "2026")[i]}
-                                                    readOnly
+                                                    onChange={(e) => {
+                                                        const newDate = (formData.untilDate || "31122026").split('');
+                                                        newDate[4 + i] = e.target.value;
+                                                        handleFormChange('untilDate', newDate.join(''));
+                                                    }}
                                                 />
                                             </div>
                                         ))}
@@ -1067,13 +1091,33 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                 <div className="flex gap-1 p-1 bg-black/40 rounded-lg border border-white/10 shadow-inner scale-90 origin-left">
                                     {Array.from({ length: 4 }).map((_, i) => (
                                         <div key={i} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)]">
-                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i]}</span>
+                                            <input
+                                                type="text"
+                                                maxLength="1"
+                                                className="w-full h-full text-center bg-transparent border-none outline-none text-lg font-black text-white"
+                                                value={(formData.tin || "")[i] || ""}
+                                                onChange={(e) => {
+                                                    const current = (formData.tin || "             ").split('');
+                                                    current[i] = e.target.value;
+                                                    handleFormChange('tin', current.join(''));
+                                                }}
+                                            />
                                         </div>
                                     ))}
                                     <div className="w-4 h-[2px] bg-white opacity-40 mx-1 self-center" />
                                     {Array.from({ length: 9 }).map((_, i) => (
                                         <div key={i + 4} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)]">
-                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i + 4]}</span>
+                                            <input
+                                                type="text"
+                                                maxLength="1"
+                                                className="w-full h-full text-center bg-transparent border-none outline-none text-lg font-black text-white"
+                                                value={(formData.tin || "")[i + 4] || ""}
+                                                onChange={(e) => {
+                                                    const current = (formData.tin || "             ").split('');
+                                                    current[i + 4] = e.target.value;
+                                                    handleFormChange('tin', current.join(''));
+                                                }}
+                                            />
                                         </div>
                                     ))}
                                 </div>
@@ -1089,7 +1133,17 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                         <div className="flex gap-1">
                                             {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
                                                 <div key={i} className="w-10 h-10 border border-white/20 flex items-center justify-center bg-white/5 rounded">
-                                                    <span className="text-lg font-black text-white">{char}</span>
+                                                    <input
+                                                        type="text"
+                                                        maxLength="1"
+                                                        className="w-full h-full text-center bg-transparent border-none outline-none text-lg font-black text-white"
+                                                        value={char || ""}
+                                                        onChange={(e) => {
+                                                            const newDate = (formData.untilDate || "31122026").split('');
+                                                            newDate[4 + i] = e.target.value;
+                                                            handleFormChange('untilDate', newDate.join(''));
+                                                        }}
+                                                    />
                                                 </div>
                                             ))}
                                         </div>
@@ -1216,13 +1270,33 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                 <div className="flex gap-1 p-1 bg-black/40 rounded-lg border border-white/10 shadow-inner scale-90 origin-left">
                                     {Array.from({ length: 4 }).map((_, i) => (
                                         <div key={i} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)]">
-                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i]}</span>
+                                            <input
+                                                type="text"
+                                                maxLength="1"
+                                                className="w-full h-full text-center bg-transparent border-none outline-none text-lg font-black text-white"
+                                                value={(formData.tin || "")[i] || ""}
+                                                onChange={(e) => {
+                                                    const current = (formData.tin || "             ").split('');
+                                                    current[i] = e.target.value;
+                                                    handleFormChange('tin', current.join(''));
+                                                }}
+                                            />
                                         </div>
                                     ))}
                                     <div className="w-4 h-[2px] bg-white opacity-40 mx-1 self-center" />
                                     {Array.from({ length: 9 }).map((_, i) => (
                                         <div key={i + 4} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)]">
-                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i + 4]}</span>
+                                            <input
+                                                type="text"
+                                                maxLength="1"
+                                                className="w-full h-full text-center bg-transparent border-none outline-none text-lg font-black text-white"
+                                                value={(formData.tin || "")[i + 4] || ""}
+                                                onChange={(e) => {
+                                                    const current = (formData.tin || "             ").split('');
+                                                    current[i + 4] = e.target.value;
+                                                    handleFormChange('tin', current.join(''));
+                                                }}
+                                            />
                                         </div>
                                     ))}
                                 </div>
@@ -1238,7 +1312,17 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                         <div className="flex gap-1">
                                             {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
                                                 <div key={i} className="w-10 h-10 border border-white/20 flex items-center justify-center bg-white/5 rounded">
-                                                    <span className="text-lg font-black text-white">{char}</span>
+                                                    <input
+                                                        type="text"
+                                                        maxLength="1"
+                                                        className="w-full h-full text-center bg-transparent border-none outline-none text-lg font-black text-white"
+                                                        value={char || ""}
+                                                        onChange={(e) => {
+                                                            const newDate = (formData.untilDate || "31122026").split('');
+                                                            newDate[4 + i] = e.target.value;
+                                                            handleFormChange('untilDate', newDate.join(''));
+                                                        }}
+                                                    />
                                                 </div>
                                             ))}
                                         </div>
@@ -1392,13 +1476,33 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                 <div className="flex gap-1 p-1 bg-black/40 rounded-lg border border-white/10 shadow-inner scale-90 origin-left">
                                     {Array.from({ length: 4 }).map((_, i) => (
                                         <div key={i} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)]">
-                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i]}</span>
+                                            <input
+                                                type="text"
+                                                maxLength="1"
+                                                className="w-full h-full text-center bg-transparent border-none outline-none text-lg font-black text-white"
+                                                value={(formData.tin || "")[i] || ""}
+                                                onChange={(e) => {
+                                                    const current = (formData.tin || "             ").split('');
+                                                    current[i] = e.target.value;
+                                                    handleFormChange('tin', current.join(''));
+                                                }}
+                                            />
                                         </div>
                                     ))}
                                     <div className="w-4 h-[2px] bg-white opacity-40 mx-1 self-center" />
                                     {Array.from({ length: 9 }).map((_, i) => (
                                         <div key={i + 4} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)]">
-                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i + 4]}</span>
+                                            <input
+                                                type="text"
+                                                maxLength="1"
+                                                className="w-full h-full text-center bg-transparent border-none outline-none text-lg font-black text-white"
+                                                value={(formData.tin || "")[i + 4] || ""}
+                                                onChange={(e) => {
+                                                    const current = (formData.tin || "             ").split('');
+                                                    current[i + 4] = e.target.value;
+                                                    handleFormChange('tin', current.join(''));
+                                                }}
+                                            />
                                         </div>
                                     ))}
                                 </div>
@@ -1414,7 +1518,17 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                         <div className="flex gap-1">
                                             {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
                                                 <div key={i} className="w-10 h-10 border border-white/20 flex items-center justify-center bg-white/5 rounded">
-                                                    <span className="text-lg font-black text-white">{char}</span>
+                                                    <input
+                                                        type="text"
+                                                        maxLength="1"
+                                                        className="w-full h-full text-center bg-transparent border-none outline-none text-lg font-black text-white"
+                                                        value={char || ""}
+                                                        onChange={(e) => {
+                                                            const newDate = (formData.untilDate || "31122026").split('');
+                                                            newDate[4 + i] = e.target.value;
+                                                            handleFormChange('untilDate', newDate.join(''));
+                                                        }}
+                                                    />
                                                 </div>
                                             ))}
                                         </div>
@@ -1640,13 +1754,33 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                 <div className="flex gap-1 p-1 bg-black/40 rounded-lg border border-white/10 shadow-inner scale-90 origin-left">
                                     {Array.from({ length: 4 }).map((_, i) => (
                                         <div key={i} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)]">
-                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i]}</span>
+                                            <input
+                                                type="text"
+                                                maxLength="1"
+                                                className="w-full h-full text-center bg-transparent border-none outline-none text-lg font-black text-white"
+                                                value={(formData.tin || "")[i] || ""}
+                                                onChange={(e) => {
+                                                    const current = (formData.tin || "             ").split('');
+                                                    current[i] = e.target.value;
+                                                    handleFormChange('tin', current.join(''));
+                                                }}
+                                            />
                                         </div>
                                     ))}
                                     <div className="w-4 h-[2px] bg-white opacity-40 mx-1 self-center" />
                                     {Array.from({ length: 9 }).map((_, i) => (
                                         <div key={i + 4} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)]">
-                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i + 4]}</span>
+                                            <input
+                                                type="text"
+                                                maxLength="1"
+                                                className="w-full h-full text-center bg-transparent border-none outline-none text-lg font-black text-white"
+                                                value={(formData.tin || "")[i + 4] || ""}
+                                                onChange={(e) => {
+                                                    const current = (formData.tin || "             ").split('');
+                                                    current[i + 4] = e.target.value;
+                                                    handleFormChange('tin', current.join(''));
+                                                }}
+                                            />
                                         </div>
                                     ))}
                                 </div>
@@ -1662,7 +1796,17 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                         <div className="flex gap-1">
                                             {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
                                                 <div key={i} className="w-10 h-10 border border-white/20 flex items-center justify-center bg-white/5 rounded">
-                                                    <span className="text-lg font-black text-white">{char}</span>
+                                                    <input
+                                                        type="text"
+                                                        maxLength="1"
+                                                        className="w-full h-full text-center bg-transparent border-none outline-none text-lg font-black text-white"
+                                                        value={char || ""}
+                                                        onChange={(e) => {
+                                                            const newDate = (formData.untilDate || "31122026").split('');
+                                                            newDate[4 + i] = e.target.value;
+                                                            handleFormChange('untilDate', newDate.join(''));
+                                                        }}
+                                                    />
                                                 </div>
                                             ))}
                                         </div>
@@ -1832,13 +1976,33 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                 <div className="flex gap-1 p-1 bg-black/40 rounded-lg border border-white/10 shadow-inner scale-90 origin-left">
                                     {Array.from({ length: 4 }).map((_, i) => (
                                         <div key={i} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)]">
-                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i]}</span>
+                                            <input
+                                                type="text"
+                                                maxLength="1"
+                                                className="w-full h-full text-center bg-transparent border-none outline-none text-lg font-black text-white"
+                                                value={(formData.tin || "")[i] || ""}
+                                                onChange={(e) => {
+                                                    const current = (formData.tin || "             ").split('');
+                                                    current[i] = e.target.value;
+                                                    handleFormChange('tin', current.join(''));
+                                                }}
+                                            />
                                         </div>
                                     ))}
                                     <div className="w-4 h-[2px] bg-white opacity-40 mx-1 self-center" />
                                     {Array.from({ length: 9 }).map((_, i) => (
                                         <div key={i + 4} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)]">
-                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i + 4]}</span>
+                                            <input
+                                                type="text"
+                                                maxLength="1"
+                                                className="w-full h-full text-center bg-transparent border-none outline-none text-lg font-black text-white"
+                                                value={(formData.tin || "")[i + 4] || ""}
+                                                onChange={(e) => {
+                                                    const current = (formData.tin || "             ").split('');
+                                                    current[i + 4] = e.target.value;
+                                                    handleFormChange('tin', current.join(''));
+                                                }}
+                                            />
                                         </div>
                                     ))}
                                 </div>
@@ -1854,7 +2018,17 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                         <div className="flex gap-1">
                                             {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
                                                 <div key={i} className="w-10 h-10 border border-white/20 flex items-center justify-center bg-white/5 rounded">
-                                                    <span className="text-lg font-black text-white">{char}</span>
+                                                    <input
+                                                        type="text"
+                                                        maxLength="1"
+                                                        className="w-full h-full text-center bg-transparent border-none outline-none text-lg font-black text-white"
+                                                        value={char || ""}
+                                                        onChange={(e) => {
+                                                            const newDate = (formData.untilDate || "31122026").split('');
+                                                            newDate[4 + i] = e.target.value;
+                                                            handleFormChange('untilDate', newDate.join(''));
+                                                        }}
+                                                    />
                                                 </div>
                                             ))}
                                         </div>
@@ -2059,13 +2233,33 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                 <div className="flex gap-1 p-1 bg-black/40 rounded-lg border border-white/10 shadow-inner scale-90 origin-left">
                                     {Array.from({ length: 4 }).map((_, i) => (
                                         <div key={i} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)]">
-                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i]}</span>
+                                            <input
+                                                type="text"
+                                                maxLength="1"
+                                                className="w-full h-full text-center bg-transparent border-none outline-none text-lg font-black text-white"
+                                                value={(formData.tin || "")[i] || ""}
+                                                onChange={(e) => {
+                                                    const current = (formData.tin || "             ").split('');
+                                                    current[i] = e.target.value;
+                                                    handleFormChange('tin', current.join(''));
+                                                }}
+                                            />
                                         </div>
                                     ))}
                                     <div className="w-4 h-[2px] bg-white opacity-40 mx-1 self-center" />
                                     {Array.from({ length: 9 }).map((_, i) => (
                                         <div key={i + 4} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)]">
-                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i + 4]}</span>
+                                            <input
+                                                type="text"
+                                                maxLength="1"
+                                                className="w-full h-full text-center bg-transparent border-none outline-none text-lg font-black text-white"
+                                                value={(formData.tin || "")[i + 4] || ""}
+                                                onChange={(e) => {
+                                                    const current = (formData.tin || "             ").split('');
+                                                    current[i + 4] = e.target.value;
+                                                    handleFormChange('tin', current.join(''));
+                                                }}
+                                            />
                                         </div>
                                     ))}
                                 </div>
@@ -2082,7 +2276,17 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                         <div className="flex gap-1">
                                             {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
                                                 <div key={i} className="w-10 h-10 border border-white/20 flex items-center justify-center bg-white/5 rounded">
-                                                    <span className="text-lg font-black text-white">{char}</span>
+                                                    <input
+                                                        type="text"
+                                                        maxLength="1"
+                                                        className="w-full h-full text-center bg-transparent border-none outline-none text-lg font-black text-white"
+                                                        value={char || ""}
+                                                        onChange={(e) => {
+                                                            const newDate = (formData.untilDate || "31122026").split('');
+                                                            newDate[4 + i] = e.target.value;
+                                                            handleFormChange('untilDate', newDate.join(''));
+                                                        }}
+                                                    />
                                                 </div>
                                             ))}
                                         </div>
@@ -2180,13 +2384,33 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                 <div className="flex gap-1 p-1 bg-black/40 rounded-lg border border-white/10 shadow-inner scale-90 origin-left">
                                     {Array.from({ length: 4 }).map((_, i) => (
                                         <div key={i} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-inner">
-                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i]}</span>
+                                            <input
+                                                type="text"
+                                                maxLength="1"
+                                                className="w-full h-full text-center bg-transparent border-none outline-none text-lg font-black text-white"
+                                                value={(formData.tin || "")[i] || ""}
+                                                onChange={(e) => {
+                                                    const current = (formData.tin || "             ").split('');
+                                                    current[i] = e.target.value;
+                                                    handleFormChange('tin', current.join(''));
+                                                }}
+                                            />
                                         </div>
                                     ))}
                                     <div className="w-4 h-[2px] bg-white opacity-40 mx-1 self-center" />
                                     {Array.from({ length: 9 }).map((_, i) => (
                                         <div key={i + 4} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-inner">
-                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i + 4]}</span>
+                                            <input
+                                                type="text"
+                                                maxLength="1"
+                                                className="w-full h-full text-center bg-transparent border-none outline-none text-lg font-black text-white"
+                                                value={(formData.tin || "")[i + 4] || ""}
+                                                onChange={(e) => {
+                                                    const current = (formData.tin || "             ").split('');
+                                                    current[i + 4] = e.target.value;
+                                                    handleFormChange('tin', current.join(''));
+                                                }}
+                                            />
                                         </div>
                                     ))}
                                 </div>
@@ -2203,7 +2427,17 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                         <div className="flex gap-1">
                                             {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
                                                 <div key={i} className="w-10 h-10 border border-white/20 flex items-center justify-center bg-white/5 rounded">
-                                                    <span className="text-lg font-black text-white">{char}</span>
+                                                    <input
+                                                        type="text"
+                                                        maxLength="1"
+                                                        className="w-full h-full text-center bg-transparent border-none outline-none text-lg font-black text-white"
+                                                        value={char || ""}
+                                                        onChange={(e) => {
+                                                            const newDate = (formData.untilDate || "31122026").split('');
+                                                            newDate[4 + i] = e.target.value;
+                                                            handleFormChange('untilDate', newDate.join(''));
+                                                        }}
+                                                    />
                                                 </div>
                                             ))}
                                         </div>
@@ -2684,9 +2918,19 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 <span className="text-[14px] font-black text-white/60 uppercase">Tax Year</span>
                                             </div>
                                             <div className="flex gap-1.5">
-                                                {["2", "0", "2", "6"].map((char, i) => (
+                                                {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
                                                     <div key={i} className="w-10 h-12 border-[2px] border-white flex items-center justify-center bg-white/10">
-                                                        <span className="text-[24px] font-black text-white">{char}</span>
+                                                        <input
+                                                            type="text"
+                                                            maxLength="1"
+                                                            className="w-full h-full text-center bg-transparent border-none outline-none text-[24px] font-black text-white"
+                                                            value={char || ""}
+                                                            onChange={(e) => {
+                                                                const newDate = (formData.untilDate || "31122026").split('');
+                                                                newDate[4 + i] = e.target.value;
+                                                                handleFormChange('untilDate', newDate.join(''));
+                                                            }}
+                                                        />
                                                     </div>
                                                 ))}
                                             </div>
@@ -2805,38 +3049,84 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
 
                     {activePage === 12 && (
                         <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center overflow-x-auto">
-                            <div className="w-[1800px] flex flex-col items-center">
-                                {/* PAGE HEADER - TIN & YEAR AREA */}
-                                <div className="w-full flex flex-col items-end mb-16 px-10">
-                                    <div className="flex gap-16 items-start">
-                                        <div className="flex flex-col items-end">
-                                            <div className="flex items-center gap-6">
-                                                <span className="text-[28px] font-bold text-white" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំជាប់ពន្ធ</span>
-                                                <span className="text-[22px] font-black text-white/40 uppercase">Tax Year</span>
-                                            </div>
-                                            <div className="flex gap-2 mt-4">
-                                                {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
-                                                    <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
-                                                        <span className="text-[32px] font-black text-white">{char}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
+                            <div className="w-[2400px] flex flex-col items-center">
+                                {/* BRANDED HEADER */}
+                                <div className="w-full border-[6px] border-white p-12 flex flex-col items-center bg-white/5 relative shadow-2xl mb-24">
+                                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-emerald-500 text-black px-10 py-2 font-black text-xl uppercase tracking-[0.4em] skew-x-[-20deg]">
+                                        <span className="inline-block skew-x-[20deg]">Schedule IX (Continued)</span>
+                                    </div>
+
+                                    <h2 className="text-[64px] font-bold text-white text-center leading-tight mb-4" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                        តារាងការអនុញ្ញាតលើចំណាយការប្រាក់ដែលបានបន្ត និងតារាងការបន្តខាត
+                                    </h2>
+                                    <h1 className="text-[48px] font-black text-white text-center uppercase tracking-[0.2em]">
+                                        INTEREST EXPENSES CARRIED FORWARD AND <br />
+                                        ACCUMULATED LOSSES CARRIED FORWARD
+                                    </h1>
+
+                                    {/* TIN & YEAR BOXES */}
+                                    <div className="absolute -bottom-16 flex gap-10 items-end">
+                                        {/* TIN BOX */}
                                         <div className="flex items-center gap-6 bg-slate-950 p-6 border-[3px] border-white shadow-2xl">
                                             <div className="flex flex-col items-end">
-                                                <span className="text-[28px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
-                                                <span className="text-[22px] font-black text-white/50 uppercase whitespace-nowrap">Tax Identification Number (TIN):</span>
+                                                <span className="text-[24px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
+                                                <span className="text-[18px] font-black text-white/50 uppercase whitespace-nowrap">Tax Identification Number (TIN):</span>
                                             </div>
                                             <div className="flex gap-2">
                                                 {Array.from({ length: 4 }).map((_, i) => (
                                                     <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
-                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "")[i]}</span>
+                                                        <input
+                                                            type="text"
+                                                            maxLength="1"
+                                                            className="w-full h-full text-center bg-transparent border-none outline-none text-[32px] font-black text-white"
+                                                            value={(formData.tin || "")[i] || ""}
+                                                            onChange={(e) => {
+                                                                const current = (formData.tin || "             ").split('');
+                                                                current[i] = e.target.value;
+                                                                handleFormChange('tin', current.join(''));
+                                                            }}
+                                                        />
                                                     </div>
                                                 ))}
                                                 <div className="w-8 h-[3px] bg-white opacity-40 mx-2 self-center" />
                                                 {Array.from({ length: 9 }).map((_, i) => (
                                                     <div key={i + 4} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
-                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "")[i + 4]}</span>
+                                                        <input
+                                                            type="text"
+                                                            maxLength="1"
+                                                            className="w-full h-full text-center bg-transparent border-none outline-none text-[32px] font-black text-white"
+                                                            value={(formData.tin || "")[i + 4] || ""}
+                                                            onChange={(e) => {
+                                                                const current = (formData.tin || "             ").split('');
+                                                                current[i + 4] = e.target.value;
+                                                                handleFormChange('tin', current.join(''));
+                                                            }}
+                                                        />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* YEAR BOX */}
+                                        <div className="bg-slate-950 p-6 border-[3px] border-white shadow-2xl">
+                                            <div className="flex items-center gap-6 mb-2">
+                                                <span className="text-[24px] font-bold text-white" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំជាប់ពន្ធ</span>
+                                                <span className="text-[18px] font-black text-white/40 uppercase">Tax Year</span>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
+                                                    <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                        <input
+                                                            type="text"
+                                                            maxLength="1"
+                                                            className="w-full h-full text-center bg-transparent border-none outline-none text-[32px] font-black text-white"
+                                                            value={char || ""}
+                                                            onChange={(e) => {
+                                                                const newDate = (formData.untilDate || "31122026").split('');
+                                                                newDate[4 + i] = e.target.value;
+                                                                handleFormChange('untilDate', newDate.join(''));
+                                                            }}
+                                                        />
                                                     </div>
                                                 ))}
                                             </div>
@@ -2844,56 +3134,39 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                     </div>
                                 </div>
 
-                                <div className="w-full flex flex-col gap-12 mt-10">
-                                    {/* TABLE B.1: INTEREST EXPENSES CARRIED FORWARD */}
+                                {/* SIDE-BY-SIDE TABLES GRID */}
+                                <div className="w-full grid grid-cols-2 gap-16 mt-20">
+                                    {/* LEFT: TABLE B.1: INTEREST EXPENSES */}
                                     <div className="flex flex-col gap-8">
                                         <div className="flex flex-col border-l-[10px] border-emerald-500 pl-8">
-                                            <h3 className="text-white font-bold text-[36px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ខ.១-តារាងការអនុញ្ញាតលើចំណាយការប្រាក់ដែលបានបន្ត</h3>
-                                            <h4 className="text-white/60 font-black text-[28px] uppercase tracking-tight">B.1 Table of Interest Expenses Carried Forward</h4>
+                                            <h3 className="text-white font-bold text-[32px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ខ.១-តារាងការអនុញ្ញាតលើចំណាយការប្រាក់ដែលបានបន្ត</h3>
+                                            <h4 className="text-white/60 font-black text-[24px] uppercase tracking-tight">B.1 Table of Interest Expenses Carried Forward</h4>
                                         </div>
 
                                         <div className="border-[4px] border-white bg-white/5 shadow-2xl overflow-hidden">
                                             <table className="w-full border-collapse">
                                                 <thead>
-                                                    <tr className="bg-emerald-500/10 border-b-[4px] border-white text-white h-32 text-[22px]">
-                                                        <th className="border-r-[2px] border-white p-4 w-[12%]">
-                                                            <span className="block font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការិយបរិច្ឆេទ</span>
-                                                            <span className="font-black uppercase">Period</span>
-                                                        </th>
-                                                        <th className="border-r-[2px] border-white p-4 w-[20%]">
-                                                            <span className="block font-bold italic" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណាយការប្រាក់អតិបរមាដែលអាចដក <br /> កាត់បានជាមួយការប្រាក់យកមកពីឆ្នាំមុន</span>
-                                                            <span className="font-black uppercase opacity-70">Max Interest Deductible (G9)</span>
-                                                        </th>
-                                                        <th className="border-r-[2px] border-white p-4 w-[18%]">
-                                                            <span className="block font-bold italic" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>និយ័តកម្មការប្រាក់មិនអនុញ្ញាត <br /> កាត់កងក្នុងគ្រាការិយបរិច្ឆេទ</span>
-                                                            <span className="font-black uppercase opacity-70">Not-Allowed Interest (G10)</span>
-                                                        </th>
-                                                        <th className="border-r-[2px] border-white p-4 w-[16%]">
-                                                            <span className="block font-bold italic" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការប្រាក់អនុញ្ញាតប្រើប្រាស់ <br /> កាត់កងក្នុងគ្រាការិយបរិច្ឆេទ</span>
-                                                            <span className="font-black uppercase opacity-70">Interest Allowed (G11)*</span>
-                                                        </th>
-                                                        <th className="border-r-[2px] border-white p-4 w-[16%]">
-                                                            <span className="block font-bold italic" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការប្រាក់អនុញ្ញាតប្រើប្រាស់ <br /> កាត់កងសរុបបន្ត</span>
-                                                            <span className="font-black uppercase opacity-70">Accumulated Interest (G12)</span>
-                                                        </th>
-                                                        <th className="p-4 w-[18%]">
-                                                            <span className="block font-bold italic" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការប្រាក់ដែលនៅសល់អនុញ្ញាត <br /> ប្រើប្រាស់សរុបបន្តទៅមុខ</span>
-                                                            <span className="font-black uppercase opacity-70">Carried Forward (G13)</span>
-                                                        </th>
+                                                    <tr className="bg-emerald-500/10 border-b-[4px] border-white text-white h-32 text-[18px]">
+                                                        <th className="border-r-[2px] border-white p-4 w-[12%]">Period</th>
+                                                        <th className="border-r-[2px] border-white p-4 w-[20%]">Max Interest (G9)</th>
+                                                        <th className="border-r-[2px] border-white p-4 w-[18%]">Not-Allowed (G10)</th>
+                                                        <th className="border-r-[2px] border-white p-4 w-[16%]">Allowed (G11)*</th>
+                                                        <th className="border-r-[2px] border-white p-4 w-[16%]">Accum. (G12)</th>
+                                                        <th className="p-4 w-[18%]">C/F (G13)</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody className="text-white font-black text-[28px]">
+                                                <tbody className="text-white font-black text-[22px]">
                                                     {["N-5", "N-4", "N-3", "N-2", "N-1", "N"].map((year, i) => (
-                                                        <tr key={i} className="border-b border-white/10 h-24 hover:bg-white/5 transition-colors">
+                                                        <tr key={i} className="border-b border-white/10 h-20 hover:bg-white/5 transition-colors">
                                                             <td className="border-r-[2px] border-white p-4 text-center">
                                                                 <span className="block font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំ {year}</span>
-                                                                <span className="text-[20px] font-black opacity-50">Year {year}</span>
+                                                                <span className="text-[14px] font-black opacity-40">Year {year}</span>
                                                             </td>
                                                             <td className="border-r-[2px] border-white p-4 relative">
                                                                 {i < 5 ? (
-                                                                    <div className="absolute inset-0 flex items-center justify-center opacity-20">
-                                                                        <div className="w-full h-1 bg-white rotate-[15deg]"></div>
-                                                                        <div className="w-full h-1 bg-white -rotate-[15deg]"></div>
+                                                                    <div className="absolute inset-0 flex items-center justify-center opacity-10">
+                                                                        <div className="w-full h-[1px] bg-white rotate-[15deg]"></div>
+                                                                        <div className="w-full h-[1px] bg-white -rotate-[15deg]"></div>
                                                                     </div>
                                                                 ) : <input type="text" className="w-full bg-transparent text-right outline-none text-white" value={formData[`g9_${i}`] || ""} onChange={(e) => handleFormChange(`g9_${i}`, e.target.value)} placeholder="0.00" />}
                                                             </td>
@@ -2906,70 +3179,58 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 </tbody>
                                             </table>
                                         </div>
-                                        <p className="text-[24px] text-white/40 italic">* Sum amount of column (G11) to be deducted from adjusted taxable income by filling in the box (E39)</p>
+                                        <p className="text-[18px] text-white/40 italic">* Sum of column (G11) to be deducted in box (E39)</p>
                                     </div>
 
-                                    {/* TABLE C: TAXABLE ACCUMULATED LOSSES CARRIED FORWARD */}
-                                    <div className="flex flex-col gap-10 mt-10">
+                                    {/* RIGHT: TABLE C: TAXABLE ACCUMULATED LOSSES */}
+                                    <div className="flex flex-col gap-8">
                                         <div className="flex flex-col border-l-[10px] border-indigo-500 pl-8">
-                                            <h3 className="text-white font-bold text-[36px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>គ.តារាងការបន្តខាតដែលបានកើតពីពន្ធដារតាមរយៈបន្តទៅមុខ</h3>
-                                            <h4 className="text-white/60 font-black text-[28px] uppercase tracking-tight">C. Table of Taxable Accumulated Losses Carried Forward</h4>
+                                            <h3 className="text-white font-bold text-[32px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>គ.តារាងការបន្តខាតដែលបានកើតពីពន្ធដារ</h3>
+                                            <h4 className="text-white/60 font-black text-[24px] uppercase tracking-tight">C. Table of Taxable Accumulated Losses C/F</h4>
                                         </div>
 
                                         <div className="border-[4px] border-white bg-white/5 shadow-2xl overflow-hidden">
                                             <table className="w-full border-collapse">
                                                 <thead>
-                                                    <tr className="bg-indigo-500/10 border-b-[4px] border-white text-white h-32 text-[20px]">
-                                                        <th className="border-r-[2px] border-white p-4 w-[12%]">
-                                                            <span className="block font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការិយបរិច្ឆេទ</span>
-                                                            <span className="font-black uppercase">Period</span>
-                                                        </th>
-                                                        <th className="border-r-[2px] border-white p-4 w-[17.6%]">
-                                                            <span className="block font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លទ្ធផលចំណេញសារពើពន្ធ</span>
-                                                            <span className="font-black uppercase opacity-70">Taxable Profit (1)</span>
-                                                        </th>
-                                                        <th className="border-r-[2px] border-white p-4 w-[17.6%]">
-                                                            <span className="block font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លទ្ធផលខាតសារពើពន្ធ <br /> ក្នុងគ្រាការិយបរិច្ឆេទ</span>
-                                                            <span className="font-black uppercase opacity-70">Taxable Loss (2)</span>
-                                                        </th>
-                                                        <th className="border-r-[2px] border-white p-4 w-[17.6%]">
-                                                            <span className="block font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ខាតអនុញ្ញាតប្រើប្រាស់ <br /> ក្នុងគ្រាការិយបរិច្ឆេទ</span>
-                                                            <span className="font-black uppercase opacity-70">Loss Allowance (3)</span>
-                                                        </th>
-                                                        <th className="border-r-[2px] border-white p-4 w-[17.6%]">
-                                                            <span className="block font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ខាតអនុញ្ញាតប្រើប្រាស់ <br /> កាត់កងសរុបបន្ត</span>
-                                                            <span className="font-black uppercase opacity-70">Accu. Losses Allowance (4)*</span>
-                                                        </th>
-                                                        <th className="p-4 w-[17.6%]">
-                                                            <span className="block font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ខាតដែលនៅសេសសល់អនុញ្ញាត <br /> យកទៅប្រើប្រាស់បន្តទៅមុខ</span>
-                                                            <span className="font-black uppercase opacity-70">Losses Carried Forward (5)</span>
-                                                        </th>
+                                                    <tr className="bg-indigo-500/10 border-b-[4px] border-white text-white h-32 text-[16px]">
+                                                        <th className="border-r-[2px] border-white p-2 w-[12%]">Period</th>
+                                                        <th className="border-r-[2px] border-white p-2 w-[17.6%]">Taxable Profit (1)</th>
+                                                        <th className="border-r-[2px] border-white p-2 w-[17.6%]">Taxable Loss (2)</th>
+                                                        <th className="border-r-[2px] border-white p-2 w-[17.6%]">Loss Allow (3)</th>
+                                                        <th className="border-r-[2px] border-white p-2 w-[17.6%]">Accu. Loss (4)*</th>
+                                                        <th className="p-2 w-[17.6%]">Loss C/F (5)</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody className="text-white font-black text-[28px]">
+                                                <tbody className="text-white font-black text-[22px]">
                                                     {["N-5", "N-4", "N-3", "N-2", "N-1", "N**"].map((year, i) => (
-                                                        <tr key={i} className="border-b border-white/10 h-24 hover:bg-white/5 transition-colors">
+                                                        <tr key={i} className="border-b border-white/10 h-20 hover:bg-white/5 transition-colors">
                                                             <td className="border-r-[2px] border-white p-4 text-center">
                                                                 <span className="block font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំ {year}</span>
-                                                                <span className="text-[20px] font-black opacity-50">Year {year}</span>
+                                                                <span className="text-[14px] font-black opacity-40">Year {year}</span>
                                                             </td>
-                                                            <td className="border-r-[2px] border-white p-4"><input type="text" className="w-full bg-transparent text-right outline-none text-white/40" placeholder="0.00" /></td>
-                                                            <td className="border-r-[2px] border-white p-4"><input type="text" className="w-full bg-transparent text-right outline-none text-white/40" placeholder="0.00" /></td>
-                                                            <td className="border-r-[2px] border-white p-4"><input type="text" className="w-full bg-transparent text-right outline-none text-white/40" placeholder="0.00" /></td>
-                                                            <td className="border-r-[2px] border-white p-4 font-black bg-indigo-500/10"><input type="text" className="w-full bg-transparent text-right outline-none text-emerald-400" placeholder="0.00" /></td>
-                                                            <td className="p-4 font-black text-indigo-300"><input type="text" className="w-full bg-transparent text-right outline-none" placeholder="0.00" /></td>
+                                                            <td className="border-r-[2px] border-white p-4"><input type="text" className="w-full bg-transparent text-right outline-none text-white/40" value={formData[`c1_${i}`] || ""} onChange={(e) => handleFormChange(`c1_${i}`, e.target.value)} placeholder="0.00" /></td>
+                                                            <td className="border-r-[2px] border-white p-4"><input type="text" className="w-full bg-transparent text-right outline-none text-white/40" value={formData[`c2_${i}`] || ""} onChange={(e) => handleFormChange(`c2_${i}`, e.target.value)} placeholder="0.00" /></td>
+                                                            <td className="border-r-[2px] border-white p-4"><input type="text" className="w-full bg-transparent text-right outline-none text-white/40" value={formData[`c3_${i}`] || ""} onChange={(e) => handleFormChange(`c3_${i}`, e.target.value)} placeholder="0.00" /></td>
+                                                            <td className="border-r-[2px] border-white p-4 font-black bg-indigo-500/10"><input type="text" className="w-full bg-transparent text-right outline-none text-emerald-400" value={formData[`c4_${i}`] || ""} onChange={(e) => handleFormChange(`c4_${i}`, e.target.value)} placeholder="0.00" /></td>
+                                                            <td className="p-4 font-black text-indigo-300"><input type="text" className="w-full bg-transparent text-right outline-none" value={formData[`c5_${i}`] || ""} onChange={(e) => handleFormChange(`c5_${i}`, e.target.value)} placeholder="0.00" /></td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
                                             </table>
                                         </div>
-                                        <div className="flex flex-col gap-4 p-10 bg-white/5 rounded-2xl border-[3px] border-white/10 text-[22px] text-white/40 italic leading-relaxed shadow-inner">
-                                            <p>(4)* គឺជាចំនួនទឹកប្រាក់ខាតពីអតីតការិយបរិច្ឆេទដែលត្រូវបានអនុញ្ញាតក្នុងឆ្នាំជាប់ពន្ធបច្ចុប្បន្ន និងក្នុងគ្រាការិយបរិច្ឆេទនេះ It is an accumulated taxable loss allowance from previous periods and current period.</p>
-                                            <p>** ឆ្នាំ N គឺជាឆ្នាំជាប់ពន្ធ Year N is the current tax year</p>
-                                            <p className="mt-4">ក្នុងករណីដែលមានខាតនៅគ្រាការិយបរិច្ឆេទជាប់ពន្ធណាមួយ ការខាតបង់នោះត្រូវបានទុកជាបន្ទុកសម្រាប់ឆ្នាំជាប់ពន្ធបន្តបន្ទាប់ ហើយត្រូវដកចេញពីប្រាក់ចំណេញសម្រេចបាននៅក្នុងឆ្នាំជាប់ពន្ធបន្តបន្ទាប់នោះ។</p>
-                                            <p className="mt-2 text-[20px]">In case of any loss in any tax year, this loss is considered as a charge for the following tax year and shall be deducted from the profit realized in that following year.</p>
-                                        </div>
+                                        <p className="text-[16px] text-white/40 italic">* Total accum. allowance from previous and current periods.</p>
                                     </div>
+                                </div>
+
+                                {/* FOOTER NOTE - FULL WIDTH */}
+                                <div className="w-full mt-16 p-10 bg-white/5 rounded-3xl border-[4px] border-white/10 text-[20px] text-white/40 italic leading-relaxed shadow-inner">
+                                    <p>ក្នុងករណីដែលមានខាតនៅគ្រាការិយបរិច្ឆេទជាប់ពន្ធណាមួយ ការខាតបង់នោះត្រូវបានទុកជាបន្ទុកសម្រាប់ឆ្នាំជាប់ពន្ធបន្តបន្ទាប់ ហើយត្រូវដកចេញពីប្រាក់ចំណេញសម្រេចបាននៅក្នុងឆ្នាំជាប់ពន្ធបន្តបន្ទាប់នោះ។</p>
+                                    <p className="mt-2">In case of any loss in any tax year, this loss is considered as a charge for the following tax year and shall be deducted from the profit realized in that following year.</p>
+                                </div>
+
+                                {/* PAGE WATERMARK */}
+                                <div className="absolute -bottom-10 -right-10 text-[200px] font-black text-white/[0.03] select-none pointer-events-none uppercase tracking-tighter italic">
+                                    Page 12
                                 </div>
                             </div>
                         </div>
@@ -3153,7 +3414,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                     {activePage === 14 && (
                         <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center">
                             {/* PAGE 14: SPECIAL DEPRECIATION TABLE PER LOT */}
-                            <div className="w-[1800px] flex flex-col items-center mb-10 px-10">
+                            <div className="w-[2400px] flex flex-col items-center mb-10 px-10">
                                 <div className="w-full flex justify-between items-start mb-16">
                                     <div className="border-[6px] border-white p-10 bg-white/5 shadow-2xl">
                                         <h2 className="text-[54px] font-bold text-white text-center leading-tight mb-4" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
@@ -4022,9 +4283,19 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 <span className="text-white/40 font-black text-[14px] uppercase">Until</span>
                                             </div>
                                             <div className="flex gap-1">
-                                                {[...Array(8)].map((_, i) => (
+                                                {(formData.untilDate || "31122026").split('').map((char, i) => (
                                                     <div key={i} className="w-8 h-10 border-[2px] border-white flex items-center justify-center bg-white/10">
-                                                        <span className="text-white font-black text-[18px]">0</span>
+                                                        <input
+                                                            type="text"
+                                                            maxLength="1"
+                                                            className="w-full h-full text-center bg-transparent border-none outline-none text-white font-black text-[18px]"
+                                                            value={char || ""}
+                                                            onChange={(e) => {
+                                                                const newDate = (formData.untilDate || "31122026").split('');
+                                                                newDate[i] = e.target.value;
+                                                                handleFormChange('untilDate', newDate.join(''));
+                                                            }}
+                                                        />
                                                     </div>
                                                 ))}
                                             </div>
@@ -4040,16 +4311,36 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                             <span className="text-white font-bold text-[18px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
                                             <span className="text-white/40 font-black text-[14px] uppercase">Tax Identification Number (TIN):</span>
                                         </div>
-                                        <div className="flex gap-1.5 items-center">
+                                        <div className="flex gap-1.5 h-12">
                                             {Array.from({ length: 4 }).map((_, i) => (
-                                                <div key={i} className="w-10 h-14 border-[3px] border-white flex items-center justify-center bg-white/5">
-                                                    <span className="text-[28px] font-black text-white">{(formData.tin || "")[i]}</span>
+                                                <div key={i} className="w-9 h-12 border-[2px] border-white flex items-center justify-center bg-white/5">
+                                                    <input
+                                                        type="text"
+                                                        maxLength="1"
+                                                        className="w-full h-full text-center bg-transparent border-none outline-none text-[24px] font-black text-white"
+                                                        value={(formData.tin || "")[i] || ""}
+                                                        onChange={(e) => {
+                                                            const current = (formData.tin || "             ").split('');
+                                                            current[i] = e.target.value;
+                                                            handleFormChange('tin', current.join(''));
+                                                        }}
+                                                    />
                                                 </div>
                                             ))}
-                                            <div className="w-6 h-[3px] bg-white opacity-40 mx-1" />
+                                            <div className="w-6 h-[2px] bg-white opacity-40 mx-1 self-center" />
                                             {Array.from({ length: 9 }).map((_, i) => (
-                                                <div key={i + 4} className="w-10 h-14 border-[3px] border-white flex items-center justify-center bg-white/5">
-                                                    <span className="text-[28px] font-black text-white">{(formData.tin || "")[i + 4]}</span>
+                                                <div key={i + 4} className="w-9 h-12 border-[2px] border-white flex items-center justify-center bg-white/5">
+                                                    <input
+                                                        type="text"
+                                                        maxLength="1"
+                                                        className="w-full h-full text-center bg-transparent border-none outline-none text-[24px] font-black text-white"
+                                                        value={(formData.tin || "")[i + 4] || ""}
+                                                        onChange={(e) => {
+                                                            const current = (formData.tin || "             ").split('');
+                                                            current[i + 4] = e.target.value;
+                                                            handleFormChange('tin', current.join(''));
+                                                        }}
+                                                    />
                                                 </div>
                                             ))}
                                         </div>
@@ -4295,16 +4586,36 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 <span className="text-white font-bold text-[20px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
                                                 <span className="text-white/40 font-black text-[14px] uppercase tracking-tighter">Tax Identification Number (TIN):</span>
                                             </div>
-                                            <div className="flex gap-1.5 h-12 items-center">
+                                            <div className="flex gap-1.5 h-12">
                                                 {Array.from({ length: 4 }).map((_, i) => (
                                                     <div key={i} className="w-9 h-12 border-[2px] border-white flex items-center justify-center bg-white/5">
-                                                        <span className="text-[24px] font-black text-white">{(formData.tin || "")[i]}</span>
+                                                        <input
+                                                            type="text"
+                                                            maxLength="1"
+                                                            className="w-full h-full text-center bg-transparent border-none outline-none text-[24px] font-black text-white"
+                                                            value={(formData.tin || "")[i] || ""}
+                                                            onChange={(e) => {
+                                                                const current = (formData.tin || "             ").split('');
+                                                                current[i] = e.target.value;
+                                                                handleFormChange('tin', current.join(''));
+                                                            }}
+                                                        />
                                                     </div>
                                                 ))}
-                                                <div className="w-5 h-[2px] bg-white opacity-40 mx-1" />
+                                                <div className="w-6 h-[2px] bg-white opacity-40 mx-1 self-center" />
                                                 {Array.from({ length: 9 }).map((_, i) => (
                                                     <div key={i + 4} className="w-9 h-12 border-[2px] border-white flex items-center justify-center bg-white/5">
-                                                        <span className="text-[24px] font-black text-white">{(formData.tin || "")[i + 4]}</span>
+                                                        <input
+                                                            type="text"
+                                                            maxLength="1"
+                                                            className="w-full h-full text-center bg-transparent border-none outline-none text-[24px] font-black text-white"
+                                                            value={(formData.tin || "")[i + 4] || ""}
+                                                            onChange={(e) => {
+                                                                const current = (formData.tin || "             ").split('');
+                                                                current[i + 4] = e.target.value;
+                                                                handleFormChange('tin', current.join(''));
+                                                            }}
+                                                        />
                                                     </div>
                                                 ))}
                                             </div>
