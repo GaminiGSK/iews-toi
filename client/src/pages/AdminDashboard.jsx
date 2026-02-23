@@ -13,9 +13,6 @@ export default function AdminDashboard() {
     const [isEditing, setIsEditing] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [formData, setFormData] = useState({ username: '', companyName: '', password: '' });
-    const [isChangingCode, setIsChangingCode] = useState(false);
-    const [newAdminCode, setNewAdminCode] = useState('');
-    const [oldAdminCode, setOldAdminCode] = useState('');
     const [message, setMessage] = useState('');
     const [activeTab, setActiveTab] = useState('user');
 
@@ -70,22 +67,7 @@ export default function AdminDashboard() {
         } catch (err) { alert('Error deleting user'); }
     };
 
-    const handleUpdateCode = async (e) => {
-        e.preventDefault();
-        if (newAdminCode.length !== 6) return alert('New code must be exactly 6 digits');
-        try {
-            const token = localStorage.getItem('token');
-            await axios.post('/api/auth/update-login-code',
-                { oldCode: oldAdminCode, newCode: newAdminCode },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            alert('Admin Login Code Updated! Please log in again.');
-            setIsChangingCode(false);
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = '/login';
-        } catch (err) { alert(err.response?.data?.message || 'Error updating code'); }
-    };
+
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -102,12 +84,12 @@ export default function AdminDashboard() {
                     <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center font-bold text-sm text-black">GK</div>
                     <div className="flex flex-col leading-none">
                         <span className="font-bold text-lg tracking-tight">GK SMART <span className="text-gray-400 font-normal">& Ai</span></span>
-                        <span className="text-[9px] text-emerald-400 font-black tracking-[0.2em] mt-0.5">CORE DEPLOYMENT v4.5.4_REL_P10</span>
+                        <span className="text-[9px] text-emerald-400 font-black tracking-[0.2em] mt-0.5">CORE DEPLOYMENT v5.12.1_IEWS_LIVE</span>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <button onClick={() => setIsChangingCode(true)} className="text-gray-500 hover:text-white transition text-[10px] font-bold uppercase tracking-widest">Admin Config</button>
+
                     <button onClick={handleLogout} className="bg-white/5 text-gray-400 border border-white/10 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-600/20 hover:text-red-400 hover:border-red-500/30 transition-all">Sign Out</button>
                 </div>
             </div>
@@ -192,29 +174,7 @@ export default function AdminDashboard() {
                 )}
             </div>
 
-            {/* ── MODAL: Change Admin Code ── */}
-            {isChangingCode && (
-                <div className="fixed inset-0 bg-black/95 backdrop-blur-xl flex items-center justify-center z-[100] animate-in fade-in duration-300">
-                    <div className="bg-slate-900 border border-white/10 p-10 rounded-[40px] shadow-2xl w-full max-w-md relative">
-                        <button onClick={() => setIsChangingCode(false)} className="absolute top-8 right-8 text-slate-500 hover:text-white transition"><X size={24} /></button>
-                        <div className="mb-8">
-                            <h2 className="text-2xl font-black text-white uppercase tracking-tight">Security Config</h2>
-                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-2">Updating Root Access Credentials</p>
-                        </div>
-                        <form onSubmit={handleUpdateCode} className="space-y-6">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Current Root Code</label>
-                                <input className="w-full bg-black/50 border border-white/5 p-5 rounded-2xl text-white font-mono tracking-[0.4em] focus:ring-2 focus:ring-blue-500/50 outline-none transition" value={oldAdminCode} onChange={e => setOldAdminCode(e.target.value)} placeholder="••••••" type="password" maxLength="6" required />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">New Access Code</label>
-                                <input className="w-full bg-black/50 border border-white/5 p-5 rounded-2xl text-white font-mono tracking-[0.4em] focus:ring-2 focus:ring-emerald-500/50 outline-none transition" value={newAdminCode} onChange={e => setNewAdminCode(e.target.value)} placeholder="••••••" type="password" maxLength="6" required />
-                            </div>
-                            <button className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-5 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] transition mt-6 active:scale-95">AUTHORIZE UPDATES</button>
-                        </form>
-                    </div>
-                </div>
-            )}
+
 
             {/* ── MODAL: Create / Edit User ── */}
             {(isCreating || isEditing) && (

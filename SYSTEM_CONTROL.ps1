@@ -8,7 +8,7 @@ $version = "v3.0 (Stability Edition)"
 $gcloudPath = "C:\Users\Gamini\AppData\Local\Google\Cloud SDK\google-cloud-sdk\bin\gcloud.cmd"
 $dockerPath = "C:\Program Files\Docker\Docker\resources\bin\docker.exe"
 $projectId = "ambient-airlock-286506"
-$serviceName = "iews-toi"
+$serviceName = "gksmart-ai-app"
 $region = "asia-southeast1"
 
 # Auto-detect tool paths if not in PATH
@@ -153,7 +153,11 @@ function Invoke-CloudDeploy {
         --allow-unauthenticated `
         --quiet
 
-    Write-Host "[3/3] Syncing Firebase Hosting Config..." -ForegroundColor Cyan
+    Write-Host "[3/4] Syncing Firebase Hosting Config..." -ForegroundColor Cyan
+    Write-Host "[Local] Building Frontend for Firebase..." -ForegroundColor Gray
+    Set-Location client
+    npm run build
+    Set-Location ..
     npx firebase-tools deploy --only hosting --project $projectId --non-interactive
 
     if ($LASTEXITCODE -ne 0) {

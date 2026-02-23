@@ -133,29 +133,7 @@ router.delete('/users/:id', async (req, res) => {
 
 // --- 3. Security Settings ---
 
-// Update Own Login Code (Self-Service)
-router.post('/update-login-code', auth, async (req, res) => {
-    const { oldCode, newCode } = req.body;
 
-    if (!newCode || newCode.length !== 6) return res.status(400).json({ message: 'New code must be 6 digits' });
-
-    try {
-        const user = await User.findById(req.user.id);
-        if (!user) return res.status(404).json({ message: 'Unauthorized' });
-
-        // Force check old code for security
-        if (user.loginCode !== oldCode) {
-            return res.status(400).json({ message: 'Validation Failed: Current code is incorrect' });
-        }
-
-        user.loginCode = newCode;
-        await user.save();
-
-        res.json({ message: 'Success: Security credentials updated' });
-    } catch (err) {
-        res.status(500).json({ message: 'Server error' });
-    }
-});
 
 router.post('/gate-verify', async (req, res) => {
     const { code } = req.body;

@@ -4,9 +4,9 @@
 # Any deviation from this is strictly prohibited.
 
 ACTIVE_PROJECT_ID=ambient-airlock-286506
-ACTIVE_SERVICE_NAME=iews-toi
+ACTIVE_SERVICE_NAME=gksmart-ai-app
 ACTIVE_REGION=asia-southeast1
-ACTIVE_URL=https://iews-toi-588941282431.asia-southeast1.run.app
+ACTIVE_URL=https://gksmart-ai-app.web.app
 
 # BACKUP_911_REVISION: The last known safe state for emergency restoration.
 BACKUP_911_REVISION=iews-toi-00514-hmb

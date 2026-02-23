@@ -51,7 +51,7 @@ const INITIAL_SCHEMA = {
             title: "Section 1: Taxpayer Identification",
             fields: [
                 { key: "enterpriseName", label: "Enterprise Name", type: "text" },
-                { key: "tin", label: "Tax Identification Number (TIN)", type: "boxes", length: 9, format: "1-8" },
+                { key: "tin", label: "Tax Identification Number (TIN)", type: "boxes", length: 13, format: "4-9" },
                 { key: "registeredAddress", label: "Address", type: "text" }
             ]
         },
@@ -107,6 +107,154 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
             });
         }
     };
+
+    /**
+     * CORE CALCULATION ENGINE
+     * Performs cascading calculations across all pages
+     */
+    useEffect(() => {
+        const calculate = () => {
+            const updates = {};
+            const val = (k) => {
+                const v = formData[k];
+                if (v === undefined || v === null || v === '') return 0;
+                return parseFloat(v.toString().replace(/,/g, '')) || 0;
+            };
+
+            const setIfChanged = (key, newVal) => {
+                const formatted = newVal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                if (formData[key] !== formatted) {
+                    updates[key] = formatted;
+                }
+            };
+
+            // --- PAGE 7: COGS (NON-PRODUCTION) ---
+            const d3_n = val('d4_n') + val('d5_n') + val('d6_n');
+            setIfChanged('d3_n', d3_n);
+            const d7_n = val('d1_n') + val('d2_n') + val('d3_n');
+            setIfChanged('d7_n', d7_n);
+            const d9_n = d7_n - val('d8_n');
+            setIfChanged('d9_n', d9_n);
+
+            // --- PAGE 10: INCOME TAX ADJUSTMENTS ---
+            // E18 = sum(E2:E17)
+            let e18_total = 0;
+            for (let i = 2; i <= 17; i++) e18_total += val(`e${i}_amount`);
+            setIfChanged('e18_amount', e18_total);
+
+            // E25 = sum(E19:E24)
+            let e25_total = 0;
+            for (let i = 19; i <= 24; i++) e25_total += val(`e${i}_amount`);
+            setIfChanged('e25_amount', e25_total);
+
+            // E31 = sum(E28:E30)
+            const e31_total = val('e28_amount') + val('e29_amount') + val('e30_amount');
+            setIfChanged('e31_amount', e31_total);
+
+            // E35 = sum(E32:E34)
+            const e35_total = val('e32_amount') + val('e33_amount') + val('e34_amount');
+            setIfChanged('e35_amount', e35_total);
+
+            // E36 = E1 + E18 + E25 - E31 - E35
+            const e36 = val('e1_amount') + e18_total + e25_total - e31_total - e35_total;
+            setIfChanged('e36_amount', e36);
+
+            // --- PAGE 11: CHARITABLE CONTRIBUTIONS ---
+            // F1 = E36
+            setIfChanged('f1', e36);
+            const f3 = val('f1') + val('f2');
+            setIfChanged('f3', f3);
+            const f4 = f3 * 0.05;
+            setIfChanged('f4', f4);
+            const f5 = Math.min(f4, val('f2'));
+            setIfChanged('f5', f5);
+            const f6 = val('f2') - f5;
+            setIfChanged('f6', f6);
+
+            // --- BACK TO PAGE 10 ---
+            // E37 = F6
+            setIfChanged('e37_amount', f6);
+            // E38 = E36 + E37
+            const e38 = e36 + f6;
+            setIfChanged('e38_amount', e38);
+
+            // --- PAGE 11: INTEREST EXPENSES ---
+            // G1 = E38
+            setIfChanged('g1', e38);
+            const g4 = Math.max(0, val('g1') + val('g2') - val('g3'));
+            setIfChanged('g4', g4);
+            const g5 = g4 * 0.5;
+            setIfChanged('g5', g5);
+            const g6 = val('g3'); // G6 = G3
+            setIfChanged('g6', g6);
+            const g7 = g5 + g6; // G7 = G5 + G6
+            setIfChanged('g7', g7);
+            const g8 = Math.max(0, val('g2') - g7);
+            setIfChanged('g8', g8);
+
+            // --- MORE PAGE 10 ---
+            // E39 = G8
+            setIfChanged('e39_amount', g8);
+            // E40 = E38 + E39
+            const e40 = e38 + g8;
+            setIfChanged('e40_amount', e40);
+
+            // E42 = E40 - E41
+            const e42 = e40 - val('e41_amount');
+            setIfChanged('e42_amount', e42);
+
+            // E43 (Tax at 20%)
+            const e43 = Math.max(0, e42 * 0.20);
+            setIfChanged('e43_amount', e43);
+
+            // E45 = E43 + E44
+            const e45 = e43 + val('e44_amount');
+            setIfChanged('e45_amount', e45);
+
+            // E50 = max(0, E45 - E49)
+            const e50 = Math.max(0, e45 - val('e49_amount'));
+            setIfChanged('e50_amount', e50);
+
+            // E51 = Minimum Tax (Usually 1% of turnover E1 + adjustments?)
+            // For now, assume it's an input or simple 1% of val('e1_amount') if we want to be fancy.
+            // But let's leave it as input for now unless requested.
+
+            // E59 = max(E50, val('e51_amount'))
+            const e59 = Math.max(e50, val('e51_amount'));
+            setIfChanged('e59_amount', e59);
+
+            // --- PAGE 12: INTEREST CARRY FORWARD ---
+            const g7_g2_diff = Math.max(0, g7 - val('g2'));
+            let totalUtilized = 0;
+            if (g7_g2_diff > 0) {
+                // Simple logic: utilize from oldest years first if we want, 
+                // but for now just calculate the total possible utilization for current period
+                const totalAvailable = val('g9_0') + val('g9_1') + val('g9_2') + val('g9_3') + val('g9_4');
+                totalUtilized = Math.min(totalAvailable, g7_g2_diff);
+                setIfChanged('g12_5', totalUtilized);
+            } else {
+                setIfChanged('g12_5', 0);
+            }
+
+            setIfChanged('g11_5', g8); // G8 from Page 11 is the newly disallowed amount
+
+            for (let i = 0; i <= 5; i++) {
+                const g13 = val(`g9_${i}`) + val(`g10_${i}`) + val(`g11_${i}`) - val(`g12_${i}`);
+                setIfChanged(`g13_${i}`, g13);
+            }
+
+            if (Object.keys(updates).length > 0) {
+                setFormData(prev => ({ ...prev, ...updates }));
+                // Broadcast updates immediately
+                if (socket) {
+                    socket.emit('workspace:update_data', { packageId, update: updates });
+                }
+            }
+        };
+
+        const timer = setTimeout(calculate, 600);
+        return () => clearTimeout(timer);
+    }, [formData, socket, packageId]);
 
     return (
         <div className="min-h-screen bg-[#020617] text-slate-200 flex flex-col font-sans selection:bg-rose-500/30">
@@ -192,8 +340,49 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                         <div className="animate-fade-in relative grid grid-cols-2 gap-12">
                             {/* LEFT COLUMN */}
                             <div className="flex flex-col">
-                                <div className="flex justify-between items-start border-b border-white/10 pb-8">
-                                    <div className="flex flex-col gap-3">
+                                <div className="flex justify-between items-start border-b border-white/10 pb-8 relative">
+                                    {/* TIN HEADER ANCHORED TOP-LEFT */}
+                                    <div className="absolute -top-4 -left-2 flex items-center gap-4 bg-[#020617] pr-6 py-2 z-10">
+                                        <div className="flex flex-col">
+                                            <span className="text-[13px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">Tax Identification Number (TIN)</span>
+                                        </div>
+                                        <div className="flex gap-1 p-1 bg-black/40 rounded-lg border border-white/10 shadow-inner scale-90 origin-left">
+                                            {Array.from({ length: 4 }).map((_, i) => (
+                                                <div key={i} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)] overflow-hidden">
+                                                    <input
+                                                        type="text"
+                                                        maxLength="1"
+                                                        className="w-full h-full text-center bg-transparent border-none outline-none text-lg font-black text-white"
+                                                        value={(formData.tin || "")[i] || ""}
+                                                        onChange={(e) => {
+                                                            const current = (formData.tin || "             ").split('');
+                                                            current[i] = e.target.value;
+                                                            handleFormChange('tin', current.join(''));
+                                                        }}
+                                                    />
+                                                </div>
+                                            ))}
+                                            <div className="w-4 h-[2px] bg-white opacity-40 mx-1 self-center" />
+                                            {Array.from({ length: 9 }).map((_, i) => (
+                                                <div key={i + 4} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)] overflow-hidden">
+                                                    <input
+                                                        type="text"
+                                                        maxLength="1"
+                                                        className="w-full h-full text-center bg-transparent border-none outline-none text-lg font-black text-white"
+                                                        value={(formData.tin || "")[i + 4] || ""}
+                                                        onChange={(e) => {
+                                                            const current = (formData.tin || "             ").split('');
+                                                            current[i + 4] = e.target.value;
+                                                            handleFormChange('tin', current.join(''));
+                                                        }}
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col gap-3 mt-16">
                                         <h2 className="text-white font-bold text-3xl leading-snug max-w-xl" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
                                             លិខិតប្រកាសពន្ធលើចំណូលប្រចាំឆ្នាំចំពោះសហគ្រាសជាប់ពន្ធលើចំណូលតាមរបបស្វ័យប្រកាស
                                         </h2>
@@ -201,7 +390,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                             Annual Income Tax Return <span className="text-slate-500 font-medium lowercase ml-1">for the year ended</span>
                                         </h1>
                                     </div>
-                                    <div className="flex gap-2 bg-black/30 p-2 rounded-xl border border-white/5 shadow-inner">
+                                    <div className="flex gap-2 bg-black/30 p-2 rounded-xl border border-white/5 shadow-inner mr-4 -ml-4">
                                         {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
                                             <div key={i} className="w-10 h-14 border border-white/10 flex items-center justify-center bg-slate-800/50 rounded-lg shadow-sm">
                                                 <input
@@ -241,21 +430,21 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                         <div className="text-slate-700 text-sm">&#9654;</div>
                                         {/* START DATE */}
                                         <div className="flex items-center gap-6">
-                                            <div className="flex flex-col">
+                                            <div className="flex flex-col min-w-[60px]">
                                                 <span className="text-white font-bold text-lg tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ពីថ្ងៃ</span>
                                                 <span className="text-slate-500 text-[11px] font-black uppercase tracking-wider">From</span>
                                             </div>
-                                            <div className="flex gap-4 p-1.5 bg-black/20 rounded-lg border border-white/5">
+                                            <div className="flex gap-2 p-1 bg-black/20 rounded-lg border border-white/5">
                                                 {[
-                                                    { start: 0, len: 2 }, // Day
-                                                    { start: 2, len: 2 }, // Month
-                                                    { start: 4, len: 4 }  // Year
+                                                    { start: 0, len: 2, label: "Day" },
+                                                    { start: 2, len: 2, label: "Month" },
+                                                    { start: 4, len: 4, label: "Year" }
                                                 ].map((section, sIdx) => (
-                                                    <div key={sIdx} className="flex gap-1">
+                                                    <div key={sIdx} className="flex gap-0.5 items-center">
                                                         {Array.from({ length: section.len }).map((_, i) => {
                                                             const charIdx = section.start + i;
                                                             return (
-                                                                <div key={i} className="w-9 h-11 border border-white/10 flex items-center justify-center bg-slate-800/80 rounded shadow-sm">
+                                                                <div key={i} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/80 rounded shadow-sm">
                                                                     <input type="text" maxLength="1" className="w-full h-full text-center text-white bg-transparent outline-none font-black text-lg" value={formData.fromDate?.[charIdx] || ''} onChange={(e) => {
                                                                         const newDate = (formData.fromDate || "01012026").split('');
                                                                         newDate[charIdx] = e.target.value;
@@ -264,28 +453,29 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                                 </div>
                                                             );
                                                         })}
+                                                        {sIdx < 2 && <span className="mx-1 text-white/20">/</span>}
                                                     </div>
                                                 ))}
                                             </div>
                                         </div>
                                     </div>
                                     {/* END DATE ROW */}
-                                    <div className="flex items-center gap-10">
-                                        <div className="flex flex-col">
+                                    <div className="flex items-center gap-6">
+                                        <div className="flex flex-col min-w-[60px]">
                                             <span className="text-white font-bold text-lg tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ដល់ថ្ងៃ</span>
                                             <span className="text-slate-500 text-[11px] font-black uppercase tracking-wider">Until</span>
                                         </div>
-                                        <div className="flex gap-4 p-1.5 bg-black/20 rounded-lg border border-white/5 ml-4">
+                                        <div className="flex gap-2 p-1 bg-black/20 rounded-lg border border-white/5">
                                             {[
-                                                { start: 0, len: 2 }, // Day
-                                                { start: 2, len: 2 }, // Month
-                                                { start: 4, len: 4 }  // Year
+                                                { start: 0, len: 2, label: "Day" },
+                                                { start: 2, len: 2, label: "Month" },
+                                                { start: 4, len: 4, label: "Year" }
                                             ].map((section, sIdx) => (
-                                                <div key={sIdx} className="flex gap-1">
+                                                <div key={sIdx} className="flex gap-0.5 items-center">
                                                     {Array.from({ length: section.len }).map((_, i) => {
                                                         const charIdx = section.start + i;
                                                         return (
-                                                            <div key={i} className="w-9 h-11 border border-white/10 flex items-center justify-center bg-slate-800/80 rounded shadow-sm">
+                                                            <div key={i} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/80 rounded shadow-sm">
                                                                 <input type="text" maxLength="1" className="w-full h-full text-center text-white bg-transparent outline-none font-black text-lg" value={formData.untilDate?.[charIdx] || ''} onChange={(e) => {
                                                                     const newDate = (formData.untilDate || "31122026").split('');
                                                                     newDate[charIdx] = e.target.value;
@@ -294,6 +484,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                             </div>
                                                         );
                                                     })}
+                                                    {sIdx < 2 && <span className="mx-1 text-white/20">/</span>}
                                                 </div>
                                             ))}
                                         </div>
@@ -360,26 +551,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
 
                             {/* RIGHT COLUMN */}
                             <div className="flex flex-col border-l border-white/10 pl-12">
-                                {/* STANDARDIZED TIN HEADER FOR PAGE 1 */}
-                                <div className="mb-10 flex items-center gap-6 bg-slate-900 border border-white/10 p-5 rounded-2xl shadow-2xl">
-                                    <div className="flex flex-col items-end">
-                                        <span className="text-base font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
-                                        <span className="text-[10px] font-black text-slate-500 uppercase whitespace-nowrap">Tax Identification Number (TIN):</span>
-                                    </div>
-                                    <div className="flex gap-1.5 p-1 bg-black/20 rounded-lg border border-white/5">
-                                        {Array.from({ length: 3 }).map((_, i) => (
-                                            <div key={i} className="w-9 h-12 border border-white/10 flex items-center justify-center bg-slate-800/80 rounded shadow-sm">
-                                                <span className="text-xl font-black text-white">{(formData.tin || "")[i]}</span>
-                                            </div>
-                                        ))}
-                                        <div className="w-5 h-[3px] bg-white opacity-40 mx-1 self-center" />
-                                        {Array.from({ length: 9 }).map((_, i) => (
-                                            <div key={i + 3} className="w-9 h-12 border border-white/10 flex items-center justify-center bg-slate-800/80 rounded shadow-sm">
-                                                <span className="text-xl font-black text-white">{(formData.tin || "")[i + 3]}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
+                                {/* REMOVED FOR P.1 AS IT MOVED TO TOP-LEFT */}
 
                                 {/* SECTION: ACCOUNTING RECORDS */}
                                 <div className="border border-white/10 overflow-hidden bg-slate-900/40 rounded-2xl shadow-2xl backdrop-blur-sm">
@@ -573,9 +745,9 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                     </div>
                                 </div>
 
-                                <div className="mt-16 flex flex-col items-center opacity-30 group cursor-default">
+                                <div className="mt-16 flex flex-col items-center group cursor-default">
                                     <div className="w-px bg-slate-700 h-12 group-hover:h-20 transition-all duration-700" />
-                                    <p className="text-slate-500 font-black text-[10px] uppercase tracking-[0.8em] mt-4 group-hover:tracking-[1.2em] transition-all duration-700">Blueprint Phase Complete</p>
+                                    <p className="text-slate-500 font-black text-[10px] uppercase tracking-[0.8em] mt-4 group-hover:tracking-[1.2em] transition-all duration-700">Page 1 Version 1.0.1 - Blue Print</p>
                                 </div>
                             </div>
                         </div>
@@ -583,7 +755,27 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
 
                     {/* PAGE 2 CONTENT */}
                     {activePage === 2 && (
-                        <div className="animate-fade-in relative px-2 py-8 grid grid-cols-2 gap-12 items-start">
+                        <div className="animate-fade-in relative px-2 pt-16 pb-8 grid grid-cols-2 gap-12 items-start">
+                            {/* TIN HEADER ANCHORED TOP-LEFT (Match P1) */}
+                            <div className="absolute top-2 left-2 flex items-center gap-4 bg-[#020617] pr-6 py-2 z-10">
+                                <div className="flex flex-col">
+                                    <span className="text-[13px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">Tax Identification Number (TIN)</span>
+                                </div>
+                                <div className="flex gap-1 p-1 bg-black/40 rounded-lg border border-white/10 shadow-inner scale-90 origin-left">
+                                    {Array.from({ length: 4 }).map((_, i) => (
+                                        <div key={i} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)]">
+                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i]}</span>
+                                        </div>
+                                    ))}
+                                    <div className="w-4 h-[2px] bg-white opacity-40 mx-1 self-center" />
+                                    {Array.from({ length: 9 }).map((_, i) => (
+                                        <div key={i + 4} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)]">
+                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i + 4]}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                             {/* LEFT COLUMN: CAPITAL & SHAREHOLDERS */}
                             <div className="flex flex-col">
                                 {/* CAPITAL CONTRIBUTIONS BOXED HEADER */}
@@ -608,30 +800,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                         ))}
                                     </div>
                                 </div>
-                                {/* STANDARDIZED TIN SECTION FOR PAGE 2 */}
-                                <div className="w-full mt-8 flex items-center gap-8 bg-slate-900/60 p-5 border border-white/10 rounded-2xl shadow-xl backdrop-blur-sm">
-                                    <div className="flex flex-col items-end">
-                                        <span className="text-white font-bold text-lg tracking-tight leading-none mb-1" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
-                                        <span className="text-slate-500 text-[10px] font-black uppercase tracking-wider leading-none">Tax Identification Number (TIN):</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 ml-auto p-1.5 bg-black/20 rounded-xl border border-white/5 shadow-inner">
-                                        <div className="flex gap-1.5">
-                                            {Array.from({ length: 3 }).map((_, i) => (
-                                                <div key={i} className="w-9 h-12 border border-white/10 flex items-center justify-center bg-slate-800/80 rounded shadow-sm">
-                                                    <span className="text-xl font-black text-white">{(formData.tin || "")[i]}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                        <div className="w-5 h-[3px] bg-white opacity-40 mx-1 self-center" />
-                                        <div className="flex gap-1.5">
-                                            {Array.from({ length: 9 }).map((_, i) => (
-                                                <div key={i + 3} className="w-9 h-12 border border-white/10 flex items-center justify-center bg-slate-800/80 rounded shadow-sm">
-                                                    <span className="text-xl font-black text-white">{(formData.tin || "")[i + 3]}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
+                                {/* REMOVED AS IT MOVED TO TOP-LEFT */}
 
                                 {/* SHAREHOLDER TABLE SECTION */}
                                 <div className="w-full mt-10 border border-white/10 overflow-hidden bg-slate-900/40 rounded-2xl shadow-2xl backdrop-blur-sm">
@@ -651,8 +820,8 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                         </div>
                                         <div className="flex-1 flex flex-col">
                                             <div className="h-[40%] border-b border-white/10 flex flex-col items-center justify-center py-1 bg-white/[0.02]">
-                                                <span className="text-white font-bold text-sm leading-none mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ភាគហ៊ុន ឬចំណែកដែលមាន</span>
-                                                <span className="text-slate-500 text-[9px] font-black uppercase tracking-wider">Shares Held</span>
+                                                <span className="text-white font-bold text-xs leading-none mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ភាគហ៊ុន ឬចំណែកដែលមាន</span>
+                                                <span className="text-slate-500 text-[8px] font-black uppercase tracking-wider">Shares Held</span>
                                             </div>
                                             <div className="flex-1 flex">
                                                 <div className="w-1/2 border-r border-white/10 flex flex-col">
@@ -843,7 +1012,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                         </div>
                                     </div>
                                     {[1, 2, 3, 4, 5].map((r) => (
-                                        <div key={`s2-${r}`} className="flex border-b border-white/10 h-9 hover:bg-white/[0.04] transition-colors">
+                                        <div key={`s2-${r}`} className="flex border-b border-white/10 h-10 hover:bg-white/[0.04] transition-colors">
                                             <div className="w-[30%] border-r border-white/10 px-4 flex items-center italic text-[10px] text-slate-400">Entry {r}</div>
                                             <div className="w-[18%] border-r border-white/10 p-1"><input type="text" className="w-full h-full bg-transparent outline-none text-white text-xs text-center" /></div>
                                             <div className="w-[10%] border-r border-white/10 p-1"><input type="text" className="w-full h-full bg-transparent outline-none text-white text-xs text-center" placeholder="0" /></div>
@@ -873,10 +1042,14 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                     </div>
                                 </div>
 
-                                {/* BOTTOM DECORATION */}
+                                {/* WATERMARK: CENSUS SCHEDULE LOCKED */}
+                                <div className="absolute top-[40%] -right-20 rotate-90 pointer-events-none opacity-5">
+                                    <h1 className="text-[120px] font-black tracking-[0.2em] text-white whitespace-nowrap">LOCKED</h1>
+                                </div>
+
                                 <div className="mt-20 flex flex-col items-center opacity-10">
                                     <div className="w-[1px] bg-white h-20" />
-                                    <p className="text-white font-mono text-[22px] uppercase tracking-[1em] mt-8">Employee Census Schedule Locked</p>
+                                    <p className="text-white font-mono text-[22px] uppercase tracking-[1em] mt-8">Schedule Finalized</p>
                                 </div>
                             </div>
                         </div>
@@ -884,7 +1057,27 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
 
                     {/* PAGE 3 CONTENT - BALANCE SHEET ASSETS */}
                     {activePage === 3 && (
-                        <div className="animate-fade-in relative px-4 py-8 flex flex-col items-center">
+                        <div className="animate-fade-in relative px-4 pt-16 pb-8 flex flex-col items-center">
+                            {/* TIN HEADER ANCHORED TOP-LEFT (Match P1) */}
+                            <div className="absolute top-2 left-6 flex items-center gap-4 bg-[#020617] pr-6 py-2 z-20">
+                                <div className="flex flex-col">
+                                    <span className="text-[13px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">Tax Identification Number (TIN)</span>
+                                </div>
+                                <div className="flex gap-1 p-1 bg-black/40 rounded-lg border border-white/10 shadow-inner scale-90 origin-left">
+                                    {Array.from({ length: 4 }).map((_, i) => (
+                                        <div key={i} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)]">
+                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i]}</span>
+                                        </div>
+                                    ))}
+                                    <div className="w-4 h-[2px] bg-white opacity-40 mx-1 self-center" />
+                                    {Array.from({ length: 9 }).map((_, i) => (
+                                        <div key={i + 4} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)]">
+                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i + 4]}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                             {/* PAGE HEADER */}
                             <div className="w-full max-w-[1400px] bg-slate-900/40 backdrop-blur-md border border-white/10 p-6 rounded-2xl shadow-2xl mb-8">
                                 <div className="flex justify-between items-start">
@@ -892,33 +1085,15 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                         <h2 className="text-3xl font-bold text-white leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>តារាងតុល្យការគិតត្រឹមការិយបរិច្ឆេទ</h2>
                                         <h1 className="text-slate-500 font-bold text-xs uppercase tracking-[0.2em]">BALANCE SHEET AS AT</h1>
                                     </div>
-                                    <div className="flex flex-col items-end gap-4">
+                                    <div className="flex flex-col items-end gap-2">
                                         <div className="flex gap-1">
                                             {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
-                                                <div key={i} className="w-10 h-12 border-[2px] border-white flex items-center justify-center bg-white/10">
-                                                    <span className="text-xl font-black text-white">{char}</span>
+                                                <div key={i} className="w-10 h-10 border border-white/20 flex items-center justify-center bg-white/5 rounded">
+                                                    <span className="text-lg font-black text-white">{char}</span>
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="flex items-center gap-6 bg-slate-950 p-6 border-[3px] border-white shadow-2xl">
-                                            <div className="flex flex-col items-end">
-                                                <span className="text-[28px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
-                                                <span className="text-[22px] font-black text-white/50 uppercase whitespace-nowrap">Tax Identification Number (TIN):</span>
-                                            </div>
-                                            <div className="flex gap-2">
-                                                {Array.from({ length: 3 }).map((_, i) => (
-                                                    <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
-                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "")[i]}</span>
-                                                    </div>
-                                                ))}
-                                                <div className="w-8 h-[3px] bg-white opacity-40 mx-2 self-center" />
-                                                {Array.from({ length: 9 }).map((_, i) => (
-                                                    <div key={i + 3} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
-                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "")[i + 3]}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
+                                        <div className="text-slate-500 text-[9px] font-bold uppercase tracking-wider">Accounting Year</div>
                                     </div>
                                 </div>
                             </div>
@@ -971,10 +1146,10 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 </div>
                                                 <div className="w-[10%] border-r border-white/10 flex items-center justify-center text-[9px] font-black text-slate-700">{row.ref}</div>
                                                 <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-4 font-black text-xs">
-                                                    {formData[row.key + '_n'] || '-'}
+                                                    <input type="text" className="w-full bg-transparent text-right outline-none text-white" value={formData[row.key + '_n'] || ""} onChange={(e) => handleFormChange(row.key + '_n', e.target.value)} placeholder="0.00" />
                                                 </div>
                                                 <div className="flex-1 flex items-center justify-end px-4 font-black text-xs text-white/50">
-                                                    {formData[row.key + '_n1'] || '-'}
+                                                    <input type="text" className="w-full bg-transparent text-right outline-none" value={formData[row.key + '_n1'] || ""} onChange={(e) => handleFormChange(row.key + '_n1', e.target.value)} placeholder="0.00" />
                                                 </div>
                                             </div>
                                         ))}
@@ -1031,7 +1206,27 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
 
                     {/* PAGE 4 CONTENT - BALANCE SHEET LIABILITIES & EQUITY */}
                     {activePage === 4 && (
-                        <div className="animate-fade-in relative px-4 py-8 flex flex-col items-center">
+                        <div className="animate-fade-in relative px-4 pt-16 pb-8 flex flex-col items-center">
+                            {/* TIN HEADER ANCHORED TOP-LEFT (Match P1) */}
+                            <div className="absolute top-2 left-6 flex items-center gap-4 bg-[#020617] pr-6 py-2 z-20">
+                                <div className="flex flex-col">
+                                    <span className="text-[13px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">Tax Identification Number (TIN)</span>
+                                </div>
+                                <div className="flex gap-1 p-1 bg-black/40 rounded-lg border border-white/10 shadow-inner scale-90 origin-left">
+                                    {Array.from({ length: 4 }).map((_, i) => (
+                                        <div key={i} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)]">
+                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i]}</span>
+                                        </div>
+                                    ))}
+                                    <div className="w-4 h-[2px] bg-white opacity-40 mx-1 self-center" />
+                                    {Array.from({ length: 9 }).map((_, i) => (
+                                        <div key={i + 4} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)]">
+                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i + 4]}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                             {/* PAGE HEADER */}
                             <div className="w-full max-w-[1400px] bg-slate-900/40 backdrop-blur-md border border-white/10 p-6 rounded-2xl shadow-2xl mb-8">
                                 <div className="flex justify-between items-start">
@@ -1042,35 +1237,17 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                     <div className="flex flex-col items-end gap-2">
                                         <div className="flex gap-1">
                                             {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
-                                                <div key={i} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/80 rounded shadow-sm">
-                                                    <span className="text-xl font-black text-white">{char}</span>
+                                                <div key={i} className="w-10 h-10 border border-white/20 flex items-center justify-center bg-white/5 rounded">
+                                                    <span className="text-lg font-black text-white">{char}</span>
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="mt-2 flex items-center gap-6 bg-slate-900/80 p-4 border border-white/10 rounded-xl shadow-xl backdrop-blur-sm">
-                                            <div className="flex flex-col items-end">
-                                                <span className="text-sm font-bold text-white" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
-                                                <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider">Tax Identification Number (TIN):</span>
-                                            </div>
-                                            <div className="flex gap-1.5 p-1 bg-black/20 rounded-lg border border-white/5">
-                                                {Array.from({ length: 3 }).map((_, i) => (
-                                                    <div key={i} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800 rounded shadow-inner">
-                                                        <span className="text-lg font-black text-white">{(formData.tin || "")[i]}</span>
-                                                    </div>
-                                                ))}
-                                                <div className="w-4 h-[3px] bg-white opacity-40 mx-1 self-center" />
-                                                {Array.from({ length: 9 }).map((_, i) => (
-                                                    <div key={i + 3} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800 rounded shadow-inner">
-                                                        <span className="text-lg font-black text-white">{(formData.tin || "")[i + 3]}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
+                                        <div className="text-slate-500 text-[9px] font-bold uppercase tracking-wider">Accounting Year</div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="w-full max-w-[1400px] grid grid-cols-2 gap-10 items-start">
+                            <div className="w-full max-w-[1400px] grid grid-cols-2 gap-[40px] items-start">
                                 {/* LEFT COLUMN: EQUITY */}
                                 <div className="flex flex-col gap-6">
                                     <div className="border border-white/10 overflow-hidden text-white bg-slate-900/40 rounded-2xl shadow-2xl backdrop-blur-sm">
@@ -1119,8 +1296,8 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                     <div className="border border-white/10 overflow-hidden text-white bg-slate-900/40 rounded-2xl shadow-xl backdrop-blur-sm">
                                         <div className="flex bg-rose-500/5 border-b border-white/10 h-11 items-center">
                                             <div className="w-[50%] border-r border-white/10 px-4">
-                                                <span className="font-bold text-xs" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បំណុលមិនចរន្ត [A37 = សរុប(A38:A41)]</span>
-                                                <span className="text-[8px] block font-black uppercase text-slate-500 tracking-tight">Non-Current Liabilities</span>
+                                                <span className="font-bold text-[11px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បំណុលមិនចរន្ត [A37 = សរុប(A38:A41)]</span>
+                                                <span className="text-[7.5px] block font-black uppercase text-slate-500 tracking-tight">Non-Current Liabilities</span>
                                             </div>
                                             <div className="w-[10%] border-r border-white/10 flex items-center justify-center font-black text-[10px] text-slate-500">REF</div>
                                             <div className="w-[20%] border-r border-white/10 flex items-center justify-center text-[9px] font-bold text-slate-400">N</div>
@@ -1205,7 +1382,27 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
 
                     {/* PAGE 5 CONTENT - PROFIT & LOSS */}
                     {activePage === 5 && (
-                        <div className="animate-fade-in relative px-4 py-8 flex flex-col items-center">
+                        <div className="animate-fade-in relative px-4 pt-16 pb-8 flex flex-col items-center">
+                            {/* TIN HEADER ANCHORED TOP-LEFT (Match P1) */}
+                            <div className="absolute top-2 left-6 flex items-center gap-4 bg-[#020617] pr-6 py-2 z-20">
+                                <div className="flex flex-col">
+                                    <span className="text-[13px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">Tax Identification Number (TIN)</span>
+                                </div>
+                                <div className="flex gap-1 p-1 bg-black/40 rounded-lg border border-white/10 shadow-inner scale-90 origin-left">
+                                    {Array.from({ length: 4 }).map((_, i) => (
+                                        <div key={i} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)]">
+                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i]}</span>
+                                        </div>
+                                    ))}
+                                    <div className="w-4 h-[2px] bg-white opacity-40 mx-1 self-center" />
+                                    {Array.from({ length: 9 }).map((_, i) => (
+                                        <div key={i + 4} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)]">
+                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i + 4]}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                             {/* PAGE HEADER */}
                             <div className="w-full max-w-[1400px] bg-slate-900/40 backdrop-blur-md border border-white/10 p-6 rounded-2xl shadow-2xl mb-8">
                                 <div className="flex justify-between items-start">
@@ -1216,35 +1413,17 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                     <div className="flex flex-col items-end gap-2">
                                         <div className="flex gap-1">
                                             {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
-                                                <div key={i} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/80 rounded shadow-sm">
-                                                    <span className="text-xl font-black text-white">{char}</span>
+                                                <div key={i} className="w-10 h-10 border border-white/20 flex items-center justify-center bg-white/5 rounded">
+                                                    <span className="text-lg font-black text-white">{char}</span>
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="mt-2 flex items-center gap-6 bg-slate-900/80 p-4 border border-white/10 rounded-xl shadow-xl backdrop-blur-sm">
-                                            <div className="flex flex-col items-end">
-                                                <span className="text-sm font-bold text-white" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
-                                                <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider">Tax Identification Number (TIN):</span>
-                                            </div>
-                                            <div className="flex gap-1.5 p-1 bg-black/20 rounded-lg border border-white/5">
-                                                {Array.from({ length: 3 }).map((_, i) => (
-                                                    <div key={i} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800 rounded shadow-inner">
-                                                        <span className="text-lg font-black text-white">{(formData.tin || "")[i]}</span>
-                                                    </div>
-                                                ))}
-                                                <div className="w-4 h-[3px] bg-white opacity-40 mx-1 self-center" />
-                                                {Array.from({ length: 9 }).map((_, i) => (
-                                                    <div key={i + 3} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800 rounded shadow-inner">
-                                                        <span className="text-lg font-black text-white">{(formData.tin || "")[i + 3]}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
+                                        <div className="text-slate-500 text-[9px] font-bold uppercase tracking-wider">Tax Period Year</div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="w-full max-w-[1400px] grid grid-cols-2 gap-10 items-start">
+                            <div className="w-full max-w-[1400px] mt-16 grid grid-cols-2 gap-[50px] items-start">
                                 {/* LEFT COLUMN: REVENUES & COGS */}
                                 <div className="flex flex-col gap-6">
                                     {/* SECTION III: OPERATING REVENUES */}
@@ -1263,17 +1442,19 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                             { ref: "B 2", kh: "ការលក់ទំនិញ", en: "Sales of goods", key: "b2" },
                                             { ref: "B 3", kh: "ការផ្គត់ផ្គង់សេវា", en: "Supplies of services", key: "b3" }
                                         ].map((row, idx) => (
-                                            <div key={idx} className="flex border-b border-white/10 h-10 items-center last:border-0 hover:bg-white/[0.04] transition-colors">
+                                            <div key={idx} className="flex border-b border-white/10 h-11 items-center last:border-0 hover:bg-white/[0.04] transition-colors">
                                                 <div className="w-[50%] border-r border-white/10 px-4 flex flex-col">
                                                     <span className="font-bold text-[11px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
                                                     <span className="text-[8px] font-bold text-slate-500 uppercase">{row.en}</span>
                                                 </div>
-                                                <div className="w-[10%] border-r border-white/10 flex items-center justify-center text-[9px] font-black text-slate-700">{row.ref}</div>
-                                                <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-4 font-black">
-                                                    {formData[row.key + '_n'] || '-'}
+                                                <div className="w-[10%] border-r border-white/10 flex items-center justify-center text-[9px] font-black text-slate-700 bg-white/5 h-full">{row.ref}</div>
+                                                <div className="w-[20%] border-r border-white/10 flex items-center justify-center gap-1.5 px-3 font-black text-xs">
+                                                    <span className="flex-1 text-right">{formData[row.key + '_n'] || '0.00'}</span>
+                                                    <span className="text-[10px] text-slate-500">$</span>
                                                 </div>
-                                                <div className="flex-1 flex items-center justify-end px-4 font-black text-white/50">
-                                                    {formData[row.key + '_n1'] || '-'}
+                                                <div className="flex-1 flex items-center justify-center gap-1.5 px-3 font-black text-xs text-white/50">
+                                                    <span className="flex-1 text-right">{formData[row.key + '_n1'] || '0.00'}</span>
+                                                    <span className="text-[10px] text-slate-500/50">$</span>
                                                 </div>
                                             </div>
                                         ))}
@@ -1309,14 +1490,18 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 </div>
                                             </div>
                                         ))}
-                                        <div className="flex bg-rose-500/10 border-t border-white/10 h-12 items-center">
+                                        <div className="flex bg-rose-950/40 border-t border-white/10 h-14 items-center">
                                             <div className="w-[50%] border-r border-white/10 px-4">
-                                                <span className="font-bold text-xs" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លទ្ធផលដុល (B7 = B0 - B4 - B5 - B6)</span>
-                                                <span className="text-[8px] block font-black uppercase text-slate-400">Gross Profit (B7)</span>
+                                                <span className="font-bold text-xs text-rose-300" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លទ្ធផលដុល (B7 = B0 - B4 - B5 - B6)</span>
+                                                <span className="text-[8px] block font-black uppercase text-rose-400/60">Gross Profit (B7)</span>
                                             </div>
-                                            <div className="w-[10%] border-r border-white/10 flex items-center justify-center font-black text-[10px] text-slate-400">B 7</div>
-                                            <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-4 font-black text-rose-400">$ 0.00</div>
-                                            <div className="flex-1 flex items-center justify-end px-4 font-black text-rose-400/50">$ 0.00</div>
+                                            <div className="w-[10%] border-r border-white/10 flex items-center justify-center font-black text-[10px] text-rose-400 bg-rose-900/20 h-full">B 7</div>
+                                            <div className="w-[20%] border-r border-white/10 flex items-center justify-center gap-1.5 px-3 font-black text-rose-400 text-sm">
+                                                <span className="flex-1 text-right">$ {formData.b7_n || '0.00'}</span>
+                                            </div>
+                                            <div className="flex-1 flex items-center justify-center gap-1.5 px-3 font-black text-rose-400/50 text-sm">
+                                                <span className="flex-1 text-right">$ {formData.b7_n1 || '0.00'}</span>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -1374,17 +1559,19 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                             { ref: "B 20", kh: "លាភប្តូរប្រាក់ (មិនទាន់)", en: "Unrealized forex gain", key: "b20" },
                                             { ref: "B 21", kh: "ចំណូលផ្សេងទៀត", en: "Other revenues", key: "b21" }
                                         ].map((row, idx) => (
-                                            <div key={idx} className="flex border-b border-white/10 h-9 items-center last:border-0 hover:bg-white/[0.04] transition-colors">
+                                            <div key={idx} className="flex border-b border-white/10 h-10 items-center last:border-0 hover:bg-white/[0.04] transition-colors">
                                                 <div className="w-[50%] border-r border-white/10 px-4 flex flex-col">
-                                                    <span className="font-bold text-[10px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
-                                                    <span className="text-[7.5px] font-bold text-slate-500 uppercase">{row.en}</span>
+                                                    <span className="font-bold text-[11px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
+                                                    <span className="text-[8px] font-bold text-slate-500 uppercase">{row.en}</span>
                                                 </div>
-                                                <div className="w-[10%] border-r border-white/10 flex items-center justify-center text-[8.5px] font-black text-slate-700">{row.ref}</div>
-                                                <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-4 font-black text-[11px]">
-                                                    {formData[row.key + '_n'] || '-'}
+                                                <div className="w-[10%] border-r border-white/10 flex items-center justify-center text-[9px] font-black text-slate-700 bg-white/5 h-full">{row.ref}</div>
+                                                <div className="w-[20%] border-r border-white/10 flex items-center justify-center gap-1.5 px-3 font-black text-xs">
+                                                    <span className="flex-1 text-right">{formData[row.key + '_n'] || '0.00'}</span>
+                                                    <span className="text-[10px] text-slate-500">$</span>
                                                 </div>
-                                                <div className="flex-1 flex items-center justify-end px-4 font-black text-[11px] text-white/50">
-                                                    {formData[row.key + '_n1'] || '-'}
+                                                <div className="flex-1 flex items-center justify-center gap-1.5 px-3 font-black text-xs text-white/50">
+                                                    <span className="flex-1 text-right">{formData[row.key + '_n1'] || '0.00'}</span>
+                                                    <span className="text-[10px] text-slate-500/50">$</span>
                                                 </div>
                                             </div>
                                         ))}
@@ -1408,17 +1595,19 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 { ref: "B 23", kh: "ចំណាយប្រាក់បៀវត្ស", en: "Salary expenses", key: "b23" },
                                                 { ref: "B 24", kh: "ចំណាយប្រេង ហ្គាស អគ្គិសនី និងទឹក", en: "Fuel, gas, utilities", key: "b24" }
                                             ].map((row, idx) => (
-                                                <div key={idx} className="flex border-b border-white/10 h-10 items-center last:border-0 hover:bg-white/[0.04] transition-colors">
+                                                <div key={idx} className="flex border-b border-white/10 h-11 items-center last:border-0 hover:bg-white/[0.04] transition-colors">
                                                     <div className="w-[50%] border-r border-white/10 px-4 flex flex-col">
-                                                        <span className="font-bold text-[10.5px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
+                                                        <span className="font-bold text-[11px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
                                                         <span className="text-[8px] font-bold text-slate-500 uppercase">{row.en}</span>
                                                     </div>
-                                                    <div className="w-[10%] border-r border-white/10 flex items-center justify-center text-[9px] font-black text-slate-700">{row.ref}</div>
-                                                    <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-4 font-black">
-                                                        {formData[row.key + '_n'] || '-'}
+                                                    <div className="w-[10%] border-r border-white/10 flex items-center justify-center text-[9px] font-black text-slate-700 bg-white/5 h-full">{row.ref}</div>
+                                                    <div className="w-[20%] border-r border-white/10 flex items-center justify-center gap-1.5 px-3 font-black text-xs">
+                                                        <span className="flex-1 text-right">{formData[row.key + '_n'] || '0.00'}</span>
+                                                        <span className="text-[10px] text-slate-500">$</span>
                                                     </div>
-                                                    <div className="flex-1 flex items-center justify-end px-4 font-black text-white/50">
-                                                        {formData[row.key + '_n1'] || '-'}
+                                                    <div className="flex-1 flex items-center justify-center gap-1.5 px-3 font-black text-xs text-white/50">
+                                                        <span className="flex-1 text-right">{formData[row.key + '_n1'] || '0.00'}</span>
+                                                        <span className="text-[10px] text-slate-500/50">$</span>
                                                     </div>
                                                 </div>
                                             ))}
@@ -1441,57 +1630,59 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
 
                     {/* PAGE 6 CONTENT - EXPENSES & NET RESULT */}
                     {activePage === 6 && (
-                        <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center">
+                        <div className="animate-fade-in relative px-4 pt-16 pb-8 flex flex-col items-center">
+                            {/* TIN HEADER ANCHORED TOP-LEFT (Match P1) */}
+                            <div className="absolute top-2 left-6 flex items-center gap-4 bg-[#020617] pr-6 py-2 z-20">
+                                <div className="flex flex-col">
+                                    <span className="text-[13px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">Tax Identification Number (TIN)</span>
+                                </div>
+                                <div className="flex gap-1 p-1 bg-black/40 rounded-lg border border-white/10 shadow-inner scale-90 origin-left">
+                                    {Array.from({ length: 4 }).map((_, i) => (
+                                        <div key={i} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)]">
+                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i]}</span>
+                                        </div>
+                                    ))}
+                                    <div className="w-4 h-[2px] bg-white opacity-40 mx-1 self-center" />
+                                    {Array.from({ length: 9 }).map((_, i) => (
+                                        <div key={i + 4} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)]">
+                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i + 4]}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                             {/* PAGE HEADER */}
-                            <div className="w-full max-w-7xl bg-white/5 backdrop-blur-md border-[2px] border-white p-8 shadow-2xl mb-10">
+                            <div className="w-full max-w-[1400px] mt-12 bg-slate-900/40 backdrop-blur-md border border-white/10 p-6 rounded-2xl shadow-2xl mb-8">
                                 <div className="flex justify-between items-start">
-                                    <div className="flex flex-col gap-2">
-                                        <h2 className="text-[136px] font-bold text-white leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>របាយការណ៍លទ្ធផលសម្រាប់គ្រាជាប់ពន្ធ (បន្ត)</h2>
-                                        <h1 className="text-[112px] font-black text-white uppercase tracking-tighter">INCOME STATEMENT (CONTINUED)</h1>
+                                    <div className="flex flex-col gap-1">
+                                        <h2 className="text-3xl font-bold text-white leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>របាយការណ៍លទ្ធផលសម្រាប់គ្រាជាប់ពន្ធ (បន្ត)</h2>
+                                        <h1 className="text-slate-500 font-bold text-xs uppercase tracking-[0.2em]">INCOME STATEMENT (CONTINUED)</h1>
                                     </div>
-                                    <div className="flex flex-col items-end gap-4">
+                                    <div className="flex flex-col items-end gap-2">
                                         <div className="flex gap-1">
                                             {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
-                                                <div key={i} className="w-10 h-12 border-[2px] border-white flex items-center justify-center bg-white/10">
-                                                    <span className="text-xl font-black text-white">{char}</span>
+                                                <div key={i} className="w-10 h-10 border border-white/20 flex items-center justify-center bg-white/5 rounded">
+                                                    <span className="text-lg font-black text-white">{char}</span>
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="flex items-center gap-6 bg-slate-950 p-6 border-[3px] border-white shadow-2xl">
-                                            <div className="flex flex-col items-end">
-                                                <span className="text-[28px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
-                                                <span className="text-[22px] font-black text-white/50 uppercase whitespace-nowrap">Tax Identification Number (TIN):</span>
-                                            </div>
-                                            <div className="flex gap-2">
-                                                {Array.from({ length: 3 }).map((_, i) => (
-                                                    <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
-                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "")[i]}</span>
-                                                    </div>
-                                                ))}
-                                                <div className="w-8 h-[3px] bg-white opacity-40 mx-2 self-center" />
-                                                {Array.from({ length: 9 }).map((_, i) => (
-                                                    <div key={i + 3} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
-                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "")[i + 3]}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
+                                        <div className="text-slate-500 text-[9px] font-bold uppercase tracking-wider">Tax Period Year</div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="w-full max-w-[1600px] grid grid-cols-2 gap-10 items-start">
+                            <div className="w-full max-w-[1400px] grid grid-cols-2 gap-10 items-start">
                                 {/* LEFT COLUMN: FURTHER OPERATING EXPENSES */}
                                 <div className="flex flex-col gap-8">
-                                    <div className="border-[2px] border-white overflow-hidden text-white bg-white/5 shadow-xl">
-                                        <div className="flex bg-indigo-500/10 border-b-[2px] border-white h-14 items-center">
-                                            <div className="w-[50%] border-r-[2px] border-white px-4">
-                                                <span className="font-bold text-[36px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណាយប្រតិបត្តិការ (បន្ត)</span>
-                                                <span className="text-[22px] block font-black uppercase tracking-tight">Operating Expenses (Continued)</span>
+                                    <div className="border border-white/10 overflow-hidden text-white bg-slate-900/40 rounded-2xl shadow-xl backdrop-blur-sm">
+                                        <div className="flex bg-indigo-500/10 border-b border-white/10 h-12 items-center">
+                                            <div className="w-[50%] border-r border-white/10 px-4">
+                                                <span className="font-bold text-xs" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណាយប្រតិបត្តិការ (បន្ត) [B22]</span>
+                                                <span className="text-[8px] block font-black uppercase tracking-tight">Operating Expenses (Continued)</span>
                                             </div>
-                                            <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center font-black text-[28px]">REF</div>
-                                            <div className="w-[20%] border-r-[2px] border-white flex items-center justify-center text-[24px] font-bold">YEAR N</div>
-                                            <div className="flex-1 flex items-center justify-center text-[24px] font-bold">YEAR N-1</div>
+                                            <div className="w-[10%] border-r border-white/10 flex items-center justify-center font-black text-[10px]">REF</div>
+                                            <div className="w-[20%] border-r border-white/10 flex items-center justify-center text-[9px] font-bold">YEAR N</div>
+                                            <div className="flex-1 flex items-center justify-center text-[9px] font-bold">YEAR N-1</div>
                                         </div>
                                         {[
                                             { ref: "B 25", kh: "ចំណាយធ្វើដំណើរ និងស្នាក់នៅ", en: "Travelling and accommodation", key: "b25" },
@@ -1512,16 +1703,16 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                             { ref: "B 40", kh: "ខាតពីការប្តូរប្រាក់ (មិនទាន់សម្រេច)", en: "Unrealised currency loss", key: "b40" },
                                             { ref: "B 41", kh: "ចំណាយផ្សេងៗ", en: "Other expenses", key: "b41" }
                                         ].map((row, idx) => (
-                                            <div key={idx} className="flex border-b border-white/10 h-11 items-center last:border-0 hover:bg-white/5 transition-colors">
-                                                <div className="w-[50%] border-r-[2px] border-white px-6 flex flex-col">
-                                                    <span className="font-bold text-[28px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
-                                                    <span className="text-[20px] font-bold opacity-70">{row.en}</span>
+                                            <div key={idx} className="flex border-b border-white/10 h-10 items-center last:border-0 hover:bg-white/5 transition-colors">
+                                                <div className="w-[50%] border-r border-white/10 px-6 flex flex-col">
+                                                    <span className="font-bold text-[11px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
+                                                    <span className="text-[8px] font-bold opacity-70 uppercase">{row.en}</span>
                                                 </div>
-                                                <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center opacity-40 text-[20px] font-black">{row.ref}</div>
-                                                <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-4 font-black text-[28px]">
+                                                <div className="w-[10%] border-r border-white/10 flex items-center justify-center opacity-40 text-[9px] font-black">{row.ref}</div>
+                                                <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-4 font-black">
                                                     {formData[row.key + '_n'] || '-'}
                                                 </div>
-                                                <div className="flex-1 flex items-center justify-end px-4 font-black text-[28px]">
+                                                <div className="flex-1 flex items-center justify-end px-4 font-black text-white/50">
                                                     {formData[row.key + '_n1'] || '-'}
                                                 </div>
                                             </div>
@@ -1532,45 +1723,45 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                 {/* RIGHT COLUMN: SUMMARY & NET RESULT */}
                                 <div className="flex flex-col gap-8">
                                     {/* SECTION VI: PROFIT FROM OPERATIONS */}
-                                    <div className="border-[3px] border-white h-24 bg-indigo-500/20 flex items-center font-black text-white shadow-2xl">
-                                        <div className="w-[60%] border-r-[2px] border-white px-8">
-                                            <span className="text-[40px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រាក់ចំណេញ(ខាត) ពីប្រតិបត្តិការ (B42)</span>
-                                            <span className="text-[26px] block opacity-80 uppercase">Profit/Loss from Operations</span>
+                                    <div className="border border-white/10 h-16 bg-indigo-500/20 rounded-2xl flex items-center font-black text-white shadow-xl overflow-hidden backdrop-blur-sm">
+                                        <div className="w-[60%] border-r border-white/10 px-6">
+                                            <span className="text-lg" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រាក់ចំណេញ(ខាត) ពីប្រតិបត្តិការ (B42)</span>
+                                            <span className="text-[9px] block opacity-80 uppercase">Profit/Loss from Operations</span>
                                         </div>
-                                        <div className="w-[20%] border-r-[2px] border-white flex items-center justify-end px-6 text-[40px]">
+                                        <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-4 text-xl">
                                             {formData.b42_n || '-'}
                                         </div>
-                                        <div className="flex-1 flex items-center justify-end px-6 text-[40px]">
+                                        <div className="flex-1 flex items-center justify-end px-4 text-xl text-white/50">
                                             {formData.b42_n1 || '-'}
                                         </div>
                                     </div>
 
                                     {/* SECTION VII: INTEREST EXPENSES */}
-                                    <div className="border-[2px] border-white overflow-hidden text-white bg-white/5 shadow-xl">
-                                        <div className="flex bg-rose-500/10 border-b-[2px] border-white h-14 items-center">
-                                            <div className="w-[50%] border-r-[2px] border-white px-4">
-                                                <span className="font-bold text-[36px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណាយការប្រាក់</span>
-                                                <span className="text-[22px] block font-black uppercase">Interest Expenses</span>
+                                    <div className="border border-white/10 overflow-hidden text-white bg-slate-900/40 rounded-2xl shadow-xl backdrop-blur-sm">
+                                        <div className="flex bg-rose-500/10 border-b border-white/10 h-12 items-center">
+                                            <div className="w-[50%] border-r border-white/10 px-4">
+                                                <span className="font-bold text-xs" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណាយការប្រាក់</span>
+                                                <span className="text-[8px] block font-black uppercase">Interest Expenses</span>
                                             </div>
-                                            <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center font-black text-[28px]">REF</div>
-                                            <div className="w-[20%] border-r border-white/10 flex items-center justify-center text-[22px] font-bold">N</div>
-                                            <div className="flex-1 flex items-center justify-center text-[22px] font-bold">N-1</div>
+                                            <div className="w-[10%] border-r border-white/10 flex items-center justify-center font-black text-[10px]">REF</div>
+                                            <div className="w-[20%] border-r border-white/10 flex items-center justify-center text-[9px] font-bold">N</div>
+                                            <div className="flex-1 flex items-center justify-center text-[9px] font-bold">N-1</div>
                                         </div>
                                         {[
                                             { ref: "B 43", kh: "ចំណាយការប្រាក់បង់ឱ្យនិវាសនជន", en: "Interest paid to residents", key: "b43" },
                                             { ref: "B 44", kh: "ចំណាយការប្រាក់បង់ឱ្យអនិវាសនជន", en: "Interest paid to non-residents", key: "b44" },
                                             { ref: "B 45", kh: "ចំណាយការប្រាក់លូត", en: "Unwinding interest expenses", key: "b45" }
                                         ].map((row, idx) => (
-                                            <div key={idx} className="flex border-b border-white/10 h-14 items-center last:border-0 hover:bg-white/5 transition-colors">
-                                                <div className="w-[50%] border-r-[2px] border-white px-6 flex flex-col">
-                                                    <span className="font-bold text-[30px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
-                                                    <span className="text-[22px] font-bold opacity-70">{row.en}</span>
+                                            <div key={idx} className="flex border-b border-white/10 h-11 items-center last:border-0 hover:bg-white/5 transition-colors">
+                                                <div className="w-[50%] border-r border-white/10 px-6 flex flex-col">
+                                                    <span className="font-bold text-[11px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
+                                                    <span className="text-[8px] font-bold opacity-70 uppercase">{row.en}</span>
                                                 </div>
-                                                <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center opacity-40 text-[24px] font-black">{row.ref}</div>
+                                                <div className="w-[10%] border-r border-white/10 flex items-center justify-center opacity-40 text-[9px] font-black">{row.ref}</div>
                                                 <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-4 font-black">
                                                     {formData[row.key + '_n'] || '-'}
                                                 </div>
-                                                <div className="flex-1 flex items-center justify-end px-4 font-black">
+                                                <div className="flex-1 flex items-center justify-end px-4 font-black text-white/50">
                                                     {formData[row.key + '_n1'] || '-'}
                                                 </div>
                                             </div>
@@ -1578,50 +1769,50 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                     </div>
 
                                     {/* SECTION VIII: PROFIT BEFORE TAX */}
-                                    <div className="border-[2px] border-white h-20 bg-amber-500/10 flex items-center font-black text-white shadow-xl">
-                                        <div className="w-[60%] border-r-[2px] border-white px-8">
-                                            <span className="text-[36px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រាក់ចំណេញ(ខាត) មុនបង់ពន្ធ (B46)</span>
-                                            <span className="text-[24px] block opacity-80 uppercase">Profit(Loss) Before Tax</span>
+                                    <div className="border border-white/10 h-16 bg-amber-500/10 rounded-2xl flex items-center font-black text-white shadow-xl backdrop-blur-sm">
+                                        <div className="w-[60%] border-r border-white/10 px-8">
+                                            <span className="text-lg" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រាក់ចំណេញ(ខាត) មុនបង់ពន្ធ (B46)</span>
+                                            <span className="text-[10px] block opacity-80 uppercase">Profit(Loss) Before Tax</span>
                                         </div>
-                                        <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center opacity-40 text-[24px]">B 46</div>
+                                        <div className="w-[10%] border-r border-white/10 flex items-center justify-center opacity-40 text-[10px]">B 46</div>
                                         <div className="w-[15%] border-r border-white/10 flex items-center justify-end px-4">
                                             {formData.b46_n || '-'}
                                         </div>
-                                        <div className="flex-1 flex items-center justify-end px-4">
+                                        <div className="flex-1 flex items-center justify-end px-4 text-white/50">
                                             {formData.b46_n1 || '-'}
                                         </div>
                                     </div>
 
                                     {/* SECTION IX: INCOME TAX */}
-                                    <div className="border-[2px] border-white h-20 bg-rose-500/10 flex items-center font-black text-white shadow-xl">
-                                        <div className="w-[60%] border-r-[2px] border-white px-8">
-                                            <span className="text-[36px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ពន្ធលើប្រាក់ចំណូល (B47)</span>
-                                            <span className="text-[24px] block opacity-80 uppercase">Income Tax</span>
+                                    <div className="border border-white/10 h-16 bg-rose-500/10 rounded-2xl flex items-center font-black text-white shadow-xl backdrop-blur-sm">
+                                        <div className="w-[60%] border-r border-white/10 px-8">
+                                            <span className="text-lg" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ពន្ធលើប្រាក់ចំណូល (B47)</span>
+                                            <span className="text-[10px] block opacity-80 uppercase">Income Tax</span>
                                         </div>
-                                        <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center opacity-40 text-[24px]">B 47</div>
+                                        <div className="w-[10%] border-r border-white/10 flex items-center justify-center opacity-40 text-[10px]">B 47</div>
                                         <div className="w-[15%] border-r border-white/10 flex items-center justify-end px-4">
                                             {formData.b47_n || '-'}
                                         </div>
-                                        <div className="flex-1 flex items-center justify-end px-4">
+                                        <div className="flex-1 flex items-center justify-end px-4 text-white/50">
                                             {formData.b47_n1 || '-'}
                                         </div>
                                     </div>
 
                                     {/* SECTION X: NET PROFIT AFTER TAX */}
-                                    <div className="border-[4px] border-white h-28 bg-emerald-500/30 flex items-center font-black text-white shadow-3xl">
-                                        <div className="w-[60%] border-r-[2px] border-white px-8">
-                                            <span className="text-[52px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រាក់ចំណេញ(ខាត) ក្រោយបង់ពន្ធ (B48)</span>
-                                            <span className="text-[32px] block opacity-80 uppercase">Net Profit After Tax</span>
+                                    <div className="border border-white/40 h-20 bg-emerald-500/20 rounded-2xl flex items-center font-black text-white shadow-2xl backdrop-blur-md">
+                                        <div className="w-[60%] border-r border-white/20 px-8">
+                                            <span className="text-xl" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រាក់ចំណេញ(ខាត) ក្រោយបង់ពន្ធ (B48)</span>
+                                            <span className="text-[11px] block opacity-80 uppercase">Net Profit After Tax</span>
                                         </div>
-                                        <div className="w-[20%] border-r-[2px] border-white flex items-center justify-end px-6 text-[56px] text-emerald-400">
+                                        <div className="w-[20%] border-r border-white/20 flex items-center justify-end px-6 text-2xl text-emerald-400">
                                             {formData.b48_n || '-'}
                                         </div>
-                                        <div className="flex-1 flex items-center justify-end px-6 text-[56px] text-emerald-400">
+                                        <div className="flex-1 flex items-center justify-end px-6 text-2xl text-emerald-400/50">
                                             {formData.b48_n1 || '-'}
                                         </div>
                                     </div>
 
-                                    <div className="mt-4 p-4 bg-white/5 border border-white/20 rounded-lg text-[22px] italic text-white/60 leading-relaxed">
+                                    <div className="mt-4 p-6 bg-slate-900/60 border border-white/10 rounded-2xl text-xs italic text-slate-400 leading-relaxed pb-8">
                                         * ចំណាយការប្រាក់មិនមានការទូទាត់ជាក់ស្តែងដែលតម្រូវឱ្យកត់ត្រាស្របតាមស្តង់ដាររបាយការណ៍ហិរញ្ញវត្ថុអន្តរជាតិ (CIFRS) <br />
                                         * Interest Expense without actual payment but recorded by the CIFRS requirement.
                                     </div>
@@ -1631,58 +1822,60 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                     )}
 
                     {activePage === 7 && (
-                        <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center">
+                        <div className="animate-fade-in relative px-4 pt-16 pb-8 flex flex-col items-center">
+                            {/* TIN HEADER ANCHORED TOP-LEFT (Match P1-P6) */}
+                            <div className="absolute top-2 left-6 flex items-center gap-4 bg-[#020617] pr-6 py-2 z-20">
+                                <div className="flex flex-col">
+                                    <span className="text-[13px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">Tax Identification Number (TIN)</span>
+                                </div>
+                                <div className="flex gap-1 p-1 bg-black/40 rounded-lg border border-white/10 shadow-inner scale-90 origin-left">
+                                    {Array.from({ length: 4 }).map((_, i) => (
+                                        <div key={i} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)]">
+                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i]}</span>
+                                        </div>
+                                    ))}
+                                    <div className="w-4 h-[2px] bg-white opacity-40 mx-1 self-center" />
+                                    {Array.from({ length: 9 }).map((_, i) => (
+                                        <div key={i + 4} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)]">
+                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i + 4]}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                             {/* PAGE HEADER */}
-                            <div className="w-full max-w-7xl bg-white/5 backdrop-blur-md border-[2px] border-white p-8 shadow-2xl mb-10">
+                            <div className="w-full max-w-[1400px] mt-12 bg-slate-900/40 backdrop-blur-md border border-white/10 p-6 rounded-2xl shadow-2xl mb-8">
                                 <div className="flex justify-between items-start">
-                                    <div className="flex flex-col gap-2">
-                                        <h2 className="text-[136px] font-bold text-white leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ថ្លៃដើមផលិតផលបានលក់</h2>
-                                        <h1 className="text-[112px] font-black text-white uppercase tracking-tighter">COSTS OF PRODUCTS SOLD (PRODUCTION ENTERPRISE)</h1>
+                                    <div className="flex flex-col gap-1">
+                                        <h2 className="text-3xl font-bold text-white leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ថ្លៃដើមផលិតផលបានលក់</h2>
+                                        <h1 className="text-slate-500 font-bold text-xs uppercase tracking-[0.2em]">COSTS OF PRODUCTS SOLD (PRODUCTION ENTERPRISE)</h1>
                                     </div>
-                                    <div className="flex flex-col items-end gap-4">
+                                    <div className="flex flex-col items-end gap-2">
                                         <div className="flex gap-1">
                                             {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
-                                                <div key={i} className="w-10 h-12 border-[2px] border-white flex items-center justify-center bg-white/10">
-                                                    <span className="text-xl font-black text-white">{char}</span>
+                                                <div key={i} className="w-10 h-10 border border-white/20 flex items-center justify-center bg-white/5 rounded">
+                                                    <span className="text-lg font-black text-white">{char}</span>
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="flex items-center gap-6 bg-slate-950 p-6 border-[3px] border-white shadow-2xl">
-                                            <div className="flex flex-col items-end">
-                                                <span className="text-[28px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
-                                                <span className="text-[22px] font-black text-white/50 uppercase whitespace-nowrap">Tax Identification Number (TIN):</span>
-                                            </div>
-                                            <div className="flex gap-2">
-                                                {Array.from({ length: 3 }).map((_, i) => (
-                                                    <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
-                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "")[i]}</span>
-                                                    </div>
-                                                ))}
-                                                <div className="w-8 h-[3px] bg-white opacity-40 mx-2 self-center" />
-                                                {Array.from({ length: 9 }).map((_, i) => (
-                                                    <div key={i + 3} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
-                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "")[i + 3]}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
+                                        <div className="text-slate-500 text-[9px] font-bold uppercase tracking-wider">Tax Period Year</div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="w-full max-w-[1600px] grid grid-cols-2 gap-10 items-start">
+                            <div className="w-full max-w-[1400px] grid grid-cols-2 gap-[50px] items-start pl-[10px]">
                                 {/* LEFT COLUMN: RAW MATERIALS & OTHER PRODUCTION COSTS */}
                                 <div className="flex flex-col gap-8">
                                     {/* SECTION: RAW MATERIALS & SUPPLIES */}
-                                    <div className="border-[2px] border-white overflow-hidden text-white bg-white/5 shadow-xl">
-                                        <div className="flex bg-indigo-500/10 border-b-[2px] border-white h-14 items-center">
-                                            <div className="w-[50%] border-r-[2px] border-white px-4">
-                                                <span className="font-bold text-[36px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>វត្ថុធាតុដើម និងសម្ភារៈផ្គត់ផ្គង់</span>
-                                                <span className="text-[22px] block font-black uppercase">Raw Materials and Supplies</span>
+                                    <div className="border border-white/10 overflow-hidden text-white bg-slate-900/40 rounded-2xl shadow-xl backdrop-blur-sm">
+                                        <div className="flex bg-indigo-500/10 border-b border-white/10 h-12 items-center">
+                                            <div className="w-[50%] border-r border-white/10 px-4">
+                                                <span className="font-bold text-xs" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>វត្ថុធាតុដើម និងសម្ភារៈផ្គត់ផ្គង់</span>
+                                                <span className="text-[8px] block font-black uppercase">Raw Materials and Supplies</span>
                                             </div>
-                                            <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center font-black text-[28px]">REF</div>
-                                            <div className="w-[20%] border-r border-white/10 flex items-center justify-center text-[22px] font-bold">YEAR N</div>
-                                            <div className="flex-1 flex items-center justify-center text-[22px] font-bold">YEAR N-1</div>
+                                            <div className="w-[10%] border-r border-white/10 flex items-center justify-center font-black text-[10px]">REF</div>
+                                            <div className="w-[20%] border-r border-white/10 flex items-center justify-center text-[9px] font-bold">YEAR N</div>
+                                            <div className="flex-1 flex items-center justify-center text-[9px] font-bold">YEAR N-1</div>
                                         </div>
                                         {[
                                             { ref: "C 1", kh: "ស្តុកវត្ថុធាតុដើម និងសម្ភារៈផ្គត់ផ្គង់ដើមគ្រា", en: "Stock at the beginning of the period", key: "c1" },
@@ -1692,17 +1885,19 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                             { ref: "C 5", kh: "ដក៖ ស្តុកវត្ថុធាតុដើម និងសម្ភារៈចុងគ្រា", en: "Less: Stock at the end of the period", key: "c5" },
                                             { ref: "C 6", kh: "ចំណាយថ្លៃវត្ថុធាតុដើមបានប្រើប្រាស់", en: "Materials and supplies used", key: "c6", highlight: true }
                                         ].map((row, idx) => (
-                                            <div key={idx} className={`flex border-b border-white/10 h-14 items-center last:border-0 hover:bg-white/5 transition-colors ${row.isTotal ? 'bg-white/5 font-black' : ''} ${row.highlight ? 'bg-indigo-500/10 font-bold border-t border-white/30' : ''}`}>
-                                                <div className="w-[50%] border-r-[2px] border-white px-6 flex flex-col">
-                                                    <span className="font-bold text-[28px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
-                                                    <span className="text-[20px] font-bold opacity-70">{row.en}</span>
+                                            <div key={idx} className={`flex border-b border-white/10 h-11 items-center last:border-0 hover:bg-white/5 transition-colors ${row.isTotal ? 'bg-white/5 font-black' : ''} ${row.highlight ? 'bg-indigo-500/10 font-bold border-t border-white/30' : ''}`}>
+                                                <div className="w-[50%] border-r border-white/10 px-4 flex flex-col overflow-hidden">
+                                                    <span className="font-bold text-[11px] leading-tight truncate" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
+                                                    <span className="text-[8px] font-bold text-slate-500 uppercase truncate">{row.en}</span>
                                                 </div>
-                                                <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center opacity-40 text-[22px] font-black">{row.ref}</div>
-                                                <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-4">
-                                                    {formData[row.key + '_n'] || '-'}
+                                                <div className="w-[10%] border-r border-white/10 flex items-center justify-center text-[9px] font-black text-slate-500 bg-white/5 h-full">{row.ref}</div>
+                                                <div className="w-[20%] border-r border-white/10 flex items-center justify-center gap-1.5 px-3 font-black text-xs">
+                                                    <span className="flex-1 text-right">{formData[row.key + '_n'] || '0.00'}</span>
+                                                    <span className="text-[10px] text-slate-500">$</span>
                                                 </div>
-                                                <div className="flex-1 flex items-center justify-end px-4">
-                                                    {formData[row.key + '_n1'] || '-'}
+                                                <div className="flex-1 flex items-center justify-center gap-1.5 px-3 font-black text-xs text-white/50">
+                                                    <span className="flex-1 text-right">{formData[row.key + '_n1'] || '0.00'}</span>
+                                                    <span className="text-[10px] text-slate-500/50">$</span>
                                                 </div>
                                             </div>
                                         ))}
@@ -1784,16 +1979,18 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                     </div>
 
                                     {/* SECTION: TOTAL PRODUCTION COSTS (C17) */}
-                                    <div className="border-[3px] border-white h-24 bg-indigo-500/20 flex items-center font-black text-white shadow-2xl">
-                                        <div className="w-[60%] border-r-[2px] border-white px-8">
-                                            <span className="text-[40px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សរុបចំណាយថ្លៃដើមផលិតកម្ម (C17)</span>
-                                            <span className="text-[26px] block opacity-80 uppercase">Total Production Costs (C17 = C6 + C7 + C15 - C16)</span>
+                                    <div className="border border-white/10 h-16 bg-indigo-500/20 rounded-2xl flex items-center font-black text-white shadow-xl overflow-hidden backdrop-blur-sm">
+                                        <div className="w-[60%] border-r border-white/10 px-6">
+                                            <span className="text-sm font-bold block" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សរុបចំណាយថ្លៃដើមផលិតកម្ម (C17)</span>
+                                            <span className="text-[8px] block text-slate-400 uppercase tracking-wider">Total Production Costs (C17 = C6 + C7 + C15 - C16)</span>
                                         </div>
-                                        <div className="w-[20%] border-r-[2px] border-white flex items-center justify-end px-6 text-[44px]">
-                                            {formData.c17_n || '-'}
+                                        <div className="w-[20%] border-r border-white/10 flex items-center justify-center gap-1.5 px-3 text-xs">
+                                            <span className="flex-1 text-right">{formData.c17_n || '0.00'}</span>
+                                            <span className="text-[10px] text-slate-500">$</span>
                                         </div>
-                                        <div className="flex-1 flex items-center justify-end px-6 text-[44px]">
-                                            {formData.c17_n1 || '-'}
+                                        <div className="flex-1 flex items-center justify-center gap-1.5 px-3 text-xs text-white/50">
+                                            <span className="flex-1 text-right">{formData.c17_n1 || '0.00'}</span>
+                                            <span className="text-[10px] text-slate-500/50">$</span>
                                         </div>
                                     </div>
 
@@ -1852,41 +2049,44 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                     )}
 
                     {activePage === 8 && (
-                        <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center">
+                        <div className="animate-fade-in relative px-4 pt-16 pb-8 flex flex-col items-center">
+                            {/* TIN HEADER ANCHORED TOP-LEFT (Match P7) */}
+                            <div className="absolute top-2 left-6 flex items-center gap-4 bg-[#020617] pr-6 py-2 z-20">
+                                <div className="flex flex-col">
+                                    <span className="text-[13px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">Tax Identification Number (TIN)</span>
+                                </div>
+                                <div className="flex gap-1 p-1 bg-black/40 rounded-lg border border-white/10 shadow-inner scale-90 origin-left">
+                                    {Array.from({ length: 4 }).map((_, i) => (
+                                        <div key={i} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)]">
+                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i]}</span>
+                                        </div>
+                                    ))}
+                                    <div className="w-4 h-[2px] bg-white opacity-40 mx-1 self-center" />
+                                    {Array.from({ length: 9 }).map((_, i) => (
+                                        <div key={i + 4} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)]">
+                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i + 4]}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
                             {/* PAGE HEADER */}
-                            <div className="w-full max-w-7xl bg-white/5 backdrop-blur-md border-[2px] border-white p-8 shadow-2xl mb-10">
+                            <div className="w-full max-w-[1400px] mt-12 bg-slate-900/40 backdrop-blur-md border border-white/10 p-6 rounded-2xl shadow-2xl mb-8">
                                 <div className="flex justify-between items-start">
-                                    <div className="flex flex-col gap-2">
-                                        <h2 className="text-[136px] font-bold text-white leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ថ្លៃដើមទំនិញបានលក់</h2>
-                                        <h1 className="text-[112px] font-black text-white uppercase tracking-tighter">COSTS OF GOODS SOLD (NON-PRODUCTION ENTERPRISE)</h1>
+                                    <div className="flex flex-col gap-1">
+                                        <h2 className="text-3xl font-bold text-white leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ថ្លៃដើមទំនិញបានលក់</h2>
+                                        <h1 className="text-slate-500 font-bold text-xs uppercase tracking-[0.2em]">COSTS OF GOODS SOLD (NON-PRODUCTION ENTERPRISE)</h1>
                                     </div>
-                                    <div className="flex flex-col items-end gap-4">
+                                    <div className="flex flex-col items-end gap-2">
                                         <div className="flex gap-1">
                                             {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
-                                                <div key={i} className="w-10 h-12 border-[2px] border-white flex items-center justify-center bg-white/10">
-                                                    <span className="text-xl font-black text-white">{char}</span>
+                                                <div key={i} className="w-10 h-10 border border-white/20 flex items-center justify-center bg-white/5 rounded">
+                                                    <span className="text-lg font-black text-white">{char}</span>
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="flex items-center gap-6 bg-slate-950 p-6 border-[3px] border-white shadow-2xl">
-                                            <div className="flex flex-col items-end">
-                                                <span className="text-[28px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
-                                                <span className="text-[22px] font-black text-white/50 uppercase whitespace-nowrap">Tax Identification Number (TIN):</span>
-                                            </div>
-                                            <div className="flex gap-2">
-                                                {Array.from({ length: 3 }).map((_, i) => (
-                                                    <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
-                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "")[i]}</span>
-                                                    </div>
-                                                ))}
-                                                <div className="w-8 h-[3px] bg-white opacity-40 mx-2 self-center" />
-                                                {Array.from({ length: 9 }).map((_, i) => (
-                                                    <div key={i + 3} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5">
-                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "")[i + 3]}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
+                                        <div className="text-slate-500 text-[9px] font-bold uppercase tracking-wider">Tax Period Year</div>
                                     </div>
                                 </div>
                             </div>
@@ -1924,7 +2124,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                             key: "d7",
                                             isTotal: true
                                         },
-                                        { ref: "D 8", kh: "ដក៖ ស្តុកទំនិញនៅចុងគ្រា", en: "Less: Stock of goods at the end of the period", key: "d8" },
+                                        { ref: "D 8", kh: "ដក៖ ស្តុកទំនិញនៅចុងគ្រា", en: "Less: Stock of goods at the end of the period", key: "d8", extraMarginTop: true },
                                         {
                                             ref: "D 9",
                                             kh: "ថ្លៃដើមទំនិញដែលបានលក់ [D9 = (D7 - D8)]",
@@ -1933,24 +2133,27 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                             isGrandTotal: true
                                         },
                                     ].map((row, idx) => (
-                                        <div key={idx} className={`flex border-b border-white/10 h-16 items-center last:border-0 hover:bg-white/5 transition-colors 
+                                        <div key={idx} className={`flex border-b border-white/10 h-11 items-center last:border-0 hover:bg-white/5 transition-colors 
                                             ${row.isHeader ? 'bg-white/10 font-bold' : ''} 
                                             ${row.isTotal ? 'bg-indigo-500/10 font-black' : ''}
-                                            ${row.isGrandTotal ? 'bg-emerald-500/20 h-24 border-t-[3px] border-white font-black' : ''}`}>
+                                            ${row.extraMarginTop ? 'mt-6 border-t border-white/20 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.3)]' : ''}
+                                            ${row.isGrandTotal ? 'bg-emerald-500/20 h-16 border-t border-white shadow-xl font-black mt-2' : ''}`}>
 
-                                            <div className={`w-[50%] border-r-[2px] border-white px-6 flex flex-col ${row.indent ? 'pl-12' : ''}`}>
-                                                <span className={`${row.isGrandTotal ? 'text-[44px]' : row.isTotal ? 'text-[36px]' : 'text-[30px]'} font-bold leading-tight`} style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
-                                                <span className={`${row.isGrandTotal ? 'text-[28px]' : 'text-[22px]'} font-bold opacity-70`}>{row.en}</span>
+                                            <div className={`w-[50%] border-r border-white/10 px-4 flex flex-col justify-center overflow-hidden ${row.indent ? 'pl-8' : ''}`}>
+                                                <span className={`${row.isGrandTotal ? 'text-sm' : 'text-[11px]'} font-bold leading-tight truncate`} style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
+                                                <span className={`${row.isGrandTotal ? 'text-[10px]' : 'text-[8px]'} font-bold text-slate-500 uppercase truncate`}>{row.en}</span>
                                             </div>
 
-                                            <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center opacity-40 text-[24px] font-black">{row.ref}</div>
+                                            <div className="w-[10%] border-r border-white/10 flex items-center justify-center text-[9px] font-black text-slate-500 bg-white/5 h-full">{row.ref}</div>
 
-                                            <div className={`w-[20%] border-r border-white/10 flex items-center justify-end px-6 font-black ${row.isGrandTotal ? 'text-[48px] text-emerald-400' : 'text-[32px]'}`}>
-                                                {formData[row.key + '_n'] || '-'}
+                                            <div className="w-[20%] border-r border-white/10 flex items-center justify-center gap-1.5 px-3 font-black text-xs">
+                                                <span className="flex-1 text-right">{formData[row.key + '_n'] || '0.00'}</span>
+                                                <span className="text-[10px] text-slate-500">$</span>
                                             </div>
 
-                                            <div className={`flex-1 flex items-center justify-end px-6 font-black ${row.isGrandTotal ? 'text-[48px] text-emerald-400' : 'text-[32px]'}`}>
-                                                {formData[row.key + '_n1'] || '-'}
+                                            <div className="flex-1 flex items-center justify-center gap-1.5 px-3 font-black text-xs text-white/50">
+                                                <span className="flex-1 text-right">{formData[row.key + '_n1'] || '0.00'}</span>
+                                                <span className="text-[10px] text-slate-500/50">$</span>
                                             </div>
                                         </div>
                                     ))}
@@ -1967,41 +2170,44 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                     )}
 
                     {activePage === 9 && (
-                        <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center">
+                        <div className="animate-fade-in relative px-4 pt-16 pb-8 flex flex-col items-center">
+                            {/* TIN HEADER ANCHORED TOP-LEFT */}
+                            <div className="absolute top-2 left-6 flex items-center gap-4 bg-[#020617] pr-6 py-2 z-20">
+                                <div className="flex flex-col">
+                                    <span className="text-[13px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">Tax Identification Number (TIN)</span>
+                                </div>
+                                <div className="flex gap-1 p-1 bg-black/40 rounded-lg border border-white/10 shadow-inner scale-90 origin-left">
+                                    {Array.from({ length: 4 }).map((_, i) => (
+                                        <div key={i} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-inner">
+                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i]}</span>
+                                        </div>
+                                    ))}
+                                    <div className="w-4 h-[2px] bg-white opacity-40 mx-1 self-center" />
+                                    {Array.from({ length: 9 }).map((_, i) => (
+                                        <div key={i + 4} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-inner">
+                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i + 4]}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
                             {/* PAGE HEADER */}
-                            <div className="w-full max-w-7xl bg-white/5 backdrop-blur-md border-[2px] border-white p-8 shadow-2xl mb-10">
+                            <div className="w-full max-w-[1400px] mt-12 bg-slate-900/40 backdrop-blur-md border border-white/10 p-6 rounded-2xl shadow-2xl mb-8">
                                 <div className="flex justify-between items-start">
-                                    <div className="flex flex-col gap-2">
-                                        <h2 className="text-[136px] font-bold text-white leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការគណនាពន្ធលើប្រាក់ចំណូល</h2>
-                                        <h1 className="text-[112px] font-black text-white uppercase tracking-tighter">TABLE OF INCOME TAX CALCULATION</h1>
+                                    <div className="flex flex-col gap-1">
+                                        <h2 className="text-3xl font-bold text-white leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការគណនាពន្ធលើប្រាក់ចំណូល</h2>
+                                        <h1 className="text-slate-500 font-bold text-xs uppercase tracking-[0.2em]">TABLE OF INCOME TAX CALCULATION</h1>
                                     </div>
-                                    <div className="flex flex-col items-end gap-4">
+                                    <div className="flex flex-col items-end gap-2">
                                         <div className="flex gap-1">
                                             {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
-                                                <div key={i} className="w-10 h-12 border-[2px] border-white flex items-center justify-center bg-white/10">
-                                                    <span className="text-xl font-black text-white">{char}</span>
+                                                <div key={i} className="w-10 h-10 border border-white/20 flex items-center justify-center bg-white/5 rounded">
+                                                    <span className="text-lg font-black text-white">{char}</span>
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="flex items-center gap-6 bg-slate-950 p-6 border-[3px] border-white shadow-2xl">
-                                            <div className="flex flex-col items-end">
-                                                <span className="text-[28px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
-                                                <span className="text-[22px] font-black text-white/50 uppercase whitespace-nowrap">Tax Identification Number (TIN):</span>
-                                            </div>
-                                            <div className="flex gap-2">
-                                                {Array.from({ length: 3 }).map((_, i) => (
-                                                    <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
-                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "")[i]}</span>
-                                                    </div>
-                                                ))}
-                                                <div className="w-8 h-[3px] bg-white opacity-40 mx-2 self-center" />
-                                                {Array.from({ length: 9 }).map((_, i) => (
-                                                    <div key={i + 3} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
-                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "")[i + 3]}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
+                                        <div className="text-slate-500 text-[9px] font-bold uppercase tracking-wider">Tax Period Year</div>
                                     </div>
                                 </div>
                             </div>
@@ -2010,22 +2216,22 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                 {/* LEFT COLUMN: PROFIT & NON-DEDUCTIBLE EXPENSES */}
                                 <div className="flex flex-col gap-6">
                                     {/* SECTION: INITIAL PROFIT/LOSS */}
-                                    <div className="border-[3px] border-white h-24 bg-indigo-500/20 flex items-center font-black text-white shadow-2xl">
-                                        <div className="w-[60%] border-r-[2px] border-white px-6">
-                                            <span className="text-[32px] leading-tight block" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រាក់ចំណេញ/(ខាត) មុនបង់ពន្ធ / លទ្ធផលគណនេយ្យ ចំណេញ / (ខាត) (E1 = B46)</span>
-                                            <span className="text-[22px] block opacity-80 uppercase">Profit/(Loss) Before Tax / Accounting Profit / (Loss)</span>
+                                    <div className="border border-white/10 h-16 bg-indigo-500/20 rounded-2xl flex items-center font-black text-white shadow-xl overflow-hidden backdrop-blur-sm">
+                                        <div className="w-[60%] border-r border-white/10 px-6">
+                                            <span className="text-sm font-bold block" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រាក់ចំណេញ/(ខាត) មុនបង់ពន្ធ (E1 = B46)</span>
+                                            <span className="text-[8px] block text-slate-400 uppercase tracking-wider">Accounting Profit / (Loss)</span>
                                         </div>
-                                        <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center opacity-40 text-[24px]">E 1</div>
-                                        <div className="flex-1 flex items-center justify-end px-6 text-[44px]">
-                                            {formData.e1_amount || '-'}
+                                        <div className="w-[10%] border-r border-white/10 flex items-center justify-center font-black text-[10px] text-slate-500">E 1</div>
+                                        <div className="flex-1 flex items-center justify-end px-6 text-sm">
+                                            {formData.e1_amount || '0.00'}
                                         </div>
                                     </div>
 
                                     {/* SECTION: NON-DEDUCTIBLE EXPENSES */}
-                                    <div className="border-[2px] border-white overflow-hidden text-white bg-white/5 shadow-xl">
-                                        <div className="flex bg-rose-500/20 border-b-[2px] border-white h-12 items-center px-4 gap-4">
-                                            <div className="bg-rose-500 px-2 py-0.5 text-[20px] font-black uppercase">Add</div>
-                                            <span className="font-bold text-[28px] uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណាយមិនអាចកាត់កងបាន (Non-Deductible Expenses)</span>
+                                    <div className="border border-white/10 overflow-hidden text-white bg-slate-900/40 rounded-2xl shadow-xl backdrop-blur-sm">
+                                        <div className="flex bg-slate-800 border-b border-white/10 h-12 items-center px-4 gap-4">
+                                            <div className="bg-rose-600 px-2 py-0.5 text-[9px] font-black uppercase rounded">Add</div>
+                                            <span className="font-bold text-xs uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណាយមិនអាចកាត់កងបាន (Non-Deductible Expenses)</span>
                                         </div>
                                         {[
                                             { ref: "E 2", kh: "ចំណាយរំលស់តាមគណនេយ្យ", en: "Accounting amortisation, depletion and depreciation", key: "e2" },
@@ -2045,20 +2251,26 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                             { ref: "E 16", kh: "ចំណាយដល់បុគ្គលជាប់ទាក់ទងដែលមិនទាន់បានបង់ក្នុងរយៈពេល ១៨០ថ្ងៃនៃឆ្នាំបន្ទាប់", en: "Related-party expenses unpaid within 180 days of next tax year", key: "e16" },
                                             { ref: "E 17", kh: "ចំណាយផ្សេងៗមិនអាចកាត់កងបានដទៃទៀត", en: "Other non-deductible expenses", key: "e17" },
                                         ].map((row, idx) => (
-                                            <div key={idx} className="flex border-b border-white/10 h-11 items-center last:border-0 hover:bg-white/5 transition-colors">
-                                                <div className="w-[60%] border-r-[2px] border-white px-4 flex flex-col justify-center">
-                                                    <span className="font-bold text-[22px] leading-tight truncate" title={row.kh} style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
-                                                    <span className="text-[18px] font-bold opacity-60 truncate" title={row.en}>{row.en}</span>
+                                            <div key={idx} className="flex border-b border-white/10 h-10 items-center last:border-0 hover:bg-white/5 transition-colors">
+                                                <div className="w-[60%] border-r border-white/10 px-4 flex flex-col justify-center overflow-hidden">
+                                                    <span className="font-bold text-[9px] leading-tight truncate" title={row.kh} style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
+                                                    <span className="text-[7.5px] font-bold text-slate-500 uppercase truncate" title={row.en}>{row.en}</span>
                                                 </div>
-                                                <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center opacity-40 text-[20px] font-black">{row.ref}</div>
-                                                <div className="flex-1 flex items-center justify-end px-4 font-black text-[26px]">
-                                                    {formData[row.key + '_amount'] || '-'}
+                                                <div className="w-[10%] border-r border-white/10 flex items-center justify-center text-[9px] font-black text-slate-500 bg-white/5 h-full">{row.ref}</div>
+                                                <div className="flex-1 flex items-center justify-end px-4 font-black text-xs">
+                                                    <input
+                                                        type="text"
+                                                        className="w-full bg-transparent text-right outline-none text-white"
+                                                        value={formData[row.key + '_amount'] || ""}
+                                                        onChange={(e) => handleFormChange(row.key + '_amount', e.target.value)}
+                                                        placeholder="0.00"
+                                                    />
                                                 </div>
                                             </div>
                                         ))}
-                                        <div className="flex bg-rose-500/10 h-12 items-center font-black border-t-[2px] border-white">
-                                            <div className="w-[70%] border-r-[2px] border-white px-4 text-[26px]">សរុប [E18 = សរុប(E2:E17)] / Total</div>
-                                            <div className="flex-1 flex items-center justify-end px-4 text-rose-400">{formData.e18_amount || '-'}</div>
+                                        <div className="flex bg-rose-500/10 h-10 items-center font-black border-t-[2px] border-white">
+                                            <div className="w-[70%] border-r-[2px] border-white px-4 text-[12px] uppercase">សរុប [E18 = សរុប(E2:E17)] / Total</div>
+                                            <div className="flex-1 flex items-center justify-end px-4 text-rose-400 text-xs">{formData.e18_amount || '0.00'}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -2079,20 +2291,26 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                             { ref: "E 23", kh: "ផលចំណេញ / កម្រៃពីការលក់ទ្រព្យសកម្មថេរតាមច្បាប់ស្តីពីសារពើពន្ធ", en: "Gain on disposal of fixed assets as per LOT", key: "e23" },
                                             { ref: "E 24", kh: "ចំណូលផ្សេងៗទៀតដែលមិនបានកត់ត្រាក្នុងបញ្ជីគណនេយ្យ", en: "Other incomes not recorded in the accounting book", key: "e24" },
                                         ].map((row, idx) => (
-                                            <div key={idx} className="flex border-b border-white/10 h-14 items-center last:border-0 hover:bg-white/5 transition-colors">
-                                                <div className="w-[60%] border-r-[2px] border-white px-4 flex flex-col justify-center">
-                                                    <span className="font-bold text-[22px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
-                                                    <span className="text-[18px] font-bold opacity-60">{row.en}</span>
+                                            <div key={idx} className="flex border-b border-white/10 h-10 items-center last:border-0 hover:bg-white/5 transition-colors">
+                                                <div className="w-[60%] border-r border-white/10 px-4 flex flex-col justify-center overflow-hidden">
+                                                    <span className="font-bold text-[9.5px] leading-tight truncate" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
+                                                    <span className="text-[7.5px] font-bold text-slate-500 uppercase truncate">{row.en}</span>
                                                 </div>
-                                                <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center opacity-40 text-[20px] font-black">{row.ref}</div>
+                                                <div className="w-[10%] border-r border-white/10 flex items-center justify-center opacity-40 text-[9px] font-black text-slate-500">{row.ref}</div>
                                                 <div className="flex-1 flex items-center justify-end px-4 font-black">
-                                                    {formData[row.key + '_amount'] || '-'}
+                                                    <input
+                                                        type="text"
+                                                        className="w-full bg-transparent text-right outline-none text-white text-xs"
+                                                        value={formData[row.key + '_amount'] || ""}
+                                                        onChange={(e) => handleFormChange(row.key + '_amount', e.target.value)}
+                                                        placeholder="0.00"
+                                                    />
                                                 </div>
                                             </div>
                                         ))}
-                                        <div className="flex bg-indigo-500/10 h-12 items-center font-black border-t-[2px] border-white">
-                                            <div className="w-[70%] border-r-[2px] border-white px-4 text-[26px]">សរុប [E25 = សរុប(E19:E24)] / Total</div>
-                                            <div className="flex-1 flex items-center justify-end px-4 text-indigo-400">{formData.e25_amount || '-'}</div>
+                                        <div className="flex bg-indigo-500/10 h-10 items-center font-black border-t-2 border-white">
+                                            <div className="w-[70%] border-r-2 border-white px-4 text-xs uppercase">សរុប [E25 = សរុប(E19:E24)] / Total</div>
+                                            <div className="flex-1 flex items-center justify-end px-4 text-indigo-400 text-xs">{formData.e25_amount || '0.00'}</div>
                                         </div>
                                     </div>
 
@@ -2120,17 +2338,10 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                     </div>
 
                                     {/* DECORATIVE FOOTER */}
-                                    <div className="mt-auto p-6 bg-white/5 border border-white/20 rounded-xl">
-                                        <div className="flex items-center gap-4 mb-2">
-                                            <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                                                <span className="text-emerald-400 font-black text-sm">i</span>
-                                            </div>
-                                            <span className="font-bold text-[28px] text-white/80">Table Layout Optimized</span>
-                                        </div>
-                                        <p className="text-[22px] text-white/40 leading-relaxed italic">
-                                            This table calculates the reconciliation between accounting profit and taxable income according to the Law on Taxation (LOT).
-                                            Non-deductible expenses (Add) and additional taxable income (Add) are added back, while additional tax deductions (Less) are subtracted.
-                                        </p>
+                                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 opacity-30 flex items-center gap-4 w-full justify-center">
+                                        <div className="text-[10px] uppercase tracking-[0.3em] font-black">Tax Calculation Schedule</div>
+                                        <div className="flex-1 max-w-[100px] h-[1px] bg-white"></div>
+                                        <div className="text-[10px] uppercase tracking-[0.3em] font-black px-4">Page 09</div>
                                     </div>
                                 </div>
                             </div>
@@ -2138,156 +2349,163 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                     )}
 
                     {activePage === 10 && (
-                        <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center">
+                        <div className="animate-fade-in relative px-4 pt-16 pb-8 flex flex-col items-center">
+                            {/* TIN HEADER ANCHORED TOP-LEFT */}
+                            <div className="absolute top-2 left-6 flex items-center gap-4 bg-[#020617] pr-6 py-2 z-20">
+                                <div className="flex flex-col">
+                                    <span className="text-[13px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">Tax Identification Number (TIN)</span>
+                                </div>
+                                <div className="flex gap-1 p-1 bg-black/40 rounded-lg border border-white/10 shadow-inner scale-90 origin-left">
+                                    {Array.from({ length: 4 }).map((_, i) => (
+                                        <div key={i} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-inner">
+                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i]}</span>
+                                        </div>
+                                    ))}
+                                    <div className="w-4 h-[2px] bg-white opacity-40 mx-1 self-center" />
+                                    {Array.from({ length: 9 }).map((_, i) => (
+                                        <div key={i + 4} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-inner">
+                                            <span className="text-lg font-black text-white">{(formData.tin || "")[i + 4]}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
                             {/* PAGE HEADER */}
-                            <div className="w-full max-w-7xl bg-white/5 backdrop-blur-md border-[2px] border-white p-8 shadow-2xl mb-10">
+                            <div className="w-full max-w-[1400px] mt-12 bg-slate-900/40 backdrop-blur-md border border-white/10 p-6 rounded-2xl shadow-2xl mb-8">
                                 <div className="flex justify-between items-start">
-                                    <div className="flex flex-col gap-2">
-                                        <h2 className="text-[136px] font-bold text-white leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការគណនាពន្ធលើប្រាក់ចំណូល (បន្ត)</h2>
-                                        <h1 className="text-[112px] font-black text-white uppercase tracking-tighter">TABLE OF INCOME TAX CALCULATION (CONT.)</h1>
+                                    <div className="flex flex-col gap-1">
+                                        <h2 className="text-3xl font-bold text-white leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការគណនាពន្ធលើប្រាក់ចំណូល (បន្ត)</h2>
+                                        <h1 className="text-slate-500 font-bold text-xs uppercase tracking-[0.2em]">TABLE OF INCOME TAX CALCULATION (CONT.)</h1>
                                     </div>
-                                    <div className="flex flex-col items-end gap-4">
+                                    <div className="flex flex-col items-end gap-2">
                                         <div className="flex gap-1">
                                             {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
-                                                <div key={i} className="w-10 h-12 border-[2px] border-white flex items-center justify-center bg-white/10">
-                                                    <span className="text-xl font-black text-white">{char}</span>
+                                                <div key={i} className="w-10 h-10 border border-white/20 flex items-center justify-center bg-white/5 rounded">
+                                                    <span className="text-lg font-black text-white">{char}</span>
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="flex flex-col gap-6">
-                                            <div className="flex items-center gap-6 bg-slate-950 p-6 border-[3px] border-white shadow-2xl">
-                                                <div className="flex flex-col items-end">
-                                                    <span className="text-[28px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
-                                                    <span className="text-[22px] font-black text-white/50 uppercase whitespace-nowrap">Tax Identification Number (TIN):</span>
-                                                </div>
-                                                <div className="flex gap-2">
-                                                    {Array.from({ length: 3 }).map((_, i) => (
-                                                        <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
-                                                            <span className="text-[32px] font-black text-white">{(formData.tin || "")[i]}</span>
-                                                        </div>
-                                                    ))}
-                                                    <div className="w-8 h-[3px] bg-white opacity-40 mx-2 self-center" />
-                                                    {Array.from({ length: 9 }).map((_, i) => (
-                                                        <div key={i + 3} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
-                                                            <span className="text-[32px] font-black text-white">{(formData.tin || "")[i + 3]}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <div className="text-slate-500 text-[9px] font-bold uppercase tracking-wider">Tax Period Year</div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="w-full max-w-[1600px] grid grid-cols-2 gap-10 items-start">
+                            <div className="w-full max-w-[1400px] mt-12 grid grid-cols-2 gap-[50px] items-start">
                                 {/* LEFT COLUMN: FURTHER ADJUSTMENTS & PROFITS */}
                                 <div className="flex flex-col gap-6">
                                     {/* SECTION: FURTHER DEDUCTIBLE EXPENSES */}
-                                    <div className="border-[2px] border-white overflow-hidden text-white bg-white/5 shadow-xl">
-                                        <div className="flex bg-emerald-500/10 border-b-[2px] border-white h-12 items-center px-4 gap-4">
-                                            <div className="bg-emerald-500/40 px-2 py-0.5 text-[20px] font-black uppercase">Less</div>
-                                            <span className="font-bold text-[28px] uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណាយផ្សេងទៀតអាចកាត់កងបាន</span>
+                                    <div className="border border-white/10 overflow-hidden text-white bg-slate-900/40 rounded-2xl shadow-xl backdrop-blur-sm">
+                                        <div className="flex bg-slate-800 border-b border-white/10 h-12 items-center px-4 gap-4">
+                                            <div className="bg-emerald-600 px-2 py-0.5 text-[9px] font-black uppercase rounded">Less</div>
+                                            <span className="font-bold text-xs uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណាយផ្សេងទៀតអាចកាត់កងបាន (Other Deductible Expenses)</span>
                                         </div>
                                         {[
                                             { ref: "E 28", kh: "ការថយចុះខ្ពស់នៃសំវិធានធន", en: "Decrease in provision", key: "e28" },
                                             { ref: "E 29", kh: "ខាតពីការលក់ទ្រព្យសកម្មថេរតាមច្បាប់ហិរញ្ញវត្ថុ", en: "Loss on disposal of fixed assets as per LOT", key: "e29" },
                                             { ref: "E 30", kh: "ចំណាយផ្សេងទៀតអាចកាត់កងតាមសារពើពន្ធ", en: "Other deductible expenses", key: "e30" },
                                         ].map((row, idx) => (
-                                            <div key={idx} className="flex border-b border-white/10 h-12 items-center hover:bg-white/5 transition-colors">
-                                                <div className="w-[60%] border-r-[2px] border-white px-4 flex flex-col justify-center">
-                                                    <span className="font-bold text-[24px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
-                                                    <span className="text-[20px] font-bold opacity-60">{row.en}</span>
+                                            <div key={idx} className="flex border-b border-white/10 h-11 items-center hover:bg-white/5 transition-colors">
+                                                <div className="w-[60%] border-r border-white/10 px-4 flex flex-col justify-center overflow-hidden">
+                                                    <span className="font-bold text-[11px] leading-tight truncate" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
+                                                    <span className="text-[8px] font-bold text-slate-500 uppercase truncate">{row.en}</span>
                                                 </div>
-                                                <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center opacity-40 text-[22px] font-black">{row.ref}</div>
-                                                <div className="flex-1 flex items-center justify-end px-4 font-black">
-                                                    {formData[row.key + '_amount'] || '-'}
+                                                <div className="w-[10%] border-r border-white/10 flex items-center justify-center text-[9px] font-black text-slate-500 bg-white/5 h-full">{row.ref}</div>
+                                                <div className="flex-1 flex items-center justify-end px-4 font-black text-xs">
+                                                    {formData[row.key + '_amount'] || '0.00'}
                                                 </div>
                                             </div>
                                         ))}
-                                        <div className="flex bg-emerald-500/20 h-12 items-center font-black border-t-[2px] border-white">
-                                            <div className="w-[70%] border-r-[2px] border-white px-4 text-[26px]">សរុប [E31 = សរុប(E28:E30)] / Total</div>
-                                            <div className="flex-1 flex items-center justify-end px-4 text-emerald-400">{formData.e31_amount || '-'}</div>
+                                        <div className="flex bg-emerald-500/10 h-12 items-center font-black border-t border-white/10 px-4">
+                                            <div className="w-[70%] border-r border-white/10 pr-4 flex justify-between">
+                                                <span className="text-[10px] uppercase font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សរុប (E31 = E28 + E29 + E30)</span>
+                                                <span className="text-[10px] uppercase text-slate-500">Total Deductions</span>
+                                            </div>
+                                            <div className="flex-1 flex items-center justify-end font-black text-emerald-400 text-xs">{formData.e31_amount || '0.00'}</div>
                                         </div>
                                     </div>
 
                                     {/* SECTION: INCOME NOT TAXABLE */}
-                                    <div className="border-[2px] border-white overflow-hidden text-white bg-white/5 shadow-xl">
-                                        <div className="flex bg-emerald-500/10 border-b-[2px] border-white h-12 items-center px-4 gap-4">
-                                            <div className="bg-emerald-500/40 px-2 py-0.5 text-[20px] font-black uppercase">Less</div>
-                                            <span className="font-bold text-[28px] uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណូលកត់ត្រាក្នុងបញ្ជីគណនេយ្យ តែមិនជាប់ពន្ធ</span>
+                                    <div className="border border-white/10 overflow-hidden text-white bg-slate-900/40 rounded-2xl shadow-xl backdrop-blur-sm">
+                                        <div className="flex bg-slate-800 border-b border-white/10 h-12 items-center px-4 gap-4">
+                                            <div className="bg-emerald-600 px-2 py-0.5 text-[9px] font-black uppercase rounded">Less</div>
+                                            <span className="font-bold text-xs uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណូលកត់ត្រាក្នុងបញ្ជីគណនេយ្យ តែមិនជាប់ពន្ធ (Income Not Taxable)</span>
                                         </div>
                                         {[
                                             { ref: "E 32", kh: "ភាគលាភដែលបានទទួលពីនិវាសនជន", en: "Dividend income received from resident taxpayers", key: "e32" },
                                             { ref: "E 33", kh: "ផលចំណេញពីការលក់ទ្រព្យសកម្មថេរតាមបញ្ជីគណនេយ្យ", en: "Gain on disposal of fixed assets as per accounting book", key: "e33" },
                                             { ref: "E 34", kh: "ចំណូលផ្សេងទៀតកត់ត្រាក្នុងបញ្ជីគណនេយ្យ តែមិនជាប់ពន្ធ", en: "Other incomes recorded in books, but not taxable", key: "e34" },
                                         ].map((row, idx) => (
-                                            <div key={idx} className="flex border-b border-white/10 h-14 items-center hover:bg-white/5 transition-colors">
-                                                <div className="w-[60%] border-r-[2px] border-white px-4 flex flex-col justify-center">
-                                                    <span className="font-bold text-[24px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
-                                                    <span className="text-[20px] font-bold opacity-60">{row.en}</span>
+                                            <div key={idx} className="flex border-b border-white/10 h-11 items-center hover:bg-white/5 transition-colors">
+                                                <div className="w-[60%] border-r border-white/10 px-4 flex flex-col justify-center overflow-hidden">
+                                                    <span className="font-bold text-[11px] leading-tight truncate" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
+                                                    <span className="text-[8px] font-bold text-slate-500 uppercase truncate">{row.en}</span>
                                                 </div>
-                                                <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center opacity-40 text-[22px] font-black">{row.ref}</div>
-                                                <div className="flex-1 flex items-center justify-end px-4 font-black">
-                                                    {formData[row.key + '_amount'] || '-'}
+                                                <div className="w-[10%] border-r border-white/10 flex items-center justify-center text-[9px] font-black text-slate-500 bg-white/5 h-full">{row.ref}</div>
+                                                <div className="flex-1 flex items-center justify-end px-4 font-black text-xs">
+                                                    {formData[row.key + '_amount'] || '0.00'}
                                                 </div>
                                             </div>
                                         ))}
-                                        <div className="flex bg-emerald-500/20 h-12 items-center font-black border-t-[2px] border-white">
-                                            <div className="w-[70%] border-r-[2px] border-white px-4 text-[26px]">សរុប [E35 = សរុប(E32:E34)] / Total</div>
-                                            <div className="flex-1 flex items-center justify-end px-4 text-emerald-400">{formData.e35_amount || '-'}</div>
+                                        <div className="flex bg-emerald-500/10 h-12 items-center font-black border-t border-white/10 px-4">
+                                            <div className="w-[70%] border-r border-white/10 pr-4 flex justify-between">
+                                                <span className="text-[10px] uppercase font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សរុប (E35 = E32 + E33 + E34)</span>
+                                                <span className="text-[10px] uppercase text-slate-500">Total Non-Taxable</span>
+                                            </div>
+                                            <div className="flex-1 flex items-center justify-end font-black text-emerald-400 text-xs">{formData.e35_amount || '0.00'}</div>
                                         </div>
                                     </div>
 
                                     {/* SECTION: PROFIT AFTER ADJUSTMENTS & CHARITABLE */}
                                     <div className="flex flex-col gap-4">
-                                        <div className="border-[3px] border-white h-20 bg-indigo-500/20 flex items-center font-black text-white shadow-2xl">
-                                            <div className="w-[60%] border-r-[2px] border-white px-6">
-                                                <span className="text-[32px] leading-tight block" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រាក់ចំណេញ/(ខាត) ក្រោយការបន្ស៊ាំ (E36 = E1 + E18 + E25 - E31 - E35)</span>
-                                                <span className="text-[22px] block opacity-80 uppercase">Profit/(Loss) After Adjustments</span>
+                                        <div className="border border-white/10 h-16 bg-indigo-500/20 rounded-2xl flex items-center font-black text-white shadow-xl overflow-hidden backdrop-blur-sm">
+                                            <div className="w-[60%] border-r border-white/10 px-6">
+                                                <span className="text-xs font-bold block" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រាក់ចំណេញ/(ខាត) ក្រោយការបន្ស៊ាំ (E36 = E1 + E18 + E25 - E31 - E35)</span>
+                                                <span className="text-[8px] block text-slate-400 uppercase tracking-wider">Profit/(Loss) After Adjustments</span>
                                             </div>
-                                            <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center opacity-40 text-[24px]">E 36</div>
-                                            <div className="flex-1 flex items-center justify-end px-6 text-[44px]">
-                                                {formData.e36_amount || '-'}
+                                            <div className="w-[10%] border-r border-white/10 flex items-center justify-center font-black text-[10px] text-slate-500">E 36</div>
+                                            <div className="flex-1 flex items-center justify-end px-6 text-sm">
+                                                {formData.e36_amount || '0.00'}
                                             </div>
                                         </div>
 
-                                        <div className="border-[2px] border-white h-14 bg-rose-500/10 flex items-center text-white">
-                                            <div className="w-[60%] border-r-[2px] border-white px-6 flex items-center gap-4">
-                                                <div className="bg-rose-500 px-2 py-0.5 text-[20px] font-black uppercase">Add</div>
-                                                <div className="flex flex-col">
-                                                    <span className="text-[24px] font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណាយលើវិភាគទានសប្បុរសធម៌មិនអនុញ្ញាត</span>
-                                                    <span className="text-[20px] opacity-60">Non-deductible charitable contributions</span>
+                                        <div className="border border-white/10 h-12 bg-rose-500/10 flex items-center text-white rounded-xl overflow-hidden">
+                                            <div className="w-[60%] border-r border-white/10 px-6 flex items-center gap-4">
+                                                <div className="bg-rose-500 px-2 py-0.5 text-[8px] font-black uppercase rounded">Add</div>
+                                                <div className="flex flex-col truncate">
+                                                    <span className="text-[11px] font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណាយលើវិភាគទានសប្បុរសធម៌មិនអនុញ្ញាត</span>
+                                                    <span className="text-[8px] opacity-60">Non-deductible charitable contributions</span>
                                                 </div>
                                             </div>
-                                            <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center opacity-40 text-[24px] font-black">E 37</div>
-                                            <div className="flex-1 flex items-center justify-end px-6 font-black">{formData.e37_amount || '-'}</div>
+                                            <div className="w-[10%] border-r border-white/10 flex items-center justify-center text-[10px] font-black text-slate-500">E 37</div>
+                                            <div className="flex-1 flex items-center justify-end px-6 font-black text-xs">{formData.e37_amount || '0.00'}</div>
                                         </div>
 
-                                        <div className="border-[2px] border-white h-14 bg-indigo-500/10 flex items-center text-white">
-                                            <div className="w-[60%] border-r-[2px] border-white px-6">
-                                                <span className="text-[26px] font-black leading-tight block" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រាក់ចំណេញ/(ខាត) មុនការបន្ស៊ាំការប្រាក់ (E38 = E36 + E37)</span>
-                                                <span className="text-[20px] opacity-60 uppercase">Profit/(Loss) before interest adjustment</span>
+                                        <div className="border border-white/10 h-12 bg-indigo-500/10 flex items-center text-white rounded-xl overflow-hidden">
+                                            <div className="w-[60%] border-r border-white/10 px-6">
+                                                <span className="text-[11px] font-black leading-tight block" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រាក់ចំណេញ/(ខាត) មុនការបន្ស៊ាំការប្រាក់ (E38 = E36 + E37)</span>
+                                                <span className="text-[8px] opacity-60 uppercase">Profit/(Loss) before interest adjustment</span>
                                             </div>
-                                            <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center opacity-40 text-[24px] font-black">E 38</div>
-                                            <div className="flex-1 flex items-center justify-end px-6 font-black text-[36px]">{formData.e38_amount || '-'}</div>
+                                            <div className="w-[10%] border-r border-white/10 flex items-center justify-center text-[10px] font-black text-slate-500">E 38</div>
+                                            <div className="flex-1 flex items-center justify-end px-6 font-black text-sm">{formData.e38_amount || '0.00'}</div>
                                         </div>
 
-                                        <div className="border-[2px] border-white h-14 bg-indigo-500/20 flex items-center text-white">
-                                            <div className="w-[60%] border-r-[2px] border-white px-6">
-                                                <span className="text-[26px] font-black leading-tight block" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>និយតកម្មការប្រាក់ (E39 = +/-)</span>
-                                                <span className="text-[20px] opacity-60 uppercase">Adjusted interest expenses</span>
+                                        <div className="border border-white/10 h-12 bg-indigo-500/20 flex items-center text-white rounded-xl overflow-hidden">
+                                            <div className="w-[60%] border-r border-white/10 px-6">
+                                                <span className="text-[11px] font-black leading-tight block" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>និយតកម្មការប្រាក់ (E39 = +/-)</span>
+                                                <span className="text-[8px] opacity-60 uppercase">Adjusted interest expenses</span>
                                             </div>
-                                            <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center opacity-40 text-[24px] font-black">E 39</div>
-                                            <div className="flex-1 flex items-center justify-end px-6 font-black">{formData.e39_amount || '-'}</div>
+                                            <div className="w-[10%] border-r border-white/10 flex items-center justify-center text-[10px] font-black text-slate-500">E 39</div>
+                                            <div className="flex-1 flex items-center justify-end px-6 font-black text-sm">{formData.e39_amount || '0.00'}</div>
                                         </div>
 
-                                        <div className="border-[2px] border-white h-16 bg-emerald-500/20 flex items-center text-white border-t-[4px]">
-                                            <div className="w-[60%] border-r-[2px] border-white px-6">
-                                                <span className="text-[30px] font-black leading-tight block" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រាក់ចំណេញ/(ខាត) ក្នុងគ្រា (E40 = E38 +/- E39)</span>
-                                                <span className="text-[22px] opacity-60 uppercase">Profit/(Loss) During the Period</span>
+                                        <div className="border border-emerald-500/30 h-16 bg-emerald-500/20 flex items-center text-white rounded-2xl overflow-hidden shadow-lg">
+                                            <div className="w-[60%] border-r border-white/10 px-6">
+                                                <span className="text-sm font-black leading-tight block" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រាក់ចំណេញ/(ខាត) ក្នុងគ្រា (E40 = E38 +/- E39)</span>
+                                                <span className="text-[9px] opacity-60 uppercase">Profit/(Loss) During the Period</span>
                                             </div>
-                                            <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center opacity-40 text-[24px] font-black">E 40</div>
-                                            <div className="flex-1 flex items-center justify-end px-6 font-black text-[40px] text-emerald-400">{formData.e40_amount || '-'}</div>
+                                            <div className="w-[10%] border-r border-white/10 flex items-center justify-center text-[11px] font-black text-emerald-400">E 40</div>
+                                            <div className="flex-1 flex items-center justify-end px-6 font-black text-xl text-emerald-400">{formData.e40_amount || '0.00'}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -2295,36 +2513,36 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                 {/* RIGHT COLUMN: TAX CALCULATION & FINAL PAYABLE */}
                                 <div className="flex flex-col gap-6">
                                     {/* SECTION: TAXABLE INCOME CALCULATION */}
-                                    <div className="border-[2px] border-white overflow-hidden text-white bg-white/5 shadow-xl">
-                                        <div className="flex bg-white/10 border-b-[2px] border-white h-12 items-center px-6">
-                                            <span className="font-bold text-[28px] uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការគណនាប្រាក់ចំណូលជាប់ពន្ធ</span>
+                                    <div className="border border-white/10 overflow-hidden text-white bg-slate-900/40 rounded-2xl shadow-xl backdrop-blur-sm mt-8">
+                                        <div className="flex bg-white/10 border-b border-white/10 h-10 items-center px-4">
+                                            <span className="font-bold text-[10px] uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការគណនាប្រាក់ចំណូលជាប់ពន្ធ</span>
                                         </div>
-                                        <div className="flex border-b border-white/10 h-14 items-center px-6">
-                                            <div className="w-[60%] flex gap-4 items-center">
-                                                <div className="bg-emerald-500/40 px-2 py-0.5 text-[20px] font-black uppercase">Less</div>
-                                                <div className="flex flex-col">
-                                                    <span className="text-[24px] font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការខាតកន្លងមកអនុញ្ញាតឱ្យកាត់</span>
-                                                    <span className="text-[20px] opacity-60">Accumulated losses brought forward</span>
+                                        <div className="flex border-b border-white/10 h-12 items-center px-4">
+                                            <div className="w-[60%] flex gap-4 items-center overflow-hidden">
+                                                <div className="bg-emerald-600/40 px-2 py-0.5 text-[8px] font-black uppercase rounded">Less</div>
+                                                <div className="flex flex-col truncate">
+                                                    <span className="text-[11px] font-bold truncate" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការខាតកន្លងមកអនុញ្ញាតឱ្យកាត់</span>
+                                                    <span className="text-[8px] opacity-60 truncate">Accumulated losses brought forward</span>
                                                 </div>
                                             </div>
-                                            <div className="w-[10%] flex justify-center opacity-40 text-[22px] font-black">E 41</div>
-                                            <div className="flex-1 flex justify-end font-black">{formData.e41_amount || '-'}</div>
+                                            <div className="w-[10%] flex justify-center opacity-40 text-[9px] font-black">E 41</div>
+                                            <div className="flex-1 flex justify-end font-black text-xs text-right pr-2">{formData.e41_amount || '0.00'}</div>
                                         </div>
-                                        <div className="flex h-20 bg-indigo-500/30 items-center px-6 border-t-[3px] border-white">
-                                            <div className="w-[70%] border-r-[2px] border-white pr-6">
-                                                <span className="text-[32px] font-black leading-tight block" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រាក់ចំណូលជាប់ពន្ធ / (ខាត) ចរន្ត (E42 = E40 - E41)</span>
-                                                <span className="text-[22px] opacity-60 uppercase">Taxable Income / (Loss) for Tax Calculation</span>
+                                        <div className="flex h-16 bg-indigo-500/30 items-center px-4 border-t border-white/20">
+                                            <div className="w-[70%] border-r border-white/10 pr-4">
+                                                <span className="text-sm font-black leading-tight block" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រាក់ចំណូលជាប់ពន្ធ / (ខាត) ចរន្ត (E42 = E40 - E41)</span>
+                                                <span className="text-[9px] opacity-60 uppercase">Taxable Income / (Loss)</span>
                                             </div>
-                                            <div className="flex-1 flex justify-end text-[44px] font-black text-indigo-300">
-                                                {formData.e42_amount || '-'}
+                                            <div className="flex-1 flex justify-end text-xl font-black text-indigo-300">
+                                                {formData.e42_amount || '0.00'}
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* SECTION: FINAL TAX PAYABLE SUMMARY */}
-                                    <div className="border-[2px] border-white overflow-hidden text-white bg-white/5 shadow-3xl">
-                                        <div className="flex bg-indigo-500/40 h-12 items-center px-6 border-b-[2px] border-white">
-                                            <span className="font-black text-[28px] uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ពន្ធដែលត្រូវបង់ / ឥណទានពន្ធ</span>
+                                    {/* SECTION: FINAL TAX PAYABLE SUMMARY (Gap Added) */}
+                                    <div className="border border-white/10 overflow-hidden text-white bg-slate-900/40 rounded-2xl shadow-xl backdrop-blur-sm mt-8">
+                                        <div className="flex bg-indigo-500/20 h-10 items-center px-4 border-b border-white/10">
+                                            <span className="font-black text-[10px] uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ពន្ធដែលត្រូវបង់ / ឥណទានពន្ធ (Summary)</span>
                                         </div>
                                         <div className="flex flex-col">
                                             {[
@@ -2332,54 +2550,75 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 { ref: "E 50", kh: "កាតព្វកិច្ចពន្ធលើប្រាក់ចំណូល (E50 = E47 - E49)", en: "Income Tax Liability", key: "e50", bg: "bg-indigo-500/10" },
                                                 { ref: "E 51", kh: "ពន្ធអប្បបរមា", en: "Minimum Tax", key: "e51", bg: "bg-white/5" },
                                             ].map((row, idx) => (
-                                                <div key={idx} className={`flex border-b border-white/10 h-14 items-center px-6 ${row.bg}`}>
-                                                    <div className="w-[60%] flex flex-col">
-                                                        <span className="text-[26px] font-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
-                                                        <span className="text-[20px] opacity-60 uppercase tracking-tighter">{row.en}</span>
+                                                <div key={idx} className={`flex border-b border-white/10 h-12 items-center px-4 ${row.bg}`}>
+                                                    <div className="w-[60%] flex flex-col truncate">
+                                                        <span className="text-[11px] font-black truncate" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
+                                                        <span className="text-[8px] opacity-60 uppercase truncate">{row.en}</span>
                                                     </div>
-                                                    <div className="w-[10%] flex justify-center opacity-40 text-[22px] font-black">{row.ref}</div>
-                                                    <div className="flex-1 flex justify-end font-black">{formData[row.key + '_amount'] || '-'}</div>
+                                                    <div className="w-[10%] flex justify-center opacity-40 text-[9px] font-black text-slate-500">{row.ref}</div>
+                                                    <div className="flex-1 flex justify-end font-black text-xs">{formData[row.key + '_amount'] || '0.00'}</div>
                                                 </div>
                                             ))}
 
-                                            <div className="flex bg-emerald-500/40 h-28 items-center px-8 border-t-[4px] border-white">
-                                                <div className="w-[60%] border-r-[2px] border-white pr-6">
-                                                    <span className="text-[40px] font-black leading-tight block" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ពន្ធលើប្រាក់ចំណូលដែលត្រូវបង់ (E59)</span>
-                                                    <span className="text-[26px] opacity-80 uppercase font-black">Income tax payable / Tax credit forward</span>
+                                            <div className="flex bg-emerald-500/40 h-20 items-center px-6 border-t-2 border-white/30">
+                                                <div className="w-[60%] border-r border-white/10 pr-4">
+                                                    <span className="text-sm font-black leading-tight block" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ពន្ធលើប្រាក់ចំណូលដែលត្រូវបង់ (E59)</span>
+                                                    <span className="text-[9px] opacity-80 uppercase font-black">Income tax payable</span>
                                                 </div>
                                                 <div className="flex-1 flex flex-col items-end">
-                                                    <span className="text-[64px] font-black text-emerald-300 antialiased tracking-tighter">
+                                                    <span className="text-2xl font-black text-emerald-300 antialiased tracking-tighter">
                                                         {formData.e59_amount || '$ 0.00'}
                                                     </span>
-                                                    <span className="text-[20px] font-black opacity-50 uppercase tracking-[0.2em]">Final Assessment</span>
+                                                    <span className="text-[8px] font-black opacity-50 uppercase tracking-[0.2em]">Final Assessment</span>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* SECTION: ADDITIONAL TAX CREDITS Section (E55-E58) */}
-                                    <div className="p-6 bg-white/5 border border-white/20 rounded-xl mt-4">
-                                        <div className="flex items-center gap-4 mb-4">
-                                            <div className="w-10 h-10 rounded-full bg-indigo-500/30 flex items-center justify-center border border-white/20">
-                                                <span className="text-indigo-300 font-black text-lg">CP</span>
+                                    <div className="p-4 bg-white/5 border border-white/10 rounded-2xl mt-8">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <div className="w-8 h-8 rounded-full bg-indigo-500/30 flex items-center justify-center border border-white/10">
+                                                <span className="text-indigo-300 font-black text-xs">CP</span>
                                             </div>
                                             <div className="flex flex-col">
-                                                <span className="font-black text-[28px] text-white">Tax Credits (E55 - E58)</span>
-                                                <span className="text-[20px] text-white/40 italic">Credits including WHT, Prepayments, and Carry Forwards</span>
+                                                <span className="font-black text-xs text-white uppercase tracking-wider">Tax Credits (E55 - E58)</span>
+                                                <span className="text-[8px] text-white/40 italic">Credits including WHT, Prepayments, and Carry Forwards</span>
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
-                                            <div className="bg-white/5 p-4 rounded-lg border border-white/10">
-                                                <span className="text-[22px] block opacity-40 mb-1">E 55+56 (Paid)</span>
-                                                <span className="text-[32px] font-black text-white">{formData.e55_56_combined || '-'}</span>
+                                            <div className="bg-white/5 p-3 rounded-xl border border-white/10">
+                                                <span className="text-[8px] block opacity-40 mb-1 uppercase font-bold">E 55+56 (Paid)</span>
+                                                <span className="text-sm font-black text-white">{formData.e55_56_combined || '0.00'}</span>
                                             </div>
-                                            <div className="bg-white/5 p-4 rounded-lg border border-white/10">
-                                                <span className="text-[22px] block opacity-40 mb-1">E 58 (BF)</span>
-                                                <span className="text-[32px] font-black text-white">{formData.e58_amount || '-'}</span>
+                                            <div className="bg-white/5 p-3 rounded-xl border border-white/10">
+                                                <span className="text-[8px] block opacity-40 mb-1 uppercase font-bold">E 58 (BF)</span>
+                                                <span className="text-sm font-black text-white">{formData.e58_amount || '0.00'}</span>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+
+                            {/* INTEREST EXPENSE LEGAL NOTE - FIXED BOTTOM */}
+                            <div className="w-full max-w-[1400px] mt-12 p-[15px] bg-slate-900/60 border border-white/10 rounded-2xl shadow-inner mb-8">
+                                <div className="flex items-start gap-4">
+                                    <div className="shrink-0 w-8 h-8 rounded-lg bg-orange-500/20 border border-orange-500/40 flex items-center justify-center">
+                                        <span className="text-orange-400 font-black text-lg">!</span>
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                        <p className="text-[11px] text-white/80 leading-relaxed font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                            សម្គាល់៖ ការគណនានិយតកម្មការប្រាក់ (E39) ត្រូវធ្វើឡើងតាមបទប្បញ្ញត្តិបច្ចុប្បន្ននៃច្បាប់ស្តីពីសារពើពន្ធ។
+                                        </p>
+                                        <p className="text-[9px] text-white/40 italic">
+                                            Note: Interest expense adjustment (E39) must be calculated in accordance with the current provisions of the Law on Taxation (LOT).
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="opacity-30 absolute bottom-4 text-[10px] font-black uppercase tracking-[0.3em]">
+                                INCOME TAX SCHEDULE PAGE 10
                             </div>
                         </div>
                     )}
@@ -2406,15 +2645,35 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 <span className="text-[16px] font-black text-white/50 uppercase whitespace-nowrap">Tax Identification Number (TIN):</span>
                                             </div>
                                             <div className="flex gap-1.5">
-                                                {Array.from({ length: 3 }).map((_, i) => (
-                                                    <div key={i} className="w-10 h-14 border-[2px] border-white flex items-center justify-center bg-white/5">
-                                                        <span className="text-[26px] font-black text-white">{(formData.tin || "")[i]}</span>
+                                                {Array.from({ length: 4 }).map((_, i) => (
+                                                    <div key={i} className="w-10 h-14 border-[2px] border-white flex items-center justify-center bg-white/5 overflow-hidden">
+                                                        <input
+                                                            type="text"
+                                                            maxLength="1"
+                                                            className="w-full h-full text-center bg-transparent border-none outline-none text-[26px] font-black text-white"
+                                                            value={(formData.tin || "")[i] || ""}
+                                                            onChange={(e) => {
+                                                                const current = (formData.tin || "             ").split('');
+                                                                current[i] = e.target.value;
+                                                                handleFormChange('tin', current.join(''));
+                                                            }}
+                                                        />
                                                     </div>
                                                 ))}
                                                 <div className="w-6 h-[2px] bg-white opacity-40 mx-1 self-center" />
                                                 {Array.from({ length: 9 }).map((_, i) => (
-                                                    <div key={i + 3} className="w-10 h-14 border-[2px] border-white flex items-center justify-center bg-white/5">
-                                                        <span className="text-[26px] font-black text-white">{(formData.tin || "")[i + 3]}</span>
+                                                    <div key={i + 4} className="w-10 h-14 border-[2px] border-white flex items-center justify-center bg-white/5 overflow-hidden">
+                                                        <input
+                                                            type="text"
+                                                            maxLength="1"
+                                                            className="w-full h-full text-center bg-transparent border-none outline-none text-[26px] font-black text-white"
+                                                            value={(formData.tin || "")[i + 4] || ""}
+                                                            onChange={(e) => {
+                                                                const current = (formData.tin || "             ").split('');
+                                                                current[i + 4] = e.target.value;
+                                                                handleFormChange('tin', current.join(''));
+                                                            }}
+                                                        />
                                                     </div>
                                                 ))}
                                             </div>
@@ -2435,27 +2694,6 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                     </div>
                                 </div>
 
-                                <div className="w-full flex justify-center mt-12 gap-8 items-center">
-                                    <div className="flex flex-col items-end">
-                                        <span className="text-[20px] font-bold text-white" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
-                                        <span className="text-[16px] font-black text-white/40 uppercase">Tax Identification Number (TIN):</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <div className="flex gap-1">
-                                            {Array.from({ length: 3 }).map((_, i) => (
-                                                <div key={i} className="w-9 h-12 border-[2px] border-white flex items-center justify-center bg-white/5">
-                                                    <span className="text-[22px] font-black text-white">{(formData.tin || "")[i]}</span>
-                                                </div>
-                                            ))}
-                                            <div className="w-6 h-[2.5px] bg-white opacity-40 mx-2 self-center" />
-                                            {Array.from({ length: 9 }).map((_, i) => (
-                                                <div key={i + 3} className="w-9 h-12 border-[2px] border-white flex items-center justify-center bg-white/5">
-                                                    <span className="text-[22px] font-black text-white">{(formData.tin || "")[i + 3]}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
 
                             <div className="w-full max-w-6xl flex flex-col gap-20">
@@ -2477,7 +2715,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                         </div>
 
                                         {[
-                                            { ref: "F 1", kh: "ប្រាក់ចំណេញសុទ្ធ/(ខាត) ក្រោយបន្សាំ (F1 = E36)", en: "Profit/(loss) after adjustment (F1 = E36)", key: "f1" },
+                                            { ref: "F 1", kh: "ប្រាក់ចំណេញសុទ្ធ/(ខាត) ក្រោយបន្សាំ (F1 = E36)", en: "Profit/(loss) after adjustment (F1 = E36)", key: "f1", isCalculated: true },
                                             { ref: "F 2", kh: "ចំណាយសប្បុរសធម៌", en: "Charitable contributions", key: "f2" },
                                             { ref: "F 3", kh: "ប្រាក់ចំណូលសុទ្ធសំរាប់គណនាភាគទានសប្បុរសធម៌ (F3 = F1 + F2)", en: "Adjusted income for calculation (F3 = F1 + F2)", key: "f3", isCalculated: true },
                                             { ref: "F 4", kh: "ចំណាយសប្បុរសធម៌អតិបរមា (F4 = F3 x 5%)", en: "Maximum deductible contributions (F4 = F3 x 5%)", key: "f4", isCalculated: true },
@@ -2493,7 +2731,14 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 </div>
                                                 <div className="w-[15%] border-r-[4px] border-white flex items-center justify-center opacity-40 text-[22px] font-black">{row.ref}</div>
                                                 <div className={`w-[25%] flex items-center justify-end px-10 font-black ${row.isGrandTotal ? 'text-[42px] text-rose-400' : 'text-[32px]'}`}>
-                                                    <input type="text" className="w-full bg-transparent text-right outline-none" value={formData[row.key] || ""} onChange={(e) => handleFormChange(row.key, e.target.value)} placeholder="-" />
+                                                    <input
+                                                        type="text"
+                                                        className={`w-full bg-transparent text-right outline-none ${row.isCalculated || row.isGrandTotal ? 'cursor-default opacity-80' : ''}`}
+                                                        value={formData[row.key] || ""}
+                                                        onChange={(e) => handleFormChange(row.key, e.target.value)}
+                                                        readOnly={row.isCalculated || row.isGrandTotal}
+                                                        placeholder="-"
+                                                    />
                                                 </div>
                                             </div>
                                         ))}
@@ -2518,7 +2763,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                         </div>
 
                                         {[
-                                            { ref: "G 1", kh: "ប្រាក់ចំណេញសុទ្ធ/(ខាត) មុនការបន្សាំការប្រាក់ (G1 = E38)", en: "Net Profit/(loss) before interest adjustment (G1 = E38)", key: "g1" },
+                                            { ref: "G 1", kh: "ប្រាក់ចំណេញសុទ្ធ/(ខាត) មុនការបន្សាំការប្រាក់ (G1 = E38)", en: "Net Profit/(loss) before interest adjustment (G1 = E38)", key: "g1", isCalculated: true },
                                             { ref: "G 2", kh: "បូក៖ ចំណាយការប្រាក់ក្នុងគ្រា", en: "Add: Interest expenses during the period", key: "g2" },
                                             { ref: "G 3", kh: "ដក៖ ចំណូលការប្រាក់ក្នុងគ្រា", en: "Less: Interest income during the period", key: "g3" },
                                             { ref: "G 4", kh: "ចំណូលសុទ្ធគ្មានការប្រាក់ (G4 = G1 + G2 - G3 បើ >= 0)", en: "Net non-interest income (G4 = G1 + G2 - G3)", key: "g4", isCalculated: true },
@@ -2536,7 +2781,14 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 </div>
                                                 <div className="w-[15%] border-r-[4px] border-white flex items-center justify-center opacity-40 text-[22px] font-black">{row.ref}</div>
                                                 <div className={`w-[25%] flex items-center justify-end px-10 font-black ${row.isGrandTotal ? 'text-[42px] text-rose-400' : 'text-[32px]'}`}>
-                                                    <input type="text" className="w-full bg-transparent text-right outline-none" value={formData[row.key] || ""} onChange={(e) => handleFormChange(row.key, e.target.value)} placeholder="-" />
+                                                    <input
+                                                        type="text"
+                                                        className={`w-full bg-transparent text-right outline-none ${row.isCalculated || row.isGrandTotal ? 'cursor-default opacity-80' : ''}`}
+                                                        value={formData[row.key] || ""}
+                                                        onChange={(e) => handleFormChange(row.key, e.target.value)}
+                                                        readOnly={row.isCalculated || row.isGrandTotal}
+                                                        placeholder="-"
+                                                    />
                                                 </div>
                                             </div>
                                         ))}
@@ -2576,15 +2828,15 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 <span className="text-[22px] font-black text-white/50 uppercase whitespace-nowrap">Tax Identification Number (TIN):</span>
                                             </div>
                                             <div className="flex gap-2">
-                                                {Array.from({ length: 3 }).map((_, i) => (
+                                                {Array.from({ length: 4 }).map((_, i) => (
                                                     <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
                                                         <span className="text-[32px] font-black text-white">{(formData.tin || "")[i]}</span>
                                                     </div>
                                                 ))}
                                                 <div className="w-8 h-[3px] bg-white opacity-40 mx-2 self-center" />
                                                 {Array.from({ length: 9 }).map((_, i) => (
-                                                    <div key={i + 3} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
-                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "")[i + 3]}</span>
+                                                    <div key={i + 4} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
+                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "")[i + 4]}</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -2643,12 +2895,12 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                                         <div className="w-full h-1 bg-white rotate-[15deg]"></div>
                                                                         <div className="w-full h-1 bg-white -rotate-[15deg]"></div>
                                                                     </div>
-                                                                ) : <input type="text" className="w-full bg-transparent text-right outline-none text-white" placeholder="0.00" />}
+                                                                ) : <input type="text" className="w-full bg-transparent text-right outline-none text-white" value={formData[`g9_${i}`] || ""} onChange={(e) => handleFormChange(`g9_${i}`, e.target.value)} placeholder="0.00" />}
                                                             </td>
-                                                            <td className="border-r-[2px] border-white p-4"><input type="text" className="w-full bg-transparent text-right outline-none" placeholder="0.00" /></td>
-                                                            <td className="border-r-[2px] border-white p-4 font-black text-emerald-400 bg-emerald-500/10"><input type="text" className="w-full bg-transparent text-right outline-none" placeholder="0.00" /></td>
-                                                            <td className="border-r-[2px] border-white p-4"><input type="text" className="w-full bg-transparent text-right outline-none text-white/40" placeholder="0.00" /></td>
-                                                            <td className="p-4 font-black text-rose-300 bg-rose-500/5"><input type="text" className="w-full bg-transparent text-right outline-none" placeholder="0.00" /></td>
+                                                            <td className="border-r-[2px] border-white p-4"><input type="text" className="w-full bg-transparent text-right outline-none" value={formData[`g10_${i}`] || ""} onChange={(e) => handleFormChange(`g10_${i}`, e.target.value)} placeholder="0.00" /></td>
+                                                            <td className="border-r-[2px] border-white p-4 font-black text-emerald-400 bg-emerald-500/10"><input type="text" className="w-full bg-transparent text-right outline-none" value={formData[`g11_${i}`] || ""} onChange={(e) => handleFormChange(`g11_${i}`, e.target.value)} placeholder="0.00" /></td>
+                                                            <td className="border-r-[2px] border-white p-4"><input type="text" className="w-full bg-transparent text-right outline-none text-white/40" value={formData[`g12_${i}`] || ""} onChange={(e) => handleFormChange(`g12_${i}`, e.target.value)} placeholder="0.00" /></td>
+                                                            <td className="p-4 font-black text-rose-300 bg-rose-500/5"><input type="text" className="w-full bg-transparent text-right outline-none" value={formData[`g13_${i}`] || ""} onChange={(e) => handleFormChange(`g13_${i}`, e.target.value)} placeholder="0.00" /></td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
@@ -2743,15 +2995,15 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 <span className="text-[22px] font-black text-white/50 uppercase whitespace-nowrap">Tax Identification Number (TIN):</span>
                                             </div>
                                             <div className="flex gap-2">
-                                                {Array.from({ length: 3 }).map((_, i) => (
+                                                {Array.from({ length: 4 }).map((_, i) => (
                                                     <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
                                                         <span className="text-[32px] font-black text-white">{(formData.tin || "")[i]}</span>
                                                     </div>
                                                 ))}
                                                 <div className="w-8 h-[3px] bg-white opacity-40 mx-2 self-center" />
                                                 {Array.from({ length: 9 }).map((_, i) => (
-                                                    <div key={i + 3} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
-                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "")[i + 3]}</span>
+                                                    <div key={i + 4} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
+                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "")[i + 4]}</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -2931,15 +3183,15 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 <span className="text-[22px] font-black text-white/50 uppercase whitespace-nowrap">Tax Identification Number (TIN):</span>
                                             </div>
                                             <div className="flex gap-2">
-                                                {Array.from({ length: 3 }).map((_, i) => (
+                                                {Array.from({ length: 4 }).map((_, i) => (
                                                     <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
                                                         <span className="text-[32px] font-black text-white">{(formData.tin || "")[i]}</span>
                                                     </div>
                                                 ))}
                                                 <div className="w-8 h-[3px] bg-white opacity-40 mx-2 self-center" />
                                                 {Array.from({ length: 9 }).map((_, i) => (
-                                                    <div key={i + 3} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
-                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "")[i + 3]}</span>
+                                                    <div key={i + 4} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
+                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "")[i + 4]}</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -3062,15 +3314,15 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 <span className="text-[18px] font-black text-white/50 uppercase whitespace-nowrap">Tax Identification Number (TIN):</span>
                                             </div>
                                             <div className="flex gap-1.5">
-                                                {Array.from({ length: 3 }).map((_, i) => (
+                                                {Array.from({ length: 4 }).map((_, i) => (
                                                     <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
                                                         <span className="text-[32px] font-black text-white">{(formData.tin || "")[i]}</span>
                                                     </div>
                                                 ))}
                                                 <div className="w-6 h-[2px] bg-white opacity-40 mx-1 self-center" />
                                                 {Array.from({ length: 9 }).map((_, i) => (
-                                                    <div key={i + 3} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
-                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "")[i + 3]}</span>
+                                                    <div key={i + 4} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
+                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "")[i + 4]}</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -3243,15 +3495,15 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 <span className="text-[18px] font-black text-white/50 uppercase whitespace-nowrap">Tax Identification Number (TIN):</span>
                                             </div>
                                             <div className="flex gap-1.5">
-                                                {Array.from({ length: 3 }).map((_, i) => (
+                                                {Array.from({ length: 4 }).map((_, i) => (
                                                     <div key={i} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
                                                         <span className="text-[32px] font-black text-white">{(formData.tin || "")[i]}</span>
                                                     </div>
                                                 ))}
                                                 <div className="w-6 h-[2px] bg-white opacity-40 mx-1 self-center" />
                                                 {Array.from({ length: 9 }).map((_, i) => (
-                                                    <div key={i + 3} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
-                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "")[i + 3]}</span>
+                                                    <div key={i + 4} className="w-12 h-16 border-[3px] border-white flex items-center justify-center bg-white/5 shadow-inner">
+                                                        <span className="text-[32px] font-black text-white">{(formData.tin || "")[i + 4]}</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -3407,15 +3659,15 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                         <span className="text-white/40 font-black text-[18px] uppercase">Tax Identification Number (TIN):</span>
                                     </div>
                                     <div className="flex gap-2 ml-auto">
-                                        {Array.from({ length: 3 }).map((_, i) => (
+                                        {Array.from({ length: 4 }).map((_, i) => (
                                             <div key={i} className="w-14 h-20 border-[3px] border-white flex items-center justify-center bg-white/5">
                                                 <span className="text-[40px] font-black text-white">{(formData.tin || "")[i]}</span>
                                             </div>
                                         ))}
                                         <div className="w-8 h-[3px] bg-white opacity-40 mx-2 self-center" />
                                         {Array.from({ length: 9 }).map((_, i) => (
-                                            <div key={i + 3} className="w-14 h-20 border-[3px] border-white flex items-center justify-center bg-white/5">
-                                                <span className="text-[40px] font-black text-white">{(formData.tin || "")[i + 3]}</span>
+                                            <div key={i + 4} className="w-14 h-20 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                <span className="text-[40px] font-black text-white">{(formData.tin || "")[i + 4]}</span>
                                             </div>
                                         ))}
                                     </div>
@@ -3561,15 +3813,15 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 <span className="text-white/40 font-black text-[14px] uppercase tracking-tighter">Tax Identification Number (TIN):</span>
                                             </div>
                                             <div className="flex gap-1.5 h-14 items-center">
-                                                {Array.from({ length: 3 }).map((_, i) => (
+                                                {Array.from({ length: 4 }).map((_, i) => (
                                                     <div key={i} className="w-10 h-14 border-[3px] border-white flex items-center justify-center bg-white/5">
                                                         <span className="text-[28px] font-black text-white">{(formData.tin || "")[i]}</span>
                                                     </div>
                                                 ))}
                                                 <div className="w-6 h-[2.5px] bg-white opacity-40 mx-1" />
                                                 {Array.from({ length: 9 }).map((_, i) => (
-                                                    <div key={i + 3} className="w-10 h-14 border-[3px] border-white flex items-center justify-center bg-white/5">
-                                                        <span className="text-[28px] font-black text-white">{(formData.tin || "")[i + 3]}</span>
+                                                    <div key={i + 4} className="w-10 h-14 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                        <span className="text-[28px] font-black text-white">{(formData.tin || "")[i + 4]}</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -3789,15 +4041,15 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                             <span className="text-white/40 font-black text-[14px] uppercase">Tax Identification Number (TIN):</span>
                                         </div>
                                         <div className="flex gap-1.5 items-center">
-                                            {Array.from({ length: 3 }).map((_, i) => (
+                                            {Array.from({ length: 4 }).map((_, i) => (
                                                 <div key={i} className="w-10 h-14 border-[3px] border-white flex items-center justify-center bg-white/5">
                                                     <span className="text-[28px] font-black text-white">{(formData.tin || "")[i]}</span>
                                                 </div>
                                             ))}
                                             <div className="w-6 h-[3px] bg-white opacity-40 mx-1" />
                                             {Array.from({ length: 9 }).map((_, i) => (
-                                                <div key={i + 3} className="w-10 h-14 border-[3px] border-white flex items-center justify-center bg-white/5">
-                                                    <span className="text-[28px] font-black text-white">{(formData.tin || "")[i + 3]}</span>
+                                                <div key={i + 4} className="w-10 h-14 border-[3px] border-white flex items-center justify-center bg-white/5">
+                                                    <span className="text-[28px] font-black text-white">{(formData.tin || "")[i + 4]}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -4044,15 +4296,15 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 <span className="text-white/40 font-black text-[14px] uppercase tracking-tighter">Tax Identification Number (TIN):</span>
                                             </div>
                                             <div className="flex gap-1.5 h-12 items-center">
-                                                {Array.from({ length: 3 }).map((_, i) => (
+                                                {Array.from({ length: 4 }).map((_, i) => (
                                                     <div key={i} className="w-9 h-12 border-[2px] border-white flex items-center justify-center bg-white/5">
                                                         <span className="text-[24px] font-black text-white">{(formData.tin || "")[i]}</span>
                                                     </div>
                                                 ))}
                                                 <div className="w-5 h-[2px] bg-white opacity-40 mx-1" />
                                                 {Array.from({ length: 9 }).map((_, i) => (
-                                                    <div key={i + 3} className="w-9 h-12 border-[2px] border-white flex items-center justify-center bg-white/5">
-                                                        <span className="text-[24px] font-black text-white">{(formData.tin || "")[i + 3]}</span>
+                                                    <div key={i + 4} className="w-9 h-12 border-[2px] border-white flex items-center justify-center bg-white/5">
+                                                        <span className="text-[24px] font-black text-white">{(formData.tin || "")[i + 4]}</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -4207,15 +4459,15 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                             <span className="text-[13px] font-black text-white/40 uppercase">Tax Identification Number (TIN):</span>
                                         </div>
                                         <div className="flex gap-1.5 h-12">
-                                            {Array.from({ length: 3 }).map((_, i) => (
+                                            {Array.from({ length: 4 }).map((_, i) => (
                                                 <div key={i} className="w-9 h-12 border-[2px] border-white flex items-center justify-center bg-white/5">
                                                     <span className="text-[24px] font-black text-white">{(formData.tin || "")[i]}</span>
                                                 </div>
                                             ))}
                                             <div className="w-6 h-[2px] bg-white opacity-40 mx-1 self-center" />
                                             {Array.from({ length: 9 }).map((_, i) => (
-                                                <div key={i + 3} className="w-9 h-12 border-[2px] border-white flex items-center justify-center bg-white/5">
-                                                    <span className="text-[24px] font-black text-white">{(formData.tin || "")[i + 3]}</span>
+                                                <div key={i + 4} className="w-9 h-12 border-[2px] border-white flex items-center justify-center bg-white/5">
+                                                    <span className="text-[24px] font-black text-white">{(formData.tin || "")[i + 4]}</span>
                                                 </div>
                                             ))}
                                         </div>

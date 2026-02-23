@@ -1125,10 +1125,10 @@ const TaxFormWorkbench = () => {
                                             { ref: "A 35", kh: "ចំណេញ/ខាតពីមុន", en: "Result forward", key: "a35" },
                                             { ref: "A 36", kh: "ចំណេញ/ខាតគ្រានេះ", en: "Period result", key: "a36" }
                                         ].map((row, idx) => (
-                                            <div key={idx} className="flex border-b border-white/10 h-14 items-center last:border-0 hover:bg-white/5 transition-colors">
-                                                <div className="w-[50%] border-r-[2px] border-white px-4 flex flex-col text-white">
-                                                    <span className="font-bold text-[13px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
-                                                    <span className="text-[10px] font-bold opacity-70">{row.en}</span>
+                                            <div key={idx} className="flex border-b-[1px] border-white/30 last:border-0 h-16">
+                                                <div className="w-[50%] border-r-[2px] border-white px-6 flex flex-col justify-center">
+                                                    <span className="text-white font-bold text-[24px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
+                                                    <span className="text-white text-[18px] font-bold">{row.en}</span>
                                                 </div>
                                                 <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center font-black opacity-40 text-[11px]">{row.ref}</div>
                                                 <div className="w-[20%] border-r border-white/10 p-1 flex items-center">
