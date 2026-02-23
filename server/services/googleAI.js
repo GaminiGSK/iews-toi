@@ -33,9 +33,6 @@ function fileToGenerativePart(path, mimeType) {
     };
 }
 
-<<<<<<< HEAD
-
-=======
 exports.extractDocumentData = async (filePath, docType) => {
     console.log(`[GeminiAI] Processing Document (Vision 2.0): ${filePath} (Type: ${docType})`);
     try {
@@ -97,11 +94,11 @@ exports.extractDocumentData = async (filePath, docType) => {
         let mimeType = 'image/jpeg';
         if (ext === '.png') mimeType = 'image/png';
         if (ext === '.webp') mimeType = 'image/webp';
-        if (ext === '.pdf') mimeType = 'application/pdf'; // Gemini 1.5/2.0 supports PDF input directly in some versions, ensuring generic handling
+        if (ext === '.pdf') mimeType = 'application/pdf';
 
         const imagePart = fileToGenerativePart(filePath, mimeType);
 
-        const result = await model.generateContent([prompt, imagePart]);
+        const result = await getModel().generateContent([prompt, imagePart]);
         const response = await result.response;
         const text = response.text();
 
@@ -113,7 +110,6 @@ exports.extractDocumentData = async (filePath, docType) => {
         return { error: "Extraction failed", details: error.message };
     }
 };
->>>>>>> 802a95bfaab9ed3ca72e194d3903dc93ca4896b9
 
 exports.extractBankStatement = async (filePath) => {
     console.log(`[GeminiAI] Scanning Bank Statement (Vision 2.0): ${filePath}`);

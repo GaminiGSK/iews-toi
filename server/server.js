@@ -50,19 +50,15 @@ app.get('/health', (req, res) => {
 console.log('[Startup] Loading API Routes...');
 app.use('/api/auth', authRoutes);
 app.use('/api/company', require('./routes/company'));
-<<<<<<< HEAD
 app.use('/api/chat', require('./routes/chat'));
 app.use('/api/tax', require('./routes/tax'));
 app.use('/api/copilotkit', require('./routes/copilot'));
 app.use('/api/management', require('./routes/management'));
-app.use('/api/excel', require('./routes/excel')); // Register Excel Route
-app.use('/api/vision', require('./routes/vision')); // Register Vision Route
-console.log('[Startup] API Routes Loaded.');
-app.use('/uploads', express.static('uploads')); // Enabled for Local Fallback Access
-=======
+app.use('/api/excel', require('./routes/excel'));
+app.use('/api/vision', require('./routes/vision'));
 app.use('/api/bridge', require('./routes/bridge'));
+console.log('[Startup] API Routes Loaded.');
 app.use('/uploads', express.static('uploads'));
->>>>>>> 802a95bfaab9ed3ca72e194d3903dc93ca4896b9
 
 // Serve Frontend in Production
 // Serve Frontend (Production or Local Dist)
@@ -295,26 +291,16 @@ const startServer = async () => {
         };
 
     } catch (err) {
-<<<<<<< HEAD
         console.error('!!! CRITICAL STARTUP ERROR !!!');
         console.error(err);
 
-        // Automated Error Reporting (Step 3)
+        // Automated Error Reporting
         try {
             const errorLog = `[${new Date().toISOString()}] CRITICAL: ${err.stack || err.message}\n`;
             fs.appendFileSync(path.join(__dirname, 'server-error.log'), errorLog);
         } catch (e) { }
 
-        process.exit(1); // Exit if DB fails so Cloud Run restarts the container
-=======
-        console.error('MongoDB Connection Failed:', err.message);
-        console.warn('Server will continue to start without some database features.');
-
-        // Start Server anyway so it doesn't crash Cloud Run
-        app.listen(PORT, () => {
-            console.log(`Server running on port ${PORT} (DB DISCONNECTED)`);
-        });
->>>>>>> 802a95bfaab9ed3ca72e194d3903dc93ca4896b9
+        process.exit(1);
     }
 };
 
