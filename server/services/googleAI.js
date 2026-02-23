@@ -33,7 +33,87 @@ function fileToGenerativePart(path, mimeType) {
     };
 }
 
+<<<<<<< HEAD
 
+=======
+exports.extractDocumentData = async (filePath, docType) => {
+    console.log(`[GeminiAI] Processing Document (Vision 2.0): ${filePath} (Type: ${docType})`);
+    try {
+        let prompt = "Analyze this business document image visually and extract all data into a strict JSON object.";
+
+        // Contextual Prompts based on Doc Type
+        switch (docType) {
+            case 'moc_cert':
+                prompt += `
+                Extract specific fields from this MOC Certificate:
+                - companyNameEn (String)
+                - companyNameKh (String)
+                - registrationNumber (String)
+                - incorporationDate (Format: DD/MM/YYYY)
+                - address (String: Full Address)
+                `;
+                break;
+            case 'kh_extract':
+            case 'en_extract':
+                prompt += `
+                Extract from this Business Extract:
+                - companyNameEn
+                - companyNameKh
+                - registrationNumber
+                - businessActivity (String summary)
+                - capitalAmount (Number or String)
+                - directorName (String)
+                `;
+                break;
+            case 'tax_patent':
+            case 'tax_id':
+                prompt += `
+                Extract from Tax/VAT Certificate:
+                - vatTin (String)
+                - companyNameKh
+                - taxRegistrationDate
+                `;
+                break;
+            case 'bank_opening':
+                prompt += `
+                Extract from Bank Account Confirmation Letter:
+                - bankName
+                - bankAccountNumber
+                - bankAccountName
+                - bankCurrency
+                `;
+                break;
+            default:
+                prompt += " Extract: companyNameEn, companyNameKh, registrationNumber, address, vatTin.";
+        }
+
+        prompt += `
+        \nRETURN ONLY RAW JSON. No Markdown. No Code Blocks.
+        If a field is not found, return null for that field.
+        `;
+
+        // Vision Model supports various image types
+        const ext = path.extname(filePath).toLowerCase();
+        let mimeType = 'image/jpeg';
+        if (ext === '.png') mimeType = 'image/png';
+        if (ext === '.webp') mimeType = 'image/webp';
+        if (ext === '.pdf') mimeType = 'application/pdf'; // Gemini 1.5/2.0 supports PDF input directly in some versions, ensuring generic handling
+
+        const imagePart = fileToGenerativePart(filePath, mimeType);
+
+        const result = await model.generateContent([prompt, imagePart]);
+        const response = await result.response;
+        const text = response.text();
+
+        console.log("[GeminiAI] Doc Extract Raw:", text.substring(0, 50) + "...");
+        return cleanAndParseJSON(text);
+
+    } catch (error) {
+        console.error("Gemini API Error (Doc):", error);
+        return { error: "Extraction failed", details: error.message };
+    }
+};
+>>>>>>> 802a95bfaab9ed3ca72e194d3903dc93ca4896b9
 
 exports.extractBankStatement = async (filePath) => {
     console.log(`[GeminiAI] Scanning Bank Statement (Vision 2.0): ${filePath}`);

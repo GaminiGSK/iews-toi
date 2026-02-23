@@ -59,8 +59,7 @@ router.get('/profile', auth, async (req, res) => {
 });
 
 // Upload Registration & Extract
-// Upload Registration & Extract (Multi-Doc)
-// Upload Registration & Extract (Multi-Doc) - TOI STYLE PERSISTENCE
+// Upload Registration & Extract (Analyze Only)
 router.post('/upload-registration', auth, upload.single('file'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
@@ -68,64 +67,82 @@ router.post('/upload-registration', auth, upload.single('file'), async (req, res
 
         console.log(`[RegUpload] Type: ${docType} | File: ${req.file.path} | Size: ${req.file.size}`); // DEBUG LOG
 
-        // 1. Read File Content as Base64 (Robust Persistence)
-        const fileBuffer = fs.readFileSync(req.file.path);
-        const base64Data = fileBuffer.toString('base64');
-
-        // 2. Extract Data (AI)
+        // 1. Extract Data (Vision 2.0)
         const extracted = await googleAI.extractDocumentData(req.file.path, docType);
 
-        // 3. Find Profile
-        let profile = await CompanyProfile.findOne({ user: req.user.id });
-        if (!profile) {
-            profile = new CompanyProfile({ user: req.user.id, companyCode: req.user.companyCode });
-        }
-
-        // 4. Update Documents List
-        const newDoc = {
-            docType: docType || 'unknown',
-            originalName: req.file.originalname,
-            path: req.file.path, // Keep path for reference/AI regen
-            data: base64Data,    // STORE IN DB
-            mimeType: req.file.mimetype,
-            status: 'Verified',
-            extractedText: JSON.stringify(extracted),
-            uploadedAt: new Date()
-        };
-
-        // Remove old doc of same type
-        if (docType) {
-            profile.documents = profile.documents.filter(d => d.docType !== docType);
-        }
-        profile.documents.push(newDoc);
-
-        // 5. Update Profile Fields based on Extracted Data
-        if (extracted) {
-            if (extracted.companyNameEn) profile.companyNameEn = extracted.companyNameEn;
-            if (extracted.companyNameKh) profile.companyNameKh = extracted.companyNameKh;
-            if (extracted.registrationNumber) profile.registrationNumber = extracted.registrationNumber;
-            if (extracted.incorporationDate) profile.incorporationDate = extracted.incorporationDate;
-            if (extracted.address) profile.address = extracted.address;
-            if (extracted.vatTin) profile.vatTin = extracted.vatTin;
-            // Bank Info
-            if (extracted.bankAccountNumber) profile.bankAccountNumber = extracted.bankAccountNumber;
-            if (extracted.bankName) profile.bankName = extracted.bankName;
-        }
-
-        await profile.save();
-
-        // 6. Clean up temp file (Optional, but safe now that it's in DB)
-        try { fs.unlinkSync(req.file.path); } catch (e) { }
-
+        // 2. Return Data for Review (Do NOT save yet)
         res.json({
-            message: 'Extraction & Save successful',
-            data: extracted,
-            profile: profile
+            message: 'Analysis complete. Please review and save.',
+            docType: docType,
+            filePath: req.file.path,
+            originalName: req.file.originalname,
+            extractedData: extracted
         });
 
     } catch (err) {
         console.error('Extraction Error:', err);
         res.status(500).json({ message: 'Error processing document' });
+    }
+});
+
+// Save Verified Registration Data
+router.post('/save-registration-data', auth, async (req, res) => {
+    try {
+        const { docType, filePath, originalName, extractedData } = req.body;
+
+        if (!docType || !filePath) return res.status(400).json({ message: 'Missing Data' });
+
+        // 1. Find/Create Profile
+        let profile = await CompanyProfile.findOne({ user: req.user.id });
+        if (!profile) {
+            profile = new CompanyProfile({ user: req.user.id, companyCode: req.user.companyCode });
+        }
+
+        // 2. Add to Documents List
+        const newDoc = {
+            docType: docType,
+            originalName: originalName || 'Uploaded File',
+            path: filePath,
+            status: 'Verified',
+            extractedData: extractedData, // Save structured JSON
+            uploadedAt: new Date()
+        };
+
+        // Remove old doc of same type
+        profile.documents = profile.documents.filter(d => d.docType !== docType);
+        profile.documents.push(newDoc);
+
+        // 3. Update Profile Fields (if data exists)
+        if (extractedData) {
+            // Helper to only update if value is present (don't overwrite with null)
+            const updateIfPres = (key, val) => { if (val) profile[key] = val; };
+
+            updateIfPres('companyNameEn', extractedData.companyNameEn);
+            updateIfPres('companyNameKh', extractedData.companyNameKh);
+            updateIfPres('registrationNumber', extractedData.registrationNumber);
+            updateIfPres('incorporationDate', extractedData.incorporationDate);
+            updateIfPres('address', extractedData.address);
+            updateIfPres('vatTin', extractedData.vatTin);
+            updateIfPres('businessActivity', extractedData.businessActivity);
+            updateIfPres('director', extractedData.directorName);
+
+            // Bank Info
+            updateIfPres('bankAccountNumber', extractedData.bankAccountNumber);
+            updateIfPres('bankName', extractedData.bankName);
+            updateIfPres('bankAccountName', extractedData.bankAccountName);
+            updateIfPres('bankCurrency', extractedData.bankCurrency);
+        }
+
+        await profile.save();
+
+        res.json({
+            message: 'Document and Data Saved Successfully',
+            profile: profile
+        });
+
+    } catch (err) {
+        console.error('Save Reg Error:', err);
+        res.status(500).json({ message: 'Error saving data' });
     }
 });
 

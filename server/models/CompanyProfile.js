@@ -23,7 +23,7 @@ const CompanyProfileSchema = new mongoose.Schema({
         data: String, // Base64 Storage (TOI-Style)
         mimeType: String,
         status: { type: String, default: 'Pending' }, // 'Pending', 'Verified', 'Error'
-        extractedText: String, // Raw AI text if needed
+        extractedData: { type: mongoose.Schema.Types.Mixed }, // Structured AI Data
         uploadedAt: { type: Date, default: Date.now }
     }],
 

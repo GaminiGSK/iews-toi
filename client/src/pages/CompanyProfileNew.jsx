@@ -975,6 +975,10 @@ export default function CompanyProfile() {
     const [uploadingDoc, setUploadingDoc] = useState(null);
     const [debugLog, setDebugLog] = useState(null); // New On-Screen Error Console
 
+    // NEW: Staging State for Review
+    const [stagedDoc, setStagedDoc] = useState(null);
+    const [savingDoc, setSavingDoc] = useState(false);
+
     const handleRegUpload = async (files, docType) => {
         if (files.length === 0) return;
         setUploadingDoc(docType);
@@ -986,15 +990,14 @@ export default function CompanyProfile() {
 
         try {
             const token = localStorage.getItem('token');
+            // 1. Upload & Analyze (No Auto-Save)
             const res = await axios.post('/api/company/upload-registration', formData, {
                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
             });
 
-            setMessage('Document Verified & Data Extracted!');
-
-            // Refresh Profile to see new data and doc status
-            const profileRes = await axios.get('/api/company/profile', { headers: { 'Authorization': `Bearer ${token}` } });
-            setFormData(prev => ({ ...prev, ...profileRes.data }));
+            // 2. Set Staged Data for Review
+            setStagedDoc(res.data);
+            setMessage('Analysis Complete. Please Review.');
 
             // Automatically select the newly uploaded doc for viewing
             const newDoc = (profileRes.data.documents || []).find(d => d.docType === docType);
@@ -1013,6 +1016,30 @@ export default function CompanyProfile() {
             alert('Upload Failed: ' + errMsg);
         } finally {
             setUploadingDoc(null);
+        }
+    };
+
+    const handleSaveStagedDoc = async () => {
+        if (!stagedDoc) return;
+        setSavingDoc(true);
+        try {
+            const token = localStorage.getItem('token');
+            await axios.post('/api/company/save-registration-data', stagedDoc, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            setMessage('Document Verified & Saved!');
+            setStagedDoc(null); // Clear staging
+
+            // Refresh Profile
+            const profileRes = await axios.get('/api/company/profile', { headers: { 'Authorization': `Bearer ${token}` } });
+            setFormData(prev => ({ ...prev, ...profileRes.data }));
+
+        } catch (err) {
+            console.error(err);
+            alert('Save Failed: ' + (err.response?.data?.message || err.message));
+        } finally {
+            setSavingDoc(false);
         }
     };
 
