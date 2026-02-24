@@ -24,6 +24,9 @@ const BankFileSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    bankName: String,
+    accountNumber: String,
+    accountName: String,
     status: {
         type: String,
         default: 'Uploaded',

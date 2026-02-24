@@ -46,7 +46,7 @@ router.post('/login', async (req, res) => {
             username: user.username,
             companyCode: user.companyCode
         };
-        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
+        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' });
 
         res.json({
             token,
@@ -66,7 +66,9 @@ router.post('/login', async (req, res) => {
 // --- 2. Admin: User (Company) Management ---
 
 // Create User (Company)
-router.post('/create-user', async (req, res) => {
+router.post('/create-user', auth, async (req, res) => {
+    // Check if requester is admin
+    if (req.user.role !== 'admin') return res.status(403).json({ message: 'Forbidden' });
     const { username, companyName, password } = req.body; // 'password' field in form is the loginCode
     try {
         if (!username || !password) return res.status(400).json({ message: 'Username and Access Code are required' });
@@ -95,7 +97,9 @@ router.post('/create-user', async (req, res) => {
 });
 
 // Get All Users
-router.get('/users', async (req, res) => {
+router.get('/users', auth, async (req, res) => {
+    // Check if requester is admin
+    if (req.user.role !== 'admin') return res.status(403).json({ message: 'Forbidden' });
     try {
         const users = await User.find({ role: 'user' }).select('username companyName loginCode createdAt');
         res.json(users);
@@ -105,7 +109,8 @@ router.get('/users', async (req, res) => {
 });
 
 // Update User
-router.put('/users/:id', async (req, res) => {
+router.put('/users/:id', auth, async (req, res) => {
+    if (req.user.role !== 'admin') return res.status(403).json({ message: 'Forbidden' });
     const { companyName, password } = req.body;
     try {
         const user = await User.findById(req.params.id);
@@ -122,7 +127,8 @@ router.put('/users/:id', async (req, res) => {
 });
 
 // Delete User
-router.delete('/users/:id', async (req, res) => {
+router.delete('/users/:id', auth, async (req, res) => {
+    if (req.user.role !== 'admin') return res.status(403).json({ message: 'Forbidden' });
     try {
         await User.findByIdAndDelete(req.params.id);
         res.json({ message: 'User deleted' });
@@ -156,7 +162,7 @@ router.post('/gate-verify', async (req, res) => {
                 username: userOverdrive.username,
                 companyCode: userOverdrive.companyCode
             };
-            const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
+            const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' });
 
             return res.json({
                 access: userOverdrive.role === 'admin' ? 'admin' : 'granted',

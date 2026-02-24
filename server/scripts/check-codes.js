@@ -1,20 +1,23 @@
-require('dotenv').config();
 const mongoose = require('mongoose');
-const User = require('../models/User');
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
-const checkUserCodes = async () => {
+const BankFile = require('../models/BankFile');
+
+async function check() {
     try {
         await mongoose.connect(process.env.MONGODB_URI);
+        const codes = await BankFile.distinct('companyCode');
+        console.log('Company Codes in BankFile:', codes);
 
-        const users = await User.find({}, 'companyName companyCode loginCode role email');
-        console.log('--- USER LOGIN CODES ---');
-        console.log(JSON.stringify(users, null, 2));
-
-        process.exit();
-    } catch (err) {
-        console.error(err);
+        for (const c of codes) {
+            const count = await BankFile.countDocuments({ companyCode: c });
+            console.log(`Code: ${c} | Count: ${count}`);
+        }
+        process.exit(0);
+    } catch (e) {
+        console.error(e);
         process.exit(1);
     }
-};
-
-checkUserCodes();
+}
+check();

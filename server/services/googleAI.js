@@ -117,27 +117,33 @@ exports.extractBankStatement = async (filePath) => {
     try {
         // AGENTIC PROMPT: STAGE 1 (Layout) & STAGE 2 (Structure)
         const prompt = `
-            Analyze this Bank Statement image visually.
-            1. **Layout Detection**: Locate the main "Account Activity" or "Transaction History" table. IGNORE headers, footers, and carry-forward noise.
-            2. **Data Extraction**: Extract every single TRANSACTION row from the table into a JSON Array.
+            Analyze this bank statement image visually.
             
-            JSON Schema:
-            [
-              {
-                "date": "YYYY-MM-DD", // REQUIRED. Inferred Year from header + Date in row. Use ISO format YYYY-MM-DD.
-                "description": "Full verbatim description text. Do NOT summarize. Include REF#, Time, Remarks.",
-                "moneyIn": 0.00, // Number. If empty/dash, use 0.
-                "moneyOut": 0.00, // Number. If empty/dash, use 0.
-                "balance": "0.00" // String representation of the balance column
-              }
-            ]
+            1. **Header Identification**: Find Bank Name (e.g., ABA, ACLEDA, Canadia), Account Number, and Account Name.
+            2. **Table Detection**: Locate the main transaction table. Look for columns like 'Date', 'Description', 'Debit/Credit', 'Amount', and 'Balance'.
+            3. **Data Extraction**: Extract every single row from the transaction table.
+            
+            Return ONLY a JSON object:
+            {
+              "bankName": "...",
+              "accountNumber": "...",
+              "accountName": "...",
+              "transactions": [
+                {
+                  "date": "YYYY-MM-DD", // REQUIRED. Inferred Year from header + Date in row.
+                  "description": "Full verbatim text from the 'Description' or 'Particulars' column.",
+                  "moneyIn": 0.00, // Positive amount or Credit.
+                  "moneyOut": 0.00, // Negative amount or Debit.
+                  "balance": "0.00" // Running balance.
+                }
+              ]
+            }
 
             Rules:
-            - **CRITICAL**: If a row does NOT have a clear transaction date, SKIP IT.
-            - **YEAR DETECTION**: Look for 'Statement Date', 'Period', or 'Date' header at the top to determine the correct YEAR. 
-            - If rows only show 'DD MMM' (e.g. 15 Feb), append the YEAR found in the header. 
-            - If "Money In" and "Money Out" are in one column (Signed), separate them based on sign.
-            - Output ONLY the JSON Array. No Markdown blocks.
+            - **CRITICAL**: Search the header for the STATEMENT YEAR. Use it for all transaction dates.
+            - **TEXT NORMALIZATION**: Crucial. Remove hard newlines or accidental line breaks within descriptions. Return a clean, single-paragraph string for each transaction detail.
+            - **CLEANLINESS**: Do not combine multiple rows unless they clearly belong to the same transaction description.
+            - **ACCURACY**: If a column has no value, use 0.00 for moneyIn/moneyOut.
         `;
 
         // Robust Mimetype Detection
@@ -157,22 +163,31 @@ exports.extractBankStatement = async (filePath) => {
         console.log("[GeminiAI] Raw Output Length:", text.length);
         let data = cleanAndParseJSON(text);
 
-        if (!Array.isArray(data) || data.length === 0) {
-            console.warn("[GeminiAI] Output Invalid/Empty. Raw:", text.substring(0, 100));
+        // STAGE 2: STRUCTURE NORMALIZATION
+        // Support both raw array and structured object with .transactions key
+        let transactions = Array.isArray(data) ? data : (data?.transactions || []);
+
+        if (transactions.length === 0) {
+            console.warn("[GeminiAI] Output Invalid/Empty. Raw:", text.substring(0, 50));
             return [{
                 date: "DEBUG_ERR",
-                description: "AI Parse Failed. Please try another image or check the file quality. Raw: " + text.substring(0, 200).replace(/\n/g, ' '),
+                description: "AI Parse Failed. Please check the file quality. Raw: " + text.substring(0, 100).replace(/\n/g, ' '),
                 moneyIn: 0,
                 moneyOut: 0,
                 balance: "0.00"
             }];
         }
 
-        // AGENTIC STAGE 3: DATA VALIDATION
-        // Be more liberal with dates - as long as it looks like a date, keep it.
-        data = data.filter(tx => tx.date && tx.date.length >= 6);
+        // STAGE 3: DATA VALIDATION & FILTERING
+        // Be liberal with dates but ensure they exist
+        transactions = transactions.filter(tx => tx.date && String(tx.date).length >= 5);
 
-        return data;
+        // Update the original structure with filtered transactions
+        if (Array.isArray(data)) {
+            return transactions;
+        } else {
+            return { ...data, transactions };
+        }
 
     } catch (error) {
         console.error("Gemini API Error (Bank):", error);

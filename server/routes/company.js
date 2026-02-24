@@ -321,7 +321,20 @@ router.post('/upload-bank-statement', auth, upload.array('files'), async (req, r
             }
 
             // Extract Data (using Local Path before deletion)
-            let extracted = await googleAI.extractBankStatement(file.path);
+            let rawExtracted = await googleAI.extractBankStatement(file.path);
+            let extracted = [];
+            let accountInfo = {};
+
+            if (rawExtracted && !Array.isArray(rawExtracted) && rawExtracted.transactions) {
+                extracted = rawExtracted.transactions;
+                accountInfo = {
+                    bankName: rawExtracted.bankName,
+                    accountNumber: rawExtracted.accountNumber,
+                    accountName: rawExtracted.accountName
+                };
+            } else if (Array.isArray(rawExtracted)) {
+                extracted = rawExtracted;
+            }
 
             // Cleanup Local File if Drive Upload Succeeded
             if (driveId) {
@@ -387,12 +400,15 @@ router.post('/upload-bank-statement', auth, upload.array('files'), async (req, r
             const newFile = new BankFile({
                 user: req.user.id,
                 companyCode: req.user.companyCode,
-                originalName: displayName, // Store the date range as the primary name
+                originalName: file.originalname, // Preserve actual filename
                 driveId: driveId,
                 mimeType: file.mimetype,
                 size: file.size,
                 dateRange: dateRange,
                 transactionCount: extracted.length,
+                bankName: accountInfo.bankName,
+                accountNumber: accountInfo.accountNumber,
+                accountName: accountInfo.accountName,
                 path: driveId ? `drive:${driveId}` : null,
                 status: 'Processed'
             });

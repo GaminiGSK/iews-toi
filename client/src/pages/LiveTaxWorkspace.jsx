@@ -332,9 +332,8 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                 </div>
             )}
 
-            {/* MAIN CONTENT AREA: REPLICA OF THE LUXURY WORKBENCH DESIGN */}
-            <div className="flex-1 bg-[#020617] overflow-y-auto px-6 py-8 flex justify-center no-scrollbar">
-                <div className="w-full max-w-[1400px]">
+            <div className="flex-1 bg-[#020617] overflow-auto px-4 md:px-8 py-8 flex justify-start lg:justify-center items-start no-scrollbar">
+                <div className="w-auto min-w-full lg:min-w-[1200px] max-w-[1580px] mx-auto flex flex-col items-start">
                     {/* PAGE 1 CONTENT */}
                     {activePage === 1 && (
                         <div className="animate-fade-in relative grid grid-cols-2 gap-12">
@@ -1123,7 +1122,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                 </div>
                             </div>
                             {/* PAGE HEADER */}
-                            <div className="w-full max-w-[1400px] bg-slate-900/40 backdrop-blur-md border border-white/10 p-6 rounded-2xl shadow-2xl mb-8">
+                            <div className="w-full max-w-[1580px] bg-slate-900/40 backdrop-blur-md border border-white/10 p-6 rounded-2xl shadow-2xl mb-8">
                                 <div className="flex justify-between items-start">
                                     <div className="flex flex-col gap-1">
                                         <h2 className="text-3xl font-bold text-white leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>តារាងតុល្យការគិតត្រឹមការិយបរិច្ឆេទ</h2>
@@ -1152,7 +1151,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                 </div>
                             </div>
 
-                            <div className="w-full max-w-[1400px] grid grid-cols-2 gap-10 items-start">
+                            <div className="w-full max-w-[1580px] grid grid-cols-2 gap-10 items-start">
                                 {/* LEFT COLUMN: NON-CURRENT ASSETS */}
                                 <div className="flex flex-col gap-6">
                                     {/* ASSETS TOTAL (A0) - HEADER-LIKE */}
@@ -1302,7 +1301,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                 </div>
                             </div>
                             {/* PAGE HEADER */}
-                            <div className="w-full max-w-[1400px] bg-slate-900/40 backdrop-blur-md border border-white/10 p-6 rounded-2xl shadow-2xl mb-8">
+                            <div className="w-full max-w-[1580px] bg-slate-900/40 backdrop-blur-md border border-white/10 p-6 rounded-2xl shadow-2xl mb-8">
                                 <div className="flex justify-between items-start">
                                     <div className="flex flex-col gap-1">
                                         <h2 className="text-3xl font-bold text-white leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>តារាងតុល្យការគិតត្រឹមការិយបរិច្ឆេទ (បន្ត)</h2>
@@ -1331,7 +1330,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                 </div>
                             </div>
 
-                            <div className="w-full max-w-[1400px] grid grid-cols-2 gap-[40px] items-start">
+                            <div className="w-full max-w-[1580px] grid grid-cols-2 gap-[40px] items-start">
                                 {/* LEFT COLUMN: EQUITY */}
                                 <div className="flex flex-col gap-6">
                                     <div className="border border-white/10 overflow-hidden text-white bg-slate-900/40 rounded-2xl shadow-2xl backdrop-blur-sm">
@@ -1508,7 +1507,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                 </div>
                             </div>
                             {/* PAGE HEADER */}
-                            <div className="w-full max-w-[1400px] bg-slate-900/40 backdrop-blur-md border border-white/10 p-6 rounded-2xl shadow-2xl mb-8">
+                            <div className="w-full max-w-[1580px] bg-slate-900/40 backdrop-blur-md border border-white/10 p-6 rounded-2xl shadow-2xl mb-8">
                                 <div className="flex justify-between items-start">
                                     <div className="flex flex-col gap-1">
                                         <h2 className="text-3xl font-bold text-white leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>របាយការណ៍លទ្ធផលសម្រាប់គ្រាជាប់ពន្ធ</h2>
@@ -1537,7 +1536,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                 </div>
                             </div>
 
-                            <div className="w-full max-w-[1400px] mt-16 grid grid-cols-2 gap-[50px] items-start">
+                            <div className="w-full max-w-[1580px] mt-16 grid grid-cols-2 gap-[50px] items-start">
                                 {/* LEFT COLUMN: REVENUES & COGS */}
                                 <div className="flex flex-col gap-6">
                                     {/* SECTION III: OPERATING REVENUES */}
@@ -1786,7 +1785,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                 </div>
                             </div>
                             {/* PAGE HEADER */}
-                            <div className="w-full max-w-[1400px] mt-12 bg-slate-900/40 backdrop-blur-md border border-white/10 p-6 rounded-2xl shadow-2xl mb-8">
+                            <div className="w-full max-w-[1580px] mt-12 bg-slate-900/40 backdrop-blur-md border border-white/10 p-6 rounded-2xl shadow-2xl mb-8">
                                 <div className="flex justify-between items-start">
                                     <div className="flex flex-col gap-1">
                                         <h2 className="text-3xl font-bold text-white leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>របាយការណ៍លទ្ធផលសម្រាប់គ្រាជាប់ពន្ធ (បន្ត)</h2>
@@ -1815,7 +1814,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                 </div>
                             </div>
 
-                            <div className="w-full max-w-[1400px] grid grid-cols-2 gap-10 items-start">
+                            <div className="w-full max-w-[1580px] grid grid-cols-2 gap-10 items-start">
                                 {/* LEFT COLUMN: FURTHER OPERATING EXPENSES */}
                                 <div className="flex flex-col gap-8">
                                     <div className="border border-white/10 overflow-hidden text-white bg-slate-900/40 rounded-2xl shadow-xl backdrop-blur-sm">
@@ -2008,7 +2007,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                 </div>
                             </div>
                             {/* PAGE HEADER */}
-                            <div className="w-full max-w-[1400px] mt-12 bg-slate-900/40 backdrop-blur-md border border-white/10 p-6 rounded-2xl shadow-2xl mb-8">
+                            <div className="w-full max-w-[1580px] mt-12 bg-slate-900/40 backdrop-blur-md border border-white/10 p-6 rounded-2xl shadow-2xl mb-8">
                                 <div className="flex justify-between items-start">
                                     <div className="flex flex-col gap-1">
                                         <h2 className="text-3xl font-bold text-white leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ថ្លៃដើមផលិតផលបានលក់</h2>
@@ -2037,7 +2036,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                 </div>
                             </div>
 
-                            <div className="w-full max-w-[1400px] grid grid-cols-2 gap-[50px] items-start pl-[10px]">
+                            <div className="w-full max-w-[1580px] grid grid-cols-2 gap-[50px] items-start pl-[10px]">
                                 {/* LEFT COLUMN: RAW MATERIALS & OTHER PRODUCTION COSTS */}
                                 <div className="flex flex-col gap-8">
                                     {/* SECTION: RAW MATERIALS & SUPPLIES */}
@@ -2266,7 +2265,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                             </div>
 
                             {/* PAGE HEADER */}
-                            <div className="w-full max-w-[1400px] mt-12 bg-slate-900/40 backdrop-blur-md border border-white/10 p-6 rounded-2xl shadow-2xl mb-8">
+                            <div className="w-full max-w-[1580px] mt-12 bg-slate-900/40 backdrop-blur-md border border-white/10 p-6 rounded-2xl shadow-2xl mb-8">
                                 <div className="flex justify-between items-start">
                                     <div className="flex flex-col gap-1">
                                         <h2 className="text-3xl font-bold text-white leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ថ្លៃដើមទំនិញបានលក់</h2>
@@ -2417,7 +2416,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                             </div>
 
                             {/* PAGE HEADER */}
-                            <div className="w-full max-w-[1400px] mt-12 bg-slate-900/40 backdrop-blur-md border border-white/10 p-6 rounded-2xl shadow-2xl mb-8">
+                            <div className="w-full max-w-[1580px] mt-12 bg-slate-900/40 backdrop-blur-md border border-white/10 p-6 rounded-2xl shadow-2xl mb-8">
                                 <div className="flex justify-between items-start">
                                     <div className="flex flex-col gap-1">
                                         <h2 className="text-3xl font-bold text-white leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការគណនាពន្ធលើប្រាក់ចំណូល</h2>
@@ -2446,7 +2445,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                 </div>
                             </div>
 
-                            <div className="w-full max-w-[1600px] grid grid-cols-2 gap-10 items-start">
+                            <div className="w-full max-w-full grid grid-cols-2 gap-10 items-start">
                                 {/* LEFT COLUMN: PROFIT & NON-DEDUCTIBLE EXPENSES */}
                                 <div className="flex flex-col gap-6">
                                     {/* SECTION: INITIAL PROFIT/LOSS */}
@@ -2606,7 +2605,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                             </div>
 
                             {/* PAGE HEADER */}
-                            <div className="w-full max-w-[1400px] mt-12 bg-slate-900/40 backdrop-blur-md border border-white/10 p-6 rounded-2xl shadow-2xl mb-8">
+                            <div className="w-full max-w-[1580px] mt-12 bg-slate-900/40 backdrop-blur-md border border-white/10 p-6 rounded-2xl shadow-2xl mb-8">
                                 <div className="flex justify-between items-start">
                                     <div className="flex flex-col gap-1">
                                         <h2 className="text-3xl font-bold text-white leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការគណនាពន្ធលើប្រាក់ចំណូល (បន្ត)</h2>
@@ -2625,7 +2624,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                 </div>
                             </div>
 
-                            <div className="w-full max-w-[1400px] mt-12 grid grid-cols-2 gap-[50px] items-start">
+                            <div className="w-full max-w-[1580px] mt-12 grid grid-cols-2 gap-[50px] items-start">
                                 {/* LEFT COLUMN: FURTHER ADJUSTMENTS & PROFITS */}
                                 <div className="flex flex-col gap-6">
                                     {/* SECTION: FURTHER DEDUCTIBLE EXPENSES */}
@@ -2835,7 +2834,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                             </div>
 
                             {/* INTEREST EXPENSE LEGAL NOTE - FIXED BOTTOM */}
-                            <div className="w-full max-w-[1400px] mt-12 p-[15px] bg-slate-900/60 border border-white/10 rounded-2xl shadow-inner mb-8">
+                            <div className="w-full max-w-[1580px] mt-12 p-[15px] bg-slate-900/60 border border-white/10 rounded-2xl shadow-inner mb-8">
                                 <div className="flex items-start gap-4">
                                     <div className="shrink-0 w-8 h-8 rounded-lg bg-orange-500/20 border border-orange-500/40 flex items-center justify-center">
                                         <span className="text-orange-400 font-black text-lg">!</span>
@@ -2950,12 +2949,18 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
 
                                     <div className="border-[4px] border-white overflow-hidden text-white bg-white/5 shadow-2xl">
                                         <div className="flex bg-indigo-500/20 border-b-[4px] border-white h-20 items-center">
-                                            <div className="flex-1 border-r-[4px] border-white px-8 text-center">
-                                                <span className="font-bold text-[28px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បរិយាយ</span>
-                                                <span className="text-[22px] block font-black uppercase leading-none mt-1">Description</span>
+                                            <div className="flex-1 border-r-[4px] border-white px-8 flex flex-col items-center justify-center">
+                                                <span className="font-bold text-[28px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បរិយាយ</span>
+                                                <span className="text-[18px] font-black uppercase opacity-60">Description</span>
                                             </div>
-                                            <div className="w-[15%] border-r-[4px] border-white flex items-center justify-center font-black text-[24px]">យោង/REF</div>
-                                            <div className="w-[25%] flex items-center justify-center text-[28px] font-bold">ចំនួនទឹកប្រាក់/Amount</div>
+                                            <div className="w-[15%] border-r-[4px] border-white flex flex-col items-center justify-center font-black">
+                                                <span className="text-[20px]">យោង</span>
+                                                <span className="text-[16px] opacity-60">REF</span>
+                                            </div>
+                                            <div className="w-[25%] flex flex-col items-center justify-center">
+                                                <span className="text-[24px] font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំនួនទឹកប្រាក់</span>
+                                                <span className="text-[18px] font-black opacity-60 uppercase">Amount</span>
+                                            </div>
                                         </div>
 
                                         {[
@@ -2966,9 +2971,9 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                             { ref: "F 5", kh: "ចំណាយសប្បុរសធម៌អនុញ្ញាតក្នុងគ្រា (F5 = ទាបជាងរវាង F4 និង F2)", en: "Deductible charitable contributions (Lower of F4 or F2)", key: "f5", isCalculated: true },
                                             { ref: "F 6", kh: "ចំណាយសប្បុរសធម៌មិនអនុញ្ញាតបូកចូលភ្នាល់ពន្ធ (F6 = F2 - F5)", en: "Non-deductible contributions to be added back (F6 = F2 - F5)", key: "f6", isGrandTotal: true },
                                         ].map((row, idx) => (
-                                            <div key={idx} className={`flex border-b border-white/10 h-24 items-center last:border-0 hover:bg-white/5 transition-colors 
+                                            <div key={idx} className={`flex border-b border-white/10 h-32 items-center last:border-0 hover:bg-white/5 transition-colors 
                                                 ${row.isCalculated ? 'bg-indigo-500/5' : ''}
-                                                ${row.isGrandTotal ? 'bg-rose-500/20 h-32 border-t-[4px] border-white' : ''}`}>
+                                                ${row.isGrandTotal ? 'bg-rose-500/20 h-40 border-t-[4px] border-white' : ''}`}>
                                                 <div className="flex-1 border-r-[4px] border-white px-10 flex flex-col justify-center">
                                                     <span className={`${row.isGrandTotal ? 'text-[36px]' : 'text-[28px]'} font-bold leading-tight`} style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
                                                     <span className={`${row.isGrandTotal ? 'text-[24px]' : 'text-[20px]'} font-bold opacity-60`}>{row.en}</span>
@@ -2998,12 +3003,18 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
 
                                     <div className="border-[4px] border-white overflow-hidden text-white bg-white/5 shadow-2xl">
                                         <div className="flex bg-rose-500/20 border-b-[4px] border-white h-20 items-center">
-                                            <div className="flex-1 border-r-[4px] border-white px-8 text-center">
-                                                <span className="font-bold text-[28px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការគណនាចំណាយការប្រាក់អនុញ្ញាតក្នុងគ្រា</span>
-                                                <span className="text-[22px] block font-black uppercase leading-none mt-1">Calculation of Deductible Interest during the Period</span>
+                                            <div className="flex-1 border-r-[4px] border-white px-8 flex flex-col items-center justify-center">
+                                                <span className="font-bold text-[26px] leading-tight text-center" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការគណនាចំណាយការប្រាក់អនុញ្ញាតក្នុងគ្រា</span>
+                                                <span className="text-[16px] font-black uppercase opacity-60 text-center">Calculation of Deductible Interest during the Period</span>
                                             </div>
-                                            <div className="w-[15%] border-r-[4px] border-white flex items-center justify-center font-black text-[24px]">យោង/REF</div>
-                                            <div className="w-[25%] flex items-center justify-center text-[28px] font-bold">ចំនួនទឹកប្រាក់/Amount</div>
+                                            <div className="w-[15%] border-r-[4px] border-white flex flex-col items-center justify-center font-black">
+                                                <span className="text-[20px]">យោង</span>
+                                                <span className="text-[16px] opacity-60">REF</span>
+                                            </div>
+                                            <div className="w-[25%] flex flex-col items-center justify-center">
+                                                <span className="text-[24px] font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំនួនទឹកប្រាក់</span>
+                                                <span className="text-[18px] font-black opacity-60 uppercase">Amount</span>
+                                            </div>
                                         </div>
 
                                         {[
@@ -3016,9 +3027,9 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                             { ref: "G 7", kh: "ចំណាយការប្រាក់អតិបរមាអនុញ្ញាតក្នុងគ្រា (G7 = G5 + G6)", en: "Max deductible interest expense (G7 = G5 + G6)", key: "g7", isCalculated: true },
                                             { ref: "G 8*", kh: "ចំនួនទឹកប្រាក់ដែលត្រូវបូកចូលក្នុងប្រាក់ចំណេញជាប់ពន្ធ (G8 = G2 - G7)", en: "Amount to be added to taxable income (G8 = G2 - G7)", key: "g8", isGrandTotal: true },
                                         ].map((row, idx) => (
-                                            <div key={idx} className={`flex border-b border-white/10 h-24 items-center last:border-0 hover:bg-white/5 transition-colors 
+                                            <div key={idx} className={`flex border-b border-white/10 h-32 items-center last:border-0 hover:bg-white/5 transition-colors 
                                                 ${row.isCalculated ? 'bg-rose-500/5' : ''}
-                                                ${row.isGrandTotal ? 'bg-rose-500/30 h-32 border-t-[4px] border-white' : ''}`}>
+                                                ${row.isGrandTotal ? 'bg-rose-500/30 h-40 border-t-[4px] border-white' : ''}`}>
                                                 <div className="flex-1 border-r-[4px] border-white px-10 flex flex-col justify-center">
                                                     <span className={`${row.isGrandTotal ? 'text-[36px]' : 'text-[28px]'} font-bold leading-tight`} style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
                                                     <span className={`${row.isGrandTotal ? 'text-[24px]' : 'text-[20px]'} font-bold opacity-60`}>{row.en}</span>
@@ -3048,8 +3059,8 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
 
 
                     {activePage === 12 && (
-                        <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center overflow-x-auto">
-                            <div className="w-[2400px] flex flex-col items-center">
+                        <div className="animate-fade-in relative pl-10 pr-24 py-16 flex flex-col items-start overflow-x-auto">
+                            <div className="w-full flex flex-col items-center">
                                 {/* BRANDED HEADER */}
                                 <div className="w-full border-[6px] border-white p-12 flex flex-col items-center bg-white/5 relative shadow-2xl mb-24">
                                     <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-emerald-500 text-black px-10 py-2 font-black text-xl uppercase tracking-[0.4em] skew-x-[-20deg]">
@@ -3157,10 +3168,12 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 </thead>
                                                 <tbody className="text-white font-black text-[22px]">
                                                     {["N-5", "N-4", "N-3", "N-2", "N-1", "N"].map((year, i) => (
-                                                        <tr key={i} className="border-b border-white/10 h-20 hover:bg-white/5 transition-colors">
-                                                            <td className="border-r-[2px] border-white p-4 text-center">
-                                                                <span className="block font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំ {year}</span>
-                                                                <span className="text-[14px] font-black opacity-40">Year {year}</span>
+                                                        <tr key={i} className="border-b border-white/10 h-28 hover:bg-white/5 transition-colors">
+                                                            <td className="border-r-[2px] border-white p-2 text-center h-28 min-w-[120px]">
+                                                                <div className="flex flex-col items-center justify-center">
+                                                                    <span className="font-bold text-[18px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំ {year}</span>
+                                                                    <span className="text-[12px] font-black opacity-40 uppercase">Year {year}</span>
+                                                                </div>
                                                             </td>
                                                             <td className="border-r-[2px] border-white p-4 relative">
                                                                 {i < 5 ? (
@@ -3203,10 +3216,12 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 </thead>
                                                 <tbody className="text-white font-black text-[22px]">
                                                     {["N-5", "N-4", "N-3", "N-2", "N-1", "N**"].map((year, i) => (
-                                                        <tr key={i} className="border-b border-white/10 h-20 hover:bg-white/5 transition-colors">
-                                                            <td className="border-r-[2px] border-white p-4 text-center">
-                                                                <span className="block font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំ {year}</span>
-                                                                <span className="text-[14px] font-black opacity-40">Year {year}</span>
+                                                        <tr key={i} className="border-b border-white/10 h-28 hover:bg-white/5 transition-colors">
+                                                            <td className="border-r-[2px] border-white p-2 text-center h-28 min-w-[120px]">
+                                                                <div className="flex flex-col items-center justify-center">
+                                                                    <span className="font-bold text-[18px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំ {year}</span>
+                                                                    <span className="text-[12px] font-black opacity-40 uppercase">Year {year}</span>
+                                                                </div>
                                                             </td>
                                                             <td className="border-r-[2px] border-white p-4"><input type="text" className="w-full bg-transparent text-right outline-none text-white/40" value={formData[`c1_${i}`] || ""} onChange={(e) => handleFormChange(`c1_${i}`, e.target.value)} placeholder="0.00" /></td>
                                                             <td className="border-r-[2px] border-white p-4"><input type="text" className="w-full bg-transparent text-right outline-none text-white/40" value={formData[`c2_${i}`] || ""} onChange={(e) => handleFormChange(`c2_${i}`, e.target.value)} placeholder="0.00" /></td>
@@ -3237,11 +3252,11 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                     )}
 
                     {activePage === 13 && (
-                        <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center">
+                        <div className="animate-fade-in relative pl-10 pr-24 py-16 flex flex-col items-start overflow-x-auto">
                             {/* LANDSCAPE HEADER AREA */}
-                            <div className="w-[2400px] flex flex-col items-center mb-10 px-10">
-                                <div className="w-full flex justify-between items-start mb-16">
-                                    <div className="border-[6px] border-white p-10 bg-white/5 shadow-2xl">
+                            <div className="w-full flex flex-col items-start mb-10 px-10">
+                                <div className="w-full flex justify-between items-stretch mb-16">
+                                    <div className="border-[6px] border-white p-10 bg-white/5 shadow-2xl flex flex-col items-center justify-center min-w-[600px]">
                                         <h2 className="text-[64px] font-bold text-white text-center leading-tight mb-4" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
                                             តារាងគណនារំលស់តាមច្បាប់ស្តីពីសារពើពន្ធ
                                         </h2>
@@ -3412,11 +3427,11 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                     )}
 
                     {activePage === 14 && (
-                        <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center">
+                        <div className="animate-fade-in relative pl-10 pr-24 py-16 flex flex-col items-start overflow-x-auto">
                             {/* PAGE 14: SPECIAL DEPRECIATION TABLE PER LOT */}
-                            <div className="w-[2400px] flex flex-col items-center mb-10 px-10">
-                                <div className="w-full flex justify-between items-start mb-16">
-                                    <div className="border-[6px] border-white p-10 bg-white/5 shadow-2xl">
+                            <div className="w-full flex flex-col items-start mb-10 px-10">
+                                <div className="w-full flex justify-between items-start mb-16 gap-10">
+                                    <div className="border-[6px] border-white p-10 bg-white/5 shadow-2xl h-fit min-h-[200px] flex flex-col justify-center">
                                         <h2 className="text-[54px] font-bold text-white text-center leading-tight mb-4" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
                                             តារាងគណនារំលស់ពិសេសតាមច្បាប់ស្តីពីវិនិយោគ
                                         </h2>
@@ -3541,12 +3556,12 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                     )}
 
                     {activePage === 15 && (
-                        <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center">
+                        <div className="animate-fade-in relative pl-10 pr-24 py-16 flex flex-col items-start overflow-x-auto">
                             {/* LANDSCAPE CONTAINER FOR WIDE TABLE */}
-                            <div className="w-[2400px] flex flex-col items-center">
+                            <div className="w-full flex flex-col items-start">
                                 {/* STANDARDIZED HEADER FOR PAGE 15 */}
-                                <div className="w-full flex justify-between items-start mb-12 px-10">
-                                    <div className="border-[6px] border-white p-10 bg-white/5 shadow-2xl max-w-4xl">
+                                <div className="w-full flex justify-between items-start mb-12 px-10 gap-10">
+                                    <div className="border-[6px] border-white p-10 bg-white/5 shadow-2xl w-full max-w-6xl">
                                         <h2 className="text-[42px] font-bold text-white text-center leading-tight mb-4" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
                                             តារាងតម្លៃលើសឬចុះពីការលក់ចេញ ឬលក់ទ្រព្យសកម្មរយៈពេលវែងតាមច្បាប់ស្តីពីសារពើពន្ធ
                                         </h2>
@@ -3595,22 +3610,22 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                 <div className="w-full border-[4px] border-white bg-white/5 overflow-hidden shadow-2xl">
                                     <table className="w-full border-collapse">
                                         <thead>
-                                            <tr className="bg-slate-800 border-b-[4px] border-white text-white h-48 text-[20px]">
+                                            <tr className="bg-slate-800 border-b-[4px] border-white text-white h-40 text-[18px]">
                                                 <th className="border-r-[2px] border-white p-3 w-[8%]">
                                                     <span className="block font-bold mb-2">ថ្ងៃ ខែ ឆ្នាំ ទិញ</span>
-                                                    <span className="font-black uppercase text-[16px] opacity-60">Date of Acquisition</span>
+                                                    <span className="font-black uppercase text-[16px] opacity-60">Acquisition Date</span>
                                                 </th>
                                                 <th className="border-r-[2px] border-white p-3 w-[8%]">
                                                     <span className="block font-bold mb-2">ថ្ងៃ ខែ ឆ្នាំ លក់</span>
-                                                    <span className="font-black uppercase text-[16px] opacity-60">Date of Disposal/Sales</span>
+                                                    <span className="font-black uppercase text-[16px] opacity-60">Disposal Date</span>
                                                 </th>
                                                 <th className="border-r-[2px] border-white p-3 w-[15%]">
                                                     <span className="block font-bold mb-2">ប្រភេទនៃទ្រព្យសកម្មរយៈពេលវែង</span>
-                                                    <span className="font-black uppercase text-[16px] opacity-60">Types of Fixed Assets</span>
+                                                    <span className="font-black uppercase text-[16px] opacity-60">Fixed Asset Type</span>
                                                 </th>
                                                 <th className="border-r-[2px] border-white p-4 w-[12%]">
                                                     <span className="block font-bold mb-2">ឈ្មោះនៃទ្រព្យសកម្មរយៈពេលវែង</span>
-                                                    <span className="font-black uppercase text-[16px] opacity-60">Name of Fixed Assets</span>
+                                                    <span className="font-black uppercase text-[16px] opacity-60">Asset Name</span>
                                                 </th>
                                                 <th className="border-r-[2px] border-white p-3 w-[10%]">
                                                     <span className="block font-bold mb-1">ថ្លៃដើមមូលដ្ឋានរូបី</span>
@@ -3619,27 +3634,27 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 </th>
                                                 <th className="border-r-[2px] border-white p-3 w-[10%]">
                                                     <span className="block font-bold mb-1">រំលស់បង្គរ</span>
-                                                    <span className="font-black uppercase text-[16px] opacity-60">Accumulated Depreciation</span>
+                                                    <span className="font-black uppercase text-[16px] opacity-60">Accum. Depre. (2)</span>
                                                     <span className="block mt-2 font-black text-indigo-400">(2)</span>
                                                 </th>
                                                 <th className="border-r-[2px] border-white p-3 w-[11%] bg-white/5">
                                                     <span className="block font-bold mb-1">តម្លៃនៅសល់</span>
-                                                    <span className="font-black uppercase text-[14px] opacity-60">Undepreciated Value (Net Book Value)</span>
+                                                    <span className="font-black uppercase text-[14px] opacity-60">Undepre. Value (3) = (1)-(2)</span>
                                                     <span className="block mt-2 font-black text-indigo-400">(3) = (1) - (2)</span>
                                                 </th>
                                                 <th className="border-r-[2px] border-white p-3 w-[10%]">
                                                     <span className="block font-bold mb-1">ផលពីការលក់ចេញ ឬលក់</span>
-                                                    <span className="font-black uppercase text-[16px] opacity-60">Proceeds of Disposal / Sales</span>
+                                                    <span className="font-black uppercase text-[16px] opacity-60">Proceeds (4)</span>
                                                     <span className="block mt-2 font-black text-indigo-400">(4)</span>
                                                 </th>
                                                 <th className="p-3 w-[18%] bg-rose-500/10">
                                                     <span className="block font-bold mb-1">កម្រៃលើសឬចុះ</span>
-                                                    <span className="font-black uppercase text-[16px] opacity-60">Gain / (Loss)</span>
+                                                    <span className="font-black uppercase text-[16px] opacity-60">Gain / (Loss) (5) = (4)-(3)</span>
                                                     <span className="block mt-2 font-black text-rose-400">(5) = (4) - (3)</span>
                                                 </th>
                                             </tr>
                                         </thead>
-                                        <tbody className="text-white text-[24px]">
+                                        <tbody className="text-white text-[20px]">
                                             {[
                                                 { id: "១", kh: "ដីធ្លី", en: "Land", key: "disp_land", grayCols: [5] }, // 5th data col (Accumulated Depre) is (2) which is Col 6 in display
                                                 { id: "២", kh: "ទ្រព្យអរូបី", en: "Intangible assets", key: "disp_intangible", grayCols: [] },
@@ -3650,10 +3665,10 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                                 { id: "៧", kh: "ទ្រព្យរូបីថ្នាក់៤រំលស់តាមវិធីសាស្ត្រថយចុះតាមសមតុល្យ", en: "Declining balance depreciation assets (class 4)", key: "disp_c4", grayCols: [5, 6] }
                                             ].map((row, idx) => (
                                                 <React.Fragment key={idx}>
-                                                    <tr className="bg-white/5 h-20 border-b border-white/20">
+                                                    <tr className="bg-white/5 h-32 border-b border-white/20">
                                                         <td className="border-r-[2px] border-white"></td>
                                                         <td className="border-r-[2px] border-white"></td>
-                                                        <td className="border-r-[2px] border-white px-6 font-bold flex flex-col justify-center h-20">
+                                                        <td className="border-r-[2px] border-white px-6 font-bold flex flex-col justify-center h-32">
                                                             <div className="flex gap-2">
                                                                 <span className="text-indigo-400">{row.id}-</span>
                                                                 <span style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
@@ -3724,7 +3739,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                     {activePage === 16 && (
                         <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center">
                             {/* LANDSCAPE CONTAINER */}
-                            <div className="w-[2000px] flex flex-col items-center">
+                            <div className="w-full flex flex-col items-center">
                                 {/* PAGE HEADER */}
                                 <div className="w-full flex justify-between items-start mb-12 px-10">
                                     <div className="border-[6px] border-white p-10 bg-white/5 shadow-2xl max-w-4xl mx-auto flex flex-col items-center">
@@ -3865,7 +3880,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                     {activePage === 17 && (
                         <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center">
                             {/* LUXURY CONTAINER */}
-                            <div className="w-[2200px] flex flex-col items-center">
+                            <div className="w-full flex flex-col items-center">
                                 {/* PAGE HEADER */}
                                 <div className="w-full bg-slate-900 border-[6px] border-white p-12 shadow-2xl mb-12 flex flex-col items-center relative">
                                     <h2 className="text-[54px] font-bold text-white text-center leading-tight mb-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
@@ -4064,7 +4079,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                     {activePage === 18 && (
                         <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center">
                             {/* LUXURY WIDE CONTAINER */}
-                            <div className="w-[2000px] flex flex-col items-center">
+                            <div className="w-full flex flex-col items-center">
                                 {/* HEADER BLOCK */}
                                 <div className="w-full flex justify-between items-end mb-10 pb-6 border-b-[4px] border-white/20">
                                     <div className="flex flex-col gap-6 w-full max-w-4xl">
@@ -4236,7 +4251,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                     {activePage === 19 && (
                         <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center">
                             {/* LUXURY WIDE CONTAINER */}
-                            <div className="w-[1800px] flex flex-col items-center">
+                            <div className="w-full flex flex-col items-center">
                                 {/* PAGE TITLE */}
                                 <div className="w-full flex flex-col items-center mb-10">
                                     <h2 className="text-[36px] font-bold text-white text-center mb-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
@@ -4577,7 +4592,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                     {activePage === 20 && (
                         <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center">
                             {/* LUXURY WIDE CONTAINER */}
-                            <div className="w-[1600px] flex flex-col items-center">
+                            <div className="w-full flex flex-col items-center">
                                 {/* HEADER SECTION */}
                                 <div className="w-full flex justify-between items-start mb-10 pb-6 border-b-[4px] border-white/20">
                                     <div className="flex flex-col gap-6 w-full max-w-3xl">
@@ -4744,7 +4759,7 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                     {activePage === 21 && (
                         <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center">
                             {/* LUXURY WIDE CONTAINER */}
-                            <div className="w-[1400px] flex flex-col items-center">
+                            <div className="w-full">
                                 {/* TOP ANNEX BADGE */}
                                 <div className="self-end mb-8">
                                     <div className="bg-white/10 px-8 py-3 border-[3px] border-white shadow-xl skew-x-[-12deg]">

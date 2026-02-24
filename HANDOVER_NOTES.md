@@ -59,6 +59,19 @@
 - **Goal**: Implement the full rules for "Prepayment of Profit Tax" (PPT).
 - **Action**: Ensure "Adjustments" are calculated correctly.
 
+## Knowledge Base & Standard Operating Procedures (BA)
+
+### 1. **Core Knowledge Folder**
+- **Location**: `e:\Antigravity\TOI\knowledge/`
+- **Primary Source**: `BlueAgent_KB.md`
+- **Usage**: All future tasks involving the "Blue Agent" (BA) must refer to this document for:
+    - **UI Standards**: Premium Glassmorphism, Rounded Corners, Pro Typography.
+    - **Language**: `Kantumruy Pro` Khmer font for all tax labels.
+    - **Tax Context**: TOI 01 schema and GDT standards.
+    - **Storage**: Precise naming conventions for Google Drive sync.
+
+---
+
 ## Technical Details
 - **Socket URL**: Defaults to `localhost:5000` in Dev. Ensure `VITE_API_URL` is set for Prod.
 - **Exchange Rates**: Currently hardcoded fallback (4000) exists, but User should add 2024 rates in UI.

@@ -534,20 +534,24 @@ export default function CompanyProfile() {
 
                         const txDriveId = tx.originalData?.driveId;
                         const fileDriveId = file.driveId;
+                        const isMockId = !txDriveId || txDriveId === 'mock_drive_id' || txDriveId === 'mock-id';
 
-                        // RULE 1: Strict Drive ID Match (Ignore junk/mock IDs)
-                        if (txDriveId && fileDriveId && txDriveId === fileDriveId && txDriveId !== 'mock_drive_id') return true;
+                        // RULE 1: Strict Drive ID Match (Only if ID is valid/unique)
+                        if (!isMockId && txDriveId === fileDriveId) return true;
 
-                        // RULE 2: Strict Date Range Check (Crucial for Timeline Accuracy)
+                        // RULE 2: Strict Date Range Check (Fallback for mock/missing IDs)
                         const rangeStr = file.dateRange || "";
                         if (rangeStr.includes(" - ") && !rangeStr.includes("FATAL_ERR")) {
-                            const txDate = parseDate(tx.date)?.getTime();
+                            const txDateRaw = tx.date;
+                            const txDate = parseDate(txDateRaw)?.getTime();
+
                             const [s, e] = rangeStr.split(' - ');
                             const start = parseDate(s.trim())?.getTime();
                             const end = parseDate(e.trim())?.getTime();
 
                             if (txDate && start && end) {
-                                const buffer = 86400000; // 1 day buffer
+                                // 2-day buffer for timezone shifts or edge-of-month transactions
+                                const buffer = 172800000;
                                 if (txDate >= (start - buffer) && txDate <= (end + buffer)) return true;
                             }
                         }
@@ -556,8 +560,8 @@ export default function CompanyProfile() {
 
                     fileTxs.forEach(tx => usedTxIds.add(tx._id));
 
-                    // Internal Transaction Sort: Newest at Top
-                    const sortedTxs = fileTxs.sort((a, b) => (parseDate(b.date)?.getTime() || 0) - (parseDate(a.date)?.getTime() || 0));
+                    // Internal Transaction Sort: Oldest at Top
+                    const sortedTxs = fileTxs.sort((a, b) => (parseDate(a.date)?.getTime() || 0) - (parseDate(b.date)?.getTime() || 0));
 
                     // Restore moneyIn/moneyOut for sorted transactions
                     sortedTxs.forEach(tx => {
@@ -566,7 +570,7 @@ export default function CompanyProfile() {
                         tx.moneyOut = amount < 0 ? Math.abs(amount) : 0;
                     });
 
-                    return { ...file, status: 'Saved', transactions: sortedTxs };
+                    return { ...file, status: 'Saved', transactions: sortedTxs, bankName: file.bankName, accountNumber: file.accountNumber, accountName: file.accountName };
                 });
 
                 // 4. Handle Orphans
@@ -591,13 +595,13 @@ export default function CompanyProfile() {
                         const dates = groupTxs.map(t => parseDate(t.date)?.getTime()).filter(Boolean);
                         let dateRange = 'Unknown Date Range';
                         if (dates.length > 0) {
-                            const start = new Date(Math.min(...dates)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+                            const start = new Date(Math.min(...dates)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
                             const end = new Date(Math.max(...dates)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
                             dateRange = `${start} - ${end}`;
                         }
 
                         extraFiles.push({
-                            originalName: `Historical: ${key}`,
+                            originalName: `RECONSTRUCTED HISTORY (${key})`,
                             dateRange: dateRange,
                             status: 'Saved',
                             transactions: groupTxs,
@@ -1720,23 +1724,28 @@ export default function CompanyProfile() {
                                                     const e = formatDateSafe(parts[1].trim());
                                                     if (s !== '-' && e !== '-') return `${s} - ${e}`;
                                                 }
-                                                // Priority 2: Use actual transaction range
-                                                if (file.transactions?.length > 0) {
-                                                    const start = file.transactions[file.transactions.length - 1].date; // Oldest
-                                                    const end = file.transactions[0].date; // Newest
-                                                    return `${formatDateSafe(start)} - ${formatDateSafe(end)}`;
-                                                }
+                                                // Priority 2: Use original name if it's not the same as dateRange
+                                                if (file.originalName && !file.originalName.includes('-')) return file.originalName;
+
                                                 // Priority 3: Fallback
-                                                return file.originalName || 'Untitled Statement';
+                                                return 'Bank Statement';
                                             })()}
                                         </p>
 
-                                        {/* Metdata: Original Name + Count */}
-                                        <div className="flex items-center text-[10px] text-gray-400 mt-0.5">
-                                            <FileText size={10} className="mr-1 opacity-50" />
-                                            <span className="truncate max-w-[120px] mr-2" title={file.originalName}>{file.originalName}</span>
-                                            <span className="text-gray-300">|</span>
-                                            <span className="ml-2 font-mono">{(file.transactions || []).length} txs</span>
+                                        {/* Metadata: Original Name + Count */}
+                                        <div className="flex flex-col text-[10px] text-gray-400 mt-1 space-y-0.5">
+                                            <div className="flex items-center">
+                                                <FileText size={10} className="mr-1 opacity-50" />
+                                                <span className="truncate max-w-[120px] mr-2" title={file.originalName}>{file.originalName}</span>
+                                                <span className="text-gray-300">|</span>
+                                                <span className="ml-2 font-mono">{(file.transactions || []).length} txs</span>
+                                            </div>
+                                            {(file.bankName || file.accountNumber) && (
+                                                <div className="flex items-center text-blue-500/60 font-medium">
+                                                    <Tag size={10} className="mr-1" />
+                                                    <span className="truncate">{file.bankName || 'Unknown Bank'} {file.accountNumber ? `(${file.accountNumber})` : ''}</span>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 
@@ -1799,6 +1808,11 @@ export default function CompanyProfile() {
                                     <span>View Original</span>
                                 </a>
                             )}
+                            {bankFiles[activeFileIndex]?.accountNumber && (
+                                <div className="text-[10px] bg-blue-500/10 text-blue-400 px-3 py-1 rounded-full border border-blue-500/20 font-bold uppercase tracking-wider">
+                                    {bankFiles[activeFileIndex].bankName || 'BANK'}: {bankFiles[activeFileIndex].accountNumber}
+                                </div>
+                            )}
                             <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium flex items-center">
                                 <CheckCircle size={12} className="mr-1" /> Verified
                             </span>
@@ -1834,13 +1848,13 @@ export default function CompanyProfile() {
                                                 </div>
                                             </td>
                                             <td className="px-4 py-4 text-xs text-right font-medium text-green-600 align-top whitespace-nowrap">
-                                                {tx?.moneyIn && parseFloat(tx.moneyIn) > 0 ? parseFloat(tx.moneyIn).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
+                                                {tx?.moneyIn && parseFloat(tx.moneyIn) > 0 ? parseFloat(tx.moneyIn).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''}
                                             </td>
                                             <td className="px-4 py-4 text-xs text-right font-medium text-red-600 align-top whitespace-nowrap">
-                                                {tx?.moneyOut && parseFloat(tx.moneyOut) > 0 ? parseFloat(tx.moneyOut).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
+                                                {tx?.moneyOut && parseFloat(tx.moneyOut) > 0 ? parseFloat(tx.moneyOut).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''}
                                             </td>
                                             <td className="px-4 py-4 text-xs text-right text-gray-800 font-bold align-top whitespace-nowrap">
-                                                {tx?.balance ? parseFloat(String(tx.balance).replace(/[^0-9.-]+/g, "")).toLocaleString('en-US', { minimumFractionDigits: 2 }) : '-'}
+                                                {tx?.balance ? parseFloat(String(tx.balance).replace(/[^0-9.-]+/g, "")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}
                                             </td>
                                             <td className="px-4 py-4 text-xs align-top">
                                                 {/* Actions */}

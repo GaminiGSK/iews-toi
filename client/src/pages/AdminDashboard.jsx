@@ -19,7 +19,10 @@ export default function AdminDashboard() {
     // --- Data Fetching ---
     const fetchUsers = async () => {
         try {
-            const res = await axios.get('/api/auth/users');
+            const token = localStorage.getItem('token');
+            const res = await axios.get('/api/auth/users', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
             setUsers(res.data);
         } catch (err) { console.error(err); }
     };
@@ -38,7 +41,11 @@ export default function AdminDashboard() {
     const handleCreateUser = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('/api/auth/create-user', { ...formData, companyCode: formData.username.toUpperCase() });
+            const token = localStorage.getItem('token');
+            await axios.post('/api/auth/create-user',
+                { ...formData, companyCode: formData.username.toUpperCase() },
+                { headers: { 'Authorization': `Bearer ${token}` } }
+            );
             resetForm();
             fetchUsers();
         } catch (err) { setMessage(err.response?.data?.message || 'Error creating user'); }
@@ -47,7 +54,10 @@ export default function AdminDashboard() {
     const handleUpdateUser = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`/api/auth/users/${editingId}`, formData);
+            const token = localStorage.getItem('token');
+            await axios.put(`/api/auth/users/${editingId}`, formData, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
             resetForm();
             fetchUsers();
         } catch (err) { setMessage(err.response?.data?.message || 'Error updating user'); }
@@ -62,7 +72,10 @@ export default function AdminDashboard() {
     const deleteUser = async (id) => {
         if (!window.confirm('Delete this company?')) return;
         try {
-            await axios.delete(`/api/auth/users/${id}`);
+            const token = localStorage.getItem('token');
+            await axios.delete(`/api/auth/users/${id}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
             fetchUsers();
         } catch (err) { alert('Error deleting user'); }
     };
@@ -84,7 +97,7 @@ export default function AdminDashboard() {
                     <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center font-bold text-sm text-black">GK</div>
                     <div className="flex flex-col leading-none">
                         <span className="font-bold text-lg tracking-tight">GK SMART <span className="text-gray-400 font-normal">& Ai</span></span>
-                        <span className="text-[9px] text-emerald-400 font-black tracking-[0.2em] mt-0.5">CORE DEPLOYMENT v5.12.3_IEWS_LIVE</span>
+                        <span className="text-[9px] text-emerald-400 font-black tracking-[0.2em] mt-0.5">CORE DEPLOYMENT v5.12.17_IEWS_FINAL</span>
                     </div>
                 </div>
 
