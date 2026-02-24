@@ -8,7 +8,7 @@ $version = "v3.0 (Stability Edition)"
 $gcloudPath = "C:\Users\Gamini\AppData\Local\Google\Cloud SDK\google-cloud-sdk\bin\gcloud.cmd"
 $dockerPath = "C:\Program Files\Docker\Docker\resources\bin\docker.exe"
 $projectId = "ambient-airlock-286506"
-$serviceName = "gksmart-ai-app"
+$serviceName = "iews-toi"
 $region = "asia-southeast1"
 
 # Auto-detect tool paths if not in PATH

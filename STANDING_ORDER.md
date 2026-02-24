@@ -4,7 +4,7 @@
 # Any deviation from this is strictly prohibited.
 
 ACTIVE_PROJECT_ID=ambient-airlock-286506
-ACTIVE_SERVICE_NAME=gksmart-ai-app
+ACTIVE_SERVICE_NAME=iews-toi
 ACTIVE_REGION=asia-southeast1
 ACTIVE_URL=https://gksmart-ai-app.web.app
 

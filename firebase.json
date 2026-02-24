@@ -16,6 +16,13 @@
                 }
             },
             {
+                "source": "/socket.io/**",
+                "run": {
+                    "serviceId": "iews-toi",
+                    "region": "asia-southeast1"
+                }
+            },
+            {
                 "source": "**",
                 "destination": "/index.html"
             }
