@@ -211,6 +211,13 @@ export default function AdminDashboard() {
                         </div>
                     )}
 
+                    {/* TOI TAB — Live Workspace Embedded */}
+                    {activeTab === 'toi' && (
+                        <div className="w-full h-full overflow-y-auto animate-in fade-in duration-500">
+                            <LiveTaxWorkspace embedded={true} />
+                        </div>
+                    )}
+
                     {/* BA KNOWLEDGE TAB */}
                     {activeTab === 'baknowledge' && (
                         <div className="h-full overflow-y-auto p-10 space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
