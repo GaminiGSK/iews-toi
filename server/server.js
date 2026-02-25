@@ -57,6 +57,7 @@ app.use('/api/management', require('./routes/management'));
 app.use('/api/excel', require('./routes/excel'));
 app.use('/api/vision', require('./routes/vision'));
 app.use('/api/bridge', require('./routes/bridge'));
+app.use('/api/knowledge', require('./routes/knowledge'));
 console.log('[Startup] API Routes Loaded.');
 app.use('/uploads', express.static('uploads'));
 

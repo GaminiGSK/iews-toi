@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
-    UserPlus, User, Edit2, Trash2, X, Lock, Users, FileSpreadsheet
+    UserPlus, User, Edit2, Trash2, X, Lock, Users, FileSpreadsheet, Brain, ChevronRight, FileText, ArrowLeft
 } from 'lucide-react';
 import TaxFormWorkbench from './TaxFormWorkbench';
 import LiveTaxWorkspace from './LiveTaxWorkspace';
@@ -15,6 +15,9 @@ export default function AdminDashboard() {
     const [formData, setFormData] = useState({ username: '', companyName: '', password: '' });
     const [message, setMessage] = useState('');
     const [activeTab, setActiveTab] = useState('user');
+    const [knowledgeBase, setKnowledgeBase] = useState([]);
+    const [selectedCategory, setSelectedCategory] = useState(null);
+    const [viewingFile, setViewingFile] = useState(null);
 
     // --- Data Fetching ---
     const fetchUsers = async () => {
@@ -27,7 +30,30 @@ export default function AdminDashboard() {
         } catch (err) { console.error(err); }
     };
 
-    useEffect(() => { fetchUsers(); }, []);
+    const fetchKnowledge = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.get('/api/knowledge', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            setKnowledgeBase(res.data);
+        } catch (err) { console.error('Knowledge Fetch Error:', err); }
+    };
+
+    useEffect(() => {
+        fetchUsers();
+        fetchKnowledge();
+    }, []);
+
+    const fetchFileContent = async (category, fileName) => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.get(`/api/knowledge/${category}/${fileName}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            setViewingFile({ name: fileName, content: res.data.content });
+        } catch (err) { alert('Error reading file'); }
+    };
 
     // --- Handlers ---
     const resetForm = () => {
@@ -97,7 +123,7 @@ export default function AdminDashboard() {
                     <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center font-bold text-sm text-black">GK</div>
                     <div className="flex flex-col leading-none">
                         <span className="font-bold text-lg tracking-tight">GK SMART <span className="text-gray-400 font-normal">& Ai</span></span>
-                        <span className="text-[9px] text-emerald-400 font-black tracking-[0.2em] mt-0.5">CORE DEPLOYMENT v5.12.17_IEWS_FINAL</span>
+                        <span className="text-[9px] text-emerald-400 font-black tracking-[0.2em] mt-0.5">CORE DEPLOYMENT v5.12.18_BA_KNOWLEDGE_LIVE</span>
                     </div>
                 </div>
 
@@ -120,6 +146,12 @@ export default function AdminDashboard() {
                     className={`flex items-center gap-4 px-10 py-6 text-[22px] font-black uppercase tracking-[0.2em] border-b-4 transition-all ${activeTab === 'toi' ? 'border-cyan-500 text-cyan-400' : 'border-transparent text-gray-600 hover:text-gray-400'}`}
                 >
                     <FileSpreadsheet size={28} /> TOI
+                </button>
+                <button
+                    onClick={() => setActiveTab('baknowledge')}
+                    className={`flex items-center gap-4 px-10 py-6 text-[22px] font-black uppercase tracking-[0.2em] border-b-4 transition-all ${activeTab === 'baknowledge' ? 'border-rose-500 text-rose-400' : 'border-transparent text-gray-600 hover:text-gray-400'}`}
+                >
+                    <Brain size={28} /> BA Knowledge
                 </button>
             </div>
 
@@ -179,10 +211,100 @@ export default function AdminDashboard() {
                         </div>
                     )}
 
-                    {/* TOI TAB — Live Workspace Embedded */}
-                    {activeTab === 'toi' && (
-                        <div className="w-full h-full overflow-y-auto animate-in fade-in duration-500">
-                            <LiveTaxWorkspace embedded={true} />
+                    {/* BA KNOWLEDGE TAB */}
+                    {activeTab === 'baknowledge' && (
+                        <div className="h-full overflow-y-auto p-10 space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+                            <div className="max-w-7xl mx-auto">
+                                <div className="flex justify-between items-center bg-white/[0.03] p-8 rounded-[32px] border border-white/5 mb-8">
+                                    <div className="flex items-center gap-6">
+                                        {(selectedCategory || viewingFile) && (
+                                            <button
+                                                onClick={() => viewingFile ? setViewingFile(null) : setSelectedCategory(null)}
+                                                className="p-3 bg-white/5 border border-white/10 rounded-2xl hover:bg-rose-500 hover:border-rose-400 group transition-all"
+                                            >
+                                                <ArrowLeft size={20} className="text-slate-400 group-hover:text-white" />
+                                            </button>
+                                        )}
+                                        <div>
+                                            <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-tight">
+                                                {viewingFile ? viewingFile.name : (selectedCategory ? selectedCategory.name : 'Agent Knowledge Matrix')}
+                                            </h2>
+                                            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.3em]">
+                                                {viewingFile ? 'Full AI Transcription' : (selectedCategory ? `Exploration of ${selectedCategory.fileCount} Intel Fragments` : 'Extracted Intelligence from Google Drive Repositories')}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-3">
+                                        <div className="flex items-center gap-2 px-6 py-3 bg-rose-500/10 border border-rose-500/20 rounded-2xl">
+                                            <div className="w-2 h-2 bg-rose-500 rounded-full animate-pulse" />
+                                            <span className="text-[10px] font-black text-rose-400 uppercase tracking-widest">Knowledge Sync Active</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* CATEGORY GRID */}
+                                {!selectedCategory && !viewingFile && (
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                        {knowledgeBase.map((cat, i) => (
+                                            <div key={i} className="bg-slate-900/40 border border-white/5 rounded-[40px] p-10 group hover:border-rose-500/30 transition-all duration-700">
+                                                <div className={`w-16 h-16 bg-rose-500/10 rounded-2xl flex items-center justify-center mb-8`}>
+                                                    <Brain className="text-rose-400" size={32} />
+                                                </div>
+                                                <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-2">{cat.name}</h3>
+                                                <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-10">{cat.fileCount} Managed Data Fragments</p>
+                                                <button
+                                                    onClick={() => setSelectedCategory(cat)}
+                                                    className="w-full py-5 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:bg-rose-500 group-hover:text-white group-hover:border-rose-400 transition-all active:scale-95"
+                                                >
+                                                    Open Repository
+                                                </button>
+                                            </div>
+                                        ))}
+                                        {knowledgeBase.length === 0 && (
+                                            <div className="col-span-full py-40 text-center opacity-20 flex flex-col items-center">
+                                                <Brain size={64} className="mb-4" />
+                                                <h3 className="text-xl font-black uppercase tracking-[0.4em]">Repository Empty</h3>
+                                                <p className="text-[10px] mt-2 font-bold uppercase tracking-widest">No intelligence fragments extracted yet...</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* FILE LIST */}
+                                {selectedCategory && !viewingFile && (
+                                    <div className="grid grid-cols-1 gap-4 animate-in slide-in-from-bottom-8 duration-500">
+                                        {selectedCategory.files.map((file, idx) => (
+                                            <button
+                                                key={idx}
+                                                onClick={() => fetchFileContent(selectedCategory.id, file.fileName)}
+                                                className="flex items-center justify-between p-6 bg-slate-900/40 border border-white/5 rounded-[24px] hover:border-blue-500/40 group transition-all"
+                                            >
+                                                <div className="flex items-center gap-6">
+                                                    <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center">
+                                                        <FileText className="text-blue-400 group-hover:scale-110 transition-transform" size={20} />
+                                                    </div>
+                                                    <div className="flex flex-col items-start">
+                                                        <span className="text-white font-bold tracking-tight uppercase">{file.name}</span>
+                                                        <span className="text-slate-500 text-[9px] font-black uppercase tracking-widest">Extracted {new Date(file.updatedAt).toLocaleDateString()}</span>
+                                                    </div>
+                                                </div>
+                                                <ChevronRight className="text-slate-700 group-hover:text-blue-400 transition-colors" />
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* CONTENT VIEWER */}
+                                {viewingFile && (
+                                    <div className="bg-slate-900/60 border border-white/10 rounded-[40px] p-12 animate-in zoom-in-95 duration-500 shadow-2xl">
+                                        <div className="prose prose-invert max-w-none">
+                                            <pre className="whitespace-pre-wrap text-slate-300 font-mono text-sm leading-relaxed bg-black/40 p-10 rounded-3xl border border-white/5 overflow-x-auto shadow-inner">
+                                                {viewingFile.content}
+                                            </pre>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
                 </div>
