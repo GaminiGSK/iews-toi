@@ -201,7 +201,7 @@ const startServer = async () => {
 
         // --- 3. Database Connection ---
         console.log('Attempting to connect to MongoDB...');
-        console.log('Tax Persistence Module Loaded (v2.5)');
+        console.log('Tax Persistence Module Loaded (v2.6_STABLE)');
 
         // Connect without blocking the port listener (already listening)
         await mongoose.connect(process.env.MONGODB_URI, {
@@ -228,7 +228,7 @@ const startServer = async () => {
             {
                 username: 'GKSMART',
                 companyName: 'GK SMART',
-                companyCode: 'GGMT',
+                companyCode: 'GK_SMART_AI', // Mapped to existing data (was GGMT)
                 password: hashedPassword,
                 loginCode: '666666',
                 role: 'user',
