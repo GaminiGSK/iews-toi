@@ -2,12 +2,20 @@ const { google } = require('googleapis');
 const fs = require('fs');
 const path = require('path');
 
-// Initialize Auth
-const auth = new google.auth.GoogleAuth({
-    scopes: ['https://www.googleapis.com/auth/drive.file'],
-});
+let driveInstance = null;
 
-const drive = google.drive({ version: 'v3', auth });
+function getDrive() {
+    if (driveInstance) return driveInstance;
+
+    const keyPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+    const auth = new google.auth.GoogleAuth({
+        keyFile: path.isAbsolute(keyPath) ? keyPath : path.resolve(__dirname, '../../', keyPath),
+        scopes: ['https://www.googleapis.com/auth/drive'],
+    });
+
+    driveInstance = google.drive({ version: 'v3', auth });
+    return driveInstance;
+}
 
 /**
  * Upload a file to Google Drive
@@ -22,7 +30,7 @@ async function uploadFile(filePath, mimeType, originalName) {
         const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
         const parents = folderId ? [folderId] : [];
 
-        const response = await drive.files.create({
+        const response = await getDrive().files.create({
             requestBody: {
                 name: originalName,
                 parents: parents,
@@ -49,7 +57,7 @@ async function uploadFile(filePath, mimeType, originalName) {
  */
 async function getFileStream(fileId) {
     try {
-        const response = await drive.files.get(
+        const response = await getDrive().files.get(
             { fileId: fileId, alt: 'media' },
             { responseType: 'stream' }
         );
@@ -67,7 +75,7 @@ async function findFolder(name, parentId = null) {
         if (parentId) {
             query += ` and '${parentId}' in parents`;
         }
-        const res = await drive.files.list({
+        const res = await getDrive().files.list({
             q: query,
             fields: 'files(id, name)',
             spaces: 'drive',
@@ -90,7 +98,7 @@ async function createFolder(name, parentId = null) {
         fileMetadata.parents = [parentId];
     }
     try {
-        const file = await drive.files.create({
+        const file = await getDrive().files.create({
             resource: fileMetadata,
             fields: 'id',
         });
@@ -121,14 +129,14 @@ async function deleteFile(fileId) {
 
         // 3. Move file to "Deleted" folder
         // We need to retrieve the current parents to remove them
-        const file = await drive.files.get({
+        const file = await getDrive().files.get({
             fileId: fileId,
             fields: 'parents'
         });
 
         const previousParents = file.data.parents ? file.data.parents.join(',') : '';
 
-        await drive.files.update({
+        await getDrive().files.update({
             fileId: fileId,
             addParents: deletedFolder.id,
             removeParents: previousParents,

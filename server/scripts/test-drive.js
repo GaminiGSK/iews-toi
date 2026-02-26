@@ -1,13 +1,13 @@
-const { uploadFile, deleteFile } = require('../services/googleDrive');
-const fs = require('fs');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
+const { uploadFile, deleteFile } = require('../services/googleDrive');
+const fs = require('fs');
 
 const TEST_FILE = path.join(__dirname, 'test-upload.txt');
 
 async function testDrive() {
     console.log('🚀 Starting Google Drive Connectivity Test...');
-    
+
     // 1. Create a dummy file
     fs.writeFileSync(TEST_FILE, 'This is a test file for IEWS TOI Cloud Storage.');
     console.log('✅ Created local test file.');

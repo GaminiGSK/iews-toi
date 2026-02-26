@@ -15,12 +15,35 @@ function getApiKey() {
 // LAZY INITIALIZATION - Create model instance only when needed
 function getModel() {
     const apiKey = getApiKey();
-    console.log(`[GoogleAI] Using API Key ending in: ...${apiKey.slice(-4)}`);
+    console.log(`[GoogleAI] Initializing with API Key ending in: ...${apiKey.slice(-4)}`);
     const genAI = new GoogleGenerativeAI(apiKey);
     return genAI.getGenerativeModel({
-        model: "gemini-2.0-flash",
+        model: "gemini-2.0-flash", // Using 2.0 as 1.5 reported 404 not found in this environment
         systemInstruction: "You are an expert Financial AI Agent. Your job is to extract bank transaction data and tax form layouts with 100% accuracy."
     });
+}
+
+// RETRY HELPER with Exponential Backoff
+async function callGeminiWithRetry(fn, maxRetries = 3) {
+    let lastError;
+    for (let i = 0; i < maxRetries; i++) {
+        try {
+            return await fn();
+        } catch (error) {
+            lastError = error;
+            const isRateLimit = error.message.includes('429') || (error.status === 429);
+            const is500 = error.status >= 500;
+
+            if (isRateLimit || is500) {
+                const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+                console.warn(`[GeminiAI] ${isRateLimit ? 'Rate Limited' : 'Server Error'} (Attempt ${i + 1}/${maxRetries}). Retrying in ${Math.round(delay)}ms...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+                continue;
+            }
+            throw error; // Not a retryable error
+        }
+    }
+    throw lastError;
 }
 
 // Helper to encode file to base64
@@ -98,7 +121,7 @@ exports.extractDocumentData = async (filePath, docType) => {
 
         const imagePart = fileToGenerativePart(filePath, mimeType);
 
-        const result = await getModel().generateContent([prompt, imagePart]);
+        const result = await callGeminiWithRetry(() => getModel().generateContent([prompt, imagePart]));
         const response = await result.response;
         const text = response.text();
 
@@ -156,7 +179,7 @@ exports.extractBankStatement = async (filePath) => {
 
         const filePart = fileToGenerativePart(filePath, mimeType);
 
-        const result = await getModel().generateContent([prompt, filePart]);
+        const result = await callGeminiWithRetry(() => getModel().generateContent([prompt, filePart]));
         const response = await result.response;
         const text = response.text();
 
@@ -219,7 +242,7 @@ exports.generateMatchDescription = async (code, description) => {
         Example for "Utilities": "EDC Electricity Bill, PPWSA Water Bill, ISP Internet Charge"
     `;
     try {
-        const result = await getModel().generateContent(prompt);
+        const result = await callGeminiWithRetry(() => getModel().generateContent(prompt));
         const text = result.response.text();
         return text.trim();
     } catch (e) {
@@ -268,7 +291,7 @@ exports.suggestAccountingCodes = async (transactions, codes) => {
     `;
 
     try {
-        const result = await getModel().generateContent(prompt);
+        const result = await callGeminiWithRetry(() => getModel().generateContent(prompt));
         const response = await result.response;
         const text = response.text();
         const suggestions = cleanAndParseJSON(text);
@@ -355,7 +378,7 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
             }
         }
 
-        const result = await getModel().generateContent(inputs);
+        const result = await callGeminiWithRetry(() => getModel().generateContent(inputs));
         const responseText = result.response.text();
         console.log(`[Gemini Chat]Success.Response length: ${responseText.length} `);
         return responseText;

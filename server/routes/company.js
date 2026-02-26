@@ -4,11 +4,7 @@ const upload = require('../middleware/upload');
 const googleAI = require('../services/googleAI');
 const CompanyProfile = require('../models/CompanyProfile');
 const jwt = require('jsonwebtoken');
-// 2026-02-12: Stubbing out Google Drive to prevent server hanging on startup
-// const { uploadFile, getFileStream, deleteFile } = require('../services/googleDrive');
-const uploadFile = async () => ({ id: 'mock_drive_id' });
-const getFileStream = async () => { throw new Error('Google Drive service disabled'); };
-const deleteFile = async () => { console.log('Mock delete file'); };
+const { uploadFile, getFileStream, deleteFile } = require('../services/googleDrive');
 const fs = require('fs'); // For cleanup 
 
 const auth = require('../middleware/auth');
