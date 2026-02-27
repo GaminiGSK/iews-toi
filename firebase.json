@@ -11,14 +11,14 @@
             {
                 "source": "/api/**",
                 "run": {
-                    "serviceId": "iews-toi",
+                    "serviceId": "bridge-brain",
                     "region": "asia-southeast1"
                 }
             },
             {
                 "source": "/socket.io/**",
                 "run": {
-                    "serviceId": "iews-toi",
+                    "serviceId": "bridge-brain",
                     "region": "asia-southeast1"
                 }
             },

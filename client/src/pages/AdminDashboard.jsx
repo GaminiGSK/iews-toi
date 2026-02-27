@@ -168,7 +168,7 @@ export default function AdminDashboard() {
                     onClick={() => setActiveTab('profile')}
                     className={`flex items-center gap-4 px-10 py-6 text-[22px] font-black uppercase tracking-[0.2em] border-b-4 transition-all ${activeTab === 'profile' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-gray-600 hover:text-gray-400'}`}
                 >
-                    <FileText size={28} /> Company Profile
+                    <FileText size={28} /> BR
                 </button>
             </div>
 
@@ -337,8 +337,8 @@ export default function AdminDashboard() {
                             <div className="max-w-4xl mx-auto">
                                 <div className="flex justify-between items-center bg-white/[0.03] p-8 rounded-[32px] border border-white/5 mb-8">
                                     <div>
-                                        <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-tight">Profile Architecture</h2>
-                                        <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.3em]">Defining the required data structure for all entities</p>
+                                        <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-tight">Business Registration Archive (BR)</h2>
+                                        <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.3em]">Corporate Entity & Static Data Management</p>
                                     </div>
                                     <button
                                         onClick={async () => {

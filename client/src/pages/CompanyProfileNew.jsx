@@ -765,7 +765,7 @@ export default function CompanyProfile() {
                         <div className="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition duration-500">
                             <FileText size={32} className="text-blue-500" />
                         </div>
-                        <h3 className="text-white font-bold text-lg mb-2">Company Profile</h3>
+                        <h3 className="text-white font-bold text-lg mb-2">BR / Company Profile</h3>
                         <p className="text-slate-500 text-xs">Entity Registration Details</p>
                     </div>
 
@@ -971,8 +971,8 @@ export default function CompanyProfile() {
                             <ArrowLeft size={24} className="group-hover:-translate-x-1 transition-transform" />
                         </button>
                         <div>
-                            <h2 className="text-3xl font-black text-white leading-none uppercase tracking-tight">Company Profile</h2>
-                            <p className="text-[10px] text-blue-500 uppercase tracking-[0.4em] font-black mt-2">Active Entity Registration Workspace</p>
+                            <h2 className="text-3xl font-black text-white leading-none uppercase tracking-tight">BR / Company Profile</h2>
+                            <p className="text-[10px] text-blue-500 uppercase tracking-[0.4em] font-black mt-2">Verified Entity Architecture</p>
                         </div>
                     </div>
 
