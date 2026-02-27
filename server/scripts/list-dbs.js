@@ -7,7 +7,7 @@ async function listDBs() {
         const admin = mongoose.connection.db.admin();
         const dbs = await admin.listDatabases();
         console.log('Available Databases:');
-        dbs.databases.forEach(db =\u003e {
+        dbs.databases.forEach(db => {
             console.log(` - ${db.name}`);
         });
         process.exit(0);

@@ -92,7 +92,7 @@ export default function Login() {
                     </button>
 
                     <div className="text-center mt-6">
-                        <p className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em]">Secure Entry Protocol Alpha-9</p>
+                        <p className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em]">Secure Entry Protocol Alpha-10</p>
                     </div>
                 </form>
 

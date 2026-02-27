@@ -785,6 +785,38 @@ export default function CompanyProfile() {
                         <p className="text-slate-500 text-xs">Statements & Sync</p>
                     </div>
 
+                    <div onClick={() => setView('ledger')} className="group p-8 bg-slate-800/20 hover:bg-orange-600/10 border border-white/5 hover:border-orange-500/50 rounded-[40px] transition-all duration-500 cursor-pointer text-center">
+                        <div className="w-16 h-16 bg-orange-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition duration-500">
+                            <Book size={32} className="text-orange-500" />
+                        </div>
+                        <h3 className="text-white font-bold text-lg mb-2">General Ledger</h3>
+                        <p className="text-slate-500 text-xs">Transaction Records</p>
+                    </div>
+
+                    <div onClick={() => setView('tb')} className="group p-8 bg-slate-800/20 hover:bg-amber-600/10 border border-white/5 hover:border-amber-500/50 rounded-[40px] transition-all duration-500 cursor-pointer text-center">
+                        <div className="w-16 h-16 bg-amber-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition duration-500">
+                            <Scale size={32} className="text-amber-500" />
+                        </div>
+                        <h3 className="text-white font-bold text-lg mb-2">Trial Balance</h3>
+                        <p className="text-slate-500 text-xs">Accounting Summary</p>
+                    </div>
+
+                    <div onClick={() => setView('codes')} className="group p-8 bg-slate-800/20 hover:bg-cyan-600/10 border border-white/5 hover:border-cyan-500/50 rounded-[40px] transition-all duration-500 cursor-pointer text-center">
+                        <div className="w-16 h-16 bg-cyan-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition duration-500">
+                            <QrCode size={32} className="text-cyan-500" />
+                        </div>
+                        <h3 className="text-white font-bold text-lg mb-2">Account Codes</h3>
+                        <p className="text-slate-500 text-xs">Standard Chart</p>
+                    </div>
+
+                    <div onClick={() => setView('financials')} className="group p-8 bg-slate-800/20 hover:bg-violet-600/10 border border-white/5 hover:border-violet-500/50 rounded-[40px] transition-all duration-500 cursor-pointer text-center">
+                        <div className="w-16 h-16 bg-violet-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition duration-500">
+                            <TrendingUp size={32} className="text-violet-500" />
+                        </div>
+                        <h3 className="text-white font-bold text-lg mb-2">Reporting</h3>
+                        <p className="text-slate-500 text-xs">Financial Statements</p>
+                    </div>
+
                     <div onClick={() => setView('tax_packages')} className="group p-8 bg-slate-800/20 hover:bg-rose-600/10 border border-white/5 hover:border-rose-500/50 rounded-[40px] transition-all duration-500 cursor-pointer text-center">
                         <div className="w-16 h-16 bg-rose-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition duration-500">
                             <Sparkles size={32} className="text-rose-500" />
@@ -797,8 +829,8 @@ export default function CompanyProfile() {
 
             <div className="mt-auto py-8 px-2 flex justify-between items-center border-t border-white/5 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-600">
                 <div className="flex gap-8">
-                    <span>Core Hub v6.0.0_RESET</span>
-                    <span>Database: Clean</span>
+                    <span>Core Hub v6.1.0_RECOVERY</span>
+                    <span>Database: Production (Test)</span>
                     <span>AI Model: Initialized</span>
                 </div>
                 <div>GKSMART AI OPERATING ENVIRONMENT</div>
@@ -1531,6 +1563,10 @@ export default function CompanyProfile() {
                 {view === 'bank' && renderBank()}
                 {view === 'iews' && renderIEWS()}
                 {view === 'tax_packages' && renderTaxPackages()}
+                {view === 'ledger' && <GeneralLedger onBack={() => setView('home')} />}
+                {view === 'tb' && <TrialBalance onBack={() => setView('home')} />}
+                {view === 'codes' && <AccountingCodes onBack={() => setView('home')} />}
+                {view === 'financials' && <FinancialStatements onBack={() => setView('home')} />}
             </main>
 
             {/* DOCUMENT INSPECTOR MODAL */}
