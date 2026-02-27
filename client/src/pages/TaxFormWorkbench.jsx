@@ -109,19 +109,21 @@ const TaxFormWorkbench = () => {
                 </div>
 
                 {/* 27 PAGE SELECTION - SYNCED FROM LIVE WORKSPACE */}
-                <div className="flex-1 flex overflow-x-auto mx-8 py-1 no-scrollbar gap-1.5 justify-center">
-                    {Array.from({ length: 27 }, (_, i) => (
-                        <button
-                            key={i}
-                            onClick={() => setActivePage(i + 1)}
-                            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all shrink-0 ${activePage === i + 1
-                                ? 'bg-rose-500 border-rose-400 text-white shadow-lg shadow-rose-900/40'
-                                : 'bg-slate-800/50 border-white/5 text-white hover:text-white hover:border-white/10'
-                                }`}
-                        >
-                            P.{i + 1}
-                        </button>
-                    ))}
+                <div className="flex-1 overflow-x-auto no-scrollbar py-1">
+                    <div className="flex justify-start lg:justify-center gap-2 px-40 w-fit lg:w-full mx-auto">
+                        {Array.from({ length: 27 }, (_, i) => (
+                            <button
+                                key={i}
+                                onClick={() => setActivePage(i + 1)}
+                                className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all shrink-0 active:scale-95 ${activePage === i + 1
+                                    ? 'bg-rose-500 border-rose-400 text-white shadow-lg shadow-rose-900/40'
+                                    : 'bg-slate-800/50 border-white/5 text-white hover:text-white hover:border-white/10'
+                                    }`}
+                            >
+                                P.{i + 1}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 <div className="flex items-center gap-3">

@@ -16,6 +16,8 @@ export default function CompanyProfile() {
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
     const [toiPackages, setToiPackages] = useState([]);
+    const [template, setTemplate] = useState(null);
+    const [savingProfile, setSavingProfile] = useState(false);
 
     // Fetch stored packages
     const fetchToiPackages = async () => {
@@ -31,7 +33,21 @@ export default function CompanyProfile() {
         if (view === 'tax_packages') {
             fetchToiPackages();
         }
+        if (view === 'profile') {
+            fetchTemplate();
+            fetchProfile();
+        }
     }, [view]);
+
+    const fetchTemplate = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.get('/api/company/template', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            setTemplate(res.data);
+        } catch (err) { console.error('Template Fetch Error:', err); }
+    };
     const [createYear, setCreateYear] = useState('');
     const [uploadingBank, setUploadingBank] = useState(false);
     const [savingBank, setSavingBank] = useState(false);
@@ -481,7 +497,11 @@ export default function CompanyProfile() {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.data) {
-                setFormData(prev => ({ ...prev, ...res.data }));
+                setFormData(prev => ({
+                    ...prev,
+                    ...res.data,
+                    extractedData: res.data.extractedData || {}
+                }));
 
                 // --- RESTORE MOC/TAX DOCUMENTS ---
                 if (res.data.documents && Array.isArray(res.data.documents)) {
@@ -663,312 +683,130 @@ export default function CompanyProfile() {
 
     // --- IEWS Placeholder ---
     const renderIEWS = () => (
-        <div className="w-full h-[calc(100vh-80px)] pt-6 pl-10 pr-[450px] animate-fade-in flex flex-col bg-slate-900">
-            {/* Header Row */}
-            <div className="mb-8 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <button
-                        onClick={() => setView('home')}
-                        className="p-2 bg-slate-800 hover:bg-slate-700 text-white rounded-full transition shadow-md border border-slate-700 shrink-0"
-                    >
-                        <ArrowLeft size={20} />
-                    </button>
-                    <div className="flex lg:flex-row flex-col lg:items-center gap-2">
-                        <h2 className={`font-extrabold text-white leading-tight uppercase tracking-tight ${(formData.companyNameEn || 'IEWS WORKSPACE').length > 25 ? 'text-lg lg:text-xl' : 'text-2xl lg:text-3xl'
-                            }`}>
-                            IEWS "{formData.companyNameEn || formData.companyCode || 'GK SMART'}"
-                        </h2>
-                        <div className="h-1 lg:h-6 w-full lg:w-[2px] bg-slate-800 rounded-full lg:mx-2" />
-                        <p className="text-[10px] lg:text-xs text-slate-500 uppercase tracking-widest font-bold">Income, Expenses, Withholding, Salaries</p>
-                    </div>
-                </div>
-
-                {/* HEADER ACTIONS (RIGHT SIDE) */}
-                <div className="flex items-center gap-3">
-                    <button className="flex items-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl border border-slate-700 transition-all font-bold text-sm">
-                        <ShieldCheck size={16} className="text-blue-400" />
-                        Control
-                    </button>
-                    <button className="flex items-center gap-3 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl border border-slate-700 transition-all font-bold text-sm">
-                        <ShieldCheck size={16} className="text-indigo-400" />
-                        Profile
-                    </button>
-                    <button onClick={() => setShowAccessModal(true)} className="flex items-center gap-3 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl border border-slate-700 transition-all font-bold text-sm">
-                        <ShieldCheck size={16} className="text-emerald-400" />
-                        Access
-                    </button>
-                </div>
+        <div className="w-full h-[calc(100vh-80px)] pt-6 px-10 animate-fade-in flex flex-col bg-slate-900">
+            <div className="mb-4 flex items-center gap-4">
+                <button onClick={() => setView('home')} className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition shadow-md shrink-0">
+                    <ArrowLeft size={20} />
+                </button>
+                <span className="text-gray-500 text-sm font-bold uppercase tracking-widest">IEWS Data Processing</span>
             </div>
-
-            {/* DARK EMPTY SHEET / WORKSPACE */}
-            <div className="flex-1 bg-slate-950/50 border border-slate-800 rounded-3xl relative overflow-hidden flex flex-col">
-                {/* Visual Guide / Placeholder */}
-                <div className="flex-1 flex flex-col items-center justify-center text-center p-20">
-                    <ShieldCheck size={48} className="text-indigo-400 opacity-20 mb-6" />
-                    <h3 className="text-2xl font-bold text-slate-700">Ready for Analysis</h3>
-                    <p className="text-slate-500 mt-2">Initialize financial modules in the top control panel.</p>
+            <div className="flex-1 flex items-center justify-center bg-slate-950/30 rounded-3xl border border-white/5">
+                <div className="text-center">
+                    <ShieldCheck size={48} className="text-indigo-400 opacity-20 mx-auto mb-4" />
+                    <h3 className="text-xl font-bold text-slate-400">Pipeline Offline</h3>
+                    <p className="text-slate-600 text-xs mt-2 italic">Awaiting rebuild instructions.</p>
                 </div>
-
-                {/* Grid Overlay for "Sheet" feel */}
-                <div className="absolute inset-0 pointer-events-none opacity-[0.03]"
-                    style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 0)', backgroundSize: '40px 40px' }} />
             </div>
         </div>
     );
 
     // --- REPURPOSED: Tax Packages (Was renderIEWS) ---
     const renderTaxPackages = () => (
-        <div className="w-full max-w-[1600px] mx-0 pt-8 pl-10 pr-[450px] animate-fade-in relative z-10 w-full h-[calc(100vh-80px)] flex flex-col">
-            {/* Header / Back */}
-            <div className="mb-8 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <button
-                        onClick={() => setView('home')}
-                        className="p-2 bg-slate-800 hover:bg-slate-700 text-white rounded-full transition shadow-md border border-slate-700"
-                    >
-                        <ArrowLeft size={20} />
-                    </button>
-                    <div>
-                        <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-pink-400">
-                            TOI & ACAR Compliance <span className="text-xs text-white bg-rose-500/20 px-2 py-0.5 rounded ml-2">v2.5</span>
-                        </h1>
-                        <p className="text-gray-400 text-sm">Tax on Income Management & Audit Reports</p>
-                    </div>
-                </div>
+        <div className="w-full h-[calc(100vh-80px)] pt-6 px-10 animate-fade-in flex flex-col bg-slate-900">
+            <div className="mb-4 flex items-center gap-4">
+                <button onClick={() => setView('home')} className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition shadow-md shrink-0">
+                    <ArrowLeft size={20} />
+                </button>
+                <span className="text-gray-500 text-sm font-bold uppercase tracking-widest">TOI & ACAR Compliance Hub</span>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 flex-1 min-h-0">
-                {/* Left: Create New */}
-                <div className="md:col-span-1">
-                    <div className="bg-gradient-to-br from-rose-900/40 to-slate-900 border border-rose-500/30 rounded-3xl p-6 sticky top-6">
-                        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                            <ShieldCheck size={20} className="text-rose-400" /> New Declaration
-                        </h3>
-                        <p className="text-gray-400 text-sm mb-6 leading-relaxed">
-                            Start a new Annual Tax on Income declaration. This will create a 25-page document package for the selected fiscal year.
-                        </p>
-
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Fiscal Year</label>
-                                <input
-                                    type="text"
-                                    placeholder="e.g. 2025"
-                                    value={createYear}
-                                    onChange={(e) => setCreateYear(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-rose-500 outline-none font-mono text-lg tracking-widest placeholder-slate-600"
-                                />
-                            </div>
-                            <button
-                                onClick={handleCreatePackage}
-                                disabled={!createYear}
-                                className="w-full bg-white text-slate-900 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed font-bold py-3.5 rounded-xl transition shadow-xl"
-                            >
-                                Create TOI Package
-                            </button>
-                        </div>
-
-                        <div className="mt-8 pt-6 border-t border-white/10">
-                            <h4 className="text-xs font-bold text-gray-500 uppercase mb-3">Assistants Ready</h4>
-                            <div className="flex items-center gap-3 bg-slate-800/50 p-3 rounded-xl border border-white/5">
-                                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center font-bold text-xs">GK</div>
-                                <div className="flex-1">
-                                    <div className="text-sm font-bold text-blue-200">GK Blue Agent</div>
-                                    <div className="text-[10px] text-green-400 flex items-center gap-1">● Online - Ready to File</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Middle: Package List */}
-                <div className="md:col-span-2 space-y-6 overflow-y-auto pr-2 pb-20">
-                    <div className="bg-slate-800/50 border border-slate-700 rounded-3xl p-6 backdrop-blur-xl">
-                        <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
-                            <Book className="text-rose-400" /> TOI Document Packages
-                        </h2>
-
-                        <div className="space-y-4">
-                            {toiPackages.map(pkg => (
-                                <div key={pkg.id} className="bg-slate-900 border border-slate-700 hover:border-rose-500/50 p-5 rounded-2xl flex items-center justify-between transition-all group shadow-lg">
-                                    <div className="flex items-center gap-4">
-                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg
-                                            ${pkg.status === 'Filed' ? 'bg-green-500/20 text-green-400' : 'bg-rose-500/20 text-rose-400'}
-                                        `}>
-                                            TOI
-                                        </div>
-                                        <div>
-                                            <h3 className="text-white font-bold text-lg">Fiscal Year {pkg.year}</h3>
-                                            <div className="flex items-center gap-3 text-sm text-gray-500 mt-1">
-                                                <span className={`px-2 py-0.5 rounded textxs font-bold ${pkg.status === 'Filed' ? 'bg-green-900/30 text-green-400' : 'bg-yellow-900/30 text-yellow-500'}`}>
-                                                    {pkg.status}
-                                                </span>
-                                                <span>• 25 Pages</span>
-                                                <span>• {pkg.progress}% Complete</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <button
-                                        onClick={() => navigate(`/tax-live?year=${pkg.year}`)}
-                                        className="bg-rose-600 hover:bg-rose-500 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-rose-900/40 transition-transform active:scale-95 flex items-center gap-2"
-                                    >
-                                        Open Workspace <ArrowLeft className="rotate-180" size={16} />
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+            <div className="flex-1 flex items-center justify-center bg-slate-950/30 rounded-3xl border border-white/5">
+                <div className="text-center">
+                    <Sparkles size={48} className="text-rose-400 opacity-20 mx-auto mb-4" />
+                    <h3 className="text-xl font-bold text-slate-400">Compliance Logic Deployed</h3>
+                    <p className="text-slate-600 text-xs mt-2 italic">The system has been cleared for a fresh design implementation.</p>
                 </div>
             </div>
         </div>
     );
 
+
     const renderHome = () => (
-        <div className="w-full max-w-[1600px] mx-0 pt-12 pl-10 pr-[450px] animate-fade-in relative z-10">
-            {/* Background Gradients */}
+        <div className="w-full max-w-[1600px] mx-0 pt-12 px-10 animate-fade-in relative z-10 flex flex-col min-h-[calc(100vh-80px)]">
             <div className="absolute top-0 left-0 w-full h-96 bg-blue-600/10 rounded-full blur-[128px] pointer-events-none -z-10" />
             <div className="absolute bottom-0 right-0 w-full h-96 bg-purple-600/10 rounded-full blur-[128px] pointer-events-none -z-10" />
 
-            {/* Premium Branded Header */}
-            <div className="flex items-center justify-between mb-12 relative z-10 px-2">
+            <div className="flex items-center justify-between mb-16 px-2">
                 <div className="flex items-center gap-6">
-                    <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-2xl shadow-blue-500/20">GK</div>
+                    <div className="w-16 h-16 bg-blue-600 rounded-3xl flex items-center justify-center text-white font-black text-2xl shadow-2xl shadow-blue-500/30">GK</div>
                     <div>
                         <h1 className="text-4xl font-black text-white leading-none uppercase tracking-tight">
-                            {formData.username || 'User'} <span className="text-blue-500">&</span> Ai
+                            {formData.username || 'User'} <span className="text-slate-500">AI</span>
                         </h1>
-                        <p className="text-[10px] text-slate-500 uppercase tracking-[0.4em] font-bold mt-2 flex items-center gap-2">
-                            <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse"></div>
-                            Neural Node Active: {formData.username?.toUpperCase() || 'MASTER_SESSION'}
+                        <p className="text-[10px] text-blue-500 uppercase tracking-[0.4em] font-bold mt-2 flex items-center gap-2">
+                            <div className="w-1 h-1 bg-blue-500 rounded-full animate-pulse"></div>
+                            System Reset // Ready for Rebuild
                         </p>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <div className="hidden lg:flex items-center gap-8 mr-8">
-                        <div className="text-right">
-                            <p className="text-[9px] text-slate-500 uppercase font-bold tracking-widest">System Status</p>
-                            <p className="text-[11px] text-emerald-400 font-mono">STABLE // 100%</p>
-                        </div>
-                        <div className="text-right">
-                            <p className="text-[9px] text-slate-500 uppercase font-bold tracking-widest">Network</p>
-                            <p className="text-[11px] text-blue-400 font-mono uppercase tracking-tighter">SECURE.GGMT</p>
-                        </div>
-                    </div>
+                <div className="flex items-center gap-6">
+                    <button
+                        onClick={() => setShowAccessModal(true)}
+                        className="p-4 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-2xl transition border border-white/5"
+                        title="Access Management"
+                    >
+                        <ShieldCheck size={20} />
+                    </button>
                     <button
                         onClick={() => {
                             localStorage.removeItem('token');
                             window.location.href = '/login';
                         }}
-                        className="text-[10px] text-slate-400 hover:text-white font-black uppercase tracking-[0.2em] bg-white/5 hover:bg-red-500/20 px-6 py-4 rounded-xl transition-all border border-white/5 hover:border-red-500/30 shrink-0 shadow-xl"
+                        className="text-[10px] text-slate-400 hover:text-white font-bold uppercase tracking-widest bg-white/5 hover:bg-red-500/20 px-8 py-4 rounded-2xl transition border border-white/5 hover:border-red-500/30 shadow-xl"
                     >
-                        Log Out
+                        Secure Logout
                     </button>
                 </div>
             </div>
 
-            {/* --- SECTION 1: PROCESSING WORKBENCH (High Priority) --- */}
-            <div className="mb-10">
-                <h2 className="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em] mb-4 ml-2">Processing Workbench</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* 1. IEWS (Income, Expenses, Withholding, Salaries) */}
-                    <div onClick={() => setView('iews')} className="group relative bg-indigo-900/10 hover:bg-slate-800/80 border border-indigo-500/20 hover:border-indigo-400 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl">
-                        <div className="absolute top-0 right-0 p-3">
-                            <span className="bg-indigo-500 text-white text-[8px] uppercase font-bold px-2 py-1 rounded-full animate-pulse">New Workflow</span>
+            <div className="flex-1 flex items-center justify-center">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 w-full max-w-6xl">
+                    <div onClick={() => setView('profile')} className="group p-8 bg-slate-800/20 hover:bg-blue-600/10 border border-white/5 hover:border-blue-500/50 rounded-[40px] transition-all duration-500 cursor-pointer text-center">
+                        <div className="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition duration-500">
+                            <FileText size={32} className="text-blue-500" />
                         </div>
-                        <div className="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center mb-4 border border-indigo-500/20">
-                            <ShieldCheck className="text-indigo-400 w-5 h-5" />
-                        </div>
-                        <h3 className="text-sm font-bold text-white mb-1">IEWS Compliance</h3>
-                        <p className="text-gray-500 text-[10px] leading-tight">Income, Expenses, Withholding, Salaries. Manage monthly packages.</p>
+                        <h3 className="text-white font-bold text-lg mb-2">Company Profile</h3>
+                        <p className="text-slate-500 text-xs">Entity Registration Details</p>
                     </div>
 
-                    {/* 2. Bank Statements */}
-                    <div onClick={() => setView('bank')} className="group relative bg-emerald-900/10 hover:bg-slate-800/80 border border-emerald-500/20 hover:border-emerald-400 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl">
-                        <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center mb-4 border border-emerald-500/20">
-                            <Table className="text-emerald-400 w-5 h-5" />
+                    <div onClick={() => setView('iews')} className="group p-8 bg-slate-800/20 hover:bg-indigo-600/10 border border-white/5 hover:border-indigo-500/50 rounded-[40px] transition-all duration-500 cursor-pointer text-center">
+                        <div className="w-16 h-16 bg-indigo-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition duration-500">
+                            <ShieldCheck size={32} className="text-indigo-500" />
                         </div>
-                        <h3 className="text-sm font-bold text-white mb-1">Bank Statements</h3>
-                        <p className="text-gray-500 text-[10px] leading-tight">Upload monthly statements, parse transactions via Ai, and sync data.</p>
+                        <h3 className="text-white font-bold text-lg mb-2">Compliance</h3>
+                        <p className="text-slate-500 text-xs">IEWS Processing</p>
                     </div>
 
-                    {/* 3. General Ledger */}
-                    <div onClick={() => setView('ledger')} className="group relative bg-purple-900/10 hover:bg-slate-800/80 border border-purple-500/20 hover:border-purple-400 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl">
-                        <div className="w-10 h-10 bg-purple-500/10 rounded-xl flex items-center justify-center mb-4 border border-purple-500/20">
-                            <Book className="text-purple-400 w-5 h-5" />
+                    <div onClick={() => setView('bank')} className="group p-8 bg-slate-800/20 hover:bg-emerald-600/10 border border-white/5 hover:border-emerald-500/50 rounded-[40px] transition-all duration-500 cursor-pointer text-center">
+                        <div className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition duration-500">
+                            <Table size={32} className="text-emerald-500" />
                         </div>
-                        <h3 className="text-sm font-bold text-white mb-1">General Ledger</h3>
-                        <p className="text-gray-500 text-[10px] leading-tight">View chronological history of all audited transactions.</p>
+                        <h3 className="text-white font-bold text-lg mb-2">Banking</h3>
+                        <p className="text-slate-500 text-xs">Statements & Sync</p>
+                    </div>
+
+                    <div onClick={() => setView('tax_packages')} className="group p-8 bg-slate-800/20 hover:bg-rose-600/10 border border-white/5 hover:border-rose-500/50 rounded-[40px] transition-all duration-500 cursor-pointer text-center">
+                        <div className="w-16 h-16 bg-rose-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition duration-500">
+                            <Sparkles size={32} className="text-rose-500" />
+                        </div>
+                        <h3 className="text-white font-bold text-lg mb-2">TOI / ACAR</h3>
+                        <p className="text-slate-500 text-xs">Annual Declaration</p>
                     </div>
                 </div>
             </div>
 
-            {/* --- SECTION 2: PRIMARY DASHBOARD (6 Core Modules) --- */}
-            <div className="mb-4 ml-2 flex items-center gap-3">
-                <h2 className="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em]">Accounting & Reports</h2>
-                <div className="flex-1 h-px bg-white/5" />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-                {/* 1. Trial Balance */}
-                <div onClick={() => setView('report')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-cyan-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-cyan-900/20">
-                    <div className="w-12 h-12 bg-cyan-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-cyan-500/20">
-                        <Scale className="text-cyan-400 w-6 h-6" />
-                    </div>
-                    <h3 className="text-lg font-bold text-white mb-2 group-hover:text-cyan-300 transition-colors">Trial Balance</h3>
-                    <p className="text-gray-400 text-xs leading-relaxed">View Unadjusted & Adjusted Trial Balance reports.</p>
+            <div className="mt-auto py-8 px-2 flex justify-between items-center border-t border-white/5 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-600">
+                <div className="flex gap-8">
+                    <span>Core Hub v6.0.0_RESET</span>
+                    <span>Database: Clean</span>
+                    <span>AI Model: Initialized</span>
                 </div>
-
-                {/* 2. Financial Statements */}
-                <div onClick={() => setView('financials')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-indigo-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-indigo-900/20">
-                    <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-indigo-500/20">
-                        <TrendingUp className="text-indigo-400 w-6 h-6" />
-                    </div>
-                    <h3 className="text-lg font-bold text-white mb-2 group-hover:text-indigo-300 transition-colors">Financial Stmts</h3>
-                    <p className="text-gray-400 text-xs leading-relaxed">Generate final audited reports (Income, Balance Sheet, Cash Flow).</p>
-                </div>
-
-                {/* 3. TOI & ACAR */}
-                <div onClick={() => setView('tax_packages')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-rose-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-rose-900/20">
-                    <div className="w-12 h-12 bg-rose-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-rose-500/20">
-                        <ShieldCheck className="text-rose-400 w-6 h-6" />
-                    </div>
-                    <h3 className="text-lg font-bold text-white mb-2 group-hover:text-rose-300 transition-colors">TOI & ACAR</h3>
-                    <p className="text-gray-400 text-xs leading-relaxed">Live Tax Form, Tax on Income & ACAR Compliance.</p>
-                </div>
-
-                {/* 4. Company Profile */}
-                <div onClick={() => setView('profile')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-blue-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-blue-900/20">
-                    <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-blue-500/20">
-                        <FileText className="text-blue-400 w-6 h-6" />
-                    </div>
-                    <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-300 transition-colors">Company Profile</h3>
-                    <p className="text-gray-400 text-xs leading-relaxed">Update official registration details, MOC certificates, and shareholders.</p>
-                </div>
-
-                {/* 5. Accounting Codes */}
-                <div onClick={() => setView('codes')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-orange-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-orange-900/20">
-                    <div className="w-12 h-12 bg-orange-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-orange-500/20">
-                        <Tag className="text-orange-400 w-6 h-6" />
-                    </div>
-                    <h3 className="text-lg font-bold text-white mb-2 group-hover:text-orange-300 transition-colors">Accounting Codes</h3>
-                    <p className="text-gray-400 text-xs leading-relaxed">Manage Chart of Accounts codes and Ai Enhanced mapping rules.</p>
-                </div>
-
-                {/* 6. Currency Exchange */}
-                <div onClick={() => setView('currency')} className="group relative bg-slate-800/50 hover:bg-slate-800/80 border border-white/5 hover:border-teal-500/50 backdrop-blur-xl p-6 rounded-3xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden shadow-xl hover:shadow-teal-900/20">
-                    <div className="w-12 h-12 bg-teal-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition duration-300 border border-teal-500/20">
-                        <DollarSign className="text-teal-400 w-6 h-6" />
-                    </div>
-                    <h3 className="text-lg font-bold text-white mb-2 group-hover:text-teal-300 transition-colors">Currency Exchange</h3>
-                    <p className="text-gray-400 text-xs leading-relaxed">Set Annual Exchange Rates (USD to KHR) for compliance.</p>
-                </div>
-                {/* Layout Updated: 2026-01-27 16:50 */}
-
+                <div>GKSMART AI OPERATING ENVIRONMENT</div>
             </div>
         </div>
     );
+
+
 
     // --- Profile UI Logic (v2.0 Redesign) ---
     const DOC_TYPES = [
@@ -1088,374 +926,115 @@ export default function CompanyProfile() {
     };
 
 
+    const handleFieldChange = (key, val) => {
+        setFormData(prev => ({
+            ...prev,
+            extractedData: {
+                ...(prev.extractedData || {}),
+                [key]: val
+            }
+        }));
+    };
+
+    const handleSaveProfile = async () => {
+        setSavingProfile(true);
+        setMessage('Synchronizing Profile Architecture...');
+        try {
+            const token = localStorage.getItem('token');
+            await axios.post('/api/company/update-profile', {
+                ...formData,
+                extractedData: formData.extractedData
+            }, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            setMessage('Profile Updated Successfully');
+            setTimeout(() => setMessage(''), 3000);
+        } catch (err) {
+            console.error(err);
+            alert('Failed to update profile');
+        } finally {
+            setSavingProfile(false);
+        }
+    };
+
     const renderProfile = () => {
         return (
-            <div className="w-full h-[calc(100vh-80px)] pt-6 px-4 animate-fade-in flex flex-col bg-slate-900 font-sans">
+            <div className="w-full h-[calc(100vh-80px)] pt-6 px-4 animate-fade-in flex flex-col bg-slate-900 font-sans overflow-hidden">
                 {/* Header Row */}
-                <div className="mb-4 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
+                <div className="mb-8 flex items-center justify-between px-6">
+                    <div className="flex items-center gap-6">
                         <button
                             onClick={() => setView('home')}
-                            className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-sm font-medium transition shrink-0 shadow-md"
-                            title="Back to Dashboard"
+                            className="p-4 bg-white/5 hover:bg-blue-600 text-white rounded-2xl transition-all shadow-xl group"
+                            title="Back to Central Hub"
                         >
-                            <ArrowLeft size={20} />
+                            <ArrowLeft size={24} className="group-hover:-translate-x-1 transition-transform" />
                         </button>
                         <div>
-                            <h2 className="text-xl font-bold text-white leading-tight">Entity Registration Workspace</h2>
-                            <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">MOC, Tax & Regulatory Documents</p>
+                            <h2 className="text-3xl font-black text-white leading-none uppercase tracking-tight">Company Profile</h2>
+                            <p className="text-[10px] text-blue-500 uppercase tracking-[0.4em] font-black mt-2">Active Entity Registration Workspace</p>
                         </div>
                     </div>
+
+                    <button
+                        onClick={handleSaveProfile}
+                        disabled={savingProfile}
+                        className="bg-blue-600 text-white hover:bg-blue-500 px-10 py-4 rounded-2xl font-black shadow-2xl transition-all flex items-center gap-3 uppercase text-[11px] tracking-widest active:scale-95 disabled:opacity-50"
+                    >
+                        {savingProfile ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
+                        Sync Update
+                    </button>
                 </div>
 
-                {/* TRULY EMPTY SLATE */}
-                {/* DOCUMENT MAPPING WORKSPACE (Mirrors AdminDashboard Tax Config) */}
-                <div className="flex flex-1 gap-6 min-h-[calc(100vh-200px)] p-8 max-w-[1400px]">
-
-                    {/* COLUMN 1: UPLOAD ZONE - 50% Smaller */}
-                    <div className="w-32 shrink-0 flex flex-col">
-                        <div
-                            className="flex-1 bg-gray-900/50 border-2 border-dashed border-blue-900/50 rounded-2xl p-4 text-center hover:border-blue-500 hover:bg-blue-900/10 transition relative group flex flex-col items-center justify-center cursor-pointer"
-                            onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                            onDrop={(e) => {
-                                e.preventDefault(); e.stopPropagation();
-                                const files = Array.from(e.dataTransfer.files);
-                                if (files.length > 0) {
-                                    const newTemplates = [];
-                                    files.forEach(file => {
-                                        const exists = docTemplates.some(t => t.name === file.name || t.originalName === file.name);
-                                        if (exists) return;
-                                        newTemplates.push({
-                                            id: Date.now() + Math.random(),
-                                            name: file.name,
-                                            file: file,
-                                            type: file.type,
-                                            size: (file.size / 1024).toFixed(2) + ' KB',
-                                            previewUrl: URL.createObjectURL(file),
-                                            status: 'New'
-                                        });
-                                    });
-                                    setDocTemplates(prev => [...prev, ...newTemplates]);
-                                    if (!activeDocTemplateId && newTemplates.length > 0) setActiveDocTemplateId(newTemplates[0].id);
-                                }
-                            }}
-                        >
-                            <input
-                                type="file"
-                                accept="image/jpeg,image/png,image/jpg"
-                                multiple
-                                onChange={(e) => {
-                                    if (e.target.files?.length > 0) {
-                                        const files = Array.from(e.target.files);
-                                        const newTemplates = files.map(file => ({
-                                            id: Date.now() + Math.random(),
-                                            name: file.name,
-                                            file: file,
-                                            type: file.type,
-                                            size: (file.size / 1024).toFixed(2) + ' KB',
-                                            previewUrl: URL.createObjectURL(file),
-                                            status: 'New'
-                                        }));
-                                        setDocTemplates(prev => [...prev, ...newTemplates]);
-                                        if (!activeDocTemplateId && newTemplates.length > 0) setActiveDocTemplateId(newTemplates[0].id);
-                                    }
-                                }}
-                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                            />
-                            <div className="w-12 h-12 bg-blue-500/10 rounded-full flex items-center justify-center text-blue-500 mb-4 border border-blue-500/20">
-                                <CloudUpload size={24} />
-                            </div>
-                            <h3 className="font-bold text-white text-[10px] mb-2 leading-tight">
-                                Upload Docs
-                            </h3>
-                            <p className="text-xs text-gray-400">
-                                Drag & drop pages
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* COLUMN 2: DOCUMENT LIBRARY */}
-                    <div className="w-80 shrink-0 flex flex-col space-y-4">
-                        <div className="bg-gray-900 rounded-xl border border-gray-800 flex flex-col h-full overflow-hidden">
-                            <div className="p-4 bg-gray-900/50 border-b border-gray-800 font-bold text-white flex flex-col shrink-0 gap-3">
-                                <div className="flex justify-between items-center">
-                                    <span>Document Library ({docTemplates.length})</span>
-                                    <span className="text-xs text-gray-500 bg-gray-800 px-2 py-1 rounded">
-                                        Total Pages
-                                    </span>
+                {/* DYNAMIC TEMPLATE RENDERER */}
+                <div className="flex-1 overflow-y-auto px-6 pb-12 custom-scrollbar">
+                    <div className="max-w-5xl mx-auto space-y-12">
+                        {template?.sections.map((section, sIdx) => (
+                            <div key={section.id} className="animate-in fade-in slide-in-from-bottom-4 duration-700" style={{ animationDelay: `${sIdx * 100}ms` }}>
+                                <div className="flex items-center gap-4 mb-8">
+                                    <div className="h-[1px] flex-1 bg-white/5"></div>
+                                    <h3 className="text-sm font-black text-slate-500 uppercase tracking-[0.5em]">{section.title}</h3>
+                                    <div className="h-[1px] flex-1 bg-white/5"></div>
                                 </div>
-                                <button
-                                    onClick={handleSaveDocLibrary}
-                                    disabled={savingDocLibrary || docTemplates.filter(t => t.status === 'New').length === 0}
-                                    className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-800 disabled:text-gray-500 text-white text-xs font-bold py-2 rounded transition flex items-center justify-center gap-2"
-                                >
-                                    {savingDocLibrary ? <Loader2 className="animate-spin h-3 w-3" /> : <Save size={14} />}
-                                    {savingDocLibrary ? 'SAVING...' : `SAVE ALL (${docTemplates.filter(t => t.status === 'New').length})`}
-                                </button>
-                            </div>
-                            <div className="divide-y divide-gray-800 overflow-y-auto flex-1 p-2">
-                                {docTemplates.map((template) => (
-                                    <div
-                                        key={template.id}
-                                        className={`p-3 mb-2 rounded-lg flex items-center justify-between transition cursor-pointer group ${activeDocTemplateId === template.id ? 'bg-blue-900/20 border border-blue-500/50' : 'hover:bg-gray-800 border border-transparent'}`}
-                                        onClick={() => setActiveDocTemplateId(template.id)}
-                                    >
-                                        <div className="flex-1 min-w-0 mr-2 flex items-center gap-3">
-                                            {/* Thumbnail */}
-                                            <div className="w-8 h-10 bg-gray-800 rounded flex-shrink-0 overflow-hidden border border-gray-700">
-                                                <img
-                                                    src={template.previewUrl || '/placeholder.png'}
-                                                    alt=""
-                                                    className="w-full h-full object-cover opacity-80"
-                                                    onError={(e) => {
-                                                        e.target.style.display = 'none';
-                                                        e.target.parentNode.innerHTML = '📄';
-                                                    }}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
+                                    {section.fields.map(field => (
+                                        <div key={field.key} className="space-y-3 group">
+                                            <div className="flex justify-between items-center px-1">
+                                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest group-focus-within:text-blue-500 transition-colors">{field.label}</label>
+                                                {field.required && <span className="text-[9px] font-bold text-red-500/50 uppercase tracking-tighter">Required</span>}
+                                            </div>
+                                            {field.type === 'textarea' ? (
+                                                <textarea
+                                                    className="w-full bg-white/[0.02] border border-white/5 p-5 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 transition-all font-medium min-h-[120px] resize-none placeholder:text-slate-800 shadow-inner"
+                                                    value={formData.extractedData?.[field.key] || ''}
+                                                    onChange={(e) => handleFieldChange(field.key, e.target.value)}
+                                                    placeholder={`Enter ${field.label.toLowerCase()}...`}
                                                 />
-                                            </div>
-                                            <div className="min-w-0">
-                                                <p className="font-bold text-white text-xs truncate mb-0.5" title={template.name}>
-                                                    {template.name}
-                                                </p>
-                                                <p className={`text-[10px] ${template.isExtracted ? 'text-green-400 font-bold' : 'text-gray-400'}`}>
-                                                    {template.isExtracted
-                                                        ? 'Saved • Confirmed'
-                                                        : (template.status === 'New' ? (template.size || 'Pending') : 'Saved') + ' • ' + template.status
-                                                    }
-                                                </p>
-                                            </div>
+                                            ) : (
+                                                <input
+                                                    type={field.type}
+                                                    className="w-full bg-white/[0.02] border border-white/5 p-5 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 transition-all font-bold placeholder:text-slate-800 shadow-inner"
+                                                    value={formData.extractedData?.[field.key] || ''}
+                                                    onChange={(e) => handleFieldChange(field.key, e.target.value)}
+                                                    placeholder={`Enter ${field.label.toLowerCase()}...`}
+                                                />
+                                            )}
                                         </div>
-                                        <button
-                                            onClick={(e) => handleDeleteDocTemplate(e, template)}
-                                            className="p-1.5 rounded-full hover:bg-red-500/20 text-gray-500 hover:text-red-400 transition"
-                                        >
-                                            <X size={14} />
-                                        </button>
-                                    </div>
-                                ))}
-                                {docTemplates.length === 0 && (
-                                    <div className="text-center text-gray-600 text-xs py-10 italic">
-                                        No documents uploaded.
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* COLUMN 3: MAPPING WORKBENCH */}
-                    <div className="flex-1 bg-gray-900 rounded-xl border border-gray-800 flex flex-col overflow-hidden relative">
-                        {/* Toolbar */}
-                        <div className="h-14 border-b border-gray-800 flex items-center justify-between px-6 bg-gray-900/50 shrink-0">
-                            <div className="flex items-center gap-4">
-                                <h3 className="font-bold text-white text-sm">Mapping Workbench</h3>
-                                {activeDocTemplateId && (
-                                    <span className="text-xs text-gray-500 bg-gray-800 px-2 py-0.5 rounded border border-gray-700">
-                                        {docTemplates.find(t => t.id === activeDocTemplateId)?.name}
-                                    </span>
-                                )}
-                            </div>
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={handleDocSaveMappings}
-                                    className="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded font-bold transition"
-                                >
-                                    Save Mappings
-                                </button>
-                                <button
-                                    onClick={handleExtractToProfile}
-                                    className="text-xs bg-green-600 hover:bg-green-500 text-white px-3 py-1.5 rounded font-bold transition flex items-center gap-1 shadow-lg shadow-green-900/20"
-                                >
-                                    <Sparkles size={12} />
-                                    Extract to Profile
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* WORKBENCH BODY: Split View (Canvas | Results) */}
-                        <div className="flex-1 flex flex-row overflow-hidden relative">
-                            {/* LEFT: Canvas Area */}
-                            <div className="flex-1 bg-black/50 overflow-auto p-8 flex items-center justify-center relative select-none">
-                                {activeDocTemplateId ? (
-                                    <div
-                                        className="relative shadow-2xl border border-gray-700 max-w-full cursor-crosshair group"
-                                        onMouseDown={(e) => {
-                                            const rect = e.currentTarget.getBoundingClientRect();
-                                            const x = ((e.clientX - rect.left) / rect.width) * 100;
-                                            const y = ((e.clientY - rect.top) / rect.height) * 100;
-
-                                            setDocTemplates(prev => prev.map(t => {
-                                                if (t.id === activeDocTemplateId) {
-                                                    return {
-                                                        ...t,
-                                                        drawing: true,
-                                                        currentBox: { startX: x, startY: y, x, y, w: 0, h: 0 }
-                                                    };
-                                                }
-                                                return t;
-                                            }));
-                                        }}
-                                        onMouseMove={(e) => {
-                                            const active = docTemplates.find(t => t.id === activeDocTemplateId);
-                                            if (active?.drawing) {
-                                                const rect = e.currentTarget.getBoundingClientRect();
-                                                const currentX = ((e.clientX - rect.left) / rect.width) * 100;
-                                                const currentY = ((e.clientY - rect.top) / rect.height) * 100;
-
-                                                const startX = active.currentBox.startX;
-                                                const startY = active.currentBox.startY;
-
-                                                const x = Math.min(startX, currentX);
-                                                const y = Math.min(startY, currentY);
-                                                const w = Math.abs(currentX - startX);
-                                                const h = Math.abs(currentY - startY);
-
-                                                setDocTemplates(prev => prev.map(t => {
-                                                    if (t.id === activeDocTemplateId) {
-                                                        return { ...t, currentBox: { ...t.currentBox, x, y, w, h } };
-                                                    }
-                                                    return t;
-                                                }));
-                                            }
-                                        }}
-                                        onMouseUp={() => {
-                                            setDocTemplates(prev => prev.map(t => {
-                                                if (t.id === activeDocTemplateId && t.drawing) {
-                                                    const newMapping = {
-                                                        id: Date.now(),
-                                                        x: t.currentBox.x,
-                                                        y: t.currentBox.y,
-                                                        w: t.currentBox.w,
-                                                        h: t.currentBox.h,
-                                                        label: `Field ${(t.mappings || []).length + 1}`
-                                                    };
-                                                    const mappings = (newMapping.w > 1 && newMapping.h > 1)
-                                                        ? [...(t.mappings || []), newMapping]
-                                                        : (t.mappings || []);
-
-                                                    return { ...t, drawing: false, currentBox: null, mappings };
-                                                }
-                                                return t;
-                                            }));
-                                        }}
-                                    >
-                                        <img
-                                            src={docTemplates.find(t => t.id === activeDocTemplateId)?.previewUrl || '/placeholder.png'}
-                                            alt="Doc Template"
-                                            className="h-[80vh] w-auto object-contain block pointer-events-none"
-                                            draggable="false"
-                                            onError={(e) => { e.target.style.display = 'none'; e.target.parentNode.innerHTML = '<div class="text-white">Image Not Loaded (Save & Refresh)</div>'; }}
-                                        />
-
-                                        {/* Render Mappings */}
-                                        {docTemplates.find(t => t.id === activeDocTemplateId)?.mappings?.map(m => (
-                                            <div
-                                                key={m.id}
-                                                className="absolute border-2 border-blue-500 bg-blue-500/20 hover:bg-blue-500/30 transition flex items-center justify-center cursor-pointer"
-                                                style={{
-                                                    left: `${m.x}%`,
-                                                    top: `${m.y}%`,
-                                                    width: `${m.w}%`,
-                                                    height: `${m.h}%`
-                                                }}
-                                                title={m.label}
-                                            >
-                                                <span className="text-[10px] font-bold text-white bg-blue-600 px-1 rounded shadow-sm">
-                                                    {m.label}
-                                                </span>
-                                                <button
-                                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover/box:opacity-100 hover:scale-110 transition"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setDocTemplates(prev => prev.map(t => {
-                                                            if (t.id === activeDocTemplateId) {
-                                                                return { ...t, mappings: t.mappings.filter(map => map.id !== m.id) };
-                                                            }
-                                                            return t;
-                                                        }));
-                                                    }}
-                                                >
-                                                    <X size={8} />
-                                                </button>
-                                            </div>
-                                        ))}
-
-                                        {/* Render Box Being Drawn */}
-                                        {docTemplates.find(t => t.id === activeDocTemplateId)?.drawing && docTemplates.find(t => t.id === activeDocTemplateId)?.currentBox && (
-                                            <div
-                                                className="absolute border-2 border-green-400 bg-green-400/20"
-                                                style={{
-                                                    left: `${docTemplates.find(t => t.id === activeDocTemplateId)?.currentBox?.x}%`,
-                                                    top: `${docTemplates.find(t => t.id === activeDocTemplateId)?.currentBox?.y}%`,
-                                                    width: `${docTemplates.find(t => t.id === activeDocTemplateId)?.currentBox?.w}%`,
-                                                    height: `${docTemplates.find(t => t.id === activeDocTemplateId)?.currentBox?.h}%`
-                                                }}
-                                            />
-                                        )}
-
-                                    </div>
-                                ) : (
-                                    <div className="text-center text-gray-600">
-                                        <FileText className="w-16 h-16 mx-auto mb-4 opacity-20" />
-                                        <p>Select a document to map fields</p>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* RIGHT: Results Panel */}
-                            {extractionResults && (
-                                <div className="w-80 bg-gray-900 border-l border-gray-800 flex flex-col animate-slide-in-right">
-                                    <div className="p-4 border-b border-gray-800 bg-gray-800/50 flex justify-between items-center">
-                                        <h3 className="font-bold text-green-400 flex items-center gap-2 text-sm">
-                                            <Sparkles size={14} /> Extracted Data
-                                        </h3>
-                                        <button onClick={() => setExtractionResults(null)} className="text-gray-500 hover:text-white">
-                                            <X size={16} />
-                                        </button>
-                                    </div>
-                                    <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                                        {Object.entries(extractionResults).map(([key, value], i) => (
-                                            <div key={i} className="bg-black/30 p-3 rounded-lg border border-gray-800 hover:border-green-500/30 transition">
-                                                <div className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1">
-                                                    {key}
-                                                </div>
-                                                <div className="text-sm text-white break-words leading-relaxed">
-                                                    {value.toString().startsWith('http') ? (
-                                                        <a
-                                                            href={value}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="text-green-400 hover:text-green-300 underline flex items-center gap-2 mt-1 decoration-dashed underline-offset-4"
-                                                        >
-                                                            <QrCode size={16} />
-                                                            <span className="font-bold">Verify on MOC System</span>
-                                                        </a>
-                                                    ) : value}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div className="p-4 border-t border-gray-800">
-                                        {docTemplates.find(t => t.id === activeDocTemplateId)?.isExtracted ? (
-                                            <button
-                                                disabled
-                                                className="w-full bg-gray-700 text-green-400 font-bold py-2 rounded-lg text-xs flex items-center justify-center gap-2 cursor-default"
-                                            >
-                                                Saved <span className="text-lg">✓</span>
-                                            </button>
-                                        ) : (
-                                            <button
-                                                onClick={handleConfirmExtraction}
-                                                className="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded-lg text-xs"
-                                            >
-                                                Confirm & Save
-                                            </button>
-                                        )}
-                                    </div>
+                                    ))}
                                 </div>
-                            )}
-                        </div>
-                    </div>
+                            </div>
+                        ))}
 
+                        {(!template || template.sections.length === 0) && (
+                            <div className="text-center py-32">
+                                <div className="w-20 h-20 bg-slate-800/50 rounded-[32px] flex items-center justify-center mx-auto mb-8 border border-white/5">
+                                    <ShieldCheck size={32} className="text-slate-700" />
+                                </div>
+                                <h3 className="text-xl font-bold text-slate-400 mb-2 tracking-tight">System Ready for Deployment</h3>
+                                <p className="text-slate-600 text-[10px] font-black uppercase tracking-[0.2em]">Awaiting Administrator Profile Architecture</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         );
@@ -1946,16 +1525,11 @@ export default function CompanyProfile() {
             </header>
 
             {/* Main Content */}
-            <main className="flex-1 overflow-hidden">
+            <main className="flex-1 overflow-hidden relative">
                 {view === 'home' && renderHome()}
-                {view === 'iews' && renderIEWS()}
                 {view === 'profile' && renderProfile()}
                 {view === 'bank' && renderBank()}
-                {view === 'ledger' && <GeneralLedger onBack={() => setView('home')} />}
-                {view === 'codes' && <AccountingCodes onBack={() => setView('home')} />}
-                {view === 'currency' && <CurrencyExchange onBack={() => setView('home')} />}
-                {view === 'report' && <TrialBalance onBack={() => setView('home')} />}
-                {view === 'financials' && <FinancialStatements onBack={() => setView('home')} />}
+                {view === 'iews' && renderIEWS()}
                 {view === 'tax_packages' && renderTaxPackages()}
             </main>
 

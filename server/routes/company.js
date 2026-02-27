@@ -8,6 +8,81 @@ const { uploadFile, getFileStream, deleteFile } = require('../services/googleDri
 const fs = require('fs'); // For cleanup 
 
 const auth = require('../middleware/auth');
+const ProfileTemplate = require('../models/ProfileTemplate');
+
+// --- TEMPLATE ROUTES ---
+
+// GET Profile Template (Visible to all logged in users)
+router.get('/template', auth, async (req, res) => {
+    try {
+        let template = await ProfileTemplate.findOne().sort({ createdAt: -1 });
+
+        // Seed default if none
+        if (!template) {
+            template = new ProfileTemplate({
+                name: 'Standard Company Profile',
+                sections: [
+                    {
+                        id: 'general',
+                        title: 'General Information',
+                        fields: [
+                            { key: 'companyNameEn', label: 'Company Name (EN)', type: 'text' },
+                            { key: 'companyNameKh', label: 'Company Name (KH)', type: 'text' },
+                            { key: 'registrationNumber', label: 'Registration No.', type: 'text' },
+                        ]
+                    },
+                    {
+                        id: 'tax',
+                        title: 'Tax Registration',
+                        fields: [
+                            { key: 'vatTin', label: 'VAT TIN', type: 'text' },
+                            { key: 'taxPatent', label: 'Tax Patent No.', type: 'text' },
+                        ]
+                    },
+                    {
+                        id: 'ops',
+                        title: 'Operations',
+                        fields: [
+                            { key: 'address', label: 'Physical Address', type: 'textarea' },
+                            { key: 'businessActivity', label: 'Primary Business Activity', type: 'text' },
+                        ]
+                    }
+                ]
+            });
+            await template.save();
+        }
+
+        res.json(template);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error fetching template' });
+    }
+});
+
+// POST Update Template (Admin Only)
+router.post('/template', auth, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Unauthorized' });
+        }
+
+        const { name, sections } = req.body;
+
+        let template = await ProfileTemplate.findOne().sort({ createdAt: -1 });
+        if (template) {
+            template.name = name;
+            template.sections = sections;
+        } else {
+            template = new ProfileTemplate({ name, sections });
+        }
+
+        await template.save();
+        res.json({ message: 'Template updated successfully', template });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error saving template' });
+    }
+});
 
 // --- FILE PROXY ROUTE (Google Drive) ---
 router.get('/files/:fileId', auth, async (req, res) => {
@@ -624,48 +699,39 @@ router.post('/parse-bank-text', auth, async (req, res) => {
     }
 });
 
-// Save/Update Profile
+// Save/Update Profile (Handles Dynamic Template Data)
 router.post('/update-profile', auth, async (req, res) => {
     try {
-        const { companyNameEn, companyNameKh, registrationNumber, incorporationDate, companyType, address, shareholder, director, vatTin, businessActivity, businessRegistration } = req.body;
+        const { extractedData, companyNameEn, companyNameKh, registrationNumber, incorporationDate, companyType, address, shareholder, director, vatTin, businessActivity, businessRegistration } = req.body;
         const companyCode = req.user.companyCode;
 
         let profile = await CompanyProfile.findOne({ user: req.user.id });
 
-        if (profile) {
-            // Update
-            profile.companyNameEn = companyNameEn;
-            profile.companyNameKh = companyNameKh;
-            profile.registrationNumber = registrationNumber;
-            profile.incorporationDate = incorporationDate;
-            profile.companyType = companyType;
-            profile.address = address;
-            profile.shareholder = shareholder;
-            profile.director = director;
-            profile.vatTin = vatTin;
-            profile.businessActivity = businessActivity;
-            profile.businessRegistration = businessRegistration;
-        } else {
-            // Create
+        if (!profile) {
             profile = new CompanyProfile({
                 user: req.user.id,
-                companyCode,
-                companyNameEn,
-                companyNameKh,
-                registrationNumber,
-                incorporationDate,
-                companyType,
-                address,
-                shareholder,
-                director,
-                vatTin,
-                businessActivity,
-                businessRegistration
+                companyCode
             });
         }
-        await profile.save();
 
-        res.json({ message: 'Profile saved successfully', profile });
+        // 1. Update Standard Fields
+        const fields = ['companyNameEn', 'companyNameKh', 'registrationNumber', 'incorporationDate', 'companyType', 'address', 'shareholder', 'director', 'vatTin', 'businessActivity', 'businessRegistration'];
+        fields.forEach(f => {
+            if (req.body[f] !== undefined) profile[f] = req.body[f];
+        });
+
+        // 2. Update Dynamic Template Data
+        if (extractedData) {
+            // Merge into the Map
+            if (!profile.extractedData) profile.extractedData = new Map();
+
+            Object.keys(extractedData).forEach(key => {
+                profile.extractedData.set(key, String(extractedData[key]));
+            });
+        }
+
+        await profile.save();
+        res.json({ message: 'Profile architecture synchronized', profile });
 
     } catch (err) {
         console.error(err);

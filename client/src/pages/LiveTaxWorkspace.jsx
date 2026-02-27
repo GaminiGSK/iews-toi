@@ -278,19 +278,21 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                     </div>
 
                     {/* 27 PAGE SELECTION - REFINED WORKBENCH STYLE */}
-                    <div className="flex-1 max-w-4xl flex overflow-x-auto mx-10 py-1 no-scrollbar gap-1.5 justify-center">
-                        {Array.from({ length: 27 }, (_, i) => (
-                            <button
-                                key={i}
-                                onClick={() => setActivePage(i + 1)}
-                                className={`px-2.5 py-1 rounded-md text-[13px] font-bold border transition-all shrink-0 active:scale-90 ${activePage === i + 1
-                                    ? 'bg-rose-600 border-rose-400/50 text-white shadow-lg shadow-rose-900/20'
-                                    : 'bg-slate-800/40 border-white/5 text-slate-400 hover:text-white hover:bg-white/5 hover:border-white/10'
-                                    }`}
-                            >
-                                {i + 1}
-                            </button>
-                        ))}
+                    <div className="flex-1 overflow-x-auto no-scrollbar py-1">
+                        <div className="flex justify-start lg:justify-center gap-2 px-40 w-fit lg:w-full mx-auto">
+                            {Array.from({ length: 27 }, (_, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => setActivePage(i + 1)}
+                                    className={`px-3 py-1.5 rounded-lg text-[13px] font-bold border transition-all shrink-0 active:scale-90 ${activePage === i + 1
+                                        ? 'bg-rose-600 border-rose-400 text-white shadow-lg shadow-rose-900/40'
+                                        : 'bg-slate-800/40 border-white/5 text-slate-400 hover:text-white hover:bg-white/5 hover:border-white/10'
+                                        }`}
+                                >
+                                    {i + 1}
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
                     <div className="flex items-center gap-3">
@@ -316,19 +318,21 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                 </div>
             ) : (
                 /* EMBEDDED SUB-NAVIGATOR FOR TABS */
-                <div className="bg-black/40 border-b border-white/5 px-6 py-2 flex items-center justify-center gap-1.5 overflow-x-auto no-scrollbar">
-                    {Array.from({ length: 27 }, (_, i) => (
-                        <button
-                            key={i}
-                            onClick={() => setActivePage(i + 1)}
-                            className={`px-3 py-1.5 rounded-lg text-[18px] font-bold border transition-all shrink-0 ${activePage === i + 1
-                                ? 'bg-blue-600 border-blue-400 text-white shadow-lg shadow-blue-900/40'
-                                : 'bg-slate-900/50 border-white/5 text-slate-400 hover:text-white hover:border-white/10'
-                                }`}
-                        >
-                            P.{i + 1}
-                        </button>
-                    ))}
+                <div className="bg-black/40 border-b border-white/5 overflow-x-auto no-scrollbar py-2">
+                    <div className="flex justify-start lg:justify-center gap-2 px-40 w-fit lg:w-full mx-auto">
+                        {Array.from({ length: 27 }, (_, i) => (
+                            <button
+                                key={i}
+                                onClick={() => setActivePage(i + 1)}
+                                className={`px-4 py-2 rounded-xl text-[18px] font-bold border transition-all shrink-0 active:scale-95 ${activePage === i + 1
+                                    ? 'bg-blue-600 border-blue-400 text-white shadow-lg shadow-blue-900/60'
+                                    : 'bg-slate-900/50 border-white/5 text-slate-400 hover:text-white hover:border-white/10'
+                                    }`}
+                            >
+                                P.{i + 1}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             )}
 

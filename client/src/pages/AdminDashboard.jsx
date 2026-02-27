@@ -15,9 +15,9 @@ export default function AdminDashboard() {
     const [formData, setFormData] = useState({ username: '', companyName: '', password: '' });
     const [message, setMessage] = useState('');
     const [activeTab, setActiveTab] = useState('user');
-    const [knowledgeBase, setKnowledgeBase] = useState([]);
-    const [selectedCategory, setSelectedCategory] = useState(null);
     const [viewingFile, setViewingFile] = useState(null);
+    const [profileTemplate, setProfileTemplate] = useState(null);
+    const [savingTemplate, setSavingTemplate] = useState(false);
 
     // --- Data Fetching ---
     const fetchUsers = async () => {
@@ -40,9 +40,20 @@ export default function AdminDashboard() {
         } catch (err) { console.error('Knowledge Fetch Error:', err); }
     };
 
+    const fetchProfileTemplate = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.get('/api/company/template', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            setProfileTemplate(res.data);
+        } catch (err) { console.error('Profile Template Fetch Error:', err); }
+    };
+
     useEffect(() => {
         fetchUsers();
         fetchKnowledge();
+        fetchProfileTemplate();
     }, []);
 
     const fetchFileContent = async (category, fileName) => {
@@ -152,6 +163,12 @@ export default function AdminDashboard() {
                     className={`flex items-center gap-4 px-10 py-6 text-[22px] font-black uppercase tracking-[0.2em] border-b-4 transition-all ${activeTab === 'baknowledge' ? 'border-rose-500 text-rose-400' : 'border-transparent text-gray-600 hover:text-gray-400'}`}
                 >
                     <Brain size={28} /> BA Knowledge
+                </button>
+                <button
+                    onClick={() => setActiveTab('profile')}
+                    className={`flex items-center gap-4 px-10 py-6 text-[22px] font-black uppercase tracking-[0.2em] border-b-4 transition-all ${activeTab === 'profile' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-gray-600 hover:text-gray-400'}`}
+                >
+                    <FileText size={28} /> Company Profile
                 </button>
             </div>
 
@@ -309,6 +326,131 @@ export default function AdminDashboard() {
                                                 {viewingFile.content}
                                             </pre>
                                         </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'profile' && (
+                        <div className="h-full overflow-y-auto p-10 space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+                            <div className="max-w-4xl mx-auto">
+                                <div className="flex justify-between items-center bg-white/[0.03] p-8 rounded-[32px] border border-white/5 mb-8">
+                                    <div>
+                                        <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-tight">Profile Architecture</h2>
+                                        <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.3em]">Defining the required data structure for all entities</p>
+                                    </div>
+                                    <button
+                                        onClick={async () => {
+                                            setSavingTemplate(true);
+                                            try {
+                                                const token = localStorage.getItem('token');
+                                                await axios.post('/api/company/template', profileTemplate, {
+                                                    headers: { 'Authorization': `Bearer ${token}` }
+                                                });
+                                                alert('Architecture Deployed Successfully');
+                                            } catch (err) {
+                                                alert('Failed to deploy architecture');
+                                            } finally {
+                                                setSavingTemplate(false);
+                                            }
+                                        }}
+                                        disabled={savingTemplate}
+                                        className="bg-indigo-600 text-white hover:bg-indigo-500 px-8 py-4 rounded-2xl font-black shadow-2xl transition-all flex items-center gap-3 uppercase text-[11px] tracking-widest active:scale-95 disabled:opacity-50"
+                                    >
+                                        {savingTemplate ? <Loader2 className="animate-spin" size={18} /> : <FileText size={18} />}
+                                        Deploy Template
+                                    </button>
+                                </div>
+
+                                {profileTemplate && (
+                                    <div className="space-y-6">
+                                        {profileTemplate.sections.map((section, sIdx) => (
+                                            <div key={section.id} className="bg-slate-900/40 border border-white/5 rounded-[32px] p-8">
+                                                <div className="flex justify-between items-center mb-6">
+                                                    <input
+                                                        className="bg-transparent text-xl font-bold text-white border-b border-transparent focus:border-indigo-500 outline-none w-1/2"
+                                                        value={section.title}
+                                                        onChange={(e) => {
+                                                            const newSections = [...profileTemplate.sections];
+                                                            newSections[sIdx].title = e.target.value;
+                                                            setProfileTemplate({ ...profileTemplate, sections: newSections });
+                                                        }}
+                                                    />
+                                                    <div className="flex items-center gap-2">
+                                                        <button
+                                                            onClick={() => {
+                                                                const newSections = [...profileTemplate.sections];
+                                                                newSections[sIdx].fields.push({ key: `field_${Date.now()}`, label: 'New Field', type: 'text' });
+                                                                setProfileTemplate({ ...profileTemplate, sections: newSections });
+                                                            }}
+                                                            className="text-[10px] font-black text-indigo-400 uppercase tracking-widest hover:text-white transition"
+                                                        >
+                                                            + Add Field
+                                                        </button>
+                                                        <button
+                                                            onClick={() => {
+                                                                const newSections = profileTemplate.sections.filter((_, i) => i !== sIdx);
+                                                                setProfileTemplate({ ...profileTemplate, sections: newSections });
+                                                            }}
+                                                            className="text-[10px] font-black text-red-400/50 uppercase tracking-widest hover:text-red-400 transition ml-4"
+                                                        >
+                                                            Remove Section
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    {section.fields.map((field, fIdx) => (
+                                                        <div key={fIdx} className="flex flex-col gap-2 p-4 bg-black/20 border border-white/5 rounded-2xl relative group">
+                                                            <div className="flex justify-between items-center">
+                                                                <input
+                                                                    className="bg-transparent text-xs font-bold text-slate-300 outline-none w-full"
+                                                                    value={field.label}
+                                                                    onChange={(e) => {
+                                                                        const newSections = [...profileTemplate.sections];
+                                                                        newSections[sIdx].fields[fIdx].label = e.target.value;
+                                                                        setProfileTemplate({ ...profileTemplate, sections: newSections });
+                                                                    }}
+                                                                />
+                                                                <button
+                                                                    onClick={() => {
+                                                                        const newSections = [...profileTemplate.sections];
+                                                                        newSections[sIdx].fields = newSections[sIdx].fields.filter((_, i) => i !== fIdx);
+                                                                        setProfileTemplate({ ...profileTemplate, sections: newSections });
+                                                                    }}
+                                                                    className="text-red-500 opacity-0 group-hover:opacity-100 transition"
+                                                                >
+                                                                    <Trash2 size={12} />
+                                                                </button>
+                                                            </div>
+                                                            <div className="flex gap-2 mt-2">
+                                                                <span className="text-[9px] text-slate-500 uppercase font-black">Key:</span>
+                                                                <input
+                                                                    className="bg-transparent text-[9px] text-indigo-400 font-mono outline-none"
+                                                                    value={field.key}
+                                                                    onChange={(e) => {
+                                                                        const newSections = [...profileTemplate.sections];
+                                                                        newSections[sIdx].fields[fIdx].key = e.target.value;
+                                                                        setProfileTemplate({ ...profileTemplate, sections: newSections });
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                        <button
+                                            onClick={() => {
+                                                const newSections = [...profileTemplate.sections];
+                                                const id = `sec_${Date.now()}`;
+                                                newSections.push({ id, title: 'New Section', fields: [] });
+                                                setProfileTemplate({ ...profileTemplate, sections: newSections });
+                                            }}
+                                            className="w-full py-6 border-2 border-dashed border-white/5 rounded-[32px] text-slate-600 hover:border-indigo-500/50 hover:text-indigo-400 transition-all font-black uppercase tracking-[0.3em] text-[11px]"
+                                        >
+                                            + Initialize New Topic
+                                        </button>
                                     </div>
                                 )}
                             </div>
