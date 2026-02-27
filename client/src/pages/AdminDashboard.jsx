@@ -18,6 +18,8 @@ export default function AdminDashboard() {
     const [viewingFile, setViewingFile] = useState(null);
     const [profileTemplate, setProfileTemplate] = useState(null);
     const [savingTemplate, setSavingTemplate] = useState(false);
+    const [knowledgeBase, setKnowledgeBase] = useState([]);
+    const [selectedCategory, setSelectedCategory] = useState(null);
 
     // --- Data Fetching ---
     const fetchUsers = async () => {
