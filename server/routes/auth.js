@@ -101,7 +101,15 @@ router.get('/users', auth, async (req, res) => {
     // Check if requester is admin
     if (req.user.role !== 'admin') return res.status(403).json({ message: 'Forbidden' });
     try {
-        const users = await User.find({ role: 'user' }).select('username companyName loginCode createdAt');
+        // Show all 'user' roles PLUS 'GKSMART' (to manage its access code)
+        // Explicitly exclude the master 'Admin' account
+        const users = await User.find({
+            $or: [
+                { role: 'user' },
+                { username: 'GKSMART' }
+            ],
+            username: { $ne: 'Admin' }
+        }).select('username companyName loginCode createdAt role');
         res.json(users);
     } catch (err) {
         res.status(500).send('Server Error');

@@ -532,6 +532,10 @@ router.delete('/bank-file/:id', auth, async (req, res) => {
         const file = await BankFile.findOne({ _id: id, companyCode: req.user.companyCode });
         if (!file) return res.status(404).json({ message: 'File not found' });
 
+        if (file.isLocked) {
+            return res.status(403).json({ message: 'This file is protected (Save/Locked). Please unlock or contact support.' });
+        }
+
         const driveId = file.driveId;
 
         // 1. Delete associated Transactions FIRST
@@ -629,6 +633,15 @@ router.post('/save-transactions', auth, async (req, res) => {
         }
 
         await Transaction.insertMany(savedDocs);
+
+        // EXTRA: Lock the file(s) involved to make them 'sticky'
+        const driveIds = [...new Set(transactions.map(t => t.driveId).filter(id => id))];
+        if (driveIds.length > 0) {
+            await BankFile.updateMany(
+                { driveId: { $in: driveIds }, companyCode: req.user.companyCode },
+                { isLocked: true, status: 'Processed' }
+            );
+        }
 
         res.json({ message: `Successfully saved ${savedDocs.length} transactions!` });
 

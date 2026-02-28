@@ -36,6 +36,10 @@ const BankFileSchema = new mongoose.Schema({
     uploadedAt: {
         type: Date,
         default: Date.now
+    },
+    isLocked: {
+        type: Boolean,
+        default: false
     }
 });
 
