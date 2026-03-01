@@ -104,6 +104,55 @@ router.post('/br-extract', auth, upload.single('file'), async (req, res) => {
     }
 });
 
+// POST BR Organize (Generate Natural Language Profile)
+router.post('/br-organize', auth, async (req, res) => {
+    try {
+        const { rawText, fileName, username } = req.body;
+        if (!rawText) return res.status(400).json({ message: 'Raw text required' });
+
+        console.log(`[BR Organize] Generating profile for: ${fileName || 'unnamed'} for ${username || 'self'}`);
+
+        // 1. AI Summary (Gemini 2.0 Business Analyst)
+        const organizedProfile = await googleAI.summarizeToProfile(rawText);
+
+        // 2. Sync to Google Drive
+        let driveId = null;
+        try {
+            const User = require('../models/User');
+            let targetFolderId = req.user.brFolderId; // Default to self
+            if (username) {
+                const targetUser = await User.findOne({ username });
+                if (targetUser && targetUser.brFolderId) {
+                    targetFolderId = targetUser.brFolderId;
+                }
+            }
+
+            if (targetFolderId) {
+                const tempPath = `./tmp/profile_${Date.now()}.md`;
+                if (!fs.existsSync('./tmp')) fs.mkdirSync('./tmp');
+                fs.writeFileSync(tempPath, organizedProfile);
+
+                console.log(`[BR Drive] Syncing Organized Profile...`);
+                const driveData = await uploadFile(tempPath, 'text/markdown', `Business Profile - ${fileName || 'Summary'}.md`, targetFolderId);
+                driveId = (typeof driveData === 'object') ? driveData.id : driveData;
+
+                // Cleanup
+                fs.unlink(tempPath, (err) => { if (err) console.error("Temp Cleanup Err:", err); });
+            }
+        } catch (driveErr) {
+            console.error("[BR Drive] Sync Failed:", driveErr.message);
+        }
+
+        res.json({
+            organizedText: organizedProfile,
+            driveId: driveId
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Organization Failed' });
+    }
+});
+
 // --- FILE PROXY ROUTE (Google Drive) ---
 router.get('/files/:fileId', auth, async (req, res) => {
     try {

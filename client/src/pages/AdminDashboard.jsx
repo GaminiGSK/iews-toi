@@ -26,6 +26,8 @@ export default function AdminDashboard() {
     const [uploadingBR, setUploadingBR] = useState(false);
     const [activeBRIndex, setActiveBRIndex] = useState(null);
     const [selectedUserBR, setSelectedUserBR] = useState('');
+    const [organizingProfile, setOrganizingProfile] = useState(false);
+    const [brView, setBrView] = useState('raw'); // 'raw' or 'organized'
 
     // --- Data Fetching ---
     const fetchUsers = async () => {
@@ -160,6 +162,38 @@ export default function AdminDashboard() {
             }
         }
         setUploadingBR(false);
+    };
+
+    const handleOrganize = async () => {
+        if (activeBRIndex === null) return;
+        const currentDoc = brDocs[activeBRIndex];
+        if (currentDoc.organizedText) {
+            setBrView('organized');
+            return;
+        }
+
+        setOrganizingProfile(true);
+        const token = localStorage.getItem('token');
+        try {
+            const res = await axios.post('/api/company/br-organize', {
+                rawText: currentDoc.text,
+                fileName: currentDoc.name,
+                username: selectedUserBR
+            }, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            // Update docs with organized content
+            setBrDocs(prev => prev.map((doc, idx) =>
+                idx === activeBRIndex ? { ...doc, organizedText: res.data.organizedText } : doc
+            ));
+            setBrView('organized');
+        } catch (err) {
+            console.error("Organization Error:", err);
+            alert("Failed to organize profile.");
+        } finally {
+            setOrganizingProfile(false);
+        }
     };
 
     return (
@@ -448,27 +482,89 @@ export default function AdminDashboard() {
                                 </div>
                             </div>
 
-                            {/* --- MAIN: Raw Text Display --- */}
+                            {/* --- MAIN: Display --- */}
                             <div className="flex-1 overflow-y-auto p-12 bg-black/40">
                                 {activeBRIndex !== null ? (
                                     <div className="max-w-5xl mx-auto space-y-10 animate-in fade-in slide-in-from-right-8 duration-700">
                                         <div className="flex items-center justify-between border-b border-white/5 pb-8 mb-4">
                                             <div>
                                                 <h2 className="text-4xl font-black text-white uppercase tracking-tight mb-2">{brDocs[activeBRIndex].name}</h2>
-                                                <p className="text-indigo-400 text-[10px] font-black uppercase tracking-[0.4em]">Full AI Transcription • Bilingual Extraction (KH/EN)</p>
+                                                <div className="flex items-center gap-4">
+                                                    <p className="text-indigo-400 text-[10px] font-black uppercase tracking-[0.4em]">
+                                                        {brView === 'raw' ? 'Full AI Transcription • Bilingual Extraction (KH/EN)' : 'Structured Intelligence • Natural Language Business Profile'}
+                                                    </p>
+                                                    <div className="flex bg-white/5 p-1 rounded-xl">
+                                                        <button
+                                                            onClick={() => setBrView('raw')}
+                                                            className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${brView === 'raw' ? 'bg-indigo-500 text-white' : 'text-slate-500 hover:text-white'}`}
+                                                        >Raw Text</button>
+                                                        <button
+                                                            onClick={() => { if (brDocs[activeBRIndex].organizedText) setBrView('organized'); else handleOrganize(); }}
+                                                            className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${brView === 'organized' ? 'bg-emerald-500 text-white' : 'text-slate-500 hover:text-white'}`}
+                                                        >
+                                                            {organizingProfile ? 'Analyzing...' : 'Organized Profile'}
+                                                        </button>
+                                                    </div>
+                                                </div>
                                             </div>
+
+                                            {brView === 'raw' && (
+                                                <button
+                                                    onClick={handleOrganize}
+                                                    disabled={organizingProfile}
+                                                    className="bg-emerald-500 hover:bg-emerald-400 text-black px-8 py-4 rounded-[20px] font-black text-[11px] uppercase tracking-widest flex items-center gap-3 transition-all shadow-xl shadow-emerald-500/20 active:scale-95 disabled:opacity-50"
+                                                >
+                                                    {organizingProfile ? <Loader2 className="animate-spin" size={16} /> : <ChevronRight size={16} />}
+                                                    Organize Profile
+                                                </button>
+                                            )}
                                         </div>
 
-                                        <div className="bg-slate-900/60 border border-white/10 rounded-[48px] p-12 shadow-2xl relative overflow-hidden group">
-                                            <div className="absolute top-0 right-0 p-8 opacity-5">
-                                                <Brain size={120} />
+                                        {brView === 'raw' ? (
+                                            <div className="bg-slate-900/60 border border-white/10 rounded-[48px] p-12 shadow-2xl relative overflow-hidden group">
+                                                <div className="absolute top-0 right-0 p-8 opacity-5">
+                                                    <Brain size={120} />
+                                                </div>
+                                                <div className="prose prose-invert max-w-none">
+                                                    <pre className="whitespace-pre-wrap text-[#CFCFCF] font-mono text-md leading-[1.8] tracking-wide focus:outline-none">
+                                                        {brDocs[activeBRIndex].text}
+                                                    </pre>
+                                                </div>
                                             </div>
-                                            <div className="prose prose-invert max-w-none">
-                                                <pre className="whitespace-pre-wrap text-[#CFCFCF] font-mono text-md leading-[1.8] tracking-wide focus:outline-none">
-                                                    {brDocs[activeBRIndex].text}
-                                                </pre>
+                                        ) : (
+                                            <div className="bg-gradient-to-br from-indigo-950/40 to-emerald-950/40 border border-white/10 rounded-[64px] p-16 shadow-2xl relative overflow-hidden animate-in zoom-in duration-500">
+                                                <div className="absolute top-0 right-0 p-12 opacity-10">
+                                                    <FileText size={160} className="text-emerald-400" />
+                                                </div>
+                                                <div className="relative z-10 space-y-12">
+                                                    <div className="flex items-center gap-6 mb-12">
+                                                        <div className="w-16 h-16 bg-emerald-500 rounded-3xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                                                            <CheckCircle size={32} className="text-black" />
+                                                        </div>
+                                                        <div>
+                                                            <h3 className="text-2xl font-black text-white uppercase tracking-tight">Verified Entity Profile</h3>
+                                                            <p className="text-emerald-400 text-[10px] font-black uppercase tracking-[0.3em]">Synchronized to Google Drive • Admin Authorized</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="prose prose-invert max-w-none text-slate-300 leading-relaxed space-y-8">
+                                                        {brDocs[activeBRIndex].organizedText.split('\n').map((line, i) => {
+                                                            if (line.startsWith('#')) {
+                                                                return <h4 key={i} className="text-xl font-black text-indigo-400 uppercase tracking-widest pt-8 border-t border-white/5">{line.replace('# ', '')}</h4>
+                                                            }
+                                                            return <p key={i} className="text-lg font-medium opacity-90">{line}</p>
+                                                        })}
+                                                    </div>
+
+                                                    <div className="mt-16 pt-12 border-t border-white/5 flex items-center justify-between">
+                                                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.5em]">SYSTEM ARCHITECTURE READY FOR FINAL APPROVAL</span>
+                                                        <button className="bg-indigo-600 hover:bg-indigo-500 text-white px-10 py-5 rounded-[24px] font-black text-[11px] uppercase tracking-widest shadow-xl shadow-indigo-500/20 transition-all active:scale-95">
+                                                            Sync Update
+                                                        </button>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
+                                        )}
                                     </div>
                                 ) : (
                                     <div className="h-full flex flex-col items-center justify-center text-center">

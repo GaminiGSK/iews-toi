@@ -246,6 +246,49 @@ exports.extractRawText = async (filePath) => {
     }
 };
 
+exports.summarizeToProfile = async (rawText) => {
+    console.log(`[GeminiAI] Organizing Raw Text into Business Profile...`);
+    try {
+        const prompt = `
+            You are an expert Business Analyst. 
+            Take the following raw OCR text extracted from official documents (Khmer and English) and organize it into a professional, easy-to-read "Business Profile".
+            
+            Format the output using these headers:
+            # BUSINESS IDENTITY
+            (Include legal name, registration numbers, and incorporation dates)
+            
+            # CORE LEADERSHIP
+            (List directors, shareholders, and key personnel)
+            
+            # REGISTERED LOCATION
+            (Full address and contact details found)
+            
+            # FINANCIAL ARCHITECTURE
+            (Any bank details, VAT/TIN numbers, or capital information)
+            
+            # ANALYST SUMMARY
+            (A short, 2-3 sentence professional summary of this entity)
+
+            RAW TEXT:
+            ${rawText}
+            
+            Rules:
+            - Use natural language.
+            - If details are missing, omit the sub-point but keep the main headers.
+            - Ensure accuracy against the raw text.
+            - Return as Markdown-formatted text.
+        `;
+
+        const result = await callGeminiWithRetry(() => getModel().generateContent(prompt));
+        const response = await result.response;
+        return response.text();
+
+    } catch (error) {
+        console.error("Gemini AI Error (Summarize):", error);
+        return "Failed to organize profile: " + error.message;
+    }
+};
+
 exports.translateText = async (text, targetLang) => {
     return text + " (Translated)";
 };
