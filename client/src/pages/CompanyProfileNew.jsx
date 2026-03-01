@@ -1036,6 +1036,36 @@ export default function CompanyProfile() {
                 {/* DYNAMIC TEMPLATE RENDERER */}
                 <div className="flex-1 overflow-y-auto px-6 pb-12 custom-scrollbar">
                     <div className="max-w-5xl mx-auto space-y-12">
+                        {/* --- NEW: AI ORGANIZED PROFILE SECTION --- */}
+                        {formData.organizedProfile && (
+                            <div className="bg-gradient-to-br from-indigo-900/20 to-emerald-900/20 border border-white/10 rounded-[48px] p-12 shadow-2xl relative overflow-hidden animate-in zoom-in duration-700 mb-16">
+                                <div className="absolute top-0 right-0 p-8 opacity-5">
+                                    <FileText size={120} className="text-emerald-400" />
+                                </div>
+                                <div className="relative z-10 space-y-10">
+                                    <div className="flex items-center gap-6">
+                                        <div className="w-14 h-14 bg-emerald-500 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                                            <CheckCircle size={28} className="text-black" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-2xl font-black text-white uppercase tracking-tight">AI Business Intelligence</h3>
+                                            <p className="text-emerald-400 text-[9px] font-black uppercase tracking-[0.3em]">Verified Entity Profile • Natural Language Synthesis</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="prose prose-invert max-w-none text-slate-300 leading-relaxed space-y-8">
+                                        {formData.organizedProfile.split('\n').map((line, i) => {
+                                            if (line.startsWith('#')) {
+                                                return <h4 key={i} className="text-lg font-black text-indigo-400 uppercase tracking-[0.3em] pt-8 border-t border-white/5">{line.replace(/#/g, '').trim()}</h4>
+                                            }
+                                            if (line.trim() === '') return null;
+                                            return <p key={i} className="text-md font-medium opacity-90">{line}</p>
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         {template?.sections.map((section, sIdx) => (
                             <div key={section.id} className="animate-in fade-in slide-in-from-bottom-4 duration-700" style={{ animationDelay: `${sIdx * 100}ms` }}>
                                 <div className="flex items-center gap-4 mb-8">

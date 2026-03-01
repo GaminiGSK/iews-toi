@@ -32,7 +32,7 @@ const CompanyProfileSchema = new mongoose.Schema({
     bankAccountName: { type: String },
     bankAccountNumber: { type: String },
     bankCurrency: { type: String },
-
+    organizedProfile: { type: String }, // AI-generated natural language summary
     extractedData: { type: Map, of: String } // For flexibility
 }, { timestamps: true });
 

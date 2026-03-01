@@ -143,6 +143,34 @@ router.post('/br-organize', auth, async (req, res) => {
             console.error("[BR Drive] Sync Failed:", driveErr.message);
         }
 
+        // 3. Save to CompanyProfile for user dashboard viewing
+        try {
+            const User = require('../models/User');
+            let profileLink = null;
+            if (username) {
+                const targetUser = await User.findOne({ username });
+                if (targetUser) {
+                    profileLink = await CompanyProfile.findOne({ user: targetUser._id });
+                    if (!profileLink) {
+                        profileLink = new CompanyProfile({ user: targetUser._id, companyCode: targetUser.companyCode });
+                    }
+                }
+            } else {
+                profileLink = await CompanyProfile.findOne({ user: req.user.id });
+                if (!profileLink) {
+                    profileLink = new CompanyProfile({ user: req.user.id, companyCode: req.user.companyCode });
+                }
+            }
+
+            if (profileLink) {
+                profileLink.organizedProfile = organizedProfile;
+                await profileLink.save();
+                console.log(`[BR DB] Profile saved for dashboard viewing.`);
+            }
+        } catch (dbErr) {
+            console.error("[BR DB] Save Failed:", dbErr.message);
+        }
+
         res.json({
             organizedText: organizedProfile,
             driveId: driveId
