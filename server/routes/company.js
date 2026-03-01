@@ -116,9 +116,10 @@ router.post('/br-extract', auth, upload.single('file'), async (req, res) => {
             console.error("[BR Drive] Profile Sync Failed:", orgDriveErr.message);
         }
 
-        // 5. Database Sync (Update User Dashboard)
+        // 5. Database Sync (Update User Dashboard & File Pool)
         try {
             if (targetUser) {
+                console.log(`[BR DB] Updating profile for user: ${targetUser.username} (${targetUser._id})`);
                 let profileInDb = await CompanyProfile.findOne({ user: targetUser._id });
                 if (!profileInDb) {
                     profileInDb = new CompanyProfile({
@@ -126,9 +127,23 @@ router.post('/br-extract', auth, upload.single('file'), async (req, res) => {
                         companyCode: targetUser.companyCode || targetUser.username.toUpperCase()
                     });
                 }
+
+                // Append to Documents Pool
+                profileInDb.documents.push({
+                    docType: 'br_extraction',
+                    originalName: req.file.originalname,
+                    path: rawDriveId ? `drive:${rawDriveId}` : req.file.path,
+                    status: 'Verified',
+                    rawText: rawText,
+                    uploadedAt: new Date()
+                });
+
+                // Update natural language summary
                 profileInDb.organizedProfile = organizedProfile;
+                if (targetUser.companyCode) profileInDb.companyCode = targetUser.companyCode;
+
                 await profileInDb.save();
-                console.log(`[BR DB] Dashboard updated for ${targetUser.username}`);
+                console.log(`[BR DB] Dashboard & Documents Pool updated.`);
             }
         } catch (dbErr) {
             console.error("[BR DB] Save Failed:", dbErr.message);
@@ -192,26 +207,38 @@ router.post('/br-organize', auth, async (req, res) => {
         // 3. Save to CompanyProfile for user dashboard viewing
         try {
             const User = require('../models/User');
-            let profileLink = null;
+            let targetUser = null;
             if (username) {
-                const targetUser = await User.findOne({ username });
-                if (targetUser) {
-                    profileLink = await CompanyProfile.findOne({ user: targetUser._id });
-                    if (!profileLink) {
-                        profileLink = new CompanyProfile({ user: targetUser._id, companyCode: targetUser.companyCode });
-                    }
-                }
+                targetUser = await User.findOne({ username });
             } else {
-                profileLink = await CompanyProfile.findOne({ user: req.user.id });
-                if (!profileLink) {
-                    profileLink = new CompanyProfile({ user: req.user.id, companyCode: req.user.companyCode });
-                }
+                targetUser = await User.findById(req.user.id);
             }
 
-            if (profileLink) {
+            if (targetUser) {
+                let profileLink = await CompanyProfile.findOne({ user: targetUser._id });
+                if (!profileLink) {
+                    profileLink = new CompanyProfile({
+                        user: targetUser._id,
+                        companyCode: targetUser.companyCode || targetUser.username.toUpperCase()
+                    });
+                }
+
                 profileLink.organizedProfile = organizedProfile;
+
+                // If it's a new upload chunk, we might want to track this document as well
+                if (fileName && rawText) {
+                    profileLink.documents.push({
+                        docType: 'br_organization',
+                        originalName: fileName,
+                        path: driveId ? `drive:${driveId}` : null,
+                        status: 'Verified',
+                        rawText: rawText,
+                        uploadedAt: new Date()
+                    });
+                }
+
                 await profileLink.save();
-                console.log(`[BR DB] Profile saved for dashboard viewing.`);
+                console.log(`[BR DB] Profile summary & docs updated.`);
             }
         } catch (dbErr) {
             console.error("[BR DB] Save Failed:", dbErr.message);
@@ -239,6 +266,29 @@ router.get('/files/:fileId', auth, async (req, res) => {
     } catch (err) {
         console.error('File Proxy Error:', err.message);
         res.status(404).send('File not found or access denied');
+    }
+});
+
+// GET Admin Profile Data for specific user
+router.get('/admin/profile/:username', auth, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Unauthorized access' });
+        }
+        const { username } = req.params;
+        const User = require('../models/User');
+        const targetUser = await User.findOne({ username });
+        if (!targetUser) return res.status(404).json({ message: 'Target user not found' });
+
+        const profile = await CompanyProfile.findOne({ user: targetUser._id }).select('-documents.data');
+        if (!profile) return res.json({ documents: [], organizedProfile: null, username: targetUser.username });
+
+        const profileData = profile.toObject();
+        profileData.username = targetUser.username;
+        res.json(profileData);
+    } catch (err) {
+        console.error('Admin Profile Fetch Error:', err);
+        res.status(500).json({ message: 'Server Error' });
     }
 });
 
@@ -685,8 +735,28 @@ router.post('/upload-bank-statement', auth, upload.array('files'), async (req, r
 router.get('/bank-files', auth, async (req, res) => {
     try {
         const BankFile = require('../models/BankFile');
-        const files = await BankFile.find({ companyCode: req.user.companyCode })
+        const companyCode = req.user.companyCode;
+
+        let files = await BankFile.find({ companyCode: companyCode })
             .sort({ uploadedAt: -1 });
+
+        // FALLBACK: If 0 files found with primary code, try alternate versions (Transition Support)
+        if (files.length === 0 && companyCode) {
+            console.log(`[BankFile] No files for ${companyCode}, trying fallback search...`);
+            const altCode = companyCode.replace(/_/g, ' ');
+            const altCode2 = companyCode.replace(/ /g, '_');
+
+            files = await BankFile.find({
+                $or: [
+                    { companyCode: { $regex: new RegExp(`^${companyCode}$`, 'i') } },
+                    { companyCode: { $regex: new RegExp(`^${altCode}$`, 'i') } },
+                    { companyCode: { $regex: new RegExp(`^${altCode2}$`, 'i') } }
+                ]
+            }).sort({ uploadedAt: -1 });
+
+            if (files.length > 0) console.log(`[BankFile] Found ${files.length} files via fallback.`);
+        }
+
         res.json({ files });
     } catch (err) {
         console.error('Get Bank Files Error:', err);
@@ -751,6 +821,12 @@ router.post('/save-transactions', auth, async (req, res) => {
 
         const savedDocs = [];
         for (const tx of transactions) {
+            // 🚨 SAFETY: Skip error markers that shouldn't be saved as actual ledger entries
+            if (tx.date === "DEBUG_ERR" || tx.date === "FATAL_ERR" || (tx.description && tx.description.includes("AI Parse Failed"))) {
+                console.warn(`[SaveTx] Skipping Error Marker: ${tx.description}`);
+                continue;
+            }
+
             // Helper to clean currency strings
             const parseCurrency = (val) => {
                 if (!val) return 0;
@@ -928,14 +1004,28 @@ router.post('/update-profile', auth, async (req, res) => {
 router.get('/transactions', auth, async (req, res) => {
     try {
         const Transaction = require('../models/Transaction');
+        const companyCode = req.user.companyCode;
 
         // Fetch all transactions for this company
-        // Sorted by Date DESC to show newest first
-        const transactions = await Transaction.find({
-            companyCode: req.user.companyCode
+        let transactions = await Transaction.find({
+            companyCode: companyCode
         })
             .sort({ date: -1 })
-            .lean(); // Faster query
+            .lean();
+
+        // FALLBACK: Transition support
+        if (transactions.length === 0 && companyCode) {
+            const altCode = companyCode.replace(/_/g, ' ');
+            const altCode2 = companyCode.replace(/ /g, '_');
+
+            transactions = await Transaction.find({
+                $or: [
+                    { companyCode: { $regex: new RegExp(`^${companyCode}$`, 'i') } },
+                    { companyCode: { $regex: new RegExp(`^${altCode}$`, 'i') } },
+                    { companyCode: { $regex: new RegExp(`^${altCode2}$`, 'i') } }
+                ]
+            }).sort({ date: -1 }).lean();
+        }
 
         res.json({ transactions });
     } catch (err) {

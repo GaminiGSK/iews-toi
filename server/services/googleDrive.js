@@ -76,15 +76,25 @@ async function uploadFile(filePath, mimeType, originalName, customParentId = nul
     } catch (error) {
         console.error('❌ Google Drive Upload Error:', error.message);
 
-        // --- AUTOMATED FALLBACK ---
+        // --- AUTOMATED FALLBACK: Try Global Root if Custom Folder Fails ---
         if (error.message.includes('Service Accounts do not have permission') || error.message.includes('403')) {
-            console.log('⚠️ Binary upload blocked by domain policy. Attempting metadata-only sync...');
+            const rootId = process.env.GOOGLE_DRIVE_FOLDER_ID;
+            if (customParentId && customParentId !== rootId) {
+                console.log(`⚠️  Permission Denied on folder ${customParentId}. Retrying upload to Global Root (${rootId})...`);
+                try {
+                    return await uploadFile(filePath, mimeType, originalName, rootId);
+                } catch (rootErr) {
+                    console.error('❌ Global Root Upload also failed:', rootErr.message);
+                }
+            }
+
+            console.log('⚠️  All binary upload attempts blocked. Using metadata-only fallback...');
             try {
-                const metadataOnly = await uploadFileMetadataOnly(originalName, customParentId, `Source: Ledger Entry | Original Path: ${filePath}`);
+                const metadataOnly = await uploadFileMetadataOnly(originalName, customParentId, `Source: Ledger Sync Failure | Path: ${filePath}`);
                 return { ...metadataOnly, isMetadataOnly: true };
             } catch (fallbackErr) {
                 console.error('❌ Critical Sync Failure (Metadata Fallback Failed):', fallbackErr.message);
-                throw new Error("SYNC_FAILED: Binary upload blocked and metadata fallback failed.");
+                throw new Error("SYNC_FAILED: All upload attempts blocked including metadata.");
             }
         }
 

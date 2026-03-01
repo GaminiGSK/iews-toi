@@ -11,7 +11,7 @@ const auth = new google.auth.GoogleAuth({
 const drive = google.drive({ version: 'v3', auth });
 
 async function listJSON() {
-    const parentFolderId = "1stTBxzF6R6Ffw6P1vcTfAhQ8tnbPXoC0";
+    const parentFolderId = "1b_ajdruz4LWiY8owfo-H-aWFqVtogTZo";
     try {
         const res = await drive.files.list({
             q: `'${parentFolderId}' in parents and trashed = false`,

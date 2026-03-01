@@ -1036,31 +1036,75 @@ export default function CompanyProfile() {
                 {/* DYNAMIC TEMPLATE RENDERER */}
                 <div className="flex-1 overflow-y-auto px-6 pb-12 custom-scrollbar">
                     <div className="max-w-5xl mx-auto space-y-12">
-                        {/* --- NEW: AI ORGANIZED PROFILE SECTION --- */}
+                        {/* --- NEW: AI ORGANIZED PROFILE SECTION (Book Page Style) --- */}
                         {formData.organizedProfile && (
-                            <div className="bg-gradient-to-br from-indigo-900/20 to-emerald-900/20 border border-white/10 rounded-[48px] p-12 shadow-2xl relative overflow-hidden animate-in zoom-in duration-700 mb-16">
-                                <div className="absolute top-0 right-0 p-8 opacity-5">
-                                    <FileText size={120} className="text-emerald-400" />
+                            <div className="bg-white border-y border-slate-200 py-24 px-16 shadow-sm animate-in fade-in slide-in-from-bottom-8 duration-1000 mb-20 relative">
+                                {/* Subtle Logo Watermark */}
+                                <div className="absolute top-10 right-10 opacity-[0.03] select-none pointer-events-none">
+                                    <FileText size={200} className="text-slate-900" />
                                 </div>
-                                <div className="relative z-10 space-y-10">
-                                    <div className="flex items-center gap-6">
-                                        <div className="w-14 h-14 bg-emerald-500 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                                            <CheckCircle size={28} className="text-black" />
+
+                                <div className="max-w-4xl mx-auto space-y-16">
+                                    {/* Header */}
+                                    <div className="border-b-2 border-slate-900 pb-10 mb-16 flex justify-between items-end">
+                                        <div className="space-y-4">
+                                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.6em]">ENTITY INTELLIGENCE DOSSIER</h3>
+                                            <h1 className="text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none">Business Profile</h1>
                                         </div>
-                                        <div>
-                                            <h3 className="text-2xl font-black text-white uppercase tracking-tight">AI Business Intelligence</h3>
-                                            <p className="text-emerald-400 text-[9px] font-black uppercase tracking-[0.3em]">Verified Entity Profile • Natural Language Synthesis</p>
+                                        <div className="text-right">
+                                            <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest">VERIFIED SYSTEM EXTRACT</p>
+                                            <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase">GENERATED: {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'LONG', year: 'numeric' })}</p>
                                         </div>
                                     </div>
 
-                                    <div className="prose prose-invert max-w-none text-slate-300 leading-relaxed space-y-8">
+                                    {/* Content Body */}
+                                    <div className="prose prose-slate max-w-none">
                                         {formData.organizedProfile.split('\n').map((line, i) => {
-                                            if (line.startsWith('#')) {
-                                                return <h4 key={i} className="text-lg font-black text-indigo-400 uppercase tracking-[0.3em] pt-8 border-t border-white/5">{line.replace(/#/g, '').trim()}</h4>
+                                            const cleanLine = line.trim();
+                                            if (!cleanLine) return <div key={i} className="h-6" />;
+
+                                            // Handle I., II., III. Headers
+                                            if (/^[IVX]+\./.test(cleanLine) || cleanLine.startsWith('#')) {
+                                                return (
+                                                    <h2 key={i} className="text-xl font-black text-slate-900 uppercase tracking-[0.2em] pt-12 mb-8 border-b border-slate-100 pb-4">
+                                                        {cleanLine.replace(/#/g, '').trim()}
+                                                    </h2>
+                                                );
                                             }
-                                            if (line.trim() === '') return null;
-                                            return <p key={i} className="text-md font-medium opacity-90">{line}</p>
+
+                                            // Handle Bullet Points with Bold Keys
+                                            if (cleanLine.startsWith('- **') || cleanLine.startsWith('**')) {
+                                                const parts = cleanLine.split('**:');
+                                                if (parts.length > 1) {
+                                                    return (
+                                                        <div key={i} className="grid grid-cols-3 gap-8 py-3 border-b border-slate-50">
+                                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest pt-1">
+                                                                {parts[0].replace(/[-*]/g, '').trim()}
+                                                            </span>
+                                                            <span className="col-span-2 text-md font-bold text-slate-800 leading-relaxed">
+                                                                {parts[1].trim()}
+                                                            </span>
+                                                        </div>
+                                                    );
+                                                }
+                                            }
+
+                                            // Regular Paragraphs (The Summary)
+                                            return (
+                                                <p key={i} className="text-[17px] font-medium text-slate-700 leading-[1.8] text-justify first-letter:text-4xl first-letter:font-black first-letter:mr-3 first-letter:float-left mb-8">
+                                                    {cleanLine}
+                                                </p>
+                                            );
                                         })}
+                                    </div>
+
+                                    {/* Footer */}
+                                    <div className="pt-20 border-t border-slate-200 flex justify-between items-center opacity-40">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-6 h-6 bg-slate-900 rounded-sm flex items-center justify-center font-bold text-[8px] text-white">GK</div>
+                                            <span className="text-[8px] font-black uppercase tracking-[0.5em]">Global Intelligence System</span>
+                                        </div>
+                                        <span className="text-[8px] font-black uppercase tracking-[0.5em]">CONFIDENTIAL DOCUMENT • PAGE 01</span>
                                     </div>
                                 </div>
                             </div>

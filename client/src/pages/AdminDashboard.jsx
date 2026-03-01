@@ -166,9 +166,66 @@ export default function AdminDashboard() {
         setUploadingBR(false);
     };
 
-    const handleOrganize = async () => {
-        // Function now deprecated as organization is handled in the main extract stream
-        setBrView('organized');
+    const fetchUserBRDocs = async (username) => {
+        if (!username) return;
+        const token = localStorage.getItem('token');
+        try {
+            const res = await axios.get(`/api/company/admin/profile/${username}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (res.data && res.data.documents) {
+                // Map CompanyProfile documents to brDocs UI state
+                const mappedDocs = res.data.documents.map((doc, idx) => ({
+                    id: doc._id || Date.now() + idx,
+                    name: doc.originalName || doc.docType || 'Existing Document',
+                    text: doc.rawText || 'No raw text stored',
+                    organizedText: res.data.organizedProfile || '',
+                    timestamp: doc.uploadedAt ? new Date(doc.uploadedAt).toLocaleString() : 'Existing'
+                }));
+                // Sort newest first
+                setBrDocs(mappedDocs.reverse());
+                if (mappedDocs.length > 0) {
+                    setActiveBRIndex(0);
+                    setBrView('organized');
+                }
+            } else {
+                setBrDocs([]);
+            }
+        } catch (err) {
+            console.error("Fetch BR Docs Error:", err);
+            setBrDocs([]);
+        }
+    };
+
+    useEffect(() => {
+        if (selectedUserBR && activeTab === 'profile') {
+            fetchUserBRDocs(selectedUserBR);
+        }
+    }, [selectedUserBR, activeTab]);
+
+    const handleSaveOrganizedProfile = async () => {
+        if (activeBRIndex === null || !brDocs[activeBRIndex].organizedText) return;
+
+        const doc = brDocs[activeBRIndex];
+        setOrganizingProfile(true);
+        const token = localStorage.getItem('token');
+
+        try {
+            await axios.post('/api/company/br-organize', {
+                rawText: doc.text,
+                fileName: doc.name,
+                username: selectedUserBR
+            }, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            alert(`Business Profile synchronized successfully for ${selectedUserBR}!`);
+        } catch (err) {
+            console.error("Sync Error:", err);
+            alert("Failed to sync profile: " + (err.response?.data?.message || err.message));
+        } finally {
+            setOrganizingProfile(false);
+        }
     };
 
     return (
@@ -474,10 +531,10 @@ export default function AdminDashboard() {
                                                             className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${brView === 'raw' ? 'bg-indigo-500 text-white' : 'text-slate-500 hover:text-white'}`}
                                                         >Raw Text</button>
                                                         <button
-                                                            onClick={() => { if (brDocs[activeBRIndex].organizedText) setBrView('organized'); else handleOrganize(); }}
+                                                            onClick={() => { if (brDocs[activeBRIndex].organizedText) setBrView('organized'); }}
                                                             className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${brView === 'organized' ? 'bg-emerald-500 text-white' : 'text-slate-500 hover:text-white'}`}
                                                         >
-                                                            {organizingProfile ? 'Analyzing...' : 'Organized Profile'}
+                                                            Organized Profile
                                                         </button>
                                                     </div>
                                                 </div>
@@ -506,36 +563,61 @@ export default function AdminDashboard() {
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div className="bg-gradient-to-br from-indigo-950/40 to-emerald-950/40 border border-white/10 rounded-[64px] p-16 shadow-2xl relative overflow-hidden animate-in zoom-in duration-500">
-                                                <div className="absolute top-0 right-0 p-12 opacity-10">
-                                                    <FileText size={160} className="text-emerald-400" />
+                                            <div className="bg-white border border-slate-200 rounded-[40px] p-20 shadow-2xl relative overflow-hidden animate-in zoom-in duration-500 min-h-[800px]">
+                                                {/* Header Line */}
+                                                <div className="border-b-2 border-slate-900 pb-8 mb-12 flex justify-between items-end">
+                                                    <div>
+                                                        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] mb-2">SYSTEM SYNTHESIS REPORT</h3>
+                                                        <h4 className="text-3xl font-black text-slate-900 uppercase tracking-tighter">Entity Intelligence Profile</h4>
+                                                    </div>
+                                                    <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center">
+                                                        <CheckCircle size={24} className="text-emerald-600" />
+                                                    </div>
                                                 </div>
-                                                <div className="relative z-10 space-y-12">
-                                                    <div className="flex items-center gap-6 mb-12">
-                                                        <div className="w-16 h-16 bg-emerald-500 rounded-3xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                                                            <CheckCircle size={32} className="text-black" />
-                                                        </div>
-                                                        <div>
-                                                            <h3 className="text-2xl font-black text-white uppercase tracking-tight">Verified Entity Profile</h3>
-                                                            <p className="text-emerald-400 text-[10px] font-black uppercase tracking-[0.3em]">Synchronized to Google Drive • Admin Authorized</p>
-                                                        </div>
-                                                    </div>
 
-                                                    <div className="prose prose-invert max-w-none text-slate-300 leading-relaxed space-y-8">
-                                                        {brDocs[activeBRIndex].organizedText.split('\n').map((line, i) => {
-                                                            if (line.startsWith('#')) {
-                                                                return <h4 key={i} className="text-xl font-black text-indigo-400 uppercase tracking-widest pt-8 border-t border-white/5">{line.replace('# ', '')}</h4>
+                                                <div className="prose prose-slate max-w-none text-slate-800 leading-relaxed space-y-8">
+                                                    {(brDocs[activeBRIndex].organizedText || '').split('\n').map((line, i) => {
+                                                        const cleanLine = line.trim();
+                                                        if (!cleanLine) return <div key={i} className="h-4" />;
+
+                                                        if (/^[IVX]+\./.test(cleanLine) || cleanLine.startsWith('#')) {
+                                                            return (
+                                                                <h4 key={i} className="text-lg font-black text-slate-900 uppercase tracking-widest pt-8 border-t border-slate-100 mb-4 flex items-center gap-4">
+                                                                    <span className="w-2 h-2 bg-indigo-500 rounded-full"></span>
+                                                                    {cleanLine.replace(/#/g, '').trim()}
+                                                                </h4>
+                                                            );
+                                                        }
+
+                                                        if (cleanLine.startsWith('- **') || cleanLine.startsWith('**')) {
+                                                            const parts = cleanLine.split('**:');
+                                                            if (parts.length > 1) {
+                                                                return (
+                                                                    <div key={i} className="flex gap-6 py-2 border-b border-slate-50">
+                                                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest w-32 shrink-0 pt-1">
+                                                                            {parts[0].replace(/[-*]/g, '').trim()}
+                                                                        </span>
+                                                                        <span className="text-sm font-bold text-slate-700">
+                                                                            {parts[1].trim()}
+                                                                        </span>
+                                                                    </div>
+                                                                );
                                                             }
-                                                            return <p key={i} className="text-lg font-medium opacity-90">{line}</p>
-                                                        })}
-                                                    </div>
+                                                        }
 
-                                                    <div className="mt-16 pt-12 border-t border-white/5 flex items-center justify-between">
-                                                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.5em]">SYSTEM ARCHITECTURE READY FOR FINAL APPROVAL</span>
-                                                        <button className="bg-indigo-600 hover:bg-indigo-500 text-white px-10 py-5 rounded-[24px] font-black text-[11px] uppercase tracking-widest shadow-xl shadow-indigo-500/20 transition-all active:scale-95">
-                                                            Sync Update
-                                                        </button>
-                                                    </div>
+                                                        return <p key={i} className="text-md font-medium text-slate-600 leading-relaxed text-justify mb-4">{cleanLine}</p>
+                                                    })}
+                                                </div>
+
+                                                <div className="mt-16 pt-12 border-t border-slate-100 flex items-center justify-between">
+                                                    <span className="text-[9px] font-black text-slate-300 uppercase tracking-[0.5em]">AUTHORED BY GK SMART AI • VERIFIED DOSSIER</span>
+                                                    <button
+                                                        onClick={handleSaveOrganizedProfile}
+                                                        disabled={organizingProfile}
+                                                        className="bg-slate-900 hover:bg-black text-white px-10 py-5 rounded-[24px] font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50"
+                                                    >
+                                                        {organizingProfile ? 'SYNCHRONIZING...' : 'Sync to Dashboard'}
+                                                    </button>
                                                 </div>
                                             </div>
                                         )}

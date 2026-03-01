@@ -140,33 +140,38 @@ exports.extractBankStatement = async (filePath) => {
     try {
         // AGENTIC PROMPT: STAGE 1 (Layout) & STAGE 2 (Structure)
         const prompt = `
-            Analyze this bank statement image visually.
+            Analyze this bank statement visually and extract all transactions with high precision.
             
-            1. **Header Identification**: Find Bank Name (e.g., ABA, ACLEDA, Canadia), Account Number, and Account Name.
-            2. **Table Detection**: Locate the main transaction table. Look for columns like 'Date', 'Description', 'Debit/Credit', 'Amount', and 'Balance'.
-            3. **Data Extraction**: Extract every single row from the transaction table.
+            1. **Header Identification**: Locate the Bank Name, Account Number, and Account Name.
+            2. **Statement Year**: Find the year of the statement (Crucial for dating rows).
+            3. **Table Extraction**: Locate the transaction table. Identify columns for:
+               - Date (Day and Month)
+               - Description / Particulars
+               - Money In (Credit / Deposit)
+               - Money Out (Debit / Withdrawal)
+               - Balance
             
-            Return ONLY a JSON object:
+            Return ONLY a clean JSON object:
             {
               "bankName": "...",
               "accountNumber": "...",
               "accountName": "...",
               "transactions": [
                 {
-                  "date": "YYYY-MM-DD", // REQUIRED. Inferred Year from header + Date in row.
-                  "description": "Full verbatim text from the 'Description' or 'Particulars' column.",
-                  "moneyIn": 0.00, // Positive amount or Credit.
-                  "moneyOut": 0.00, // Negative amount or Debit.
-                  "balance": "0.00" // Running balance.
+                  "date": "YYYY-MM-DD", // Use inferred year + row's day/month.
+                  "description": "Full verbatim text. Preserve Khmer characters if present.",
+                  "moneyIn": 0.00,
+                  "moneyOut": 0.00,
+                  "balance": "0.00"
                 }
               ]
             }
 
             Rules:
-            - **CRITICAL**: Search the header for the STATEMENT YEAR. Use it for all transaction dates.
-            - **TEXT NORMALIZATION**: Crucial. Remove hard newlines or accidental line breaks within descriptions. Return a clean, single-paragraph string for each transaction detail.
-            - **CLEANLINESS**: Do not combine multiple rows unless they clearly belong to the same transaction description.
-            - **ACCURACY**: If a column has no value, use 0.00 for moneyIn/moneyOut.
+            - **BILINGUAL**: Support English and Khmer text in descriptions.
+            - **YEAR INFERENCE**: If year is not found, use the current year (2026).
+            - **FLATTENING**: Remove any line breaks or extra spaces within descriptions.
+            - **ACCURACY**: Ensure moneyIn and moneyOut are correctly assigned based on the column headers.
         `;
 
         // Robust Mimetype Detection
@@ -250,33 +255,40 @@ exports.summarizeToProfile = async (rawText) => {
     console.log(`[GeminiAI] Organizing Raw Text into Business Profile...`);
     try {
         const prompt = `
-            You are an expert Business Analyst. 
-            Take the following raw OCR text extracted from official documents (Khmer and English) and organize it into a professional, easy-to-read "Business Profile".
+            You are a Senior Business Analyst and Corporate Documentation Specialist. 
+            Your task is to transform raw OCR text (Khmer and English) into a comprehensive "Business Profile Dossier".
             
-            Format the output using these headers:
-            # BUSINESS IDENTITY
-            (Include legal name, registration numbers, and incorporation dates)
+            This document must be exhaustive. Reconstruct the entity's complete identity.
             
-            # CORE LEADERSHIP
-            (List directors, shareholders, and key personnel)
-            
-            # REGISTERED LOCATION
-            (Full address and contact details found)
-            
-            # FINANCIAL ARCHITECTURE
-            (Any bank details, VAT/TIN numbers, or capital information)
-            
-            # ANALYST SUMMARY
-            (A short, 2-3 sentence professional summary of this entity)
+            STRUCTURE THE DOCUMENT AS FOLLOWS:
 
-            RAW TEXT:
+            # I. EXECUTIVE CORPORATE ARCHITECTURE
+            - **Legal Name**: (Unified English & Khmer)
+            - **Identifiers**: (Company ID, Tax TIN, Patent IDs)
+            - **Legal Status**: (Company Type, Incorporation Date)
+            
+            # II. GOVERNANCE & SHAREHOLDERS
+            - **Board of Directors**: (Exhaustive list of directors/authorized signatories)
+            - **Shareholders**: (Detailed ownership list with percentage/nationalities if found)
+            
+            # III. OPERATIONAL FOOTPRINT
+            - **Headquarters**: (Full physical address in EN/KH)
+            - **Business Objectives**: (List every identified commercial activity mentioned)
+            
+            # IV. FINANCIAL & LEGAL ASSETS
+            - **Capital**: (Capital value, currency, share distribution)
+            - **Bank Details**: (Known account numbers/bank associations)
+            
+            # V. ANALYST STRATEGIC DOSSIER
+            (8-10 sentence formal strategic overview talking about the entity's longevity, diversity of objectives, and verified leadership structure.)
+
+            RAW DATA:
             ${rawText}
             
-            Rules:
-            - Use natural language.
-            - If details are missing, omit the sub-point but keep the main headers.
-            - Ensure accuracy against the raw text.
-            - Return as Markdown-formatted text.
+            STRICT RULES:
+            - **Exhaustive Detail**: If a shareholder or objective is in the raw text, INCLUDE IT.
+            - **Fidelity**: No hallucinations. Professional, objective tone.
+            - **Format**: Markdown with high-end hierarchy (headings, bold keys).
         `;
 
         const result = await callGeminiWithRetry(() => getModel().generateContent(prompt));
