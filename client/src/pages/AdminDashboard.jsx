@@ -239,7 +239,7 @@ export default function AdminDashboard() {
                         <span className="font-black text-4xl tracking-tighter text-white">GK SMART <span className="text-emerald-500">Ai</span></span>
                         <div className="flex items-center gap-2 mt-2">
                             <span className="bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-xs font-black tracking-widest border border-emerald-500/30">
-                                v5.12.23_BR_SYNC
+                                v5.12.24_BOOK_PROFILE
                             </span>
                         </div>
                     </div>
