@@ -44,7 +44,8 @@ router.post('/login', async (req, res) => {
             id: user._id,
             role: user.role,
             username: user.username,
-            companyCode: user.companyCode
+            companyCode: user.companyCode,
+            driveFolderId: user.driveFolderId
         };
         const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' });
 
@@ -54,7 +55,8 @@ router.post('/login', async (req, res) => {
                 id: user._id,
                 username: user.username,
                 role: user.role,
-                companyCode: user.companyCode
+                companyCode: user.companyCode,
+                driveFolderId: user.driveFolderId
             }
         });
     } catch (err) {
@@ -79,13 +81,50 @@ router.post('/create-user', auth, async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash('ggmt1235#', salt); // Standard internal password
 
+        const { createFolder, findFolder } = require('../services/googleDrive');
+        // Parent is 'BR template' sub-folder
+        const driveRoot = "1Z56h5vAURMvM0Dad9zmcLjO8zeM5AoJf" || process.env.GOOGLE_DRIVE_FOLDER_ID;
+        let driveFolderId = null;
+        let bankStatementsFolderId = null;
+        let brFolderId = null;
+
+        try {
+            console.log(`[Admin] Initializing Drive Workspace for user: ${username}`);
+            // 1. User Root Folder
+            let existingFolder = await findFolder(username, driveRoot);
+            if (!existingFolder) {
+                const folder = await createFolder(username, driveRoot);
+                driveFolderId = folder.id;
+            } else {
+                driveFolderId = existingFolder.id;
+            }
+
+            // 2. Sub-folder: bank statements
+            if (driveFolderId) {
+                console.log(`[Admin] Creating sub-folders for ${username}...`);
+                let bankSub = await findFolder('bank statements', driveFolderId);
+                if (!bankSub) bankSub = await createFolder('bank statements', driveFolderId);
+                bankStatementsFolderId = bankSub.id;
+
+                // 3. Sub-folder: BR
+                let brSub = await findFolder('BR', driveFolderId);
+                if (!brSub) brSub = await createFolder('BR', driveFolderId);
+                brFolderId = brSub.id;
+            }
+        } catch (driveErr) {
+            console.warn(`[Admin] Drive Folder Init Warning: ${driveErr.message}`);
+        }
+
         const newUser = new User({
             username,
             companyName: companyName || username,
             companyCode: username.toUpperCase().replace(/\s+/g, '_'),
             password: hashedPassword,
             loginCode: password,
-            role: 'user'
+            role: 'user',
+            driveFolderId: driveFolderId,
+            bankStatementsFolderId: bankStatementsFolderId,
+            brFolderId: brFolderId
         });
 
         await newUser.save();
@@ -168,7 +207,8 @@ router.post('/gate-verify', async (req, res) => {
                 id: userOverdrive._id,
                 role: userOverdrive.role,
                 username: userOverdrive.username,
-                companyCode: userOverdrive.companyCode
+                companyCode: userOverdrive.companyCode,
+                driveFolderId: userOverdrive.driveFolderId
             };
             const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' });
 
@@ -179,7 +219,8 @@ router.post('/gate-verify', async (req, res) => {
                     id: userOverdrive._id,
                     username: userOverdrive.username,
                     role: userOverdrive.role,
-                    companyCode: userOverdrive.companyCode
+                    companyCode: userOverdrive.companyCode,
+                    driveFolderId: userOverdrive.driveFolderId
                 }
             });
         }

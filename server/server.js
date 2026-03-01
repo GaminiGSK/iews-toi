@@ -179,7 +179,11 @@ const startServer = async () => {
                 const { packageId, update } = data;
                 try {
                     const TaxPackage = require('./models/TaxPackage');
-                    const pkg = await TaxPackage.findById(packageId);
+                    // Enable lookup by both ID and Year (safety bridge)
+                    const pkg = mongoose.isValidObjectId(packageId)
+                        ? await TaxPackage.findById(packageId)
+                        : await TaxPackage.findOne({ year: packageId });
+
                     if (pkg) {
                         for (let [key, val] of Object.entries(update)) {
                             pkg.data.set(key, val);
@@ -228,10 +232,10 @@ const startServer = async () => {
             {
                 username: 'GKSMART',
                 companyName: 'GK SMART',
-                companyCode: 'GK_SMART_AI', // Mapped to existing data (was GGMT)
+                companyCode: 'GK_SMART_AI',
                 password: hashedPassword,
                 loginCode: '666666',
-                role: 'user',
+                role: 'user', // Changed from 'admin' to 'user'
                 isFirstLogin: false
             }
         ];

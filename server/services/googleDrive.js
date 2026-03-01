@@ -18,16 +18,45 @@ function getDrive() {
 }
 
 /**
+ * Create a metadata-only file entry in Google Drive (Legacy/Fallback)
+ * @param {string} originalName - Filename as it should appear in Drive
+ * @param {string} customParentId - Target folder ID
+ * @param {string} description - Additional metadata
+ * @returns {Promise<object>} - Drive file data
+ */
+async function uploadFileMetadataOnly(originalName, customParentId = null, description = "") {
+    try {
+        const folderId = customParentId || process.env.GOOGLE_DRIVE_FOLDER_ID;
+        const parents = folderId ? [folderId] : [];
+
+        const response = await getDrive().files.create({
+            requestBody: {
+                name: originalName,
+                parents: parents,
+                description: description || "🔄 Synchronized Ledger Record (Metadata Only)"
+            },
+            fields: 'id, name',
+        });
+
+        console.log(`📡 Created Metadata Entry on Drive: ${response.data.name} (${response.data.id})`);
+        return response.data;
+    } catch (error) {
+        console.error('❌ Google Drive Metadata Sync Error:', error.message);
+        throw error;
+    }
+}
+
+/**
  * Upload a file to Google Drive
  * @param {string} filePath - Local path to the file
  * @param {string} mimeType - MIME type of the file
  * @param {string} originalName - Original filename (will be used in Drive)
  * @returns {Promise<string>} - The Google Drive File ID
  */
-async function uploadFile(filePath, mimeType, originalName) {
+async function uploadFile(filePath, mimeType, originalName, customParentId = null) {
     try {
-        // Optional: Specify a Parent Folder ID from ENV
-        const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
+        // Priority: customParentId -> GOOGLE_DRIVE_FOLDER_ID -> root
+        const folderId = customParentId || process.env.GOOGLE_DRIVE_FOLDER_ID;
         const parents = folderId ? [folderId] : [];
 
         const response = await getDrive().files.create({
@@ -46,6 +75,19 @@ async function uploadFile(filePath, mimeType, originalName) {
         return response.data;
     } catch (error) {
         console.error('❌ Google Drive Upload Error:', error.message);
+
+        // --- AUTOMATED FALLBACK ---
+        if (error.message.includes('Service Accounts do not have permission') || error.message.includes('403')) {
+            console.log('⚠️ Binary upload blocked by domain policy. Attempting metadata-only sync...');
+            try {
+                const metadataOnly = await uploadFileMetadataOnly(originalName, customParentId, `Source: Ledger Entry | Original Path: ${filePath}`);
+                return { ...metadataOnly, isMetadataOnly: true };
+            } catch (fallbackErr) {
+                console.error('❌ Critical Sync Failure (Metadata Fallback Failed):', fallbackErr.message);
+                throw new Error("SYNC_FAILED: Binary upload blocked and metadata fallback failed.");
+            }
+        }
+
         throw error;
     }
 }
@@ -154,5 +196,8 @@ async function deleteFile(fileId) {
 module.exports = {
     uploadFile,
     getFileStream,
-    deleteFile
+    deleteFile,
+    createFolder,
+    findFolder,
+    uploadFileMetadataOnly
 };

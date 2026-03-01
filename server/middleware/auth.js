@@ -12,7 +12,7 @@ const auth = async (req, res, next) => {
         // Stale tokens from yesterday might contain old companyCodes.
         // We look up the user to ensure we have the LATEST companyCode for filtering.
         const User = require('../models/User');
-        const user = await User.findById(decoded.id).select('companyCode role username');
+        const user = await User.findById(decoded.id).select('companyCode role username driveFolderId bankStatementsFolderId brFolderId');
 
         if (!user) return res.status(401).json({ message: 'User no longer exists' });
 
@@ -20,7 +20,10 @@ const auth = async (req, res, next) => {
             id: user._id,
             role: user.role,
             username: user.username,
-            companyCode: user.companyCode // THIS IS THE CRITICAL LINE
+            companyCode: user.companyCode,
+            driveFolderId: user.driveFolderId,
+            bankStatementsFolderId: user.bankStatementsFolderId,
+            brFolderId: user.brFolderId
         };
 
         next();

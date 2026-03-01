@@ -8,7 +8,10 @@ const UserSchema = new mongoose.Schema({
     loginCode: { type: String }, // 6-digit access code
     role: { type: String, enum: ['admin', 'user'], default: 'user' },
     isFirstLogin: { type: Boolean, default: true },
-    email: { type: String }
+    email: { type: String },
+    driveFolderId: { type: String },
+    bankStatementsFolderId: { type: String },
+    brFolderId: { type: String }
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema);

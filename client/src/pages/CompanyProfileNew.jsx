@@ -580,8 +580,8 @@ export default function CompanyProfile() {
 
                     fileTxs.forEach(tx => usedTxIds.add(tx._id));
 
-                    // Internal Transaction Sort: Oldest at Top
-                    const sortedTxs = fileTxs.sort((a, b) => (parseDate(a.date)?.getTime() || 0) - (parseDate(b.date)?.getTime() || 0));
+                    // Internal Transaction Sort: Newest at Top (Descending)
+                    const sortedTxs = fileTxs.sort((a, b) => (parseDate(b.date)?.getTime() || 0) - (parseDate(a.date)?.getTime() || 0));
 
                     // Restore moneyIn/moneyOut for sorted transactions
                     sortedTxs.forEach(tx => {
@@ -632,17 +632,21 @@ export default function CompanyProfile() {
                 }
 
                 // 5. Final Global Sort: Newest at TOP
-                const finalFiles = [...processedFiles, ...extraFiles].sort((a, b) => {
-                    const getRefTime = (f) => {
-                        // Prioritize transaction date if available, otherwise use dateRange
-                        const d = parseDate(f.transactions?.[0]?.date) || parseDate(f.dateRange?.split(' - ')[0]);
-                        return d?.getTime() || 0;
-                    };
-                    return getRefTime(b) - getRefTime(a);
-                });
+                const finalFiles = [...processedFiles, ...extraFiles]
+                    .filter(f => !f.dateRange?.includes("DEBUG_ERR") && !f.dateRange?.includes("FATAL_ERR")) // Skip artifacts
+                    .sort((a, b) => {
+                        const getRefTime = (f) => {
+                            const txDates = (f.transactions || []).map(t => parseDate(t.date)?.getTime()).filter(Boolean);
+                            if (txDates.length > 0) return Math.max(...txDates);
+                            const rangeParts = (f.dateRange || "").split(' - ');
+                            const rangeEnd = parseDate(rangeParts[rangeParts.length - 1].trim());
+                            return rangeEnd?.getTime() || 0;
+                        };
+                        return getRefTime(b) - getRefTime(a);
+                    });
 
                 setBankFiles(finalFiles);
-                if (finalFiles.length > 0 && activeFileIndex === 0) setActiveFileIndex(0); // Ensure active index is valid
+                if (finalFiles.length > 0) setActiveFileIndex(0); // Safely select first
             } catch (txErr) {
                 console.error("Error fetching bank data:", txErr);
             }
@@ -725,21 +729,27 @@ export default function CompanyProfile() {
             <div className="absolute top-0 left-0 w-full h-96 bg-blue-600/10 rounded-full blur-[128px] pointer-events-none -z-10" />
             <div className="absolute bottom-0 right-0 w-full h-96 bg-purple-600/10 rounded-full blur-[128px] pointer-events-none -z-10" />
 
-            <div className="flex items-center justify-between mb-16 px-2">
-                <div className="flex items-center gap-6">
-                    <div className="w-16 h-16 bg-blue-600 rounded-3xl flex items-center justify-center text-white font-black text-2xl shadow-2xl shadow-blue-500/30">GK</div>
-                    <div>
-                        <h1 className="text-4xl font-black text-white leading-none uppercase tracking-tight">
-                            {formData.username || 'User'} <span className="text-slate-500">AI</span>
-                        </h1>
-                        <p className="text-[10px] text-blue-500 uppercase tracking-[0.4em] font-bold mt-2 flex items-center gap-2">
-                            <div className="w-1 h-1 bg-blue-500 rounded-full animate-pulse"></div>
-                            System Reset // Ready for Rebuild
-                        </p>
+            <div className="flex items-start justify-between mb-12 px-2">
+                <div className="flex flex-col">
+                    <h1 className="text-5xl font-black text-white leading-tight tracking-tight mb-2">
+                        Welcome, {formData.username || 'GK SMART'}
+                    </h1>
+                    <div className="flex items-center gap-4">
+                        <p className="text-slate-400 text-lg font-medium">Manage your entity and financial data with AI precision.</p>
+                        <span className="bg-red-600/20 text-red-500 border border-red-500/30 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">v2.3 Night</span>
+                        <button
+                            onClick={() => {
+                                localStorage.removeItem('token');
+                                window.location.href = '/login';
+                            }}
+                            className="text-[10px] text-red-500 hover:text-white font-bold uppercase tracking-widest bg-red-500/10 hover:bg-red-500 px-4 py-2 rounded-lg transition border border-red-500/20 shadow-xl"
+                        >
+                            Log Out
+                        </button>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-4">
                     <button
                         onClick={() => setShowAccessModal(true)}
                         className="p-4 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-2xl transition border border-white/5"
@@ -747,90 +757,95 @@ export default function CompanyProfile() {
                     >
                         <ShieldCheck size={20} />
                     </button>
-                    <button
-                        onClick={() => {
-                            localStorage.removeItem('token');
-                            window.location.href = '/login';
-                        }}
-                        className="text-[10px] text-slate-400 hover:text-white font-bold uppercase tracking-widest bg-white/5 hover:bg-red-500/20 px-8 py-4 rounded-2xl transition border border-white/5 hover:border-red-500/30 shadow-xl"
-                    >
-                        Secure Logout
-                    </button>
                 </div>
             </div>
 
-            <div className="flex-1 flex items-center justify-center">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 w-full max-w-6xl">
-                    <div onClick={() => setView('profile')} className="group p-8 bg-slate-800/20 hover:bg-blue-600/10 border border-white/5 hover:border-blue-500/50 rounded-[40px] transition-all duration-500 cursor-pointer text-center">
-                        <div className="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition duration-500">
-                            <FileText size={32} className="text-blue-500" />
+            <div className="flex-1">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+                    {/* --- CORE USER FUNCTIONS (STRICT: DO NOT AMEND OR REMOVE) --- */}
+                    {/* ROW 1 */}
+                    <div onClick={() => setView('iews')} className="group p-8 bg-slate-800/40 hover:bg-indigo-600/10 border border-white/5 hover:border-indigo-500/50 rounded-3xl transition-all duration-500 cursor-pointer relative overflow-hidden">
+                        <span className="absolute top-4 right-4 bg-indigo-500 text-white text-[8px] font-black px-2 py-0.5 rounded shadow-lg animate-pulse">NEW</span>
+                        <div className="w-14 h-14 bg-indigo-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-500">
+                            <ShieldCheck size={28} className="text-indigo-500" />
                         </div>
-                        <h3 className="text-white font-bold text-lg mb-2">BR / Company Profile</h3>
-                        <p className="text-slate-500 text-xs">Entity Registration Details</p>
+                        <h3 className="text-white font-bold text-xl mb-2">IEWS</h3>
+                        <p className="text-slate-500 text-xs leading-relaxed">Enterprise Work System. Manage workflow packages.</p>
                     </div>
 
-                    <div onClick={() => setView('iews')} className="group p-8 bg-slate-800/20 hover:bg-indigo-600/10 border border-white/5 hover:border-indigo-500/50 rounded-[40px] transition-all duration-500 cursor-pointer text-center">
-                        <div className="w-16 h-16 bg-indigo-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition duration-500">
-                            <ShieldCheck size={32} className="text-indigo-500" />
+                    <div onClick={() => setView('bank')} className="group p-8 bg-slate-800/40 hover:bg-emerald-600/10 border border-white/5 hover:border-emerald-500/50 rounded-3xl transition-all duration-500 cursor-pointer">
+                        <div className="w-14 h-14 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-500">
+                            <Table size={28} className="text-emerald-500" />
                         </div>
-                        <h3 className="text-white font-bold text-lg mb-2">Compliance</h3>
-                        <p className="text-slate-500 text-xs">IEWS Processing</p>
+                        <h3 className="text-white font-bold text-xl mb-2">Bank Statements</h3>
+                        <p className="text-slate-500 text-xs leading-relaxed">Upload monthly statements, parse transactions via AI, and sync data.</p>
                     </div>
 
-                    <div onClick={() => setView('bank')} className="group p-8 bg-slate-800/20 hover:bg-emerald-600/10 border border-white/5 hover:border-emerald-500/50 rounded-[40px] transition-all duration-500 cursor-pointer text-center">
-                        <div className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition duration-500">
-                            <Table size={32} className="text-emerald-500" />
+                    <div onClick={() => setView('ledger')} className="group p-8 bg-slate-800/40 hover:bg-orange-600/10 border border-white/5 hover:border-orange-500/50 rounded-3xl transition-all duration-500 cursor-pointer">
+                        <div className="w-14 h-14 bg-orange-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-500">
+                            <Book size={28} className="text-orange-500" />
                         </div>
-                        <h3 className="text-white font-bold text-lg mb-2">Banking</h3>
-                        <p className="text-slate-500 text-xs">Statements & Sync</p>
+                        <h3 className="text-white font-bold text-xl mb-2">General Ledger</h3>
+                        <p className="text-slate-500 text-xs leading-relaxed">View chronological financial history of all audited transactions.</p>
                     </div>
 
-                    <div onClick={() => setView('ledger')} className="group p-8 bg-slate-800/20 hover:bg-orange-600/10 border border-white/5 hover:border-orange-500/50 rounded-[40px] transition-all duration-500 cursor-pointer text-center">
-                        <div className="w-16 h-16 bg-orange-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition duration-500">
-                            <Book size={32} className="text-orange-500" />
+                    <div onClick={() => setView('tb')} className="group p-8 bg-slate-800/40 hover:bg-amber-600/10 border border-white/5 hover:border-amber-500/50 rounded-3xl transition-all duration-500 cursor-pointer">
+                        <div className="w-14 h-14 bg-amber-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-500">
+                            <Scale size={28} className="text-amber-500" />
                         </div>
-                        <h3 className="text-white font-bold text-lg mb-2">General Ledger</h3>
-                        <p className="text-slate-500 text-xs">Transaction Records</p>
+                        <h3 className="text-white font-bold text-xl mb-2">Trial Balance</h3>
+                        <p className="text-slate-500 text-xs leading-relaxed">View Unadjusted & Adjusted Trial Balance reports.</p>
                     </div>
 
-                    <div onClick={() => setView('tb')} className="group p-8 bg-slate-800/20 hover:bg-amber-600/10 border border-white/5 hover:border-amber-500/50 rounded-[40px] transition-all duration-500 cursor-pointer text-center">
-                        <div className="w-16 h-16 bg-amber-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition duration-500">
-                            <Scale size={32} className="text-amber-500" />
+                    {/* ROW 2 */}
+                    <div onClick={() => setView('financials')} className="group p-8 bg-slate-800/40 hover:bg-violet-600/10 border border-white/5 hover:border-violet-500/50 rounded-3xl transition-all duration-500 cursor-pointer">
+                        <div className="w-14 h-14 bg-violet-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-500">
+                            <TrendingUp size={28} className="text-violet-500" />
                         </div>
-                        <h3 className="text-white font-bold text-lg mb-2">Trial Balance</h3>
-                        <p className="text-slate-500 text-xs">Accounting Summary</p>
+                        <h3 className="text-white font-bold text-xl mb-2">Financial Stmts</h3>
+                        <p className="text-slate-500 text-xs leading-relaxed">Generate final audited reports (Income, Balance Sheet, Cash Flow).</p>
                     </div>
 
-                    <div onClick={() => setView('codes')} className="group p-8 bg-slate-800/20 hover:bg-cyan-600/10 border border-white/5 hover:border-cyan-500/50 rounded-[40px] transition-all duration-500 cursor-pointer text-center">
-                        <div className="w-16 h-16 bg-cyan-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition duration-500">
-                            <QrCode size={32} className="text-cyan-500" />
+                    <div onClick={() => setView('tax_packages')} className="group p-8 bg-slate-800/40 hover:bg-rose-600/10 border border-white/5 hover:border-rose-500/50 rounded-3xl transition-all duration-500 cursor-pointer">
+                        <div className="w-14 h-14 bg-rose-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-500">
+                            <Sparkles size={28} className="text-rose-500" />
                         </div>
-                        <h3 className="text-white font-bold text-lg mb-2">Account Codes</h3>
-                        <p className="text-slate-500 text-xs">Standard Chart</p>
+                        <h3 className="text-white font-bold text-xl mb-2">TOI & ACAR</h3>
+                        <p className="text-slate-500 text-xs leading-relaxed">Live Tax Form, Tax on Income & ACAR Compliance.</p>
                     </div>
 
-                    <div onClick={() => setView('financials')} className="group p-8 bg-slate-800/20 hover:bg-violet-600/10 border border-white/5 hover:border-violet-500/50 rounded-[40px] transition-all duration-500 cursor-pointer text-center">
-                        <div className="w-16 h-16 bg-violet-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition duration-500">
-                            <TrendingUp size={32} className="text-violet-500" />
+                    <div onClick={() => setView('profile')} className="group p-8 bg-slate-800/40 hover:bg-blue-600/10 border border-white/5 hover:border-blue-500/50 rounded-3xl transition-all duration-500 cursor-pointer text-left">
+                        <div className="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-500">
+                            <FileText size={28} className="text-blue-500" />
                         </div>
-                        <h3 className="text-white font-bold text-lg mb-2">Reporting</h3>
-                        <p className="text-slate-500 text-xs">Financial Statements</p>
+                        <h3 className="text-white font-bold text-xl mb-2">Company Profile</h3>
+                        <p className="text-slate-500 text-xs leading-relaxed">Update official registration details, MOC certificates, and shareholders.</p>
                     </div>
 
-                    <div onClick={() => setView('tax_packages')} className="group p-8 bg-slate-800/20 hover:bg-rose-600/10 border border-white/5 hover:border-rose-500/50 rounded-[40px] transition-all duration-500 cursor-pointer text-center">
-                        <div className="w-16 h-16 bg-rose-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition duration-500">
-                            <Sparkles size={32} className="text-rose-500" />
+                    <div onClick={() => setView('codes')} className="group p-8 bg-slate-800/40 hover:bg-cyan-600/10 border border-white/5 hover:border-cyan-500/50 rounded-3xl transition-all duration-500 cursor-pointer">
+                        <div className="w-14 h-14 bg-cyan-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-500">
+                            <QrCode size={28} className="text-cyan-500" />
                         </div>
-                        <h3 className="text-white font-bold text-lg mb-2">TOI / ACAR</h3>
-                        <p className="text-slate-500 text-xs">Annual Declaration</p>
+                        <h3 className="text-white font-bold text-xl mb-2">Accounting Codes</h3>
+                        <p className="text-slate-500 text-xs leading-relaxed">Manage Chart of Accounts codes and standard descriptions.</p>
                     </div>
+
+                    {/* ROW 3 */}
+                    <div onClick={() => setView('currency')} className="group p-8 bg-slate-800/40 hover:bg-teal-600/10 border border-white/5 hover:border-teal-500/50 rounded-3xl transition-all duration-500 cursor-pointer">
+                        <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-500">
+                            <DollarSign size={28} className="text-teal-500" />
+                        </div>
+                        <h3 className="text-white font-bold text-xl mb-2">Currency Exchange</h3>
+                        <p className="text-slate-500 text-xs leading-relaxed">Set Annual Exchange Rates (USD to KHR) for compliance.</p>
+                    </div>
+                    {/* --- END CORE USER FUNCTIONS --- */}
                 </div>
             </div>
 
             <div className="mt-auto py-8 px-2 flex justify-between items-center border-t border-white/5 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-600">
                 <div className="flex gap-8">
-                    <span>Core Hub v6.1.0_RECOVERY</span>
-                    <span>Database: Production (Test)</span>
+                    <span>Core Hub v6.1.9_FINAL_RESTORE</span>
+                    <span>Database: Production (Live)</span>
                     <span>AI Model: Initialized</span>
                 </div>
                 <div>GKSMART AI OPERATING ENVIRONMENT</div>
@@ -1329,12 +1344,23 @@ export default function CompanyProfile() {
                                             {(() => {
                                                 const rangeStr = file.dateRange || "";
                                                 // Priority 1: Meta Date Range (Formatted)
-                                                if (rangeStr.includes(" - ") && !rangeStr.includes("FATAL_ERR")) {
+                                                if (rangeStr.includes(" - ") && !rangeStr.includes("FATAL_ERR") && !rangeStr.includes("DEBUG_ERR")) {
                                                     const parts = rangeStr.split(' - ');
                                                     const s = formatDateSafe(parts[0].trim());
                                                     const e = formatDateSafe(parts[1].trim());
                                                     if (s !== '-' && e !== '-') return `${s} - ${e}`;
                                                 }
+
+                                                // Priority 1.5: Use Transaction Range if dateRange is missing/garbage
+                                                if (file.transactions?.length > 0) {
+                                                    const dates = file.transactions.map(t => parseDate(t.date)?.getTime()).filter(Boolean);
+                                                    if (dates.length > 0) {
+                                                        const s = new Date(Math.min(...dates)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                                                        const e = new Date(Math.max(...dates)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                                                        return `${s} - ${e}`;
+                                                    }
+                                                }
+
                                                 // Priority 2: Use original name if it's not the same as dateRange
                                                 if (file.originalName && !file.originalName.includes('-')) return file.originalName;
 
@@ -1350,6 +1376,43 @@ export default function CompanyProfile() {
                                                 <span className="truncate max-w-[120px] mr-2" title={file.originalName}>{file.originalName}</span>
                                                 <span className="text-gray-300">|</span>
                                                 <span className="ml-2 font-mono">{(file.transactions || []).length} txs</span>
+
+                                                {/* SYNC STATUS ICONS */}
+                                                <div className="ml-auto flex items-center gap-1.5">
+                                                    {file.isLocked && (
+                                                        <span className="text-[9px] bg-indigo-500/10 text-indigo-400 px-1.5 py-0.5 rounded border border-indigo-500/20 font-black flex items-center gap-1" title="Transactions Recorded in Ledger">
+                                                            <ShieldCheck size={8} /> STICKED
+                                                        </span>
+                                                    )}
+
+                                                    {!file.path && file.syncError ? (
+                                                        <span className="text-[9px] bg-red-500/10 text-red-500 px-1.5 py-0.5 rounded border border-red-500/20 font-black flex items-center gap-1 cursor-help" onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setDebugLog({
+                                                                title: 'Cloud Sync Failed',
+                                                                message: 'This file was analyzed locally but could not be saved to Google Drive.',
+                                                                details: `File: ${file.originalName}\nError: ${file.syncError}\n\nPlease contact system admin to check folder permissions.`
+                                                            });
+                                                        }}>
+                                                            <AlertCircle size={8} /> SYNC FAILED
+                                                        </span>
+                                                    ) : file.isMetadataOnly ? (
+                                                        <span className="text-[9px] bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded border border-amber-500/20 font-black flex items-center gap-1 cursor-help" onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setDebugLog({
+                                                                title: 'Partial Sync (Metadata Only)',
+                                                                message: 'The transaction records are synced, but the original file bytes are locked on the cloud.',
+                                                                details: 'Google Workspace policy restricted the service account from uploading the full binary file. The ledger entry is safe, but "View Original" may not be available.\n\nContact admin for binary upload authorization.'
+                                                            });
+                                                        }}>
+                                                            <CloudUpload size={8} /> METADATA ONLY
+                                                        </span>
+                                                    ) : file.driveId ? (
+                                                        <span className="text-[8px] text-emerald-500 opacity-60 flex items-center gap-1">
+                                                            <CheckCircle size={8} /> SYNCED
+                                                        </span>
+                                                    ) : null}
+                                                </div>
                                             </div>
                                             {(file.bankName || file.accountNumber) && (
                                                 <div className="flex items-center text-blue-500/60 font-medium">
@@ -1401,7 +1464,12 @@ export default function CompanyProfile() {
                                 <h3 className="font-bold text-gray-800">Page Details</h3>
                                 <p className="text-xs text-gray-500">
                                     {bankFiles[activeFileIndex]?.transactions?.length > 0
-                                        ? `${formatDateSafe(bankFiles[activeFileIndex].transactions[0].date)} - ${formatDateSafe(bankFiles[activeFileIndex].transactions[bankFiles[activeFileIndex].transactions.length - 1].date)}`
+                                        ? (() => {
+                                            const dates = bankFiles[activeFileIndex].transactions.map(t => parseDate(t.date)?.getTime()).filter(Boolean);
+                                            const s = new Date(Math.min(...dates)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                                            const e = new Date(Math.max(...dates)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                                            return `${s} - ${e}`;
+                                        })()
                                         : (bankFiles[activeFileIndex]?.dateRange || 'Select a file')}
                                 </p>
                             </div>
@@ -1567,6 +1635,7 @@ export default function CompanyProfile() {
                 {view === 'tb' && <TrialBalance onBack={() => setView('home')} />}
                 {view === 'codes' && <AccountingCodes onBack={() => setView('home')} />}
                 {view === 'financials' && <FinancialStatements onBack={() => setView('home')} />}
+                {view === 'currency' && <CurrencyExchange onBack={() => setView('home')} />}
             </main>
 
             {/* DOCUMENT INSPECTOR MODAL */}

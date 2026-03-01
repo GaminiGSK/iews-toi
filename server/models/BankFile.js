@@ -40,6 +40,13 @@ const BankFileSchema = new mongoose.Schema({
     isLocked: {
         type: Boolean,
         default: false
+    },
+    isMetadataOnly: {
+        type: Boolean,
+        default: false
+    },
+    syncError: {
+        type: String
     }
 });
 
