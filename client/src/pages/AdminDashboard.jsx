@@ -167,9 +167,13 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-between px-10 py-5 border-b border-white/5 shrink-0">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center font-bold text-sm text-black">GK</div>
-                    <div className="flex flex-col leading-none">
-                        <span className="font-bold text-lg tracking-tight">GK SMART <span className="text-gray-400 font-normal">& Ai</span></span>
-                        <span className="text-[9px] text-emerald-400 font-black tracking-[0.2em] mt-0.5">v5.12.22_RAW_BR_UI</span>
+                    <div className="flex flex-col leading-none ml-4">
+                        <span className="font-black text-4xl tracking-tighter text-white">GK SMART <span className="text-emerald-500">Ai</span></span>
+                        <div className="flex items-center gap-2 mt-2">
+                            <span className="bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-xs font-black tracking-widest border border-emerald-500/30">
+                                v5.12.22_RAW_BR_UI
+                            </span>
+                        </div>
                     </div>
                 </div>
 
