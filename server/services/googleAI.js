@@ -224,6 +224,28 @@ exports.extractBankStatement = async (filePath) => {
     }
 };
 
+exports.extractRawText = async (filePath) => {
+    console.log(`[GeminiAI] Extracting Raw Text (Vision 2.0): ${filePath}`);
+    try {
+        const prompt = "Please perform OCR on this document and extract all text verbatim. Preserve the layout as much as possible. Provide both Khmer and English text clearly. Return the result as a plain text string.";
+
+        const ext = path.extname(filePath).toLowerCase();
+        let mimeType = 'image/jpeg';
+        if (ext === '.png') mimeType = 'image/png';
+        if (ext === '.pdf') mimeType = 'application/pdf';
+        if (ext === '.webp') mimeType = 'image/webp';
+
+        const imagePart = fileToGenerativePart(filePath, mimeType);
+        const result = await callGeminiWithRetry(() => getModel().generateContent([prompt, imagePart]));
+        const response = await result.response;
+        return response.text();
+
+    } catch (error) {
+        console.error("Gemini API Error (Raw Text):", error);
+        return "Extraction failed: " + error.message;
+    }
+};
+
 exports.translateText = async (text, targetLang) => {
     return text + " (Translated)";
 };

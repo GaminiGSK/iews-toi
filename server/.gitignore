@@ -26,3 +26,8 @@ uploads/
 # OS
 .DS_Store
 Thumbs.db
+
+# Secrets
+*-account.json
+ambient-airlock-*.json
+*.json.DISABLED

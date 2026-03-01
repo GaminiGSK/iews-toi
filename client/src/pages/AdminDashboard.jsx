@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
-    UserPlus, User, Edit2, Trash2, X, Lock, Users, FileSpreadsheet, Brain, ChevronRight, FileText, ArrowLeft
+    UserPlus, User, Edit2, Trash2, X, Lock, Users, FileSpreadsheet, Brain, ChevronRight, FileText, ArrowLeft, CloudUpload, Loader2, CheckCircle
 } from 'lucide-react';
 import TaxFormWorkbench from './TaxFormWorkbench';
 import LiveTaxWorkspace from './LiveTaxWorkspace';
@@ -20,6 +20,11 @@ export default function AdminDashboard() {
     const [savingTemplate, setSavingTemplate] = useState(false);
     const [knowledgeBase, setKnowledgeBase] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState(null);
+
+    // --- BR Extraction State ---
+    const [brDocs, setBrDocs] = useState([]);
+    const [uploadingBR, setUploadingBR] = useState(false);
+    const [activeBRIndex, setActiveBRIndex] = useState(null);
 
     // --- Data Fetching ---
     const fetchUsers = async () => {
@@ -125,6 +130,34 @@ export default function AdminDashboard() {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         window.location.href = '/login';
+    };
+
+    const handleBRUpload = async (fileList) => {
+        if (!fileList || fileList.length === 0) return;
+        setUploadingBR(true);
+        const token = localStorage.getItem('token');
+
+        for (let i = 0; i < fileList.length; i++) {
+            const formData = new FormData();
+            formData.append('file', fileList[i]);
+
+            try {
+                const res = await axios.post('/api/company/br-extract', formData, {
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
+                });
+                setBrDocs(prev => [{
+                    id: Date.now() + i,
+                    name: res.data.fileName,
+                    text: res.data.text,
+                    timestamp: new Date().toLocaleString()
+                }, ...prev]);
+                if (activeBRIndex === null) setActiveBRIndex(0);
+            } catch (err) {
+                console.error("BR Upload Error:", err);
+                alert("Extraction failed for " + fileList[i].name);
+            }
+        }
+        setUploadingBR(false);
     };
 
     return (
@@ -335,124 +368,93 @@ export default function AdminDashboard() {
                     )}
 
                     {activeTab === 'profile' && (
-                        <div className="h-full overflow-y-auto p-10 space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
-                            <div className="max-w-4xl mx-auto">
-                                <div className="flex justify-between items-center bg-white/[0.03] p-8 rounded-[32px] border border-white/5 mb-8">
-                                    <div>
-                                        <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-tight">Business Registration Archive (BR)</h2>
-                                        <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.3em]">Corporate Entity & Static Data Management</p>
+                        <div className="h-full overflow-hidden flex animate-in fade-in duration-500">
+                            {/* --- SIDEBAR: Uploaded Documents --- */}
+                            <div className="w-[400px] border-r border-white/5 bg-slate-900/40 p-8 overflow-y-auto">
+                                <h3 className="text-xs font-black text-indigo-400 uppercase tracking-[0.3em] mb-8">BR Document Pool</h3>
+
+                                {/* Upload Dropzone */}
+                                <div
+                                    className="border-2 border-dashed border-white/10 rounded-[32px] p-10 mb-8 flex flex-col items-center group hover:border-indigo-500/50 hover:bg-indigo-500/5 transition-all cursor-pointer"
+                                    onClick={() => document.getElementById('br-upload').click()}
+                                    onDragOver={(e) => e.preventDefault()}
+                                    onDrop={(e) => { e.preventDefault(); handleBRUpload(e.dataTransfer.files); }}
+                                >
+                                    <input
+                                        type="file"
+                                        id="br-upload"
+                                        className="hidden"
+                                        multiple
+                                        onChange={(e) => handleBRUpload(e.target.files)}
+                                    />
+                                    <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-indigo-500 transition-all duration-500">
+                                        {uploadingBR ? <Loader2 size={32} className="text-white animate-spin" /> : <CloudUpload size={32} className="text-gray-400 group-hover:text-white" />}
                                     </div>
-                                    <button
-                                        onClick={async () => {
-                                            setSavingTemplate(true);
-                                            try {
-                                                const token = localStorage.getItem('token');
-                                                await axios.post('/api/company/template', profileTemplate, {
-                                                    headers: { 'Authorization': `Bearer ${token}` }
-                                                });
-                                                alert('Architecture Deployed Successfully');
-                                            } catch (err) {
-                                                alert('Failed to deploy architecture');
-                                            } finally {
-                                                setSavingTemplate(false);
-                                            }
-                                        }}
-                                        disabled={savingTemplate}
-                                        className="bg-indigo-600 text-white hover:bg-indigo-500 px-8 py-4 rounded-2xl font-black shadow-2xl transition-all flex items-center gap-3 uppercase text-[11px] tracking-widest active:scale-95 disabled:opacity-50"
-                                    >
-                                        {savingTemplate ? <Loader2 className="animate-spin" size={18} /> : <FileText size={18} />}
-                                        Deploy Template
-                                    </button>
+                                    <span className="text-[10px] font-black text-gray-500 group-hover:text-indigo-400 uppercase tracking-widest text-center leading-relaxed">
+                                        Drag documents here<br />or click to scan
+                                    </span>
                                 </div>
 
-                                {profileTemplate && (
-                                    <div className="space-y-6">
-                                        {profileTemplate.sections.map((section, sIdx) => (
-                                            <div key={section.id} className="bg-slate-900/40 border border-white/5 rounded-[32px] p-8">
-                                                <div className="flex justify-between items-center mb-6">
-                                                    <input
-                                                        className="bg-transparent text-xl font-bold text-white border-b border-transparent focus:border-indigo-500 outline-none w-1/2"
-                                                        value={section.title}
-                                                        onChange={(e) => {
-                                                            const newSections = [...profileTemplate.sections];
-                                                            newSections[sIdx].title = e.target.value;
-                                                            setProfileTemplate({ ...profileTemplate, sections: newSections });
-                                                        }}
-                                                    />
-                                                    <div className="flex items-center gap-2">
-                                                        <button
-                                                            onClick={() => {
-                                                                const newSections = [...profileTemplate.sections];
-                                                                newSections[sIdx].fields.push({ key: `field_${Date.now()}`, label: 'New Field', type: 'text' });
-                                                                setProfileTemplate({ ...profileTemplate, sections: newSections });
-                                                            }}
-                                                            className="text-[10px] font-black text-indigo-400 uppercase tracking-widest hover:text-white transition"
-                                                        >
-                                                            + Add Field
-                                                        </button>
-                                                        <button
-                                                            onClick={() => {
-                                                                const newSections = profileTemplate.sections.filter((_, i) => i !== sIdx);
-                                                                setProfileTemplate({ ...profileTemplate, sections: newSections });
-                                                            }}
-                                                            className="text-[10px] font-black text-red-400/50 uppercase tracking-widest hover:text-red-400 transition ml-4"
-                                                        >
-                                                            Remove Section
-                                                        </button>
-                                                    </div>
+                                {/* List */}
+                                <div className="space-y-4">
+                                    {brDocs.map((doc, idx) => (
+                                        <div
+                                            key={doc.id}
+                                            onClick={() => setActiveBRIndex(idx)}
+                                            className={`p-6 rounded-2xl border transition-all cursor-pointer ${activeBRIndex === idx ? 'bg-indigo-600/10 border-indigo-500/50' : 'bg-white/[0.03] border-white/5 hover:bg-white/[0.05]'}`}
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${activeBRIndex === idx ? 'bg-indigo-500 text-white' : 'bg-white/5 text-gray-500'}`}>
+                                                    <FileText size={18} />
                                                 </div>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    {section.fields.map((field, fIdx) => (
-                                                        <div key={fIdx} className="flex flex-col gap-2 p-4 bg-black/20 border border-white/5 rounded-2xl relative group">
-                                                            <div className="flex justify-between items-center">
-                                                                <input
-                                                                    className="bg-transparent text-xs font-bold text-slate-300 outline-none w-full"
-                                                                    value={field.label}
-                                                                    onChange={(e) => {
-                                                                        const newSections = [...profileTemplate.sections];
-                                                                        newSections[sIdx].fields[fIdx].label = e.target.value;
-                                                                        setProfileTemplate({ ...profileTemplate, sections: newSections });
-                                                                    }}
-                                                                />
-                                                                <button
-                                                                    onClick={() => {
-                                                                        const newSections = [...profileTemplate.sections];
-                                                                        newSections[sIdx].fields = newSections[sIdx].fields.filter((_, i) => i !== fIdx);
-                                                                        setProfileTemplate({ ...profileTemplate, sections: newSections });
-                                                                    }}
-                                                                    className="text-red-500 opacity-0 group-hover:opacity-100 transition"
-                                                                >
-                                                                    <Trash2 size={12} />
-                                                                </button>
-                                                            </div>
-                                                            <div className="flex gap-2 mt-2">
-                                                                <span className="text-[9px] text-slate-500 uppercase font-black">Key:</span>
-                                                                <input
-                                                                    className="bg-transparent text-[9px] text-indigo-400 font-mono outline-none"
-                                                                    value={field.key}
-                                                                    onChange={(e) => {
-                                                                        const newSections = [...profileTemplate.sections];
-                                                                        newSections[sIdx].fields[fIdx].key = e.target.value;
-                                                                        setProfileTemplate({ ...profileTemplate, sections: newSections });
-                                                                    }}
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                    ))}
+                                                <div className="flex flex-col overflow-hidden">
+                                                    <span className="text-xs font-bold text-white truncate">{doc.name}</span>
+                                                    <span className="text-[8px] text-gray-500 font-black uppercase tracking-widest mt-1">Extracted {doc.timestamp}</span>
+                                                </div>
+                                                <div className="ml-auto">
+                                                    <CheckCircle size={14} className="text-emerald-500" />
                                                 </div>
                                             </div>
-                                        ))}
-                                        <button
-                                            onClick={() => {
-                                                const newSections = [...profileTemplate.sections];
-                                                const id = `sec_${Date.now()}`;
-                                                newSections.push({ id, title: 'New Section', fields: [] });
-                                                setProfileTemplate({ ...profileTemplate, sections: newSections });
-                                            }}
-                                            className="w-full py-6 border-2 border-dashed border-white/5 rounded-[32px] text-slate-600 hover:border-indigo-500/50 hover:text-indigo-400 transition-all font-black uppercase tracking-[0.3em] text-[11px]"
-                                        >
-                                            + Initialize New Topic
-                                        </button>
+                                        </div>
+                                    ))}
+                                    {brDocs.length === 0 && (
+                                        <div className="py-20 text-center opacity-10">
+                                            <FileText size={48} className="mx-auto mb-4" />
+                                            <span className="text-[10px] font-black uppercase tracking-widest">Awaiting documents</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* --- MAIN: Raw Text Display --- */}
+                            <div className="flex-1 overflow-y-auto p-12 bg-black/40">
+                                {activeBRIndex !== null ? (
+                                    <div className="max-w-5xl mx-auto space-y-10 animate-in fade-in slide-in-from-right-8 duration-700">
+                                        <div className="flex items-center justify-between border-b border-white/5 pb-8 mb-4">
+                                            <div>
+                                                <h2 className="text-4xl font-black text-white uppercase tracking-tight mb-2">{brDocs[activeBRIndex].name}</h2>
+                                                <p className="text-indigo-400 text-[10px] font-black uppercase tracking-[0.4em]">Full AI Transcription • Bilingual Extraction (KH/EN)</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-slate-900/60 border border-white/10 rounded-[48px] p-12 shadow-2xl relative overflow-hidden group">
+                                            <div className="absolute top-0 right-0 p-8 opacity-5">
+                                                <Brain size={120} />
+                                            </div>
+                                            <div className="prose prose-invert max-w-none">
+                                                <pre className="whitespace-pre-wrap text-[#CFCFCF] font-mono text-md leading-[1.8] tracking-wide focus:outline-none">
+                                                    {brDocs[activeBRIndex].text}
+                                                </pre>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="h-full flex flex-col items-center justify-center text-center">
+                                        <div className="w-32 h-32 bg-indigo-500/5 rounded-[40px] flex items-center justify-center mb-8 border border-white/5 animate-pulse">
+                                            <Brain size={64} className="text-indigo-500/20" />
+                                        </div>
+                                        <h3 className="text-2xl font-black text-slate-700 uppercase tracking-[0.3em]">AI Document Viewer</h3>
+                                        <p className="text-slate-800 text-xs mt-4 max-w-xs leading-relaxed font-bold uppercase tracking-widest">Select an extracted document from the pool to view raw bilingual intelligence fragments.</p>
                                     </div>
                                 )}
                             </div>

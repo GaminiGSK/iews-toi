@@ -20,34 +20,8 @@ router.get('/template', auth, async (req, res) => {
         // Seed default if none
         if (!template) {
             template = new ProfileTemplate({
-                name: 'Standard Company Profile',
-                sections: [
-                    {
-                        id: 'general',
-                        title: 'General Information',
-                        fields: [
-                            { key: 'companyNameEn', label: 'Company Name (EN)', type: 'text' },
-                            { key: 'companyNameKh', label: 'Company Name (KH)', type: 'text' },
-                            { key: 'registrationNumber', label: 'Registration No.', type: 'text' },
-                        ]
-                    },
-                    {
-                        id: 'tax',
-                        title: 'Tax Registration',
-                        fields: [
-                            { key: 'vatTin', label: 'VAT TIN', type: 'text' },
-                            { key: 'taxPatent', label: 'Tax Patent No.', type: 'text' },
-                        ]
-                    },
-                    {
-                        id: 'ops',
-                        title: 'Operations',
-                        fields: [
-                            { key: 'address', label: 'Physical Address', type: 'textarea' },
-                            { key: 'businessActivity', label: 'Primary Business Activity', type: 'text' },
-                        ]
-                    }
-                ]
+                name: 'Business Registration Architecture',
+                sections: []
             });
             await template.save();
         }
@@ -81,6 +55,27 @@ router.post('/template', auth, async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Error saving template' });
+    }
+});
+
+// POST BR Extract (Khmer + English Raw Text)
+router.post('/br-extract', auth, upload.single('file'), async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+
+        console.log(`[BR Extract] Processing file: ${req.file.originalname}`);
+        const rawText = await googleAI.extractRawText(req.file.path);
+
+        // Cleanup local file
+        fs.unlink(req.file.path, (err) => { if (err) console.error("Cleanup Err:", err); });
+
+        res.json({
+            fileName: req.file.originalname,
+            text: rawText
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Extraction Failed' });
     }
 });
 
@@ -169,11 +164,24 @@ router.post('/save-registration-data', auth, async (req, res) => {
             profile = new CompanyProfile({ user: req.user.id, companyCode: req.user.companyCode });
         }
 
+        // 1.5 UPLOAD TO DRIVE (BR SUB-FOLDER)
+        let driveId = null;
+        try {
+            const mimeType = docType.endsWith('cert') ? 'image/jpeg' : 'application/pdf'; // Basic guess
+            const driveData = await uploadFile(filePath, mimeType, originalName || docType, req.user.brFolderId);
+            driveId = driveData.id;
+            // Cleanup local file
+            try { fs.unlinkSync(filePath); } catch (e) { console.error('Delete Reg Temp Fail:', e); }
+        } catch (driveErr) {
+            console.warn('BR Drive Upload Warning:', driveErr.message);
+        }
+
         // 2. Add to Documents List
         const newDoc = {
             docType: docType,
             originalName: originalName || 'Uploaded File',
             path: filePath,
+            driveId: driveId,
             status: 'Verified',
             extractedData: extractedData, // Save structured JSON
             uploadedAt: new Date()
@@ -383,12 +391,18 @@ router.post('/upload-bank-statement', auth, upload.array('files'), async (req, r
 
             // --- GOOGLE DRIVE UPLOAD ---
             let driveId = null;
+            let syncError = null;
             try {
-                const driveData = await uploadFile(file.path, file.mimetype, file.filename);
-                driveId = driveData.id;
-                console.log(`[Drive] Bank File Uploaded: ${driveId}`);
+                // Higher priority to the specific 'bank statements' folder
+                const targetFolderId = req.user.bankStatementsFolderId || req.user.driveFolderId;
+                const driveData = await uploadFile(file.path, file.mimetype, file.filename, targetFolderId);
+
+                // driveData might be { id, name, isMetadataOnly? }
+                driveId = driveData; // Keep the whole object for now to check metadata status
+                console.log(`[Drive] Bank File Uploaded Status:`, JSON.stringify(driveData));
             } catch (driveErr) {
                 console.warn("Drive Upload Skipped/Failed (Using Local):", driveErr.message);
+                syncError = driveErr.message;
             }
 
             // Extract Data (using Local Path before deletion)
@@ -407,7 +421,7 @@ router.post('/upload-bank-statement', auth, upload.array('files'), async (req, r
                 extracted = rawExtracted;
             }
 
-            // Cleanup Local File if Drive Upload Succeeded
+            // Cleanup Local File if Drive Upload Succeeded (or metadata sync used)
             if (driveId) {
                 try { fs.unlinkSync(file.path); } catch (e) { console.error('Delete Temp Fail:', e); }
             }
@@ -481,19 +495,29 @@ router.post('/upload-bank-statement', auth, upload.array('files'), async (req, r
                 accountNumber: accountInfo.accountNumber,
                 accountName: accountInfo.accountName,
                 path: driveId ? `drive:${driveId}` : null,
-                status: 'Processed'
+                status: 'Processed',
+                isMetadataOnly: !!(driveId && driveId.isMetadataOnly), // Check if the drive object indicates metadata only
+                syncError: syncError
             });
+
+            // If driveData was an object with isMetadataOnly, extract ID
+            const finalDriveId = (typeof driveId === 'object' && driveId !== null) ? driveId.id : driveId;
+            newFile.driveId = finalDriveId;
+            if (finalDriveId) newFile.path = `drive:${finalDriveId}`;
+
             await newFile.save();
 
             fileResults.push({
                 _id: newFile._id,
                 fileId: file.filename,
-                driveId: driveId,
+                driveId: finalDriveId,
                 originalName: file.originalname,
                 dateRange: dateRange,
                 status: 'Parsed',
-                transactions: extracted,
-                path: newFile.path
+                path: newFile.path,
+                isMetadataOnly: newFile.isMetadataOnly,
+                syncError: newFile.syncError,
+                transactions: extracted
             });
         }
 
