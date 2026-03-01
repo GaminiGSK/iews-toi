@@ -62,16 +62,41 @@ router.post('/template', auth, async (req, res) => {
 router.post('/br-extract', auth, upload.single('file'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+        const User = require('../models/User');
+        const { username } = req.body;
 
-        console.log(`[BR Extract] Processing file: ${req.file.originalname}`);
+        console.log(`[BR Extract] Processing file: ${req.file.originalname} for ${username || 'self'}`);
+
+        // 1. AI Extract (Gemini 2.0 OCR)
         const rawText = await googleAI.extractRawText(req.file.path);
 
-        // Cleanup local file
+        // 2. Sync to Google Drive (if user picked)
+        let driveId = null;
+        try {
+            let targetFolderId = req.user.brFolderId; // Default to self
+            if (username) {
+                const targetUser = await User.findOne({ username });
+                if (targetUser && targetUser.brFolderId) {
+                    targetFolderId = targetUser.brFolderId;
+                }
+            }
+
+            if (targetFolderId) {
+                console.log(`[BR Drive] Uploading to Folder: ${targetFolderId}`);
+                const driveData = await uploadFile(req.file.path, req.file.mimetype, req.file.originalname, targetFolderId);
+                driveId = (typeof driveData === 'object') ? driveData.id : driveData;
+            }
+        } catch (driveErr) {
+            console.error("[BR Drive] Sync Failed:", driveErr.message);
+        }
+
+        // 3. Cleanup local file
         fs.unlink(req.file.path, (err) => { if (err) console.error("Cleanup Err:", err); });
 
         res.json({
             fileName: req.file.originalname,
-            text: rawText
+            text: rawText,
+            driveId: driveId
         });
     } catch (err) {
         console.error(err);

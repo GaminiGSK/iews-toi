@@ -25,6 +25,7 @@ export default function AdminDashboard() {
     const [brDocs, setBrDocs] = useState([]);
     const [uploadingBR, setUploadingBR] = useState(false);
     const [activeBRIndex, setActiveBRIndex] = useState(null);
+    const [selectedUserBR, setSelectedUserBR] = useState('');
 
     // --- Data Fetching ---
     const fetchUsers = async () => {
@@ -138,11 +139,12 @@ export default function AdminDashboard() {
         const token = localStorage.getItem('token');
 
         for (let i = 0; i < fileList.length; i++) {
-            const formData = new FormData();
-            formData.append('file', fileList[i]);
+            const formDataUpload = new FormData();
+            formDataUpload.append('file', fileList[i]);
+            formDataUpload.append('username', selectedUserBR);
 
             try {
-                const res = await axios.post('/api/company/br-extract', formData, {
+                const res = await axios.post('/api/company/br-extract', formDataUpload, {
                     headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
                 });
                 setBrDocs(prev => [{
@@ -374,28 +376,44 @@ export default function AdminDashboard() {
                     {activeTab === 'profile' && (
                         <div className="h-full overflow-hidden flex animate-in fade-in duration-500">
                             {/* --- SIDEBAR: Uploaded Documents --- */}
-                            <div className="w-[400px] border-r border-white/5 bg-slate-900/40 p-8 overflow-y-auto">
+                            <div className="w-[450px] border-r border-white/5 bg-slate-900/40 p-10 overflow-y-auto">
                                 <h3 className="text-xs font-black text-indigo-400 uppercase tracking-[0.3em] mb-8">BR Document Pool</h3>
 
-                                {/* Upload Dropzone */}
+                                {/* User Dropdown */}
+                                <div className="mb-8 space-y-3">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-2">Select Target Entity</label>
+                                    <select
+                                        className="w-full bg-black/50 border border-white/10 p-5 rounded-[24px] text-white font-bold uppercase outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none cursor-pointer"
+                                        value={selectedUserBR}
+                                        onChange={(e) => setSelectedUserBR(e.target.value)}
+                                    >
+                                        <option value="">Choose a user profile...</option>
+                                        {users.map(u => (
+                                            <option key={u._id} value={u.username}>{u.companyName} ({u.username})</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Upload Dropzone (Enlarged) */}
                                 <div
-                                    className="border-2 border-dashed border-white/10 rounded-[32px] p-10 mb-8 flex flex-col items-center group hover:border-indigo-500/50 hover:bg-indigo-500/5 transition-all cursor-pointer"
-                                    onClick={() => document.getElementById('br-upload').click()}
+                                    className={`border-2 border-dashed rounded-[48px] p-24 mb-10 flex flex-col items-center group transition-all cursor-pointer ${!selectedUserBR ? 'opacity-30 grayscale cursor-not-allowed border-white/5' : 'border-indigo-500/30 bg-indigo-500/5 hover:border-indigo-500 hover:bg-indigo-500/10'}`}
+                                    onClick={() => selectedUserBR && document.getElementById('br-upload').click()}
                                     onDragOver={(e) => e.preventDefault()}
-                                    onDrop={(e) => { e.preventDefault(); handleBRUpload(e.dataTransfer.files); }}
+                                    onDrop={(e) => { e.preventDefault(); if (selectedUserBR) handleBRUpload(e.dataTransfer.files); }}
                                 >
                                     <input
                                         type="file"
                                         id="br-upload"
                                         className="hidden"
                                         multiple
+                                        disabled={!selectedUserBR}
                                         onChange={(e) => handleBRUpload(e.target.files)}
                                     />
-                                    <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-indigo-500 transition-all duration-500">
-                                        {uploadingBR ? <Loader2 size={32} className="text-white animate-spin" /> : <CloudUpload size={32} className="text-gray-400 group-hover:text-white" />}
+                                    <div className="w-24 h-24 bg-indigo-500/10 rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:bg-indigo-500 transition-all duration-500">
+                                        {uploadingBR ? <Loader2 size={48} className="text-white animate-spin" /> : <CloudUpload size={48} className={`${!selectedUserBR ? 'text-gray-700' : 'text-indigo-400 group-hover:text-white'}`} />}
                                     </div>
-                                    <span className="text-[10px] font-black text-gray-500 group-hover:text-indigo-400 uppercase tracking-widest text-center leading-relaxed">
-                                        Drag documents here<br />or click to scan
+                                    <span className="text-xs font-black text-gray-400 group-hover:text-indigo-300 uppercase tracking-widest text-center leading-relaxed">
+                                        {selectedUserBR ? 'Drop documents here\nto sync for ' + selectedUserBR : 'Select a user above\nto enable dropzone'}
                                     </span>
                                 </div>
 
