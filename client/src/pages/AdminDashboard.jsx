@@ -153,9 +153,11 @@ export default function AdminDashboard() {
                     id: Date.now() + i,
                     name: res.data.fileName,
                     text: res.data.text,
+                    organizedText: res.data.organizedText,
                     timestamp: new Date().toLocaleString()
                 }, ...prev]);
                 if (activeBRIndex === null) setActiveBRIndex(0);
+                setBrView('organized'); // Auto-switch to organized view
             } catch (err) {
                 console.error("BR Upload Error:", err);
                 alert("Extraction failed for " + fileList[i].name);
@@ -165,35 +167,8 @@ export default function AdminDashboard() {
     };
 
     const handleOrganize = async () => {
-        if (activeBRIndex === null) return;
-        const currentDoc = brDocs[activeBRIndex];
-        if (currentDoc.organizedText) {
-            setBrView('organized');
-            return;
-        }
-
-        setOrganizingProfile(true);
-        const token = localStorage.getItem('token');
-        try {
-            const res = await axios.post('/api/company/br-organize', {
-                rawText: currentDoc.text,
-                fileName: currentDoc.name,
-                username: selectedUserBR
-            }, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            // Update docs with organized content
-            setBrDocs(prev => prev.map((doc, idx) =>
-                idx === activeBRIndex ? { ...doc, organizedText: res.data.organizedText } : doc
-            ));
-            setBrView('organized');
-        } catch (err) {
-            console.error("Organization Error:", err);
-            alert("Failed to organize profile.");
-        } finally {
-            setOrganizingProfile(false);
-        }
+        // Function now deprecated as organization is handled in the main extract stream
+        setBrView('organized');
     };
 
     return (
@@ -510,12 +485,11 @@ export default function AdminDashboard() {
 
                                             {brView === 'raw' && (
                                                 <button
-                                                    onClick={handleOrganize}
-                                                    disabled={organizingProfile}
-                                                    className="bg-emerald-500 hover:bg-emerald-400 text-black px-8 py-4 rounded-[20px] font-black text-[11px] uppercase tracking-widest flex items-center gap-3 transition-all shadow-xl shadow-emerald-500/20 active:scale-95 disabled:opacity-50"
+                                                    onClick={() => setBrView('organized')}
+                                                    className="bg-emerald-500 hover:bg-emerald-400 text-black px-8 py-4 rounded-[20px] font-black text-[11px] uppercase tracking-widest flex items-center gap-3 transition-all shadow-xl shadow-emerald-500/20 active:scale-95"
                                                 >
-                                                    {organizingProfile ? <Loader2 className="animate-spin" size={16} /> : <ChevronRight size={16} />}
-                                                    Organize Profile
+                                                    <ChevronRight size={16} />
+                                                    View Synthesis
                                                 </button>
                                             )}
                                         </div>

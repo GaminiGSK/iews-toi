@@ -58,49 +58,95 @@ router.post('/template', auth, async (req, res) => {
     }
 });
 
-// POST BR Extract (Khmer + English Raw Text)
+// POST BR Extract (Full Automated Workflow: OCR -> Org -> Drive -> DB)
 router.post('/br-extract', auth, upload.single('file'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
         const User = require('../models/User');
         const { username } = req.body;
 
-        console.log(`[BR Extract] Processing file: ${req.file.originalname} for ${username || 'self'}`);
+        console.log(`[BR Core] Starting Automated Workflow for: ${req.file.originalname}`);
 
-        // 1. AI Extract (Gemini 2.0 OCR)
+        // 1. AI OCR (Gemini 2.0 Vision)
         const rawText = await googleAI.extractRawText(req.file.path);
 
-        // 2. Sync to Google Drive (if user picked)
-        let driveId = null;
+        // 2. Initial Drive Sync (Raw File)
+        let rawDriveId = null;
+        let targetFolderId = req.user.brFolderId;
+        let targetUser = null;
+
         try {
-            let targetFolderId = req.user.brFolderId; // Default to self
             if (username) {
-                const targetUser = await User.findOne({ username });
+                targetUser = await User.findOne({ username });
                 if (targetUser && targetUser.brFolderId) {
                     targetFolderId = targetUser.brFolderId;
                 }
+            } else {
+                targetUser = await User.findById(req.user.id);
             }
 
             if (targetFolderId) {
-                console.log(`[BR Drive] Uploading to Folder: ${targetFolderId}`);
+                console.log(`[BR Drive] Syncing Raw File...`);
                 const driveData = await uploadFile(req.file.path, req.file.mimetype, req.file.originalname, targetFolderId);
-                driveId = (typeof driveData === 'object') ? driveData.id : driveData;
+                rawDriveId = (typeof driveData === 'object') ? driveData.id : driveData;
             }
         } catch (driveErr) {
-            console.error("[BR Drive] Sync Failed:", driveErr.message);
+            console.error("[BR Drive] Raw Sync Failed:", driveErr.message);
         }
 
-        // 3. Cleanup local file
+        // 3. AI Organization (Natural Language Synthesis)
+        console.log(`[BR Core] Synthesizing Business Profile...`);
+        const organizedProfile = await googleAI.summarizeToProfile(rawText);
+
+        // 4. Secondary Drive Sync (Organized MD Profile)
+        let profileDriveId = null;
+        try {
+            if (targetFolderId) {
+                const tempPath = `./tmp/profile_${Date.now()}.md`;
+                if (!fs.existsSync('./tmp')) fs.mkdirSync('./tmp');
+                fs.writeFileSync(tempPath, organizedProfile);
+
+                const profileFileName = `Business Profile - ${req.file.originalname.split('.')[0]}.md`;
+                const profileDriveData = await uploadFile(tempPath, 'text/markdown', profileFileName, targetFolderId);
+                profileDriveId = (typeof profileDriveData === 'object') ? profileDriveData.id : profileDriveData;
+
+                fs.unlink(tempPath, (err) => { if (err) console.error("Temp Cleanup Err:", err); });
+            }
+        } catch (orgDriveErr) {
+            console.error("[BR Drive] Profile Sync Failed:", orgDriveErr.message);
+        }
+
+        // 5. Database Sync (Update User Dashboard)
+        try {
+            if (targetUser) {
+                let profileInDb = await CompanyProfile.findOne({ user: targetUser._id });
+                if (!profileInDb) {
+                    profileInDb = new CompanyProfile({
+                        user: targetUser._id,
+                        companyCode: targetUser.companyCode || targetUser.username.toUpperCase()
+                    });
+                }
+                profileInDb.organizedProfile = organizedProfile;
+                await profileInDb.save();
+                console.log(`[BR DB] Dashboard updated for ${targetUser.username}`);
+            }
+        } catch (dbErr) {
+            console.error("[BR DB] Save Failed:", dbErr.message);
+        }
+
+        // 6. Cleanup local file
         fs.unlink(req.file.path, (err) => { if (err) console.error("Cleanup Err:", err); });
 
         res.json({
             fileName: req.file.originalname,
             text: rawText,
-            driveId: driveId
+            organizedText: organizedProfile,
+            driveId: rawDriveId,
+            profileDriveId: profileDriveId
         });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: 'Extraction Failed' });
+        res.status(500).json({ message: 'Bridge Core Failure' });
     }
 });
 
