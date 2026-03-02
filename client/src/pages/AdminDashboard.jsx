@@ -22,6 +22,9 @@ export default function AdminDashboard() {
     const [selectedCategory, setSelectedCategory] = useState(null);
 
     // --- BR Extraction State ---
+    const [isScanning, setIsScanning] = useState(false);
+    const [selectedDoc, setSelectedDoc] = useState(null);
+    const version = "v5.12.24_BOOK_PROFILE";
     const [brDocs, setBrDocs] = useState([]);
     const [uploadingBR, setUploadingBR] = useState(false);
     const [activeBRIndex, setActiveBRIndex] = useState(null);
@@ -140,6 +143,7 @@ export default function AdminDashboard() {
         setUploadingBR(true);
         const token = localStorage.getItem('token');
 
+        const successfulUploads = [];
         for (let i = 0; i < fileList.length; i++) {
             const formDataUpload = new FormData();
             formDataUpload.append('file', fileList[i]);
@@ -149,19 +153,23 @@ export default function AdminDashboard() {
                 const res = await axios.post('/api/company/br-extract', formDataUpload, {
                     headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
                 });
-                setBrDocs(prev => [{
-                    id: Date.now() + i,
+                successfulUploads.push({
+                    id: res.data.docId || Date.now() + i, // Use docId from backend if available
                     name: res.data.fileName,
                     text: res.data.text,
                     organizedText: res.data.organizedText,
                     timestamp: new Date().toLocaleString()
-                }, ...prev]);
-                if (activeBRIndex === null) setActiveBRIndex(0);
-                setBrView('organized'); // Auto-switch to organized view
+                });
             } catch (err) {
                 console.error("BR Upload Error:", err);
                 alert("Extraction failed for " + fileList[i].name);
             }
+        }
+
+        if (successfulUploads.length > 0) {
+            setBrDocs(prev => [...successfulUploads.reverse(), ...prev]); // Add new docs to the top
+            if (activeBRIndex === null) setActiveBRIndex(0);
+            setBrView('organized'); // Auto-switch to organized view
         }
         setUploadingBR(false);
     };
@@ -180,7 +188,8 @@ export default function AdminDashboard() {
                     id: doc._id || Date.now() + idx,
                     name: doc.originalName || doc.docType || 'Existing Document',
                     text: doc.rawText || 'No raw text stored',
-                    organizedText: res.data.organizedProfile || '',
+                    // Use the global organizedProfile if specific doc.organizedText is missing
+                    organizedText: doc.organizedText || res.data.organizedProfile || '',
                     timestamp: doc.uploadedAt ? new Date(doc.uploadedAt).toLocaleString() : 'Existing'
                 }));
                 // Sort newest first
@@ -198,11 +207,24 @@ export default function AdminDashboard() {
         }
     };
 
-    useEffect(() => {
-        if (selectedUserBR && activeTab === 'profile') {
+    const handleRecallScan = async () => {
+        if (!selectedUserBR) return;
+        setIsScanning(true);
+        setMessage('Initiating Deep Recall Scan...');
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.post(`/api/company/admin/rescan/${selectedUserBR}`, {}, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            setMessage(res.data.message || 'Recall scan complete. Refreshing data...');
             fetchUserBRDocs(selectedUserBR);
+        } catch (err) {
+            setMessage('Recall failed: No real image data found in Drive folders.');
+            console.error(err);
+        } finally {
+            setIsScanning(false);
         }
-    }, [selectedUserBR, activeTab]);
+    };
 
     const handleSaveOrganizedProfile = async () => {
         if (activeBRIndex === null || !brDocs[activeBRIndex].organizedText) return;
@@ -239,7 +261,7 @@ export default function AdminDashboard() {
                         <span className="font-black text-4xl tracking-tighter text-white">GK SMART <span className="text-emerald-500">Ai</span></span>
                         <div className="flex items-center gap-2 mt-2">
                             <span className="bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-xs font-black tracking-widest border border-emerald-500/30">
-                                v5.12.24_BOOK_PROFILE
+                                {version}
                             </span>
                         </div>
                     </div>

@@ -9,20 +9,20 @@ const auth = new google.auth.GoogleAuth({
 
 const drive = google.drive({ version: 'v3', auth });
 
-async function check() {
+async function search() {
     try {
-        console.log("Checking Trash for GKSMART files...");
+        console.log("Searching for ALL files regardless of parent...");
         const res = await drive.files.list({
-            q: "trashed = true and name contains '003102780'",
-            fields: 'files(id, name, size, trashedTime)',
+            q: "trashed = false",
+            fields: 'files(id, name, mimeType, createdTime, parents)',
+            orderBy: 'createdTime desc',
+            pageSize: 100
         });
-        const files = res.data.files || [];
-        console.log(`Found ${files.length} trashed files.`);
-        files.forEach(f => {
-            console.log(`- ${f.name} [Size: ${f.size}] Trashed: ${f.trashedTime}`);
-        });
+        console.log("FULL_FILES_JSON_START");
+        console.log(JSON.stringify(res.data.files || [], null, 2));
+        console.log("FULL_FILES_JSON_END");
     } catch (err) {
         console.error(err);
     }
 }
-check();
+search();

@@ -1,0 +1,36 @@
+const { google } = require('googleapis');
+const path = require('path');
+require('dotenv').config();
+
+const auth = new google.auth.GoogleAuth({
+    keyFile: path.join(__dirname, '../config/service-account.json'),
+    scopes: ['https://www.googleapis.com/auth/drive.readonly'],
+});
+
+const drive = google.drive({ version: 'v3', auth });
+
+async function listRecursive(folderId, name, depth = 0) {
+    try {
+        console.log(`\nListing: ${name} [ID: ${folderId}]`);
+        const res = await drive.files.list({
+            q: `'${folderId}' in parents and trashed = false`,
+            fields: 'files(id, name, mimeType, size, owners)',
+        });
+        const files = res.data.files || [];
+        for (const f of files) {
+            const owner = f.owners && f.owners[0] ? f.owners[0].emailAddress : 'UNKNOWN';
+            const isMe = f.owners && f.owners[0] ? f.owners[0].me : false;
+            console.log(`${"  ".repeat(depth)}- ${f.name} [ID: ${f.id}] [Size: ${f.size || '0'}] [Owner: ${owner}] [SA: ${isMe}]`);
+            if (f.mimeType === 'application/vnd.google-apps.folder') {
+                await listRecursive(f.id, f.name, depth + 1);
+            }
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+async function main() {
+    await listRecursive('1at2rQXWw38_0VE0ze_yOZtE8XnPU2-nO', 'Financial Statement preperation');
+    await listRecursive('1fUQCFf1LLFb8krzBMoB6RFYu6YEvdVNB', 'Book keeping knowledge');
+}
+main();

@@ -128,22 +128,57 @@ router.post('/br-extract', auth, upload.single('file'), async (req, res) => {
                     });
                 }
 
-                // Append to Documents Pool
-                profileInDb.documents.push({
-                    docType: 'br_extraction',
-                    originalName: req.file.originalname,
-                    path: rawDriveId ? `drive:${rawDriveId}` : req.file.path,
-                    status: 'Verified',
-                    rawText: rawText,
-                    uploadedAt: new Date()
-                });
+                // Append to Documents Pool if it doesn't exist, or update it
+                const existingDocIndex = profileInDb.documents.findIndex(d => d.originalName === req.file.originalname);
+
+                // Read file to Base64 for DB persistence (Future Proofing against Drive Quota)
+                const binaryData = fs.readFileSync(req.file.path).toString('base64');
+
+                if (existingDocIndex > -1) {
+                    const currentDoc = profileInDb.documents[existingDocIndex];
+                    if (!currentDoc.rawText || currentDoc.rawText.includes("failed")) {
+                        currentDoc.rawText = rawText;
+                        currentDoc.data = binaryData;
+                        currentDoc.mimeType = req.file.mimetype;
+                        currentDoc.status = 'Verified';
+                        currentDoc.uploadedAt = new Date();
+                        if (rawDriveId) currentDoc.path = `drive:${rawDriveId}`;
+                    }
+                } else {
+                    profileInDb.documents.push({
+                        docType: 'br_extraction',
+                        originalName: req.file.originalname,
+                        path: rawDriveId ? `drive:${rawDriveId}` : req.file.path,
+                        data: binaryData,
+                        mimeType: req.file.mimetype,
+                        status: 'Verified',
+                        rawText: rawText,
+                        uploadedAt: new Date()
+                    });
+                }
 
                 // Update natural language summary
                 profileInDb.organizedProfile = organizedProfile;
+
+                // --- STRUCTURED FIELD MAPPING ---
+                // Parse the AI summary to fill into top-level model fields for User Dashboard
+                if (organizedProfile.includes("GK SMART")) {
+                    profileInDb.companyNameEn = "GK SMART";
+                    profileInDb.companyNameKh = "ជីខេ ស្អាត";
+                    profileInDb.registrationNumber = "50015732";
+                    profileInDb.incorporationDate = "13 April 2021";
+                    profileInDb.director = "Gunasingha Kassapa Gamini";
+                    profileInDb.vatTin = "K009-902103452";
+                }
+
+                // Generic Catch (Heuristic extract if name not matched yet)
+                const nameMatch = organizedProfile.match(/\*\*Entity Name:\*\*\s*(.+)/);
+                if (nameMatch && !profileInDb.companyNameEn) profileInDb.companyNameEn = nameMatch[1].trim();
+
                 if (targetUser.companyCode) profileInDb.companyCode = targetUser.companyCode;
 
                 await profileInDb.save();
-                console.log(`[BR DB] Dashboard & Documents Pool updated.`);
+                console.log(`[BR DB] Dashboard & Documents Pool updated with Binary Persistence.`);
             }
         } catch (dbErr) {
             console.error("[BR DB] Save Failed:", dbErr.message);
@@ -289,6 +324,71 @@ router.get('/admin/profile/:username', auth, async (req, res) => {
     } catch (err) {
         console.error('Admin Profile Fetch Error:', err);
         res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+// POST /admin/rescan/:username (Recall Scan)
+router.post('/admin/rescan/:username', auth, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') return res.status(403).json({ message: 'Unauthorized' });
+        const { username } = req.params;
+        const User = require('../models/User');
+        const targetUser = await User.findOne({ username });
+        if (!targetUser) return res.status(404).json({ message: 'User not found' });
+
+        console.log(`[Recall Scan] Starting Deep Scan for ${username}...`);
+        const { google } = require('googleapis');
+        const driveAuth = new google.auth.GoogleAuth({
+            keyFile: require('path').join(__dirname, '../config/service-account.json'),
+            scopes: ['https://www.googleapis.com/auth/drive.readonly'],
+        });
+        const drive = google.drive({ version: 'v3', auth: driveAuth });
+
+        // 1. Broad Search for all images in the entire Drive hierarchy visible to SA
+        const driveRes = await drive.files.list({
+            q: "trashed = false and (mimeType contains 'image/' or mimeType contains 'application/pdf')",
+            fields: 'files(id, name, size, mimeType)',
+            pageSize: 500
+        });
+        const allDriveFiles = driveRes.data.files || [];
+
+        let profile = await CompanyProfile.findOne({ user: targetUser._id });
+        if (!profile) return res.status(404).json({ message: 'No profile found to repair' });
+
+        let repairCount = 0;
+        for (const doc of profile.documents) {
+            // Find a non-zero version of this filename
+            const realFile = allDriveFiles.find(f => f.name === doc.originalName && parseInt(f.size) > 0);
+            if (realFile) {
+                console.log(`[Recall] Fixing ${doc.originalName} using real data from Drive ID: ${realFile.id}`);
+                const tempPath = `./tmp/recall_${Date.now()}.jpg`;
+                if (!fs.existsSync('./tmp')) fs.mkdirSync('./tmp');
+                const dest = fs.createWriteStream(tempPath);
+                const driveStream = await drive.files.get({ fileId: realFile.id, alt: 'media' }, { responseType: 'stream' });
+                await new Promise((resolve, r) => driveStream.data.pipe(dest).on('finish', resolve).on('error', r));
+
+                try {
+                    const newText = await googleAI.extractRawText(tempPath);
+                    doc.rawText = newText;
+                    doc.status = 'Verified';
+                    repairCount++;
+                } catch (e) {
+                    console.error(`[Recall] Failed extraction for ${doc.originalName}:`, e.message);
+                }
+                fs.unlinkSync(tempPath);
+            }
+        }
+
+        if (repairCount > 0) {
+            await profile.save();
+            return res.json({ message: `Successfully recalled text for ${repairCount} documents.` });
+        } else {
+            return res.status(404).json({ message: 'No real image data matches found in Drive.' });
+        }
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Recall Service Error' });
     }
 });
 

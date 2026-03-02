@@ -5,11 +5,13 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 async function count() {
     await mongoose.connect(process.env.MONGODB_URI);
-    const counts = await BankFile.aggregate([
-        { $group: { _id: "$companyCode", count: { $sum: 1 } } }
-    ]);
-    console.log("FILES IN DB:");
-    counts.forEach(c => console.log(`- ${c._id}: ${c.count} files`));
+    const User = require('../models/User');
+
+    const users = await User.find({});
+    console.log("USERS_JSON_START");
+    console.log(JSON.stringify(users, null, 2));
+    console.log("USERS_JSON_END");
+
     process.exit(0);
 }
 

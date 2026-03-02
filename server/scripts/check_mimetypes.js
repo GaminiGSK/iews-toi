@@ -11,15 +11,15 @@ const drive = google.drive({ version: 'v3', auth });
 
 async function check() {
     try {
-        console.log("Checking Trash for GKSMART files...");
+        const folderId = '1rfi5LRAP3P9J8fsj7CqMC0PTigmCqldS'; // BR Folder
+        console.log(`Checking file types in BR folder: ${folderId}`);
         const res = await drive.files.list({
-            q: "trashed = true and name contains '003102780'",
-            fields: 'files(id, name, size, trashedTime)',
+            q: `'${folderId}' in parents and trashed = false`,
+            fields: 'files(id, name, size, mimeType, owners)',
         });
         const files = res.data.files || [];
-        console.log(`Found ${files.length} trashed files.`);
         files.forEach(f => {
-            console.log(`- ${f.name} [Size: ${f.size}] Trashed: ${f.trashedTime}`);
+            console.log(`- ${f.name} [Mime: ${f.mimeType}] [Size: ${f.size}] [Owner: ${f.owners[0].emailAddress}]`);
         });
     } catch (err) {
         console.error(err);

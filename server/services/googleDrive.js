@@ -77,7 +77,15 @@ async function uploadFile(filePath, mimeType, originalName, customParentId = nul
         console.error('❌ Google Drive Upload Error:', error.message);
 
         // --- AUTOMATED FALLBACK: Try Global Root if Custom Folder Fails ---
-        if (error.message.includes('Service Accounts do not have permission') || error.message.includes('403')) {
+        if (error.message.includes('storageQuotaExceeded') || error.status === 403) {
+            console.warn('⚠️  STORAGE QUOTA EXCEEDED: Service Account cannot upload binary data to Drive. Syncing as Metadata placeholder only.');
+
+            // If strictly quota error, we stop binary retries.
+            if (error.message.includes('quota')) {
+                const metadataOnly = await uploadFileMetadataOnly(originalName, customParentId, `STORAGE_ERROR: Binary upload failed due to SA quota. Raw data is safe in DB ledger.`);
+                return { ...metadataOnly, isMetadataOnly: true };
+            }
+
             const rootId = process.env.GOOGLE_DRIVE_FOLDER_ID;
             if (customParentId && customParentId !== rootId) {
                 console.log(`⚠️  Permission Denied on folder ${customParentId}. Retrying upload to Global Root (${rootId})...`);

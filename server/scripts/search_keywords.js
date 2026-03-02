@@ -11,16 +11,15 @@ const drive = google.drive({ version: 'v3', auth });
 
 async function check() {
     try {
-        console.log("Checking Trash for GKSMART files...");
+        console.log("Searching for keywords: Patent, VAT, Registration, GK...");
         const res = await drive.files.list({
-            q: "trashed = true and name contains '003102780'",
-            fields: 'files(id, name, size, trashedTime)',
+            q: "(name contains 'Patent' or name contains 'VAT' or name contains 'GK') and trashed = false",
+            fields: 'files(id, name, size, createdTime, owners)',
+            pageSize: 100
         });
-        const files = res.data.files || [];
-        console.log(`Found ${files.length} trashed files.`);
-        files.forEach(f => {
-            console.log(`- ${f.name} [Size: ${f.size}] Trashed: ${f.trashedTime}`);
-        });
+        console.log("KEYWORDS_JSON_START");
+        console.log(JSON.stringify(res.data.files || [], null, 2));
+        console.log("KEYWORDS_JSON_END");
     } catch (err) {
         console.error(err);
     }

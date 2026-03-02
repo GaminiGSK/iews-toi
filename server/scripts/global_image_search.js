@@ -9,20 +9,25 @@ const auth = new google.auth.GoogleAuth({
 
 const drive = google.drive({ version: 'v3', auth });
 
-async function check() {
+async function search() {
     try {
-        console.log("Checking Trash for GKSMART files...");
+        console.log("Ultimate Deep Audit: Searching Drive for ANY non-zero images...");
         const res = await drive.files.list({
-            q: "trashed = true and name contains '003102780'",
-            fields: 'files(id, name, size, trashedTime)',
+            q: "mimeType contains 'image/' and size > 100 and trashed = false",
+            fields: 'files(id, name, size, owners, parents, createdTime)',
+            orderBy: 'createdTime desc',
+            pageSize: 50
         });
+
         const files = res.data.files || [];
-        console.log(`Found ${files.length} trashed files.`);
+        console.log(`Summary: Found ${files.length} non-zero images recently.`);
+
         files.forEach(f => {
-            console.log(`- ${f.name} [Size: ${f.size}] Trashed: ${f.trashedTime}`);
+            console.log(`- ${f.name} [ID: ${f.id}] [Size: ${f.size}] [Created: ${f.createdTime}]`);
         });
+
     } catch (err) {
         console.error(err);
     }
 }
-check();
+search();

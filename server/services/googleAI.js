@@ -251,6 +251,28 @@ exports.extractRawText = async (filePath) => {
     }
 };
 
+exports.extractFromBuffer = async (buffer, mimeType) => {
+    console.log(`[GeminiAI] Processing Buffer (Vision 2.0): ${mimeType}`);
+    try {
+        const prompt = "Analyze this business document image visually and extract all text exactly as shown. Maintain the layout if possible. Output raw text (Bilingual KH/EN if applicable).";
+
+        const imagePart = {
+            inlineData: {
+                data: buffer.toString("base64"),
+                mimeType
+            },
+        };
+
+        const result = await callGeminiWithRetry(() => getModel().generateContent([prompt, imagePart]));
+        const response = await result.response;
+        return response.text();
+
+    } catch (error) {
+        console.error("Gemini API Error (Buffer):", error);
+        return "Extraction failed: " + error.message;
+    }
+};
+
 exports.summarizeToProfile = async (rawText) => {
     console.log(`[GeminiAI] Organizing Raw Text into Business Profile...`);
     try {
