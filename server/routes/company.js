@@ -336,59 +336,150 @@ router.post('/admin/rescan/:username', auth, async (req, res) => {
         const targetUser = await User.findOne({ username });
         if (!targetUser) return res.status(404).json({ message: 'User not found' });
 
-        console.log(`[Recall Scan] Starting Deep Scan for ${username}...`);
+        // --- DEEP RECALL PROCESS ---
         const { google } = require('googleapis');
-        const driveAuth = new google.auth.GoogleAuth({
-            keyFile: require('path').join(__dirname, '../config/service-account.json'),
+        const path = require('path'); // Added path import for consistency
+        const authClient = new google.auth.GoogleAuth({
+            keyFile: path.join(__dirname, '../config/service-account.json'),
             scopes: ['https://www.googleapis.com/auth/drive.readonly'],
         });
-        const drive = google.drive({ version: 'v3', auth: driveAuth });
+        const drive = google.drive({ version: 'v3', auth: authClient });
 
-        // 1. Broad Search for all images in the entire Drive hierarchy visible to SA
-        const driveRes = await drive.files.list({
-            q: "trashed = false and (mimeType contains 'image/' or mimeType contains 'application/pdf')",
-            fields: 'files(id, name, size, mimeType)',
-            pageSize: 500
-        });
-        const allDriveFiles = driveRes.data.files || [];
+        // 1. Get current profile documents to know what to look for
+        const profile = await CompanyProfile.findOne({ user: targetUser._id });
+        if (!profile) return res.json({ message: 'No profile found to rescan.' });
 
-        let profile = await CompanyProfile.findOne({ user: targetUser._id });
-        if (!profile) return res.status(404).json({ message: 'No profile found to repair' });
-
+        console.log(`[Recall Scan] Starting for ${username}. Docs: ${profile.documents.length}`);
         let repairCount = 0;
-        for (const doc of profile.documents) {
-            // Find a non-zero version of this filename
-            const realFile = allDriveFiles.find(f => f.name === doc.originalName && parseInt(f.size) > 0);
-            if (realFile) {
-                console.log(`[Recall] Fixing ${doc.originalName} using real data from Drive ID: ${realFile.id}`);
-                const tempPath = `./tmp/recall_${Date.now()}.jpg`;
-                if (!fs.existsSync('./tmp')) fs.mkdirSync('./tmp');
-                const dest = fs.createWriteStream(tempPath);
-                const driveStream = await drive.files.get({ fileId: realFile.id, alt: 'media' }, { responseType: 'stream' });
-                await new Promise((resolve, r) => driveStream.data.pipe(dest).on('finish', resolve).on('error', r));
 
-                try {
-                    const newText = await googleAI.extractRawText(tempPath);
-                    doc.rawText = newText;
-                    doc.status = 'Verified';
-                    repairCount++;
-                } catch (e) {
-                    console.error(`[Recall] Failed extraction for ${doc.originalName}:`, e.message);
+        for (let doc of profile.documents) {
+            // Only repair documents that are "failed" or have no raw text
+            if (!doc.rawText || doc.rawText.includes("failed") || doc.rawText.length < 50) {
+                console.log(`  Attempting repair for: ${doc.originalName}`);
+
+                // Search Drive broadly by filename
+                const searchRes = await drive.files.list({
+                    q: `name = '${doc.originalName}' and trashed = false`,
+                    fields: 'files(id, name, size, mimeType)',
+                });
+
+                const cloudFiles = searchRes.data.files || [];
+                const healthyFile = cloudFiles.find(f => parseInt(f.size) > 100);
+
+                if (healthyFile) {
+                    console.log(`    Healthy version found: ${healthyFile.id} (${healthyFile.size} bytes)`);
+
+                    // RE-EXTRACT
+                    const fs = require('fs');
+                    const tempPath = path.join(__dirname, `../uploads/RECALL_${healthyFile.id}_${doc.originalName}`);
+
+                    try {
+                        const dest = fs.createWriteStream(tempPath);
+                        const media = await drive.files.get({ fileId: healthyFile.id, alt: 'media' }, { responseType: 'stream' });
+
+                        await new Promise((resolve, reject) => {
+                            media.data.on('end', resolve).on('error', reject).pipe(dest);
+                        });
+
+                        const extractedText = await googleAI.extractRawText(tempPath);
+                        if (extractedText && !extractedText.includes("failed")) {
+                            doc.rawText = extractedText;
+                            doc.status = 'Verified';
+                            doc.path = `drive:${healthyFile.id}`;
+                            repairCount++;
+                        }
+
+                        fs.unlinkSync(tempPath);
+                    } catch (e) {
+                        console.error(`    Recall Extract Fail:`, e.message);
+                    }
                 }
-                fs.unlinkSync(tempPath);
             }
         }
 
         if (repairCount > 0) {
+            // Trigger a re-organization of the whole profile with the new fragments
+            const allText = profile.documents.map(d => d.rawText).join("\n\n---\n\n");
+            const organizedSummary = await googleAI.organizeProfileData(allText);
+            profile.organizedProfile = organizedSummary;
             await profile.save();
-            return res.json({ message: `Successfully recalled text for ${repairCount} documents.` });
-        } else {
-            return res.status(404).json({ message: 'No real image data matches found in Drive.' });
         }
+
+        res.json({ message: 'Recall Scan Complete', repairCount });
 
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Recall Service Error' });
+    }
+});
+
+// POST /rescan (User Self-Service Recall)
+router.post('/rescan', auth, async (req, res) => {
+    try {
+        const targetUser = req.user; // req.user already populated by auth middleware
+        const username = targetUser.username;
+
+        // --- DEEP RECALL PROCESS (SAME LOGIC) ---
+        const { google } = require('googleapis');
+        const path = require('path');
+        const authClient = new google.auth.GoogleAuth({
+            keyFile: path.join(__dirname, '../config/service-account.json'),
+            scopes: ['https://www.googleapis.com/auth/drive.readonly'],
+        });
+        const drive = google.drive({ version: 'v3', auth: authClient });
+
+        const profile = await CompanyProfile.findOne({ user: targetUser.id });
+        if (!profile) return res.json({ message: 'No profile found to rescan.' });
+
+        console.log(`[User Recall Scan] Starting for ${username}.`);
+        let repairCount = 0;
+
+        for (let doc of profile.documents) {
+            if (!doc.rawText || doc.rawText.includes("failed") || doc.rawText.length < 50) {
+                const searchRes = await drive.files.list({
+                    q: `name = '${doc.originalName}' and trashed = false`,
+                    fields: 'files(id, name, size, mimeType)',
+                });
+
+                const cloudFiles = searchRes.data.files || [];
+                const healthyFile = cloudFiles.find(f => parseInt(f.size) > 100);
+
+                if (healthyFile) {
+                    const fs = require('fs');
+                    const tempPath = path.join(__dirname, `../uploads/USER_RECALL_${healthyFile.id}`);
+                    try {
+                        const dest = fs.createWriteStream(tempPath);
+                        const media = await drive.files.get({ fileId: healthyFile.id, alt: 'media' }, { responseType: 'stream' });
+                        await new Promise((resolve, reject) => {
+                            media.data.on('end', resolve).on('error', reject).pipe(dest);
+                        });
+                        const extractedText = await googleAI.extractRawText(tempPath);
+                        if (extractedText && !extractedText.includes("failed")) {
+                            doc.rawText = extractedText;
+                            doc.status = 'Verified';
+                            doc.path = `drive:${healthyFile.id}`;
+                            repairCount++;
+                        }
+                        fs.unlinkSync(tempPath);
+                    } catch (e) {
+                        console.error(`Recall Extract Fail:`, e.message);
+                    }
+                }
+            }
+        }
+
+        if (repairCount > 0) {
+            const allText = profile.documents.map(d => d.rawText).join("\n\n---\n\n");
+            const organizedSummary = await googleAI.organizeProfileData(allText);
+            profile.organizedProfile = organizedSummary;
+            await profile.save();
+        }
+
+        res.json({ message: 'Self-Serve Recall Complete', repairCount });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Self-Serve Recall Error' });
     }
 });
 

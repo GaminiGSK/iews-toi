@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Loader2, CheckCircle, AlertCircle, Table, Save, X, Eye, FileText, CloudUpload, Calendar, Book, Tag, DollarSign, Scale, TrendingUp, ArrowLeft, ShieldCheck, Sparkles, QrCode } from 'lucide-react';
+import { Loader2, CheckCircle, AlertCircle, Table, Save, X, Eye, FileText, CloudUpload, Calendar, Book, Tag, DollarSign, Scale, TrendingUp, ArrowLeft, ShieldCheck, Sparkles, QrCode, BookOpen, RefreshCw, Terminal } from 'lucide-react';
 import GeneralLedger from './GeneralLedger';
 import AccountingCodes from './AccountingCodes';
 import CurrencyExchange from './CurrencyExchange';
@@ -1014,878 +1014,991 @@ export default function CompanyProfile() {
         }
     };
 
+    const handleRecallScan = async () => {
+        setIsDocScanning(true);
+        setMessage('Deep Recall Scan in Progress...');
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.post('/api/company/rescan', {}, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            await fetchProfile();
+            setMessage(`Scan Complete! Repaired ${res.data.repairCount || 0} documents.`);
+            setTimeout(() => setMessage(''), 5000);
+        } catch (err) {
+            console.error(err);
+            setDebugLog({ title: 'Scan Failed', message: err.message });
+        } finally {
+            setIsDocScanning(false);
+        }
+    };
+
     const renderProfile = () => {
+        const activeDoc = docTemplates.find(d => d.id === activeDocTemplateId);
+        const originalDocData = (formData.documents || []).find(d => d._id === activeDocTemplateId);
+
         return (
-            <div className="w-full h-[calc(100vh-80px)] pt-6 px-4 animate-fade-in flex flex-col bg-slate-900 font-sans overflow-hidden">
-                {/* Header Row */}
-                <div className="mb-8 flex items-center justify-between px-6">
-                    <div className="flex items-center gap-6">
+            <div className="w-full h-[calc(100vh-80px)] animate-fade-in flex bg-slate-900 font-sans overflow-hidden">
+
+                {/* --- SIDEBAR: DOCUMENT INTELLIGENCE --- */}
+                <div className="w-72 border-r border-white/5 bg-slate-950/50 flex flex-col shrink-0">
+                    <div className="p-6 border-b border-white/5">
                         <button
                             onClick={() => setView('home')}
-                            className="p-4 bg-white/5 hover:bg-blue-600 text-white rounded-2xl transition-all shadow-xl group"
-                            title="Back to Central Hub"
+                            className="flex items-center gap-2 text-slate-500 hover:text-white transition-colors text-xs font-black uppercase tracking-widest mb-6"
                         >
-                            <ArrowLeft size={24} className="group-hover:-translate-x-1 transition-transform" />
+                            <ArrowLeft size={14} /> Back to Hub
                         </button>
-                        <div>
-                            <h2 className="text-3xl font-black text-white leading-none uppercase tracking-tight">BR / Company Profile</h2>
-                            <p className="text-[10px] text-blue-500 uppercase tracking-[0.4em] font-black mt-2">Verified Entity Architecture</p>
-                        </div>
+                        <h2 className="text-xl font-black text-white tracking-tighter uppercase mb-1">Intelligence</h2>
+                        <p className="text-[10px] text-blue-500 font-black uppercase tracking-widest">Document Registry</p>
                     </div>
 
-                    <button
-                        onClick={handleSaveProfile}
-                        disabled={savingProfile}
-                        className="bg-blue-600 text-white hover:bg-blue-500 px-10 py-4 rounded-2xl font-black shadow-2xl transition-all flex items-center gap-3 uppercase text-[11px] tracking-widest active:scale-95 disabled:opacity-50"
-                    >
-                        {savingProfile ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
-                        Sync Update
-                    </button>
+                    <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
+                        {/* DOSSIER TOGGLE */}
+                        <button
+                            onClick={() => setActiveDocTemplateId(null)}
+                            className={`w-full p-4 rounded-xl flex items-center gap-4 transition-all border ${!activeDocTemplateId ? 'bg-blue-600/20 border-blue-500/50 text-blue-400' : 'bg-white/5 border-transparent text-slate-500 hover:bg-white/10'}`}
+                        >
+                            <BookOpen size={18} />
+                            <div className="text-left">
+                                <p className="text-xs font-black uppercase tracking-tight leading-none">Main Dossier</p>
+                                <p className="text-[9px] mt-1 font-bold opacity-60">Combined Intelligence</p>
+                            </div>
+                        </button>
+
+                        <div className="h-[1px] bg-white/5 my-4"></div>
+
+                        {docTemplates.map(doc => (
+                            <button
+                                key={doc.id}
+                                onClick={() => setActiveDocTemplateId(doc.id)}
+                                className={`w-full p-3 rounded-xl flex items-center gap-3 transition-all border ${activeDocTemplateId === doc.id ? 'bg-white/10 border-white/20 text-white' : 'bg-transparent border-transparent text-slate-500 hover:bg-white/5'}`}
+                            >
+                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${doc.status === 'Verified' ? 'bg-green-500/10 text-green-500' : 'bg-slate-800 text-slate-600'}`}>
+                                    <FileText size={16} />
+                                </div>
+                                <div className="text-left overflow-hidden">
+                                    <p className="text-[10px] font-black uppercase tracking-tight truncate">{doc.name}</p>
+                                    <p className="text-[8px] font-bold opacity-50 uppercase">{doc.status}</p>
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="p-4 border-t border-white/5">
+                        <button
+                            onClick={handleRecallScan}
+                            disabled={isDocScanning}
+                            className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
+                        >
+                            {isDocScanning ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+                            {isDocScanning ? 'Scanning...' : 'Deep Recall Scan'}
+                        </button>
+                    </div>
                 </div>
 
-                {/* MAIN DOSSIER AREA */}
-                <div className="flex-1 overflow-y-auto px-6 pb-20 custom-scrollbar">
-                    <div className="max-w-5xl mx-auto">
+                {/* --- MAIN CONTENT AREA --- */}
+                <div className="flex-1 overflow-y-auto bg-slate-900 relative custom-scrollbar">
 
-                        {formData.organizedProfile ? (
-                            /* --- AI ORGANIZED PROFILE (Book Page Style) --- */
-                            <div className="bg-white border-y border-slate-200 py-24 px-16 shadow-2xl animate-in fade-in slide-in-from-bottom-12 duration-1000 relative">
-                                {/* Subtle Logo Watermark */}
-                                <div className="absolute top-10 right-10 opacity-[0.03] select-none pointer-events-none">
-                                    <Sparkles size={200} className="text-slate-900" />
+                    {/* Header Action Bar */}
+                    <div className="sticky top-0 z-20 bg-slate-900/80 backdrop-blur-md p-6 flex justify-between items-center border-b border-white/5">
+                        <div className="flex items-center gap-4">
+                            <ShieldCheck size={20} className="text-blue-500" />
+                            <span className="text-xs font-black text-slate-400 uppercase tracking-[0.3em]">SECURE ENTITY ARCHIVE</span>
+                        </div>
+                        <button
+                            onClick={handleSaveProfile}
+                            disabled={savingProfile}
+                            className="bg-white/5 hover:bg-white/10 text-white px-6 py-2 rounded-lg font-black uppercase text-[10px] tracking-widest transition-all border border-white/10 flex items-center gap-2"
+                        >
+                            {savingProfile ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
+                            Commit Changes
+                        </button>
+                    </div>
+
+                    <div className="max-w-5xl mx-auto py-12 px-8">
+                        {activeDocTemplateId ? (
+                            /* --- INDIVIDUAL DOCUMENT VIEW --- */
+                            <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <h1 className="text-3xl font-black text-white tracking-tighter uppercase leading-none mb-2">{activeDoc?.name}</h1>
+                                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Source Entity Document • {activeDoc?.status}</p>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <a
+                                            href={`/api/company/document-image/${activeDoc?.docType}?token=${localStorage.getItem('token')}`}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg text-[10px] font-black uppercase tracking-widest border border-white/5"
+                                        >
+                                            View Original
+                                        </a>
+                                    </div>
                                 </div>
 
-                                <div className="max-w-4xl mx-auto space-y-16">
-                                    {/* Header */}
-                                    <div className="border-b-2 border-slate-900 pb-10 mb-16 flex justify-between items-end">
-                                        <div className="space-y-4">
-                                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.6em]">ENTITY INTELLIGENCE DOSSIER</h3>
-                                            <h1 className="text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none">Business Profile</h1>
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                    {/* HARVESTED TEXT */}
+                                    <div className="bg-slate-950 border border-white/5 p-8 rounded-2xl shadow-inner">
+                                        <div className="flex items-center gap-3 mb-6">
+                                            <Terminal size={16} className="text-blue-500" />
+                                            <h3 className="text-xs font-black text-white uppercase tracking-widest">Harvested Text (OCR)</h3>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest">VERIFIED SYSTEM EXTRACT</p>
-                                            <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase">GENERATED: {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'LONG', year: 'numeric' })}</p>
+                                        <div className="font-mono text-[11px] text-slate-400 leading-relaxed whitespace-pre-wrap max-h-[500px] overflow-y-auto custom-scrollbar bg-black/20 p-4 rounded-xl">
+                                            {originalDocData?.rawText || 'No text extracted for this document. Try Recall Scan.'}
                                         </div>
                                     </div>
 
-                                    {/* Content Body */}
-                                    <div className="prose prose-slate max-w-none">
-                                        {formData.organizedProfile.split('\n').map((line, i) => {
-                                            const cleanLine = line.trim();
-                                            if (!cleanLine) return <div key={i} className="h-4" />;
-
-                                            // I., II., III. Headers
-                                            if (/^[IVX]+\./.test(cleanLine) || cleanLine.startsWith('#')) {
-                                                return (
-                                                    <h2 key={i} className="text-xl font-black text-slate-900 uppercase tracking-[0.2em] pt-12 mb-8 border-b border-slate-100 pb-4">
-                                                        {cleanLine.replace(/#/g, '').trim()}
-                                                    </h2>
-                                                );
-                                            }
-
-                                            // Bullet Points
-                                            if (cleanLine.startsWith('- **') || cleanLine.startsWith('**')) {
-                                                const parts = cleanLine.split('**:');
-                                                if (parts.length > 1) {
-                                                    return (
-                                                        <div key={i} className="grid grid-cols-3 gap-8 py-3 border-b border-slate-50">
-                                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest pt-1">
-                                                                {parts[0].replace(/[-*]/g, '').trim()}
-                                                            </span>
-                                                            <span className="col-span-2 text-md font-bold text-slate-800 leading-relaxed">
-                                                                {parts[1].trim()}
-                                                            </span>
-                                                        </div>
-                                                    );
-                                                }
-                                            }
-
-                                            // Normal Text
-                                            return (
-                                                <p key={i} className="text-[16px] font-medium text-slate-700 leading-[1.8] text-justify mb-6">
-                                                    {cleanLine}
-                                                </p>
-                                            );
-                                        })}
-                                    </div>
-
-                                    {/* Footer */}
-                                    <div className="pt-20 border-t border-slate-200 flex justify-between items-center opacity-40">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-6 h-6 bg-slate-900 rounded-sm flex items-center justify-center font-bold text-[8px] text-white">GK</div>
-                                            <span className="text-[8px] font-black uppercase tracking-[0.5em]">Global Intelligence System</span>
-                                        </div>
-                                        <div className="text-right flex flex-col items-end">
-                                            <span className="text-[8px] font-black uppercase tracking-[0.5em]">CONFIDENTIAL DOCUMENT • PAGE 01</span>
-                                            <span className="text-[6px] font-bold text-slate-400 uppercase mt-1">Sticked & Verified by GKSMART AI</span>
+                                    {/* IMAGE PREVIEW */}
+                                    <div className="bg-slate-950 border border-white/5 p-2 rounded-2xl overflow-hidden shadow-2xl">
+                                        <div className="aspect-[4/5] bg-slate-900 rounded-xl flex items-center justify-center overflow-hidden border border-white/5">
+                                            {originalDocData?.isMetadataOnly ? (
+                                                <div className="text-center p-8">
+                                                    <AlertCircle size={32} className="text-orange-500 mx-auto mb-4" />
+                                                    <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-2">Metadata Placeholder</p>
+                                                    <p className="text-[9px] text-slate-600 leading-relaxed">This file is sticked in the DB ledger. Binary preview is currently unavailable due to drive quota.</p>
+                                                </div>
+                                            ) : (
+                                                <img
+                                                    src={`/api/company/document-image/${activeDoc?.docType}?token=${localStorage.getItem('token')}&t=${Date.now()}`}
+                                                    alt="Preview"
+                                                    className="w-full h-full object-contain opacity-80 hover:opacity-100 transition-opacity"
+                                                />
+                                            )}
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         ) : (
-                            <div className="flex flex-col items-center justify-center py-40 bg-white/5 rounded-3xl border border-white/5 space-y-6">
-                                <div className="p-8 bg-blue-600/10 rounded-full">
-                                    <ShieldCheck size={48} className="text-blue-500 animate-pulse" />
-                                </div>
-                                <div className="text-center">
-                                    <h3 className="text-white font-black uppercase tracking-widest">No Intelligence Data</h3>
-                                    <p className="text-slate-500 text-xs mt-2 uppercase tracking-tight">System is waiting for BR Document Scan...</p>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
+                            /* --- MAIN DOSSIER MODE --- */
+                            formData.organizedProfile ? (
+                                <div className="bg-white border-y border-slate-200 py-24 px-16 shadow-2xl animate-in fade-in slide-in-from-bottom-12 duration-1000 relative">
+                                    {/* Watermark */}
+                                    <div className="absolute top-10 right-10 opacity-[0.03] select-none pointer-events-none">
+                                        <Sparkles size={200} className="text-slate-900" />
+                                    </div>
 
-                {loading && (
-                    <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-md flex items-center justify-center z-50">
-                        <Loader2 className="animate-spin text-blue-500" size={48} />
-                    </div>
-                )}
-                <div className="w-20 h-20 bg-slate-800/50 rounded-[32px] flex items-center justify-center mx-auto mb-8 border border-white/5">
-                    <ShieldCheck size={32} className="text-slate-700" />
-                </div>
-                <h3 className="text-xl font-bold text-slate-400 mb-2 tracking-tight">System Ready for Deployment</h3>
-                <p className="text-slate-600 text-[10px] font-black uppercase tracking-[0.2em]">Awaiting Administrator Profile Architecture</p>
-            </div>
-        )
-    }
-                    </div >
-                </div >
-            </div >
-        );
-};
-
-const handleFiles = async (fileList) => {
-    if (fileList.length === 0) return;
-
-    // 2026-02-03: Limit to 5 files to prevent bandwidth/AI timeouts
-    if (fileList.length > 5) {
-        alert("Maximum 5 files allowed per upload batch. Please upload more in chunks.");
-        return;
-    }
-
-    setMessage(`Preparing to process ${fileList.length} files...`);
-    setUploadingBank(true);
-
-    const token = localStorage.getItem('token');
-    let processedCount = 0;
-    let failCount = 0;
-
-    // SEQUENTIAL UPLOAD: One by one to prevent 502 Bad Gateway timeouts
-    for (let i = 0; i < fileList.length; i++) {
-        const file = fileList[i];
-        const formData = new FormData();
-        formData.append('files', file);
-
-        setMessage(`Processing File ${i + 1}/${fileList.length}: ${file.name}...`);
-
-        try {
-            const res = await axios.post('/api/company/upload-bank-statement', formData, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
-
-            let safeFiles = res.data.files || [];
-            if (!Array.isArray(safeFiles)) safeFiles = [];
-
-            // Update state instantly for this file
-            setBankFiles(prev => {
-                const combined = [...prev, ...safeFiles];
-                // Sort by date (Oldest at Top)
-                return combined.sort((a, b) => {
-                    const d1 = a.transactions?.[0]?.date ? parseDate(a.transactions[0].date) : null;
-                    const d2 = b.transactions?.[0]?.date ? parseDate(b.transactions[0].date) : null;
-
-                    // Push errors/unknown to bottom (far future timestamp)
-                    const timeA = (d1 && d1.getTime() > 0) ? d1.getTime() : 9999999999999;
-                    const timeB = (d2 && d2.getTime() > 0) ? d2.getTime() : 9999999999999;
-
-                    return timeA - timeB;
-                });
-            });
-
-            // Auto-select if it's the first one
-            if (processedCount === 0 && safeFiles.length > 0) {
-                setActiveFileIndex(0);
-            }
-
-            processedCount++;
-
-            // 2026-02-03: Increased cooling delay (4s) to prevent Gemini 429 Resource Exhaustion
-            if (i < fileList.length - 1) {
-                await new Promise(r => setTimeout(r, 4000));
-            }
-        } catch (err) {
-            console.error(`Upload failed for ${file.name}:`, err);
-            failCount++;
-        }
-    }
-
-    const statusMsg = `Upload Finished. ${processedCount} successful, ${failCount} failed.`;
-    setMessage(statusMsg);
-    setUploadingBank(false);
-
-    if (failCount > 0) {
-        alert(`Warnings: ${failCount} file(s) failed during upload. Check console for details.`);
-    }
-};
-
-// ==========================================
-// 🔒 PROTECTED CORE LOGIC - DO NOT MODIFY
-// The following `handleDelete` function is critical for data integrity.
-// It handles both database transactions and Google Drive file cleanup.
-// Lengthy comments removed for brevity but logic is preserved.
-// ==========================================
-const handleDelete = async (idx, file) => {
-    // Robust check for saved status
-    const isSaved = file.status === 'Saved' || (file.transactions && file.transactions.some(t => t._id));
-
-    if (!window.confirm(`Delete ${isSaved ? 'PERMANENTLY' : 'this'} item?`)) return;
-
-    if (isSaved) {
-        try {
-            const token = localStorage.getItem('token');
-
-            // Corrected endpoint: /api/company/bank-file/ (singular)
-            if (file._id && !file.isVirtual) {
-                await axios.delete(`/api/company/bank-file/${file._id}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-            } else {
-                // Fallback to legacy transaction deletion
-                const ids = file.transactions ? file.transactions.map(t => t._id).filter(Boolean) : [];
-                if (ids.length > 0) {
-                    await axios.post('/api/company/delete-transactions', {
-                        transactionIds: ids
-                    }, {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                }
-            }
-
-            // 2026-02-03 FIX: Update state locally instead of full reload to prevent SiteGate lock
-            setBankFiles(prev => prev.filter((_, i) => i !== idx));
-            if (activeFileIndex === idx) setActiveFileIndex(0);
-            setMessage("Document and transactions deleted successfully.");
-            setTimeout(() => setMessage(''), 3000);
-
-        } catch (err) {
-            console.error('Delete API Error:', err);
-
-            // If 404, it means they are already gone from DB. Just clean up UI.
-            if (err.response && err.response.status === 404) {
-                console.warn("Transactions not found in DB, removing from UI only.");
-                setBankFiles(prev => prev.filter((_, i) => i !== idx));
-                if (activeFileIndex === idx) setActiveFileIndex(0);
-                return;
-            }
-
-            const errMsg = err.response?.data?.message || err.message;
-
-            // Force Remove Option
-            if (window.confirm(`Delete failed on server (${errMsg}). \n\nDo you want to FORCE REMOVE this item from your list anyway?`)) {
-                setBankFiles(prev => prev.filter((_, i) => i !== idx));
-                if (activeFileIndex === idx) setActiveFileIndex(0);
-                return;
-            }
-
-            if (errMsg === 'Token is not valid' || err.response?.status === 401) {
-                alert('Session Expired. Please Login Again.');
-                localStorage.removeItem('token');
-                window.location.href = '/login';
-                return;
-            }
-
-            // Show On-Screen Error
-            setDebugLog({
-                title: 'Delete Failed',
-                message: errMsg,
-                details: JSON.stringify(err.response?.data || {}, null, 2)
-            });
-        }
-    } else {
-        // Delete Unsaved - No reload needed
-        setBankFiles(prev => prev.filter((_, i) => i !== idx));
-        if (activeFileIndex === idx) setActiveFileIndex(0);
-    }
-};
-
-const renderBank = () => (
-    <div className="w-full h-[calc(100vh-80px)] pt-6 pl-10 pr-[450px] animate-fade-in flex flex-col">
-        <div className="mb-4 flex items-center gap-4">
-            <button
-                onClick={() => setView('home')}
-                className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-sm font-medium transition shrink-0 shadow-md"
-                title="Back to Dashboard"
-            >
-                <ArrowLeft size={20} />
-            </button>
-            <span className="text-gray-500 text-sm font-medium">Back to Dashboard</span>
-        </div>
-
-        <div className="flex flex-1 gap-6 min-h-0">
-
-            {/* COLUMN 1: UPLOAD ZONE (Vertical) */}
-            <div className="w-64 shrink-0 flex flex-col">
-                <div
-                    className="flex-1 bg-white border-2 border-dashed border-green-200 rounded-2xl p-4 text-center hover:border-green-400 hover:bg-green-50/30 transition relative group flex flex-col items-center justify-center cursor-pointer"
-                    onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                    onDrop={async (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        if (uploadingBank) return;
-                        const fileList = Array.from(e.dataTransfer.files);
-                        if (fileList.length === 0) return;
-                        handleFiles(fileList);
-                    }}
-                >
-                    <input
-                        type="file"
-                        accept="image/*,.pdf"
-                        multiple
-                        onChange={(e) => {
-                            if (e.target.files?.length > 0) handleFiles(Array.from(e.target.files));
-                        }}
-                        disabled={uploadingBank}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                    />
-
-                    {uploadingBank && (
-                        <div className="absolute inset-0 bg-white/95 z-20 flex flex-col items-center justify-center backdrop-blur-md rounded-2xl">
-                            <Loader2 className="animate-spin h-8 w-8 text-blue-600 mb-2" />
-                            <p className="text-xs font-bold text-gray-700 animate-pulse">Ai is Analyzing the statment...</p>
-                        </div>
-                    )}
-
-                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-700 mb-4">
-                        <CloudUpload size={24} />
-                    </div>
-                    <h3 className="font-bold text-gray-800 text-sm mb-2 leading-tight">
-                        Submit your bank statement
-                    </h3>
-                    <p className="text-xs text-gray-400">
-                        Drag & drop or Click to Upload
-                    </p>
-                </div>
-            </div>
-
-            {/* COLUMN 2: FILE LIST */}
-            <div className="w-80 shrink-0 flex flex-col space-y-4">
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col h-full overflow-hidden">
-                    <div className="p-4 bg-gray-50 border-b border-gray-100 font-bold text-gray-700 flex flex-col gap-3 shrink-0">
-                        <div className="flex justify-between items-center">
-                            <span>Uploaded Files ({bankFiles.length})</span>
-                            {bankFiles.length > 0 && bankFiles.every(f => f.status === 'Saved') ? (
-                                <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded flex items-center gap-1">
-                                    <CheckCircle size={10} /> All Saved
-                                </span>
-                            ) : bankFiles.length > 0 ? (
-                                <span className="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded flex items-center gap-1">
-                                    <AlertCircle size={10} /> Pending Save
-                                </span>
-                            ) : null}
-                        </div>
-                        {/* SAVE BUTTON MOVED TO TOP */}
-                        {bankFiles.length > 0 && (
-                            <button
-                                onClick={handleSaveTransactions}
-                                disabled={savingBank}
-                                className="w-full bg-black text-white px-3 py-2 rounded-lg font-bold hover:bg-gray-800 transition disabled:bg-gray-400 flex items-center justify-center gap-2 shadow-sm text-xs"
-                            >
-                                {savingBank ? <Loader2 className="animate-spin h-3 w-3" /> : <Save size={14} />}
-                                {savingBank ? 'SAVING...' : 'SAVE ALL'}
-                            </button>
-                        )}
-                    </div>
-                    <div className="divide-y divide-gray-100 overflow-y-auto flex-1 p-2">
-                        {bankFiles.map((file, idx) => (
-                            <div
-                                key={idx}
-                                className={`p-3 mb-2 rounded-lg flex items-center justify-between transition cursor-pointer group ${activeFileIndex === idx ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50 border border-transparent'}`}
-                                onClick={() => setActiveFileIndex(idx)}
-                            >
-                                <div className="flex-1 min-w-0 mr-2">
-                                    {/* Primary Title: Date Range */}
-                                    <p className="font-bold text-gray-800 text-xs truncate mb-1">
-                                        {(() => {
-                                            const rangeStr = file.dateRange || "";
-                                            // Priority 1: Meta Date Range (Formatted)
-                                            if (rangeStr.includes(" - ") && !rangeStr.includes("FATAL_ERR") && !rangeStr.includes("DEBUG_ERR")) {
-                                                const parts = rangeStr.split(' - ');
-                                                const s = formatDateSafe(parts[0].trim());
-                                                const e = formatDateSafe(parts[1].trim());
-                                                if (s !== '-' && e !== '-') return `${s} - ${e}`;
-                                            }
-
-                                            // Priority 1.5: Use Transaction Range if dateRange is missing/garbage
-                                            if (file.transactions?.length > 0) {
-                                                const dates = file.transactions.map(t => parseDate(t.date)?.getTime()).filter(Boolean);
-                                                if (dates.length > 0) {
-                                                    const s = new Date(Math.min(...dates)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-                                                    const e = new Date(Math.max(...dates)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-                                                    return `${s} - ${e}`;
-                                                }
-                                            }
-
-                                            // Priority 2: Use original name if it's not the same as dateRange
-                                            if (file.originalName && !file.originalName.includes('-')) return file.originalName;
-
-                                            // Priority 3: Fallback
-                                            return 'Bank Statement';
-                                        })()}
-                                    </p>
-
-                                    {/* Metadata: Original Name + Count */}
-                                    <div className="flex flex-col text-[10px] text-gray-400 mt-1 space-y-0.5">
-                                        <div className="flex items-center">
-                                            <FileText size={10} className="mr-1 opacity-50" />
-                                            <span className="truncate max-w-[120px] mr-2" title={file.originalName}>{file.originalName}</span>
-                                            <span className="text-gray-300">|</span>
-                                            <span className="ml-2 font-mono">{(file.transactions || []).length} txs</span>
-
-                                            {/* SYNC STATUS ICONS */}
-                                            <div className="ml-auto flex items-center gap-1.5">
-                                                {file.isLocked && (
-                                                    <span className="text-[9px] bg-indigo-500/10 text-indigo-400 px-1.5 py-0.5 rounded border border-indigo-500/20 font-black flex items-center gap-1" title="Transactions Recorded in Ledger">
-                                                        <ShieldCheck size={8} /> STICKED
-                                                    </span>
-                                                )}
-
-                                                {!file.path && file.syncError ? (
-                                                    <span className="text-[9px] bg-red-500/10 text-red-500 px-1.5 py-0.5 rounded border border-red-500/20 font-black flex items-center gap-1 cursor-help" onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setDebugLog({
-                                                            title: 'Cloud Sync Failed',
-                                                            message: 'This file was analyzed locally but could not be saved to Google Drive.',
-                                                            details: `File: ${file.originalName}\nError: ${file.syncError}\n\nPlease contact system admin to check folder permissions.`
-                                                        });
-                                                    }}>
-                                                        <AlertCircle size={8} /> SYNC FAILED
-                                                    </span>
-                                                ) : file.isMetadataOnly ? (
-                                                    <span className="text-[9px] bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded border border-amber-500/20 font-black flex items-center gap-1 cursor-help" onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setDebugLog({
-                                                            title: 'Partial Sync (Metadata Only)',
-                                                            message: 'The transaction records are synced, but the original file bytes are locked on the cloud.',
-                                                            details: 'Google Workspace policy restricted the service account from uploading the full binary file. The ledger entry is safe, but "View Original" may not be available.\n\nContact admin for binary upload authorization.'
-                                                        });
-                                                    }}>
-                                                        <CloudUpload size={8} /> METADATA ONLY
-                                                    </span>
-                                                ) : file.driveId ? (
-                                                    <span className="text-[8px] text-emerald-500 opacity-60 flex items-center gap-1">
-                                                        <CheckCircle size={8} /> SYNCED
-                                                    </span>
-                                                ) : null}
+                                    <div className="max-w-4xl mx-auto space-y-16">
+                                        {/* Header */}
+                                        <div className="border-b-2 border-slate-900 pb-10 mb-16 flex justify-between items-end">
+                                            <div className="space-y-4">
+                                                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.6em]">ENTITY INTELLIGENCE DOSSIER</h3>
+                                                <h1 className="text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none">Business Profile</h1>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest">VERIFIED SYSTEM EXTRACT</p>
+                                                <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase">GENERATED: {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'LONG', year: 'numeric' })}</p>
                                             </div>
                                         </div>
-                                        {(file.bankName || file.accountNumber) && (
-                                            <div className="flex items-center text-blue-500/60 font-medium">
-                                                <Tag size={10} className="mr-1" />
-                                                <span className="truncate">{file.bankName || 'Unknown Bank'} {file.accountNumber ? `(${file.accountNumber})` : ''}</span>
+
+                                        {/* Content Body */}
+                                        <div className="prose prose-slate max-w-none">
+                                            {formData.organizedProfile.split('\n').map((line, i) => {
+                                                const cleanLine = line.trim();
+                                                if (!cleanLine) return <div key={i} className="h-4" />;
+
+                                                if (/^[IVX]+\./.test(cleanLine) || cleanLine.startsWith('#')) {
+                                                    return (
+                                                        <h2 key={i} className="text-xl font-black text-slate-900 uppercase tracking-[0.2em] pt-12 mb-8 border-b border-slate-100 pb-4">
+                                                            {cleanLine.replace(/#/g, '').trim()}
+                                                        </h2>
+                                                    );
+                                                }
+
+                                                if (cleanLine.startsWith('- **') || cleanLine.startsWith('**')) {
+                                                    const parts = cleanLine.split('**:');
+                                                    if (parts.length > 1) {
+                                                        return (
+                                                            <div key={i} className="grid grid-cols-3 gap-8 py-3 border-b border-slate-50">
+                                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest pt-1">
+                                                                    {parts[0].replace(/[-*]/g, '').trim()}
+                                                                </span>
+                                                                <span className="col-span-2 text-md font-bold text-slate-800 leading-relaxed">
+                                                                    {parts[1].trim()}
+                                                                </span>
+                                                            </div>
+                                                        );
+                                                    }
+                                                }
+
+                                                return (
+                                                    <p key={i} className="text-[16px] font-medium text-slate-700 leading-[1.8] text-justify mb-6">
+                                                        {cleanLine}
+                                                    </p>
+                                                );
+                                            })}
+                                        </div>
+
+                                        {/* Footer */}
+                                        <div className="pt-20 border-t border-slate-200 flex justify-between items-center opacity-40">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-6 h-6 bg-slate-900 rounded-sm flex items-center justify-center font-bold text-[8px] text-white">GK</div>
+                                                <span className="text-[8px] font-black uppercase tracking-[0.5em]">Global Intelligence System</span>
+                                            </div>
+                                            <div className="text-right flex flex-col items-end">
+                                                <span className="text-[8px] font-black uppercase tracking-[0.5em]">CONFIDENTIAL DOCUMENT • PAGE 01</span>
+                                                <span className="text-[6px] font-bold text-slate-400 uppercase mt-1">Sticked & Verified by GKSMART AI</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center py-40 bg-white/5 rounded-3xl border border-white/10 space-y-6">
+                                    <div className="p-8 bg-blue-600/10 rounded-full">
+                                        <ShieldCheck size={48} className="text-blue-500 animate-pulse" />
+                                    </div>
+                                    <div className="text-center">
+                                        <h3 className="text-white font-black uppercase tracking-widest">Dossier Initializing</h3>
+                                        <p className="text-slate-500 text-xs mt-2 uppercase tracking-tight">System is awaiting data extraction. Click "Deep Recall Scan" to recover.</p>
+                                    </div>
+                                </div>
+                            )
+                        )}
+                    </div>
+                </div>
+
+                {isDocScanning && (
+                    <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-xl flex flex-col items-center justify-center z-[100] animate-in fade-in duration-300">
+                        <Loader2 className="animate-spin text-blue-500 h-16 w-16 mb-6" />
+                        <h2 className="text-2xl font-black text-white uppercase tracking-widest mb-2">Recall Scan Active</h2>
+                        <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.4em] animate-pulse">Syncing Google Drive Archives with DB Ledger...</p>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    const handleFiles = async (fileList) => {
+        if (fileList.length === 0) return;
+
+        // 2026-02-03: Limit to 5 files to prevent bandwidth/AI timeouts
+        if (fileList.length > 5) {
+            alert("Maximum 5 files allowed per upload batch. Please upload more in chunks.");
+            return;
+        }
+
+        setMessage(`Preparing to process ${fileList.length} files...`);
+        setUploadingBank(true);
+
+        const token = localStorage.getItem('token');
+        let processedCount = 0;
+        let failCount = 0;
+
+        // SEQUENTIAL UPLOAD: One by one to prevent 502 Bad Gateway timeouts
+        for (let i = 0; i < fileList.length; i++) {
+            const file = fileList[i];
+            const formData = new FormData();
+            formData.append('files', file);
+
+            setMessage(`Processing File ${i + 1}/${fileList.length}: ${file.name}...`);
+
+            try {
+                const res = await axios.post('/api/company/upload-bank-statement', formData, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
+
+                let safeFiles = res.data.files || [];
+                if (!Array.isArray(safeFiles)) safeFiles = [];
+
+                // Update state instantly for this file
+                setBankFiles(prev => {
+                    const combined = [...prev, ...safeFiles];
+                    // Sort by date (Oldest at Top)
+                    return combined.sort((a, b) => {
+                        const d1 = a.transactions?.[0]?.date ? parseDate(a.transactions[0].date) : null;
+                        const d2 = b.transactions?.[0]?.date ? parseDate(b.transactions[0].date) : null;
+
+                        // Push errors/unknown to bottom (far future timestamp)
+                        const timeA = (d1 && d1.getTime() > 0) ? d1.getTime() : 9999999999999;
+                        const timeB = (d2 && d2.getTime() > 0) ? d2.getTime() : 9999999999999;
+
+                        return timeA - timeB;
+                    });
+                });
+
+                // Auto-select if it's the first one
+                if (processedCount === 0 && safeFiles.length > 0) {
+                    setActiveFileIndex(0);
+                }
+
+                processedCount++;
+
+                // 2026-02-03: Increased cooling delay (4s) to prevent Gemini 429 Resource Exhaustion
+                if (i < fileList.length - 1) {
+                    await new Promise(r => setTimeout(r, 4000));
+                }
+            } catch (err) {
+                console.error(`Upload failed for ${file.name}:`, err);
+                failCount++;
+            }
+        }
+
+        const statusMsg = `Upload Finished. ${processedCount} successful, ${failCount} failed.`;
+        setMessage(statusMsg);
+        setUploadingBank(false);
+
+        if (failCount > 0) {
+            alert(`Warnings: ${failCount} file(s) failed during upload. Check console for details.`);
+        }
+    };
+
+    // ==========================================
+    // 🔒 PROTECTED CORE LOGIC - DO NOT MODIFY
+    // The following `handleDelete` function is critical for data integrity.
+    // It handles both database transactions and Google Drive file cleanup.
+    // Lengthy comments removed for brevity but logic is preserved.
+    // ==========================================
+    const handleDelete = async (idx, file) => {
+        // Robust check for saved status
+        const isSaved = file.status === 'Saved' || (file.transactions && file.transactions.some(t => t._id));
+
+        if (!window.confirm(`Delete ${isSaved ? 'PERMANENTLY' : 'this'} item?`)) return;
+
+        if (isSaved) {
+            try {
+                const token = localStorage.getItem('token');
+
+                // Corrected endpoint: /api/company/bank-file/ (singular)
+                if (file._id && !file.isVirtual) {
+                    await axios.delete(`/api/company/bank-file/${file._id}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                } else {
+                    // Fallback to legacy transaction deletion
+                    const ids = file.transactions ? file.transactions.map(t => t._id).filter(Boolean) : [];
+                    if (ids.length > 0) {
+                        await axios.post('/api/company/delete-transactions', {
+                            transactionIds: ids
+                        }, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                    }
+                }
+
+                // 2026-02-03 FIX: Update state locally instead of full reload to prevent SiteGate lock
+                setBankFiles(prev => prev.filter((_, i) => i !== idx));
+                if (activeFileIndex === idx) setActiveFileIndex(0);
+                setMessage("Document and transactions deleted successfully.");
+                setTimeout(() => setMessage(''), 3000);
+
+            } catch (err) {
+                console.error('Delete API Error:', err);
+
+                // If 404, it means they are already gone from DB. Just clean up UI.
+                if (err.response && err.response.status === 404) {
+                    console.warn("Transactions not found in DB, removing from UI only.");
+                    setBankFiles(prev => prev.filter((_, i) => i !== idx));
+                    if (activeFileIndex === idx) setActiveFileIndex(0);
+                    return;
+                }
+
+                const errMsg = err.response?.data?.message || err.message;
+
+                // Force Remove Option
+                if (window.confirm(`Delete failed on server (${errMsg}). \n\nDo you want to FORCE REMOVE this item from your list anyway?`)) {
+                    setBankFiles(prev => prev.filter((_, i) => i !== idx));
+                    if (activeFileIndex === idx) setActiveFileIndex(0);
+                    return;
+                }
+
+                if (errMsg === 'Token is not valid' || err.response?.status === 401) {
+                    alert('Session Expired. Please Login Again.');
+                    localStorage.removeItem('token');
+                    window.location.href = '/login';
+                    return;
+                }
+
+                // Show On-Screen Error
+                setDebugLog({
+                    title: 'Delete Failed',
+                    message: errMsg,
+                    details: JSON.stringify(err.response?.data || {}, null, 2)
+                });
+            }
+        } else {
+            // Delete Unsaved - No reload needed
+            setBankFiles(prev => prev.filter((_, i) => i !== idx));
+            if (activeFileIndex === idx) setActiveFileIndex(0);
+        }
+    };
+
+    const renderBank = () => (
+        <div className="w-full h-[calc(100vh-80px)] pt-6 pl-10 pr-[450px] animate-fade-in flex flex-col">
+            <div className="mb-4 flex items-center gap-4">
+                <button
+                    onClick={() => setView('home')}
+                    className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-sm font-medium transition shrink-0 shadow-md"
+                    title="Back to Dashboard"
+                >
+                    <ArrowLeft size={20} />
+                </button>
+                <span className="text-gray-500 text-sm font-medium">Back to Dashboard</span>
+            </div>
+
+            <div className="flex flex-1 gap-6 min-h-0">
+
+                {/* COLUMN 1: UPLOAD ZONE (Vertical) */}
+                <div className="w-64 shrink-0 flex flex-col">
+                    <div
+                        className="flex-1 bg-white border-2 border-dashed border-green-200 rounded-2xl p-4 text-center hover:border-green-400 hover:bg-green-50/30 transition relative group flex flex-col items-center justify-center cursor-pointer"
+                        onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                        onDrop={async (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (uploadingBank) return;
+                            const fileList = Array.from(e.dataTransfer.files);
+                            if (fileList.length === 0) return;
+                            handleFiles(fileList);
+                        }}
+                    >
+                        <input
+                            type="file"
+                            accept="image/*,.pdf"
+                            multiple
+                            onChange={(e) => {
+                                if (e.target.files?.length > 0) handleFiles(Array.from(e.target.files));
+                            }}
+                            disabled={uploadingBank}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        />
+
+                        {uploadingBank && (
+                            <div className="absolute inset-0 bg-white/95 z-20 flex flex-col items-center justify-center backdrop-blur-md rounded-2xl">
+                                <Loader2 className="animate-spin h-8 w-8 text-blue-600 mb-2" />
+                                <p className="text-xs font-bold text-gray-700 animate-pulse">Ai is Analyzing the statment...</p>
+                            </div>
+                        )}
+
+                        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-700 mb-4">
+                            <CloudUpload size={24} />
+                        </div>
+                        <h3 className="font-bold text-gray-800 text-sm mb-2 leading-tight">
+                            Submit your bank statement
+                        </h3>
+                        <p className="text-xs text-gray-400">
+                            Drag & drop or Click to Upload
+                        </p>
+                    </div>
+                </div>
+
+                {/* COLUMN 2: FILE LIST */}
+                <div className="w-80 shrink-0 flex flex-col space-y-4">
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col h-full overflow-hidden">
+                        <div className="p-4 bg-gray-50 border-b border-gray-100 font-bold text-gray-700 flex flex-col gap-3 shrink-0">
+                            <div className="flex justify-between items-center">
+                                <span>Uploaded Files ({bankFiles.length})</span>
+                                {bankFiles.length > 0 && bankFiles.every(f => f.status === 'Saved') ? (
+                                    <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded flex items-center gap-1">
+                                        <CheckCircle size={10} /> All Saved
+                                    </span>
+                                ) : bankFiles.length > 0 ? (
+                                    <span className="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded flex items-center gap-1">
+                                        <AlertCircle size={10} /> Pending Save
+                                    </span>
+                                ) : null}
+                            </div>
+                            {/* SAVE BUTTON MOVED TO TOP */}
+                            {bankFiles.length > 0 && (
+                                <button
+                                    onClick={handleSaveTransactions}
+                                    disabled={savingBank}
+                                    className="w-full bg-black text-white px-3 py-2 rounded-lg font-bold hover:bg-gray-800 transition disabled:bg-gray-400 flex items-center justify-center gap-2 shadow-sm text-xs"
+                                >
+                                    {savingBank ? <Loader2 className="animate-spin h-3 w-3" /> : <Save size={14} />}
+                                    {savingBank ? 'SAVING...' : 'SAVE ALL'}
+                                </button>
+                            )}
+                        </div>
+                        <div className="divide-y divide-gray-100 overflow-y-auto flex-1 p-2">
+                            {bankFiles.map((file, idx) => (
+                                <div
+                                    key={idx}
+                                    className={`p-3 mb-2 rounded-lg flex items-center justify-between transition cursor-pointer group ${activeFileIndex === idx ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50 border border-transparent'}`}
+                                    onClick={() => setActiveFileIndex(idx)}
+                                >
+                                    <div className="flex-1 min-w-0 mr-2">
+                                        {/* Primary Title: Date Range */}
+                                        <p className="font-bold text-gray-800 text-xs truncate mb-1">
+                                            {(() => {
+                                                const rangeStr = file.dateRange || "";
+                                                // Priority 1: Meta Date Range (Formatted)
+                                                if (rangeStr.includes(" - ") && !rangeStr.includes("FATAL_ERR") && !rangeStr.includes("DEBUG_ERR")) {
+                                                    const parts = rangeStr.split(' - ');
+                                                    const s = formatDateSafe(parts[0].trim());
+                                                    const e = formatDateSafe(parts[1].trim());
+                                                    if (s !== '-' && e !== '-') return `${s} - ${e}`;
+                                                }
+
+                                                // Priority 1.5: Use Transaction Range if dateRange is missing/garbage
+                                                if (file.transactions?.length > 0) {
+                                                    const dates = file.transactions.map(t => parseDate(t.date)?.getTime()).filter(Boolean);
+                                                    if (dates.length > 0) {
+                                                        const s = new Date(Math.min(...dates)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                                                        const e = new Date(Math.max(...dates)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                                                        return `${s} - ${e}`;
+                                                    }
+                                                }
+
+                                                // Priority 2: Use original name if it's not the same as dateRange
+                                                if (file.originalName && !file.originalName.includes('-')) return file.originalName;
+
+                                                // Priority 3: Fallback
+                                                return 'Bank Statement';
+                                            })()}
+                                        </p>
+
+                                        {/* Metadata: Original Name + Count */}
+                                        <div className="flex flex-col text-[10px] text-gray-400 mt-1 space-y-0.5">
+                                            <div className="flex items-center">
+                                                <FileText size={10} className="mr-1 opacity-50" />
+                                                <span className="truncate max-w-[120px] mr-2" title={file.originalName}>{file.originalName}</span>
+                                                <span className="text-gray-300">|</span>
+                                                <span className="ml-2 font-mono">{(file.transactions || []).length} txs</span>
+
+                                                {/* SYNC STATUS ICONS */}
+                                                <div className="ml-auto flex items-center gap-1.5">
+                                                    {file.isLocked && (
+                                                        <span className="text-[9px] bg-indigo-500/10 text-indigo-400 px-1.5 py-0.5 rounded border border-indigo-500/20 font-black flex items-center gap-1" title="Transactions Recorded in Ledger">
+                                                            <ShieldCheck size={8} /> STICKED
+                                                        </span>
+                                                    )}
+
+                                                    {!file.path && file.syncError ? (
+                                                        <span className="text-[9px] bg-red-500/10 text-red-500 px-1.5 py-0.5 rounded border border-red-500/20 font-black flex items-center gap-1 cursor-help" onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setDebugLog({
+                                                                title: 'Cloud Sync Failed',
+                                                                message: 'This file was analyzed locally but could not be saved to Google Drive.',
+                                                                details: `File: ${file.originalName}\nError: ${file.syncError}\n\nPlease contact system admin to check folder permissions.`
+                                                            });
+                                                        }}>
+                                                            <AlertCircle size={8} /> SYNC FAILED
+                                                        </span>
+                                                    ) : file.isMetadataOnly ? (
+                                                        <span className="text-[9px] bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded border border-amber-500/20 font-black flex items-center gap-1 cursor-help" onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setDebugLog({
+                                                                title: 'Partial Sync (Metadata Only)',
+                                                                message: 'The transaction records are synced, but the original file bytes are locked on the cloud.',
+                                                                details: 'Google Workspace policy restricted the service account from uploading the full binary file. The ledger entry is safe, but "View Original" may not be available.\n\nContact admin for binary upload authorization.'
+                                                            });
+                                                        }}>
+                                                            <CloudUpload size={8} /> METADATA ONLY
+                                                        </span>
+                                                    ) : file.driveId ? (
+                                                        <span className="text-[8px] text-emerald-500 opacity-60 flex items-center gap-1">
+                                                            <CheckCircle size={8} /> SYNCED
+                                                        </span>
+                                                    ) : null}
+                                                </div>
+                                            </div>
+                                            {(file.bankName || file.accountNumber) && (
+                                                <div className="flex items-center text-blue-500/60 font-medium">
+                                                    <Tag size={10} className="mr-1" />
+                                                    <span className="truncate">{file.bankName || 'Unknown Bank'} {file.accountNumber ? `(${file.accountNumber})` : ''}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-1">
+                                        {/* DELETE */}
+                                        <button
+                                            onClick={async (e) => {
+                                                e.stopPropagation();
+                                                handleDelete(idx, file);
+                                            }}
+                                            className="p-1.5 rounded-full hover:bg-red-100 text-gray-300 hover:text-red-500 transition"
+                                        >
+                                            <X size={14} />
+                                        </button>
+                                        {/* EYE */}
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); setActiveFileIndex(idx); }}
+                                            className={`p-1.5 rounded-full transition ${activeFileIndex === idx ? 'text-blue-600 bg-blue-100' : 'text-gray-300 hover:text-blue-500'}`}
+                                        >
+                                            <Eye size={14} />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                            {bankFiles.length === 0 && (
+                                <div className="text-center py-10 text-gray-300 text-xs italic">
+                                    No files yet.
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* COLUMN 3: DETAILS TABLE */}
+                <div className="flex-1 min-w-0 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col overflow-hidden h-full">
+                    <div className="p-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between shrink-0">
+                        <div className="flex items-center">
+                            <div className="p-2 bg-blue-50 rounded-lg mr-3">
+                                <Table className="text-blue-500" size={20} />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-gray-800">Page Details</h3>
+                                <p className="text-xs text-gray-500">
+                                    {bankFiles[activeFileIndex]?.transactions?.length > 0
+                                        ? (() => {
+                                            const dates = bankFiles[activeFileIndex].transactions.map(t => parseDate(t.date)?.getTime()).filter(Boolean);
+                                            const s = new Date(Math.min(...dates)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                                            const e = new Date(Math.max(...dates)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                                            return `${s} - ${e}`;
+                                        })()
+                                        : (bankFiles[activeFileIndex]?.dateRange || 'Select a file')}
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            {/* NEW: View Original PDF Button */}
+                            {(bankFiles[activeFileIndex]?.path?.startsWith('drive:') || bankFiles[activeFileIndex]?.driveId) && (
+                                <a
+                                    href={`${getDocUrl(bankFiles[activeFileIndex] || { path: 'drive:' + bankFiles[activeFileIndex].driveId })}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs bg-white border border-gray-200 text-gray-600 px-3 py-1 rounded-full hover:text-blue-600 hover:border-blue-300 transition flex items-center gap-2 mr-2"
+                                >
+                                    <FileText size={12} />
+                                    <span>View Original</span>
+                                </a>
+                            )}
+                            {bankFiles[activeFileIndex]?.accountNumber && (
+                                <div className="text-[10px] bg-blue-500/10 text-blue-400 px-3 py-1 rounded-full border border-blue-500/20 font-bold uppercase tracking-wider">
+                                    {bankFiles[activeFileIndex].bankName || 'BANK'}: {bankFiles[activeFileIndex].accountNumber}
+                                </div>
+                            )}
+                            <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium flex items-center">
+                                <CheckCircle size={12} className="mr-1" /> Verified
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="flex-1 overflow-auto bg-white">
+                        <table className="w-full text-left">
+                            <thead className="bg-white text-gray-800 text-xs font-bold uppercase sticky top-0 z-10 border-b border-gray-200 shadow-sm">
+                                <tr>
+                                    <th className="px-4 py-4 whitespace-nowrap w-[80px]">Date</th>
+                                    <th className="px-4 py-4 w-full">Transaction Details</th>
+                                    <th className="px-4 py-4 text-right w-[110px]">Money In</th>
+                                    <th className="px-4 py-4 text-right w-[110px]">Money Out</th>
+                                    <th className="px-4 py-4 text-right w-[110px]">Balance</th>
+                                    <th className="px-4 py-4 w-[100px]">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {(bankFiles[activeFileIndex]?.transactions || []).length === 0 ? (
+                                    <tr>
+                                        <td colSpan="7" className="text-center py-10 text-gray-400">No transactions to display</td>
+                                    </tr>
+                                ) : (
+                                    (bankFiles[activeFileIndex]?.transactions || []).map((tx, idx) => (
+                                        <tr key={idx} className="hover:bg-gray-50 transition group">
+                                            <td className="px-4 py-4 text-xs text-gray-600 font-bold whitespace-nowrap align-top">
+                                                {formatDateSafe(tx?.date)}
+                                            </td>
+                                            <td className="px-4 py-4 text-xs text-gray-700 font-medium align-top">
+                                                <div className="whitespace-pre-wrap leading-relaxed">
+                                                    {tx?.description || ''}
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-4 text-xs text-right font-medium text-green-600 align-top whitespace-nowrap">
+                                                {tx?.moneyIn && parseFloat(tx.moneyIn) > 0 ? parseFloat(tx.moneyIn).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''}
+                                            </td>
+                                            <td className="px-4 py-4 text-xs text-right font-medium text-red-600 align-top whitespace-nowrap">
+                                                {tx?.moneyOut && parseFloat(tx.moneyOut) > 0 ? parseFloat(tx.moneyOut).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''}
+                                            </td>
+                                            <td className="px-4 py-4 text-xs text-right text-gray-800 font-bold align-top whitespace-nowrap">
+                                                {tx?.balance ? parseFloat(String(tx.balance).replace(/[^0-9.-]+/g, "")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}
+                                            </td>
+                                            <td className="px-4 py-4 text-xs align-top">
+                                                {/* Actions */}
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            {message && (
+                <div className={`mt-4 mx-auto max-w-lg p-3 rounded-full text-xs font-bold text-center fixed top-6 left-0 right-0 shadow-lg z-50 animate-bounce-in ${message.includes('Error') ? 'bg-red-500 text-white' : 'bg-black text-white'}`}>
+                    {message}
+                </div>
+            )}
+
+            {/* DEBUG CONSOLE (For User Feedback) */}
+            {debugLog && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-6">
+                    <div className="bg-white rounded-xl shadow-2xl p-6 max-w-2xl w-full border-2 border-red-500 relative">
+                        <button
+                            onClick={() => setDebugLog(null)}
+                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+                        >
+                            <X />
+                        </button>
+                        <h3 className="text-xl font-bold text-red-600 mb-2 flex items-center">
+                            <span className="bg-red-100 p-2 rounded-full mr-3">⚠️</span>
+                            {debugLog.title}
+                        </h3>
+                        <p className="text-gray-800 font-medium mb-4">{debugLog.message}</p>
+
+                        <div className="bg-gray-100 p-4 rounded-lg overflow-x-auto mb-4">
+                            <pre className="text-xs font-mono text-gray-600">
+                                {debugLog.details}
+                            </pre>
+                        </div>
+
+                        <p className="text-xs text-gray-400 text-center">
+                            Please take a screenshot of this error and send it to support.
+                        </p>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+
+    // --- Inspector Handlers ---
+    const handleRegenerate = async () => {
+        if (!viewDoc) return;
+        setRegenerating(true);
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.post('/api/company/regenerate-document', {
+                docType: viewDoc.docType
+            }, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            // Update Form Data
+            setFormData(prev => ({ ...prev, ...res.data.profile }));
+
+            // Flash Update
+            setMessage('Document Re-scanned Successfully!');
+
+        } catch (err) {
+            console.error(err);
+            alert('Regeneration Failed: ' + (err.response?.data?.message || err.message));
+        } finally {
+            setRegenerating(false);
+        }
+    };
+
+    // RENDER LOGIC
+    return (
+        <div className="min-h-screen bg-slate-900 flex flex-col font-sans text-white">
+            {/* Header */}
+            <header className="bg-slate-900/80 backdrop-blur-md border-b border-white/10 sticky top-0 z-30 shadow-lg h-16 flex items-center px-6 justify-between">
+                <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setView('home')}>
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/20 text-sm tracking-tighter group-hover:scale-105 transition-transform">
+                        GK
+                    </div>
+                    <span className="font-bold text-lg tracking-tight text-white group-hover:text-blue-400 transition-colors">GK SMART <span className="text-gray-500 font-normal">& Ai</span></span>
+                </div>
+                {/* Quick Actions or User Menu could go here */}
+            </header>
+
+            {/* Main Content */}
+            <main className="flex-1 overflow-hidden relative">
+                {view === 'home' && renderHome()}
+                {view === 'profile' && renderProfile()}
+                {view === 'bank' && renderBank()}
+                {view === 'iews' && renderIEWS()}
+                {view === 'tax_packages' && renderTaxPackages()}
+                {view === 'ledger' && <GeneralLedger onBack={() => setView('home')} />}
+                {view === 'tb' && <TrialBalance onBack={() => setView('home')} />}
+                {view === 'codes' && <AccountingCodes onBack={() => setView('home')} />}
+                {view === 'financials' && <FinancialStatements onBack={() => setView('home')} />}
+                {view === 'currency' && <CurrencyExchange onBack={() => setView('home')} />}
+            </main>
+
+            {/* DOCUMENT INSPECTOR MODAL */}
+            {/* Modal Removed - Using Integrated Workbench Instead */}
+
+
+
+            {/* Toast/Debug Overlay */}
+            {message && (
+                <div className="fixed bottom-6 right-6 bg-gray-900 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 animate-slide-up z-50">
+                    {uploadingBank || savingBank || regenerating ? <Loader2 className="animate-spin" size={18} /> : <CheckCircle size={18} className="text-green-400" />}
+                    <span className="font-medium text-sm">{message}</span>
+                </div>
+            )}
+
+            {debugLog && (
+                <div className="fixed bottom-6 left-6 max-w-sm bg-red-50 border border-red-200 text-red-800 p-4 rounded-xl shadow-lg animate-slide-up z-50">
+                    <div className="flex justify-between items-start mb-2">
+                        <strong className="text-sm flex items-center gap-2"><AlertCircle size={14} /> {debugLog.title}</strong>
+                        <button onClick={() => setDebugLog(null)}><X size={14} /></button>
+                    </div>
+                    <p className="text-xs mb-2">{debugLog.message}</p>
+                    <pre className="bg-white p-2 rounded border border-red-100 text-[10px] overflow-auto max-h-32">
+                        {debugLog.details}
+                    </pre>
+                    <p className="text-[10px] text-red-400 mt-2">
+                        Please take a screenshot of this error and send it to support.
+                    </p>
+                </div>
+            )}
+
+            {/* IEWS ACCESS MODAL */}
+            {showAccessModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+                    <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md" onClick={() => setShowAccessModal(false)} />
+                    <div className="relative w-full max-w-2xl bg-slate-900 border border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                        <div className="p-8 border-b border-white/5 flex justify-between items-center bg-slate-800/50">
+                            <div>
+                                <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                                    <ShieldCheck className="text-emerald-400" />
+                                    Access Management
+                                </h2>
+                                <p className="text-slate-400 text-[10px] uppercase tracking-widest mt-1">Management • Approval • Data</p>
+                            </div>
+                            <button onClick={() => setShowAccessModal(false)} className="text-slate-400 hover:text-white transition">
+                                <ArrowLeft size={24} />
+                            </button>
+                        </div>
+
+                        {!accessUnlocked ? (
+                            <div className="p-12 text-center flex flex-col items-center">
+                                <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mb-6 border border-emerald-500/20">
+                                    <ShieldCheck size={40} className="text-emerald-400" />
+                                </div>
+                                <h3 className="text-xl font-bold text-white mb-2">Systems Locked</h3>
+                                <p className="text-slate-400 mb-8 max-w-sm">Enter the 6-digit control code to manage departmental access levels.</p>
+                                <input
+                                    type="password"
+                                    maxLength={6}
+                                    placeholder="888888"
+                                    value={accessControlCode}
+                                    onChange={(e) => setAccessControlCode(e.target.value)}
+                                    className="w-full max-w-[200px] bg-slate-950/50 border border-white/5 rounded-2xl px-4 py-4 text-center text-2xl tracking-[0.5em] text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all font-mono mb-6"
+                                />
+                                <button
+                                    onClick={handleAccessVerify}
+                                    className="w-full max-w-[200px] bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-2xl transition-all active:scale-[0.98] shadow-lg shadow-emerald-600/20"
+                                >
+                                    Verify Code
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="p-8 overflow-y-auto flex-1">
+                                {/* Change Control Code Section */}
+                                <div className="mb-10 bg-slate-800/30 p-6 rounded-2xl border border-white/5">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="font-bold text-white uppercase text-xs tracking-widest">Master Control Code</h3>
+                                        <button
+                                            onClick={() => setIsChangingControlCode(!isChangingControlCode)}
+                                            className="text-[10px] text-blue-400 font-bold hover:underline"
+                                        >
+                                            {isChangingControlCode ? 'Cancel' : 'Change Master Code'}
+                                        </button>
+                                    </div>
+                                    {isChangingControlCode ? (
+                                        <div className="flex gap-4">
+                                            <input
+                                                type="password"
+                                                maxLength={6}
+                                                placeholder="Enter New 6-Digit Code"
+                                                value={newControlCodeInput}
+                                                onChange={(e) => setNewControlCodeInput(e.target.value)}
+                                                className="flex-1 bg-slate-950 border border-white/10 rounded-xl px-4 py-2 text-white font-mono"
+                                            />
+                                            <button onClick={handleUpdateControlCode} className="bg-blue-600 px-6 py-2 rounded-xl text-white font-bold text-sm">Save</button>
+                                        </div>
+                                    ) : (
+                                        <div className="text-slate-400 text-xs italic">Active master code is enforced.</div>
+                                    )}
+                                </div>
+
+                                {/* Create User Section */}
+                                <div className="mb-10">
+                                    <h3 className="font-bold text-white uppercase text-xs tracking-widest mb-6 flex items-center gap-2">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                        Create New Access Point
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                        <input
+                                            placeholder="Access Name (e.g. John Manager)"
+                                            value={newAccessUser.name}
+                                            onChange={(e) => setNewAccessUser({ ...newAccessUser, name: e.target.value })}
+                                            className="bg-slate-800 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
+                                        />
+                                        <select
+                                            value={newAccessUser.level}
+                                            onChange={(e) => setNewAccessUser({ ...newAccessUser, level: e.target.value })}
+                                            className="bg-slate-800 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
+                                        >
+                                            <option>Management</option>
+                                            <option>Approval</option>
+                                            <option>Data</option>
+                                        </select>
+                                    </div>
+                                    <div className="flex gap-4">
+                                        <input
+                                            placeholder="6-Digit Access Code"
+                                            maxLength={6}
+                                            value={newAccessUser.code}
+                                            onChange={(e) => setNewAccessUser({ ...newAccessUser, code: e.target.value })}
+                                            className="flex-1 bg-slate-800 border border-white/10 rounded-xl px-4 py-3 text-white font-mono text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
+                                        />
+                                        <button
+                                            onClick={handleCreateAccessUser}
+                                            className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-8 py-3 rounded-xl transition-all shadow-lg shadow-emerald-900/40"
+                                        >
+                                            + Access
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* User List */}
+                                <div>
+                                    <h3 className="font-bold text-white uppercase text-xs tracking-widest mb-6 flex items-center gap-2">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                                        Department Authority
+                                    </h3>
+                                    <div className="space-y-3 pb-8">
+                                        {accessUsers.map(user => (
+                                            <div key={user._id} className="flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-2xl hover:border-white/10 transition">
+                                                <div className="flex items-center gap-4">
+                                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xs ${user.level === 'Management' ? 'bg-rose-500/10 text-rose-400' :
+                                                        user.level === 'Approval' ? 'bg-indigo-500/10 text-indigo-400' :
+                                                            'bg-emerald-500/10 text-emerald-400'
+                                                        }`}>
+                                                        {user.level.charAt(0)}
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-white font-bold text-sm">{user.name}</div>
+                                                        <div className="text-slate-500 text-[10px] uppercase font-bold tracking-tight">{user.level}</div>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-6">
+                                                    <div className="text-slate-400 font-mono text-[10px] tracking-widest bg-slate-950 px-3 py-1 rounded-lg">{user.code}</div>
+                                                    <button onClick={() => handleDeleteAccessUser(user._id)} className="text-red-400/30 hover:text-red-400 transition p-2">
+                                                        <X size={18} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {accessUsers.length === 0 && (
+                                            <div className="text-center py-10 border border-dashed border-white/10 rounded-3xl">
+                                                <p className="text-slate-600 text-sm italic">No special access users created yet.</p>
                                             </div>
                                         )}
                                     </div>
                                 </div>
-
-                                <div className="flex gap-1">
-                                    {/* DELETE */}
-                                    <button
-                                        onClick={async (e) => {
-                                            e.stopPropagation();
-                                            handleDelete(idx, file);
-                                        }}
-                                        className="p-1.5 rounded-full hover:bg-red-100 text-gray-300 hover:text-red-500 transition"
-                                    >
-                                        <X size={14} />
-                                    </button>
-                                    {/* EYE */}
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); setActiveFileIndex(idx); }}
-                                        className={`p-1.5 rounded-full transition ${activeFileIndex === idx ? 'text-blue-600 bg-blue-100' : 'text-gray-300 hover:text-blue-500'}`}
-                                    >
-                                        <Eye size={14} />
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                        {bankFiles.length === 0 && (
-                            <div className="text-center py-10 text-gray-300 text-xs italic">
-                                No files yet.
                             </div>
                         )}
                     </div>
                 </div>
-            </div>
-
-            {/* COLUMN 3: DETAILS TABLE */}
-            <div className="flex-1 min-w-0 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col overflow-hidden h-full">
-                <div className="p-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between shrink-0">
-                    <div className="flex items-center">
-                        <div className="p-2 bg-blue-50 rounded-lg mr-3">
-                            <Table className="text-blue-500" size={20} />
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-gray-800">Page Details</h3>
-                            <p className="text-xs text-gray-500">
-                                {bankFiles[activeFileIndex]?.transactions?.length > 0
-                                    ? (() => {
-                                        const dates = bankFiles[activeFileIndex].transactions.map(t => parseDate(t.date)?.getTime()).filter(Boolean);
-                                        const s = new Date(Math.min(...dates)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-                                        const e = new Date(Math.max(...dates)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-                                        return `${s} - ${e}`;
-                                    })()
-                                    : (bankFiles[activeFileIndex]?.dateRange || 'Select a file')}
-                            </p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        {/* NEW: View Original PDF Button */}
-                        {(bankFiles[activeFileIndex]?.path?.startsWith('drive:') || bankFiles[activeFileIndex]?.driveId) && (
-                            <a
-                                href={`${getDocUrl(bankFiles[activeFileIndex] || { path: 'drive:' + bankFiles[activeFileIndex].driveId })}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-xs bg-white border border-gray-200 text-gray-600 px-3 py-1 rounded-full hover:text-blue-600 hover:border-blue-300 transition flex items-center gap-2 mr-2"
-                            >
-                                <FileText size={12} />
-                                <span>View Original</span>
-                            </a>
-                        )}
-                        {bankFiles[activeFileIndex]?.accountNumber && (
-                            <div className="text-[10px] bg-blue-500/10 text-blue-400 px-3 py-1 rounded-full border border-blue-500/20 font-bold uppercase tracking-wider">
-                                {bankFiles[activeFileIndex].bankName || 'BANK'}: {bankFiles[activeFileIndex].accountNumber}
-                            </div>
-                        )}
-                        <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium flex items-center">
-                            <CheckCircle size={12} className="mr-1" /> Verified
-                        </span>
-                    </div>
-                </div>
-
-                <div className="flex-1 overflow-auto bg-white">
-                    <table className="w-full text-left">
-                        <thead className="bg-white text-gray-800 text-xs font-bold uppercase sticky top-0 z-10 border-b border-gray-200 shadow-sm">
-                            <tr>
-                                <th className="px-4 py-4 whitespace-nowrap w-[80px]">Date</th>
-                                <th className="px-4 py-4 w-full">Transaction Details</th>
-                                <th className="px-4 py-4 text-right w-[110px]">Money In</th>
-                                <th className="px-4 py-4 text-right w-[110px]">Money Out</th>
-                                <th className="px-4 py-4 text-right w-[110px]">Balance</th>
-                                <th className="px-4 py-4 w-[100px]">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {(bankFiles[activeFileIndex]?.transactions || []).length === 0 ? (
-                                <tr>
-                                    <td colSpan="7" className="text-center py-10 text-gray-400">No transactions to display</td>
-                                </tr>
-                            ) : (
-                                (bankFiles[activeFileIndex]?.transactions || []).map((tx, idx) => (
-                                    <tr key={idx} className="hover:bg-gray-50 transition group">
-                                        <td className="px-4 py-4 text-xs text-gray-600 font-bold whitespace-nowrap align-top">
-                                            {formatDateSafe(tx?.date)}
-                                        </td>
-                                        <td className="px-4 py-4 text-xs text-gray-700 font-medium align-top">
-                                            <div className="whitespace-pre-wrap leading-relaxed">
-                                                {tx?.description || ''}
-                                            </div>
-                                        </td>
-                                        <td className="px-4 py-4 text-xs text-right font-medium text-green-600 align-top whitespace-nowrap">
-                                            {tx?.moneyIn && parseFloat(tx.moneyIn) > 0 ? parseFloat(tx.moneyIn).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''}
-                                        </td>
-                                        <td className="px-4 py-4 text-xs text-right font-medium text-red-600 align-top whitespace-nowrap">
-                                            {tx?.moneyOut && parseFloat(tx.moneyOut) > 0 ? parseFloat(tx.moneyOut).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''}
-                                        </td>
-                                        <td className="px-4 py-4 text-xs text-right text-gray-800 font-bold align-top whitespace-nowrap">
-                                            {tx?.balance ? parseFloat(String(tx.balance).replace(/[^0-9.-]+/g, "")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}
-                                        </td>
-                                        <td className="px-4 py-4 text-xs align-top">
-                                            {/* Actions */}
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            )}
         </div>
-
-        {message && (
-            <div className={`mt-4 mx-auto max-w-lg p-3 rounded-full text-xs font-bold text-center fixed top-6 left-0 right-0 shadow-lg z-50 animate-bounce-in ${message.includes('Error') ? 'bg-red-500 text-white' : 'bg-black text-white'}`}>
-                {message}
-            </div>
-        )}
-
-        {/* DEBUG CONSOLE (For User Feedback) */}
-        {debugLog && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-6">
-                <div className="bg-white rounded-xl shadow-2xl p-6 max-w-2xl w-full border-2 border-red-500 relative">
-                    <button
-                        onClick={() => setDebugLog(null)}
-                        className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
-                    >
-                        <X />
-                    </button>
-                    <h3 className="text-xl font-bold text-red-600 mb-2 flex items-center">
-                        <span className="bg-red-100 p-2 rounded-full mr-3">⚠️</span>
-                        {debugLog.title}
-                    </h3>
-                    <p className="text-gray-800 font-medium mb-4">{debugLog.message}</p>
-
-                    <div className="bg-gray-100 p-4 rounded-lg overflow-x-auto mb-4">
-                        <pre className="text-xs font-mono text-gray-600">
-                            {debugLog.details}
-                        </pre>
-                    </div>
-
-                    <p className="text-xs text-gray-400 text-center">
-                        Please take a screenshot of this error and send it to support.
-                    </p>
-                </div>
-            </div>
-        )}
-    </div>
-);
-
-// --- Inspector Handlers ---
-const handleRegenerate = async () => {
-    if (!viewDoc) return;
-    setRegenerating(true);
-    try {
-        const token = localStorage.getItem('token');
-        const res = await axios.post('/api/company/regenerate-document', {
-            docType: viewDoc.docType
-        }, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        // Update Form Data
-        setFormData(prev => ({ ...prev, ...res.data.profile }));
-
-        // Flash Update
-        setMessage('Document Re-scanned Successfully!');
-
-    } catch (err) {
-        console.error(err);
-        alert('Regeneration Failed: ' + (err.response?.data?.message || err.message));
-    } finally {
-        setRegenerating(false);
-    }
-};
-
-// RENDER LOGIC
-return (
-    <div className="min-h-screen bg-slate-900 flex flex-col font-sans text-white">
-        {/* Header */}
-        <header className="bg-slate-900/80 backdrop-blur-md border-b border-white/10 sticky top-0 z-30 shadow-lg h-16 flex items-center px-6 justify-between">
-            <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setView('home')}>
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/20 text-sm tracking-tighter group-hover:scale-105 transition-transform">
-                    GK
-                </div>
-                <span className="font-bold text-lg tracking-tight text-white group-hover:text-blue-400 transition-colors">GK SMART <span className="text-gray-500 font-normal">& Ai</span></span>
-            </div>
-            {/* Quick Actions or User Menu could go here */}
-        </header>
-
-        {/* Main Content */}
-        <main className="flex-1 overflow-hidden relative">
-            {view === 'home' && renderHome()}
-            {view === 'profile' && renderProfile()}
-            {view === 'bank' && renderBank()}
-            {view === 'iews' && renderIEWS()}
-            {view === 'tax_packages' && renderTaxPackages()}
-            {view === 'ledger' && <GeneralLedger onBack={() => setView('home')} />}
-            {view === 'tb' && <TrialBalance onBack={() => setView('home')} />}
-            {view === 'codes' && <AccountingCodes onBack={() => setView('home')} />}
-            {view === 'financials' && <FinancialStatements onBack={() => setView('home')} />}
-            {view === 'currency' && <CurrencyExchange onBack={() => setView('home')} />}
-        </main>
-
-        {/* DOCUMENT INSPECTOR MODAL */}
-        {/* Modal Removed - Using Integrated Workbench Instead */}
-
-
-
-        {/* Toast/Debug Overlay */}
-        {message && (
-            <div className="fixed bottom-6 right-6 bg-gray-900 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 animate-slide-up z-50">
-                {uploadingBank || savingBank || regenerating ? <Loader2 className="animate-spin" size={18} /> : <CheckCircle size={18} className="text-green-400" />}
-                <span className="font-medium text-sm">{message}</span>
-            </div>
-        )}
-
-        {debugLog && (
-            <div className="fixed bottom-6 left-6 max-w-sm bg-red-50 border border-red-200 text-red-800 p-4 rounded-xl shadow-lg animate-slide-up z-50">
-                <div className="flex justify-between items-start mb-2">
-                    <strong className="text-sm flex items-center gap-2"><AlertCircle size={14} /> {debugLog.title}</strong>
-                    <button onClick={() => setDebugLog(null)}><X size={14} /></button>
-                </div>
-                <p className="text-xs mb-2">{debugLog.message}</p>
-                <pre className="bg-white p-2 rounded border border-red-100 text-[10px] overflow-auto max-h-32">
-                    {debugLog.details}
-                </pre>
-                <p className="text-[10px] text-red-400 mt-2">
-                    Please take a screenshot of this error and send it to support.
-                </p>
-            </div>
-        )}
-
-        {/* IEWS ACCESS MODAL */}
-        {showAccessModal && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-                <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md" onClick={() => setShowAccessModal(false)} />
-                <div className="relative w-full max-w-2xl bg-slate-900 border border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-                    <div className="p-8 border-b border-white/5 flex justify-between items-center bg-slate-800/50">
-                        <div>
-                            <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                                <ShieldCheck className="text-emerald-400" />
-                                Access Management
-                            </h2>
-                            <p className="text-slate-400 text-[10px] uppercase tracking-widest mt-1">Management • Approval • Data</p>
-                        </div>
-                        <button onClick={() => setShowAccessModal(false)} className="text-slate-400 hover:text-white transition">
-                            <ArrowLeft size={24} />
-                        </button>
-                    </div>
-
-                    {!accessUnlocked ? (
-                        <div className="p-12 text-center flex flex-col items-center">
-                            <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mb-6 border border-emerald-500/20">
-                                <ShieldCheck size={40} className="text-emerald-400" />
-                            </div>
-                            <h3 className="text-xl font-bold text-white mb-2">Systems Locked</h3>
-                            <p className="text-slate-400 mb-8 max-w-sm">Enter the 6-digit control code to manage departmental access levels.</p>
-                            <input
-                                type="password"
-                                maxLength={6}
-                                placeholder="888888"
-                                value={accessControlCode}
-                                onChange={(e) => setAccessControlCode(e.target.value)}
-                                className="w-full max-w-[200px] bg-slate-950/50 border border-white/5 rounded-2xl px-4 py-4 text-center text-2xl tracking-[0.5em] text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all font-mono mb-6"
-                            />
-                            <button
-                                onClick={handleAccessVerify}
-                                className="w-full max-w-[200px] bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-2xl transition-all active:scale-[0.98] shadow-lg shadow-emerald-600/20"
-                            >
-                                Verify Code
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="p-8 overflow-y-auto flex-1">
-                            {/* Change Control Code Section */}
-                            <div className="mb-10 bg-slate-800/30 p-6 rounded-2xl border border-white/5">
-                                <div className="flex justify-between items-center mb-4">
-                                    <h3 className="font-bold text-white uppercase text-xs tracking-widest">Master Control Code</h3>
-                                    <button
-                                        onClick={() => setIsChangingControlCode(!isChangingControlCode)}
-                                        className="text-[10px] text-blue-400 font-bold hover:underline"
-                                    >
-                                        {isChangingControlCode ? 'Cancel' : 'Change Master Code'}
-                                    </button>
-                                </div>
-                                {isChangingControlCode ? (
-                                    <div className="flex gap-4">
-                                        <input
-                                            type="password"
-                                            maxLength={6}
-                                            placeholder="Enter New 6-Digit Code"
-                                            value={newControlCodeInput}
-                                            onChange={(e) => setNewControlCodeInput(e.target.value)}
-                                            className="flex-1 bg-slate-950 border border-white/10 rounded-xl px-4 py-2 text-white font-mono"
-                                        />
-                                        <button onClick={handleUpdateControlCode} className="bg-blue-600 px-6 py-2 rounded-xl text-white font-bold text-sm">Save</button>
-                                    </div>
-                                ) : (
-                                    <div className="text-slate-400 text-xs italic">Active master code is enforced.</div>
-                                )}
-                            </div>
-
-                            {/* Create User Section */}
-                            <div className="mb-10">
-                                <h3 className="font-bold text-white uppercase text-xs tracking-widest mb-6 flex items-center gap-2">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                    Create New Access Point
-                                </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                    <input
-                                        placeholder="Access Name (e.g. John Manager)"
-                                        value={newAccessUser.name}
-                                        onChange={(e) => setNewAccessUser({ ...newAccessUser, name: e.target.value })}
-                                        className="bg-slate-800 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
-                                    />
-                                    <select
-                                        value={newAccessUser.level}
-                                        onChange={(e) => setNewAccessUser({ ...newAccessUser, level: e.target.value })}
-                                        className="bg-slate-800 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
-                                    >
-                                        <option>Management</option>
-                                        <option>Approval</option>
-                                        <option>Data</option>
-                                    </select>
-                                </div>
-                                <div className="flex gap-4">
-                                    <input
-                                        placeholder="6-Digit Access Code"
-                                        maxLength={6}
-                                        value={newAccessUser.code}
-                                        onChange={(e) => setNewAccessUser({ ...newAccessUser, code: e.target.value })}
-                                        className="flex-1 bg-slate-800 border border-white/10 rounded-xl px-4 py-3 text-white font-mono text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
-                                    />
-                                    <button
-                                        onClick={handleCreateAccessUser}
-                                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-8 py-3 rounded-xl transition-all shadow-lg shadow-emerald-900/40"
-                                    >
-                                        + Access
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* User List */}
-                            <div>
-                                <h3 className="font-bold text-white uppercase text-xs tracking-widest mb-6 flex items-center gap-2">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                                    Department Authority
-                                </h3>
-                                <div className="space-y-3 pb-8">
-                                    {accessUsers.map(user => (
-                                        <div key={user._id} className="flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-2xl hover:border-white/10 transition">
-                                            <div className="flex items-center gap-4">
-                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xs ${user.level === 'Management' ? 'bg-rose-500/10 text-rose-400' :
-                                                    user.level === 'Approval' ? 'bg-indigo-500/10 text-indigo-400' :
-                                                        'bg-emerald-500/10 text-emerald-400'
-                                                    }`}>
-                                                    {user.level.charAt(0)}
-                                                </div>
-                                                <div>
-                                                    <div className="text-white font-bold text-sm">{user.name}</div>
-                                                    <div className="text-slate-500 text-[10px] uppercase font-bold tracking-tight">{user.level}</div>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-6">
-                                                <div className="text-slate-400 font-mono text-[10px] tracking-widest bg-slate-950 px-3 py-1 rounded-lg">{user.code}</div>
-                                                <button onClick={() => handleDeleteAccessUser(user._id)} className="text-red-400/30 hover:text-red-400 transition p-2">
-                                                    <X size={18} />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                    {accessUsers.length === 0 && (
-                                        <div className="text-center py-10 border border-dashed border-white/10 rounded-3xl">
-                                            <p className="text-slate-600 text-sm italic">No special access users created yet.</p>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
-        )}
-    </div>
-);
+    );
 }
