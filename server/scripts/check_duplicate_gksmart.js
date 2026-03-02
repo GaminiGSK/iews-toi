@@ -1,44 +1,51 @@
-const { google } = require('googleapis');
+const mongoose = require('mongoose');
 const path = require('path');
-require('dotenv').config();
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
-const auth = new google.auth.GoogleAuth({
-    keyFile: path.join(__dirname, '../config/service-account.json'),
-    scopes: ['https://www.googleapis.com/auth/drive.readonly'],
-});
+const CompanyProfile = require('../models/CompanyProfile');
+const User = require('../models/User');
 
-const drive = google.drive({ version: 'v3', auth });
-
-async function search() {
+async function checkDuplicates() {
     try {
-        const rootId = '1wJbkdDYD8exNw8uarUlOxGQipfGQxuux'; // The OTHER GKSMART folder
-        console.log(`Deep Dive: Searching OLD GKSMART (ID: ${rootId})...`);
+        await mongoose.connect(process.env.MONGODB_URI);
+        console.log('Connected to MongoDB');
 
-        // Find BR subfolder in this root
-        const brRes = await drive.files.list({
-            q: `'${rootId}' in parents and name = 'BR' and trashed = false`,
-            fields: 'files(id, name)',
-        });
-
-        if (brRes.data.files && brRes.data.files.length > 0) {
-            const brId = brRes.data.files[0].id;
-            console.log(`Found BR subfolder: ${brId}`);
-
-            const filesRes = await drive.files.list({
-                q: `'${brId}' in parents and trashed = false`,
-                fields: 'files(id, name, size, createdTime)',
-            });
-            const files = filesRes.data.files || [];
-            console.log(`Found ${files.length} files in this BR folder.`);
-            files.forEach(f => {
-                console.log(`- ${f.name} [ID: ${f.id}] [Size: ${f.size}] [Created: ${f.createdTime}]`);
-            });
-        } else {
-            console.log("No BR subfolder found in this root.");
+        const user = await User.findOne({ username: 'GKSMART' });
+        if (!user) {
+            console.log('User GKSMART not found');
+            process.exit(0);
         }
 
+        const profile = await CompanyProfile.findOne({ user: user._id });
+        if (!profile) {
+            console.log('Profile for GKSMART not found');
+            process.exit(0);
+        }
+
+        console.log(`Document Count: ${profile.documents.length}`);
+
+        const counts = {};
+        profile.documents.forEach(doc => {
+            counts[doc.originalName] = (counts[doc.originalName] || 0) + 1;
+        });
+
+        console.log('\n--- Duplicate Check ---');
+        let hasDuplicates = false;
+        for (const [name, count] of Object.entries(counts)) {
+            if (count > 1) {
+                console.log(`Duplicate: "${name}" (${count} copies)`);
+                hasDuplicates = true;
+            }
+        }
+
+        if (!hasDuplicates) {
+            console.log('No duplicates found by filename.');
+        }
+
+        await mongoose.disconnect();
     } catch (err) {
         console.error(err);
     }
 }
-search();
+
+checkDuplicates();

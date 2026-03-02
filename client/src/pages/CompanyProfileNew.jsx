@@ -48,6 +48,7 @@ export default function CompanyProfile() {
             setTemplate(res.data);
         } catch (err) { console.error('Template Fetch Error:', err); }
     };
+
     const [createYear, setCreateYear] = useState('');
     const [uploadingBank, setUploadingBank] = useState(false);
     const [savingBank, setSavingBank] = useState(false);
@@ -137,7 +138,10 @@ export default function CompanyProfile() {
     // In future, we might want to filter by 'groupName' or similar if we separate them.
     const fetchDocTemplates = async () => {
         try {
-            const res = await axios.get('/api/tax/templates');
+            const token = localStorage.getItem('token');
+            const res = await axios.get('/api/tax/templates', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
             const apiTemplates = res.data.map(t => ({
                 ...t,
                 id: t._id,
@@ -187,7 +191,7 @@ export default function CompanyProfile() {
             setAccessUnlocked(true);
             fetchAccessUsers();
         } catch (err) {
-            alert("Invalid Control Code");
+            console.error("Invalid Control Code");
         }
     };
 
@@ -527,7 +531,8 @@ export default function CompanyProfile() {
                         docType: doc.docType
                     }));
                     setDocTemplates(restoredDocs);
-                    if (restoredDocs.length > 0) setActiveDocTemplateId(restoredDocs[0].id);
+                    // Default to Main Dossier (Null) for premium 'Book Mode' experience
+                    setActiveDocTemplateId(null);
                 }
             }
 
@@ -671,6 +676,7 @@ export default function CompanyProfile() {
         }
     };
 
+
     // --- Sub-Components ---
 
     // --- IEWS View Logic (Tax Document Packages) ---
@@ -759,15 +765,7 @@ export default function CompanyProfile() {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <button
-                        onClick={() => setShowAccessModal(true)}
-                        className="p-4 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-2xl transition border border-white/5"
-                        title="Access Management"
-                    >
-                        <ShieldCheck size={20} />
-                    </button>
-                </div>
+                <div></div>
             </div>
 
             <div className="flex-1">
@@ -1103,17 +1101,27 @@ export default function CompanyProfile() {
                     {/* Header Action Bar */}
                     <div className="sticky top-0 z-20 bg-slate-900/80 backdrop-blur-md p-6 flex justify-between items-center border-b border-white/5">
                         <div className="flex items-center gap-4">
-                            <ShieldCheck size={20} className="text-blue-500" />
-                            <span className="text-xs font-black text-slate-400 uppercase tracking-[0.3em]">SECURE ENTITY ARCHIVE</span>
+                            <FileText size={20} className="text-blue-500" />
+                            <span className="text-xs font-black text-slate-400 uppercase tracking-[0.3em]">ENTITY DATA VIEW</span>
                         </div>
-                        <button
-                            onClick={handleSaveProfile}
-                            disabled={savingProfile}
-                            className="bg-white/5 hover:bg-white/10 text-white px-6 py-2 rounded-lg font-black uppercase text-[10px] tracking-widest transition-all border border-white/10 flex items-center gap-2"
-                        >
-                            {savingProfile ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
-                            Commit Changes
-                        </button>
+                        <div className="flex gap-4">
+                            <button
+                                onClick={handleRecallScan}
+                                disabled={isDocScanning}
+                                className="bg-white/5 hover:bg-white/10 text-white px-6 py-2 rounded-lg font-black uppercase text-[10px] tracking-widest transition-all border border-white/10 flex items-center gap-2"
+                            >
+                                {isDocScanning ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+                                Deep Recall Scan
+                            </button>
+                            <button
+                                onClick={handleSaveProfile}
+                                disabled={savingProfile}
+                                className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-black uppercase text-[10px] tracking-widest transition-all shadow-lg flex items-center gap-2"
+                            >
+                                {savingProfile ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
+                                Commit Changes
+                            </button>
+                        </div>
                     </div>
 
                     <div className="max-w-5xl mx-auto py-12 px-8">
@@ -1170,89 +1178,35 @@ export default function CompanyProfile() {
                                 </div>
                             </div>
                         ) : (
-                            /* --- MAIN DOSSIER MODE --- */
-                            formData.organizedProfile ? (
-                                <div className="bg-white border-y border-slate-200 py-24 px-16 shadow-2xl animate-in fade-in slide-in-from-bottom-12 duration-1000 relative">
-                                    {/* Watermark */}
-                                    <div className="absolute top-10 right-10 opacity-[0.03] select-none pointer-events-none">
-                                        <Sparkles size={200} className="text-slate-900" />
-                                    </div>
+                            /* --- PLAIN TEXT DOSSIER MODE --- */
+                            <div className="bg-slate-950/50 border border-white/10 p-12 rounded-3xl animate-fade-in">
+                                <h1 className="text-2xl font-black text-white mb-8 border-b border-white/5 pb-4 uppercase tracking-tighter">Extracted Intelligence</h1>
 
-                                    <div className="max-w-4xl mx-auto space-y-16">
-                                        {/* Header */}
-                                        <div className="border-b-2 border-slate-900 pb-10 mb-16 flex justify-between items-end">
-                                            <div className="space-y-4">
-                                                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.6em]">ENTITY INTELLIGENCE DOSSIER</h3>
-                                                <h1 className="text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none">Business Profile</h1>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest">VERIFIED SYSTEM EXTRACT</p>
-                                                <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase">GENERATED: {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'LONG', year: 'numeric' })}</p>
-                                            </div>
+                                {formData.organizedProfile ? (
+                                    <pre className="text-slate-300 font-mono text-sm leading-relaxed whitespace-pre-wrap">
+                                        {formData.organizedProfile}
+                                    </pre>
+                                ) : (
+                                    <div className="space-y-6">
+                                        <p className="text-slate-500 italic text-sm">Organized profile not yet generated. Showing raw data:</p>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {Object.entries(formData.extractedData || {}).map(([key, val]) => (
+                                                <div key={key} className="bg-white/5 p-4 rounded-xl border border-white/5">
+                                                    <p className="text-[10px] font-black uppercase text-blue-500 mb-1">{key.replace(/_/g, ' ')}</p>
+                                                    <p className="text-white font-bold">{String(val)}</p>
+                                                </div>
+                                            ))}
                                         </div>
-
-                                        {/* Content Body */}
-                                        <div className="prose prose-slate max-w-none">
-                                            {formData.organizedProfile.split('\n').map((line, i) => {
-                                                const cleanLine = line.trim();
-                                                if (!cleanLine) return <div key={i} className="h-4" />;
-
-                                                if (/^[IVX]+\./.test(cleanLine) || cleanLine.startsWith('#')) {
-                                                    return (
-                                                        <h2 key={i} className="text-xl font-black text-slate-900 uppercase tracking-[0.2em] pt-12 mb-8 border-b border-slate-100 pb-4">
-                                                            {cleanLine.replace(/#/g, '').trim()}
-                                                        </h2>
-                                                    );
-                                                }
-
-                                                if (cleanLine.startsWith('- **') || cleanLine.startsWith('**')) {
-                                                    const parts = cleanLine.split('**:');
-                                                    if (parts.length > 1) {
-                                                        return (
-                                                            <div key={i} className="grid grid-cols-3 gap-8 py-3 border-b border-slate-50">
-                                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest pt-1">
-                                                                    {parts[0].replace(/[-*]/g, '').trim()}
-                                                                </span>
-                                                                <span className="col-span-2 text-md font-bold text-slate-800 leading-relaxed">
-                                                                    {parts[1].trim()}
-                                                                </span>
-                                                            </div>
-                                                        );
-                                                    }
-                                                }
-
-                                                return (
-                                                    <p key={i} className="text-[16px] font-medium text-slate-700 leading-[1.8] text-justify mb-6">
-                                                        {cleanLine}
-                                                    </p>
-                                                );
-                                            })}
-                                        </div>
-
-                                        {/* Footer */}
-                                        <div className="pt-20 border-t border-slate-200 flex justify-between items-center opacity-40">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-6 h-6 bg-slate-900 rounded-sm flex items-center justify-center font-bold text-[8px] text-white">GK</div>
-                                                <span className="text-[8px] font-black uppercase tracking-[0.5em]">Global Intelligence System</span>
-                                            </div>
-                                            <div className="text-right flex flex-col items-end">
-                                                <span className="text-[8px] font-black uppercase tracking-[0.5em]">CONFIDENTIAL DOCUMENT • PAGE 01</span>
-                                                <span className="text-[6px] font-bold text-slate-400 uppercase mt-1">Sticked & Verified by GKSMART AI</span>
+                                        <div className="mt-8 p-6 bg-blue-600/10 border border-blue-500/20 rounded-2xl flex items-center gap-4">
+                                            <RefreshCw className={`text-blue-500 ${isDocScanning ? 'animate-spin' : ''}`} />
+                                            <div>
+                                                <p className="text-white font-bold text-sm">System is ready for Full Intel Sync.</p>
+                                                <p className="text-slate-400 text-xs mt-1">Click 'Deep Recall Scan' above to process all documents and generate the Khmer/English dossier.</p>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            ) : (
-                                <div className="flex flex-col items-center justify-center py-40 bg-white/5 rounded-3xl border border-white/10 space-y-6">
-                                    <div className="p-8 bg-blue-600/10 rounded-full">
-                                        <ShieldCheck size={48} className="text-blue-500 animate-pulse" />
-                                    </div>
-                                    <div className="text-center">
-                                        <h3 className="text-white font-black uppercase tracking-widest">Dossier Initializing</h3>
-                                        <p className="text-slate-500 text-xs mt-2 uppercase tracking-tight">System is awaiting data extraction. Click "Deep Recall Scan" to recover.</p>
-                                    </div>
-                                </div>
-                            )
+                                )}
+                            </div>
                         )}
                     </div>
                 </div>
