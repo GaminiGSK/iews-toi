@@ -181,8 +181,10 @@ const startServer = async () => {
                 }
             });
 
-            socket.on('workspace:update_data', async (data) => {
-                const { packageId, update } = data;
+            socket.on('form:update', async (data) => {
+                const { packageId, data: update } = data;
+                if (!packageId || !update) return;
+
                 try {
                     const TaxPackage = require('./models/TaxPackage');
                     // Enable lookup by both ID and Year (safety bridge)
@@ -192,11 +194,35 @@ const startServer = async () => {
 
                     if (pkg) {
                         for (let [key, val] of Object.entries(update)) {
-                            pkg.data.set(key, val);
+                            // Only update if value is different (prevent noisy loops)
+                            if (pkg.formData.get(key) !== val) {
+                                pkg.formData.set(key, val);
+                            }
                         }
                         await pkg.save();
-                        // Broadcast to others in the same package room
-                        socket.to(packageId).emit('form:update', update);
+                        // Broadcast update to others in the same package room
+                        socket.to(packageId).emit('form:data', update);
+                    }
+                } catch (e) {
+                    console.error("[Socket] Form update error:", e.message);
+                }
+            });
+
+            // Legacy support (keep for other modules)
+            socket.on('workspace:update_data', async (data) => {
+                const { packageId, update } = data;
+                try {
+                    const TaxPackage = require('./models/TaxPackage');
+                    const pkg = mongoose.isValidObjectId(packageId)
+                        ? await TaxPackage.findById(packageId)
+                        : await TaxPackage.findOne({ year: packageId });
+
+                    if (pkg) {
+                        for (let [key, val] of Object.entries(update)) {
+                            pkg.formData.set(key, val);
+                        }
+                        await pkg.save();
+                        socket.to(packageId).emit('form:data', update);
                     }
                 } catch (e) {
                     console.error("Workspace update error:", e);

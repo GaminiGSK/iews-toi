@@ -413,15 +413,17 @@ router.post('/admin/rescan/:username', auth, async (req, res) => {
     }
 });
 
-// POST /rescan (User Self-Service Recall)
+// POST /rescan (User Self-Service Recall & Drive Sync)
 router.post('/rescan', auth, async (req, res) => {
     try {
-        const targetUser = req.user; // req.user already populated by auth middleware
+        const targetUser = req.user;
         const username = targetUser.username;
 
-        // --- DEEP RECALL PROCESS (SAME LOGIC) ---
+        // --- DEEP RECALL & SYNC PROCESS ---
         const { google } = require('googleapis');
         const path = require('path');
+        const fs = require('fs');
+
         const authClient = new google.auth.GoogleAuth({
             keyFile: path.join(__dirname, '../config/service-account.json'),
             scopes: ['https://www.googleapis.com/auth/drive.readonly'],
@@ -429,57 +431,134 @@ router.post('/rescan', auth, async (req, res) => {
         const drive = google.drive({ version: 'v3', auth: authClient });
 
         const profile = await CompanyProfile.findOne({ user: targetUser.id });
-        if (!profile) return res.json({ message: 'No profile found to rescan.' });
+        if (!profile) return res.status(404).json({ message: 'No profile found. Please upload a document first.' });
 
-        console.log(`[User Recall Scan] Starting for ${username}.`);
+        console.log(`[Recall Scan] Synchronizing Drive archives for ${username}...`);
         let repairCount = 0;
+        let discoveryCount = 0;
 
-        for (let doc of profile.documents) {
-            if (!doc.rawText || doc.rawText.includes("failed") || doc.rawText.length < 50) {
-                const searchRes = await drive.files.list({
-                    q: `name = '${doc.originalName}' and trashed = false`,
+        // 1. DISCOVERY: Find new files in the user's BR folder
+        if (targetUser.brFolderId) {
+            try {
+                const driveFiles = await drive.files.list({
+                    q: `'${targetUser.brFolderId}' in parents and trashed = false`,
                     fields: 'files(id, name, size, mimeType)',
                 });
 
-                const cloudFiles = searchRes.data.files || [];
-                const healthyFile = cloudFiles.find(f => parseInt(f.size) > 100);
+                const cloudFiles = driveFiles.data.files || [];
+                for (const cloudFile of cloudFiles) {
+                    // Skip if already in DB (by driveId or originalName)
+                    const exists = profile.documents.some(d =>
+                        (d.driveId === cloudFile.id) ||
+                        (d.path === `drive:${cloudFile.id}`) ||
+                        (d.originalName === cloudFile.name)
+                    );
 
-                if (healthyFile) {
-                    const fs = require('fs');
-                    const tempPath = path.join(__dirname, `../uploads/USER_RECALL_${healthyFile.id}`);
+                    if (!exists && parseInt(cloudFile.size) > 100) {
+                        console.log(`  Found new document in Drive: ${cloudFile.name}`);
+
+                        // Auto-categorize based on filename
+                        let docType = 'br_extra';
+                        const name = cloudFile.name.toLowerCase();
+                        if (name.includes('cert') || name.includes('incorporation')) docType = 'moc_cert';
+                        else if (name.includes('khmer') || name.includes('khemer') || (name.includes('extract') && name.includes('kh'))) docType = 'kh_extract';
+                        else if (name.includes('english') || (name.includes('extract') && name.includes('en'))) docType = 'en_extract';
+                        else if (name.includes('patent')) docType = 'tax_patent';
+                        else if (name.includes('vat') || name.includes('tax id')) docType = 'tax_id';
+
+                        profile.documents.push({
+                            docType,
+                            originalName: cloudFile.name,
+                            path: `drive:${cloudFile.id}`,
+                            driveId: cloudFile.id,
+                            mimeType: cloudFile.mimeType,
+                            status: 'Pending',
+                            uploadedAt: new Date()
+                        });
+                        discoveryCount++;
+                    }
+                }
+            } catch (discoveryErr) {
+                console.error("[Discovery Error]", discoveryErr.message);
+            }
+        }
+
+        // 2. REPAIR & EXTRACTION: Process missing texts
+        for (let doc of profile.documents) {
+            // NORMALIZE: Auto-fix docType if it's generic 'br_extraction'
+            if (doc.docType === 'br_extraction' || doc.docType === 'br_extra') {
+                const name = (doc.originalName || "").toLowerCase();
+                if (name.includes('cert') || name.includes('incorporation')) doc.docType = 'moc_cert';
+                else if (name.includes('khmer') || name.includes('khemer') || (name.includes('extract') && name.includes('kh'))) doc.docType = 'kh_extract';
+                else if (name.includes('english') || (name.includes('extract') && name.includes('en'))) doc.docType = 'en_extract';
+                else if (name.includes('patent')) doc.docType = 'tax_patent';
+                else if (name.includes('vat') || name.includes('tax id')) doc.docType = 'tax_id';
+            }
+
+            if (!doc.rawText || doc.rawText.includes("failed") || doc.rawText.length < 50) {
+                // If it doesn't have a driveId/path yet, try to find it by name
+                if (!doc.path && !doc.driveId) {
+                    const searchRes = await drive.files.list({
+                        q: `name = '${doc.originalName}' and trashed = false`,
+                        fields: 'files(id, name, size, mimeType)',
+                    });
+                    const found = (searchRes.data.files || []).find(f => parseInt(f.size) > 100);
+                    if (found) {
+                        doc.path = `drive:${found.id}`;
+                        doc.driveId = found.id;
+                    }
+                }
+
+                const driveId = doc.driveId || (doc.path && doc.path.startsWith('drive:') ? doc.path.split(':')[1] : null);
+
+                if (driveId) {
+                    console.log(`  Repairing/Extracting: ${doc.originalName} (${driveId})`);
+                    const tempPath = path.join(__dirname, `../uploads/RECALL_${driveId}`);
                     try {
                         const dest = fs.createWriteStream(tempPath);
-                        const media = await drive.files.get({ fileId: healthyFile.id, alt: 'media' }, { responseType: 'stream' });
+                        const media = await drive.files.get({ fileId: driveId, alt: 'media' }, { responseType: 'stream' });
                         await new Promise((resolve, reject) => {
                             media.data.on('end', resolve).on('error', reject).pipe(dest);
                         });
+
                         const extractedText = await googleAI.extractRawText(tempPath);
                         if (extractedText && !extractedText.includes("failed")) {
                             doc.rawText = extractedText;
                             doc.status = 'Verified';
-                            doc.path = `drive:${healthyFile.id}`;
                             repairCount++;
                         }
                         fs.unlinkSync(tempPath);
                     } catch (e) {
-                        console.error(`Recall Extract Fail:`, e.message);
+                        console.error(`    Recall Extract Fail:`, e.message);
                     }
                 }
             }
         }
 
-        if (repairCount > 0) {
-            const allText = profile.documents.map(d => d.rawText).join("\n\n---\n\n");
-            const organizedSummary = await googleAI.organizeProfileData(allText);
-            profile.organizedProfile = organizedSummary;
+        // 3. RE-ORGANIZE: Update profile if new data was found
+        if (repairCount > 0 || discoveryCount > 0) {
+            const allText = profile.documents
+                .filter(d => d.rawText && d.rawText.length > 100)
+                .map(d => `SOURCE [${d.docType}]: ${d.originalName}\n${d.rawText}`)
+                .join("\n\n---\n\n");
+
+            if (allText) {
+                const organizedSummary = await googleAI.organizeProfileData(allText);
+                profile.organizedProfile = organizedSummary;
+            }
             await profile.save();
         }
 
-        res.json({ message: 'Self-Serve Recall Complete', repairCount });
+        res.json({
+            message: 'Recall Scan Complete',
+            repairCount,
+            discoveryCount,
+            summary: `Discovered ${discoveryCount} new files and extracted text for ${repairCount} documents.`
+        });
 
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: 'Self-Serve Recall Error' });
+        res.status(500).json({ message: 'Recall Service Error' });
     }
 });
 

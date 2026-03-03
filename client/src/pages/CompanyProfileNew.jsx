@@ -952,6 +952,7 @@ export default function CompanyProfile() {
 
 
     // --- Profile UI Logic (v2.0 Redesign) ---
+    // This derived state maps the hardcoded categories to real documents in the DB
     const sourceIntelTemplates = [
         { id: 'moc_cert', name: 'Certificate of Incorporation', docType: 'moc_cert', status: 'Missing' },
         { id: 'kh_extract', name: 'MOC Extract (Khmer)', docType: 'kh_extract', status: 'Missing' },
@@ -960,10 +961,22 @@ export default function CompanyProfile() {
         { id: 'tax_id', name: 'VAT / Tax ID Card', docType: 'tax_id', status: 'Missing' },
         { id: 'bank_opening', name: 'Bank Account Opening', docType: 'bank_opening', status: 'Missing' }
     ].map(tpl => {
-        // Bridge with real document data from DB
+        // Bridge with real document data from DB (Priority: match docType)
         const realDoc = (formData.documents || []).find(d => d.docType === tpl.docType);
         return realDoc ? { ...tpl, ...realDoc, id: realDoc._id, status: 'Verified' } : tpl;
     });
+
+    // Add "Uncategorized" documents from profile that aren't in the main 6
+    const additionalDocs = (formData.documents || []).filter(d =>
+        !sourceIntelTemplates.some(t => t.docType === d.docType)
+    ).map(d => ({
+        ...d,
+        id: d._id,
+        name: d.originalName || d.docType,
+        status: d.status === 'Verified' ? 'Verified' : 'Pending'
+    }));
+
+    const allSourceDocs = [...sourceIntelTemplates, ...additionalDocs];
 
     const [uploadingDoc, setUploadingDoc] = useState(null);
     const [debugLog, setDebugLog] = useState(null); // New On-Screen Error Console
@@ -993,8 +1006,7 @@ export default function CompanyProfile() {
             setMessage('Analysis Complete. Please Review.');
 
             // Automatically select the newly uploaded doc for viewing
-            const newDoc = (profileRes.data.documents || []).find(d => d.docType === docType);
-            if (newDoc) setViewDoc(newDoc);
+            if (res.data.docType) setViewDoc(res.data);
 
         } catch (err) {
             console.error(err);
@@ -1124,7 +1136,7 @@ export default function CompanyProfile() {
     };
 
     const renderProfile = () => {
-        const activeDoc = sourceIntelTemplates.find(d => d.id === activeDocTemplateId);
+        const activeDoc = allSourceDocs.find(d => d.id === activeDocTemplateId);
         const originalDocData = (formData.documents || []).find(d => d._id === activeDocTemplateId);
 
         return (
@@ -1158,17 +1170,17 @@ export default function CompanyProfile() {
 
                         <div className="h-[1px] bg-white/5 my-4"></div>
 
-                        {sourceIntelTemplates.map(doc => (
+                        {allSourceDocs.map(doc => (
                             <button
-                                key={doc.docType}
-                                onClick={() => setActiveDocTemplateId(doc.id === 'Missing' ? null : doc.id)}
+                                key={doc.id || doc.docType}
+                                onClick={() => setActiveDocTemplateId(doc.id)}
                                 className={`w-full p-3 rounded-xl flex items-center gap-3 transition-all border ${activeDocTemplateId === doc.id ? 'bg-blue-600/20 border-blue-500/30 text-white' : 'bg-transparent border-transparent text-slate-500 hover:bg-white/5'}`}
                             >
                                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${doc.status === 'Verified' ? 'bg-green-500/10 text-green-500' : 'bg-slate-800 text-slate-600'}`}>
                                     <FileText size={16} />
                                 </div>
                                 <div className="text-left overflow-hidden">
-                                    <p className="text-[10px] font-black uppercase tracking-tight truncate">{doc.originalName || doc.name}</p>
+                                    <p className="text-[10px] font-black uppercase tracking-tight truncate">{doc.name || doc.originalName}</p>
                                     <p className="text-[8px] font-bold opacity-50 uppercase">{doc.status}</p>
                                 </div>
                             </button>
