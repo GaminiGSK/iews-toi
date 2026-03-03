@@ -1150,8 +1150,8 @@ export default function CompanyProfile() {
                                 <ArrowLeft size={20} />
                             </button>
                             <div>
-                                <h2 className="text-xl font-black text-white tracking-tighter uppercase leading-none">Combined Intelligence</h2>
-                                <p className="text-[10px] mt-1 text-blue-500 font-black uppercase tracking-widest">Autonomous Sync Active</p>
+                                <h2 className="text-xl font-black text-white tracking-tighter uppercase leading-none">Business Data</h2>
+                                <p className="text-[10px] mt-1 text-slate-500 font-bold uppercase tracking-widest">Enterprise Intelligence Hub</p>
                             </div>
                         </div>
                     </div>
@@ -1210,51 +1210,82 @@ export default function CompanyProfile() {
                                 </div>
                             </div>
                         ) : (
-                            /* --- PLAIN TEXT DOSSIER MODE --- */
-                            <div className="bg-slate-950/50 border border-white/10 p-12 rounded-3xl animate-fade-in">
-                                <h1 className="text-2xl font-black text-white mb-8 border-b border-white/5 pb-4 uppercase tracking-tighter">Extracted Intelligence</h1>
-
-                                <div className="space-y-12">
-                                    {/* --- RAW HARVEST STREAM (ALWAYS VISIBLE FOR BLUE AGENT) --- */}
-                                    <div className="space-y-6">
-                                        <h2 className="text-lg font-bold text-blue-400 mb-4 uppercase flex items-center gap-3">
-                                            <Terminal size={18} />
-                                            Harvested Intelligence (Raw)
-                                        </h2>
-                                        <div className="bg-slate-900/50 p-8 rounded-3xl border border-white/10 max-h-[600px] overflow-y-auto custom-scrollbar shadow-inner">
-                                            <div className="bg-slate-950/80 border border-white/5 rounded-2xl p-6 font-mono text-[11px] leading-relaxed text-slate-300 max-h-[500px] overflow-auto shadow-inner">
-                                                {(formData.documents || [])
-                                                    .filter(doc => doc.rawText && doc.rawText.length > 50)
-                                                    .map(doc => `--- SOURCE: ${doc.originalName || doc.docType}\n${doc.rawText}\n\n`)
-                                                    .join('') || (formData.organizedProfile ? "Combined Intelligence Source Active" : "No raw text harvested yet. Please verify your document uploads.")}
+                            /* --- GPT AI AGENT PROMPTING WORKSPACE --- */
+                            <div className="flex flex-col h-full animate-in fade-in slide-in-from-bottom-8 duration-700">
+                                {/* PROMPT AREA CORE */}
+                                <div className="bg-slate-900/40 border border-white/5 rounded-[40px] p-12 shadow-2xl backdrop-blur-sm flex flex-col min-h-[600px] border-b-0 rounded-b-none">
+                                    <div className="flex justify-between items-center mb-10">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-12 bg-blue-600/10 rounded-2xl flex items-center justify-center text-blue-500">
+                                                <Brain size={24} />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-lg font-black text-white uppercase tracking-tighter leading-none">Isolated AI Assistant</h3>
+                                                <p className="text-[10px] mt-1 text-slate-500 font-bold uppercase tracking-widest">GPT Master Prompting Environment</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-3">
+                                            <div className="px-4 py-2 bg-white/5 border border-white/5 rounded-full text-[9px] font-black text-slate-400 uppercase tracking-widest">Context: Active</div>
+                                            <div className="px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[9px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-2">
+                                                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                                                Agent Online
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* --- ORGANIZED DOSSIER (IF GENERATED) --- */}
-                                    {formData.organizedProfile && (
-                                        <div className="pt-12 border-t border-white/5">
-                                            <h2 className="text-lg font-bold text-emerald-400 mb-6 uppercase flex items-center gap-3">
-                                                <Brain size={18} />
-                                                Organized Dossier
-                                            </h2>
-                                            <div className="bg-slate-900/30 p-10 rounded-3xl border border-white/5">
-                                                <pre className="text-slate-300 font-mono text-sm leading-relaxed whitespace-pre-wrap">
-                                                    {formData.organizedProfile}
-                                                </pre>
+                                    {/* CHAT/PROMPT HISTORY (MOCK FOR UI) */}
+                                    <div className="flex-1 overflow-y-auto mb-10 space-y-8 custom-scrollbar pr-4">
+                                        <div className="flex gap-6">
+                                            <div className="w-10 h-10 bg-slate-800 rounded-xl flex items-center justify-center text-slate-500 shrink-0 font-black text-xs">GK</div>
+                                            <div className="flex-1">
+                                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">You</p>
+                                                <p className="text-slate-300 text-sm leading-relaxed max-w-3xl bg-white/5 p-6 rounded-2xl rounded-tl-none border border-white/5">
+                                                    Initialize cross-document audit for GKSMART operations. Summarize critical findings and flag any inconsistencies in registration dates.
+                                                </p>
                                             </div>
                                         </div>
-                                    )}
 
-                                    {!formData.organizedProfile && (
-                                        <div className="mt-8 p-6 bg-blue-600/10 border border-blue-500/20 rounded-2xl flex items-center gap-4">
-                                            <RefreshCw className={`text-blue-500 ${isDocScanning ? 'animate-spin' : ''}`} />
-                                            <div>
-                                                <p className="text-white font-bold text-sm">System is ready for Full Intel Sync.</p>
-                                                <p className="text-slate-400 text-xs mt-1">Click 'Deep Recall Scan' above to process all documents and generate the Khmer/English dossier.</p>
+                                        <div className="flex gap-6">
+                                            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shrink-0 font-black text-xs shadow-lg shadow-blue-600/20 animate-pulse">AI</div>
+                                            <div className="flex-1">
+                                                <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-2">GPT Agent</p>
+                                                <div className="text-slate-200 text-sm leading-relaxed max-w-3xl bg-blue-600/5 p-8 rounded-3xl rounded-tl-none border border-blue-500/20 shadow-xl">
+                                                    <p className="mb-4">System initialized. I have analyzed {allSourceDocs.length} intelligence sources from the vault. Here is the isolated audit summary:</p>
+                                                    <ul className="space-y-3 list-disc list-inside text-slate-400 marker:text-blue-500">
+                                                        <li>Registration Consistency: High (13 April 2021 Verified)</li>
+                                                        <li>Jurisdiction: Phnom Penh (Correct)</li>
+                                                        <li>Financial Ledger: Sync Active with Google Mobile Banking extracts</li>
+                                                    </ul>
+                                                    <div className="mt-6 flex gap-4">
+                                                        <button className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-[9px] font-black text-slate-500 uppercase tracking-widest border border-white/5 transition-all">Copy Report</button>
+                                                        <button className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-[9px] font-black text-slate-500 uppercase tracking-widest border border-white/5 transition-all">Regenerate</button>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                    )}
+                                    </div>
+                                </div>
+
+                                {/* INPUT AREA (BOTTOM FIXED TO CONTAINER) */}
+                                <div className="bg-slate-950 border border-white/10 p-8 rounded-[40px] rounded-t-none border-t-0 shadow-2xl relative overflow-hidden group">
+                                    <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
+                                    <div className="relative flex items-end gap-6 bg-slate-900/50 p-6 rounded-[32px] border border-white/5 focus-within:border-blue-500/50 transition-all duration-500">
+                                        <textarea
+                                            placeholder="Type your AI instruction or prompt here..."
+                                            className="flex-1 bg-transparent border-none outline-none text-white text-sm leading-relaxed placeholder:text-slate-600 resize-none py-2 max-h-48 custom-scrollbar"
+                                            rows={2}
+                                        />
+                                        <button className="w-14 h-14 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-blue-600/20 transition-all active:scale-90 group-hover:scale-105">
+                                            <Sparkles size={24} />
+                                        </button>
+                                    </div>
+                                    <div className="mt-4 flex justify-between items-center px-4 overflow-hidden">
+                                        <div className="flex gap-6">
+                                            <button className="flex items-center gap-2 text-[10px] font-black text-slate-600 hover:text-blue-400 transition-colors uppercase tracking-widest"><FileText size={12} /> Attach Data</button>
+                                            <button className="flex items-center gap-2 text-[10px] font-black text-slate-600 hover:text-blue-400 transition-colors uppercase tracking-widest"><Terminal size={12} /> AI Config</button>
+                                        </div>
+                                        <span className="text-[9px] font-black text-slate-700 uppercase tracking-[0.2em]">GPT-4 Intelligence Protocol</span>
+                                    </div>
                                 </div>
                             </div>
                         )}
