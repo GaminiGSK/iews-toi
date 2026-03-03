@@ -305,38 +305,78 @@ router.get('/files/:fileId', auth, async (req, res) => {
 });
 
 // GET Admin Profile Data for specific user
+// GET Admin Profile Data for specific user
 router.get('/admin/profile/:username', auth, async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
+            console.warn(`[AdminAPI] Unauthorized access attempt by ${req.user.username}`);
             return res.status(403).json({ message: 'Unauthorized access' });
         }
+
         const { username } = req.params;
+        console.log(`[AdminAPI] Fetching profile for username: "${username}"`);
+
         const User = require('../models/User');
-        const targetUser = await User.findOne({ username: { $regex: new RegExp(`^${username}$`, 'i') } });
-        if (!targetUser) return res.status(404).json({ message: 'Target user not found' });
+        // Robust case-insensitive lookup
+        const targetUser = await User.findOne({
+            username: { $regex: new RegExp(`^${username.trim()}$`, 'i') }
+        });
 
-        // IMPORTANT: Fetch FULL profile (with data) to avoid wiping it on mutations
-        const profile = await CompanyProfile.findOne({ user: targetUser._id });
-        if (!profile) return res.json({ documents: [], organizedProfile: null, username: targetUser.username });
+        if (!targetUser) {
+            console.error(`[AdminAPI] User NOT found: ${username}`);
+            return res.status(404).json({ message: 'Target user not found' });
+        }
 
-        // Record Healing & Normalization logic is handled by a helper to keep it consistent
-        const { healAndNormalizeProfile } = require('../lib/profileUtils');
-        const wasModified = await healAndNormalizeProfile(profile);
-        if (wasModified) await profile.save();
+        console.log(`[AdminAPI] Found User: ${targetUser.username} (${targetUser._id})`);
 
-        // Convert to object and STRIP the heavy Base64 data for the list response
-        const profileData = profile.toObject();
-        if (profileData.documents) {
-            profileData.documents = profileData.documents.map(d => {
-                const { data, ...rest } = d;
-                return rest;
+        // IMPORTANT: Fetch FULL profile
+        let profile = await CompanyProfile.findOne({ user: targetUser._id });
+
+        if (!profile) {
+            console.log(`[AdminAPI] No profile entry found for ${targetUser.username}. Generating empty shell.`);
+            return res.json({
+                documents: [],
+                organizedProfile: null,
+                username: targetUser.username,
+                companyCode: targetUser.companyCode
             });
         }
+
+        // Record Healing & Normalization (Auto-categorize and restore Drive images)
+        try {
+            const { healAndNormalizeProfile } = require('../lib/profileUtils');
+            const wasModified = await healAndNormalizeProfile(profile);
+            if (wasModified) {
+                console.log(`[AdminAPI] Profile for ${username} healed and normalized.`);
+                await profile.save();
+            }
+        } catch (healErr) {
+            console.error(`[AdminAPI] Healing Error for ${username}:`, healErr.message);
+        }
+
+        // Prepare Data for Feed
+        const profileData = profile.toObject();
+
+        // Ensure documents is always an array
+        profileData.documents = profileData.documents || [];
+
+        // STRIP heavy binary data for the list response
+        profileData.documents = profileData.documents.map(d => {
+            const { data, ...rest } = d;
+            return {
+                ...rest,
+                id: d._id // Explicit ID for front-end
+            };
+        });
+
         profileData.username = targetUser.username;
+
+        console.log(`[AdminAPI] Returning ${profileData.documents.length} docs for ${targetUser.username}`);
         res.json(profileData);
+
     } catch (err) {
-        console.error('Admin Profile Fetch Error:', err);
-        res.status(500).json({ message: 'Server Error' });
+        console.error('[AdminAPI] Critical Error:', err);
+        res.status(500).json({ message: 'Server error retrieving profile' });
     }
 });
 

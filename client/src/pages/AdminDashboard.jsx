@@ -28,9 +28,9 @@ export default function AdminDashboard() {
     const [brDocs, setBrDocs] = useState([]);
     const [uploadingBR, setUploadingBR] = useState(false);
     const [activeBRIndex, setActiveBRIndex] = useState(null);
-    const [selectedUserBR, setSelectedUserBR] = useState('');
+    const [selectedUserBR, setSelectedUserBR] = useState(() => localStorage.getItem('lastSelectedBR') || '');
     const [organizingProfile, setOrganizingProfile] = useState(false);
-    const [brView, setBrView] = useState('raw'); // 'raw' or 'organized'
+    const [brView, setBrView] = useState('organized'); // 'raw' or 'organized'
 
     // --- Data Fetching ---
     const fetchUsers = async () => {
@@ -69,12 +69,16 @@ export default function AdminDashboard() {
         fetchProfileTemplate();
     }, []);
 
-    // AUTO-LOAD BR DOCS ON SELECTION OR TAB CHANGE
     useEffect(() => {
-        if (activeTab === 'profile' && selectedUserBR) {
+        if (selectedUserBR) {
             fetchUserBRDocs(selectedUserBR);
         }
     }, [activeTab, selectedUserBR]);
+
+    // Track selection
+    useEffect(() => {
+        if (selectedUserBR) localStorage.setItem('lastSelectedBR', selectedUserBR);
+    }, [selectedUserBR]);
 
     const fetchFileContent = async (category, fileName) => {
         try {
@@ -182,35 +186,47 @@ export default function AdminDashboard() {
     };
 
     const fetchUserBRDocs = async (username) => {
-        if (!username) return;
+        if (!username) {
+            setBrDocs([]);
+            return;
+        }
+
         const token = localStorage.getItem('token');
         try {
+            console.log("Fetching BR Docs for:", username);
             const res = await axios.get(`/api/company/admin/profile/${username}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
-            if (res.data && res.data.documents) {
+            if (res.data && res.data.documents && Array.isArray(res.data.documents)) {
                 // Map CompanyProfile documents to brDocs UI state
                 const mappedDocs = res.data.documents.map((doc, idx) => ({
-                    id: doc._id || Date.now() + idx,
-                    name: doc.originalName || doc.docType || 'Existing Document',
-                    text: doc.rawText || 'No raw text stored',
-                    // Use the global organizedProfile if specific doc.organizedText is missing
+                    id: doc.id || doc._id || Date.now() + idx,
+                    name: doc.originalName || doc.docType || 'Intelligence Fragment',
+                    text: doc.rawText || 'Text extraction active...',
                     organizedText: doc.organizedText || res.data.organizedProfile || '',
-                    timestamp: doc.uploadedAt ? new Date(doc.uploadedAt).toLocaleString() : 'Existing'
+                    timestamp: doc.uploadedAt ? new Date(doc.uploadedAt).toLocaleString() : 'Synced'
                 }));
-                // Sort newest first
-                setBrDocs(mappedDocs.reverse());
-                if (mappedDocs.length > 0) {
+
+                // Sort newest first & Update State
+                const finalDocs = [...mappedDocs].reverse();
+                setBrDocs(finalDocs);
+
+                if (finalDocs.length > 0) {
                     setActiveBRIndex(0);
-                    setBrView('organized');
+                    // Default to organized view if we have a profile summary
+                    setBrView(res.data.organizedProfile ? 'organized' : 'raw');
+                } else {
+                    setActiveBRIndex(null);
                 }
             } else {
                 setBrDocs([]);
+                setActiveBRIndex(null);
             }
         } catch (err) {
             console.error("Fetch BR Docs Error:", err);
             setBrDocs([]);
+            setActiveBRIndex(null);
         }
     };
 
@@ -346,6 +362,17 @@ export default function AdminDashboard() {
                                                 </div>
                                             </div>
                                             <div className="flex gap-3 relative z-10">
+                                                <button
+                                                    onClick={() => {
+                                                        setSelectedUserBR(user.username);
+                                                        setActiveTab('profile');
+                                                        fetchUserBRDocs(user.username);
+                                                    }}
+                                                    className="w-12 h-12 flex items-center justify-center bg-indigo-500/10 text-indigo-400 hover:bg-indigo-600 hover:text-white rounded-2xl transition-all duration-300"
+                                                    title="View Intelligence Profile"
+                                                >
+                                                    <Brain size={18} />
+                                                </button>
                                                 <button onClick={() => startEdit(user)} className="w-12 h-12 flex items-center justify-center bg-white/5 text-gray-500 hover:bg-blue-600 hover:text-white rounded-2xl transition-all duration-300"><Edit2 size={18} /></button>
                                                 <button onClick={() => deleteUser(user._id)} className="w-12 h-12 flex items-center justify-center bg-white/5 text-gray-500 hover:bg-red-600 hover:text-white rounded-2xl transition-all duration-300"><Trash2 size={18} /></button>
                                             </div>
@@ -477,20 +504,30 @@ export default function AdminDashboard() {
                                 {/* User Dropdown */}
                                 <div className="mb-8 space-y-3">
                                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-2">Select Target Entity</label>
-                                    <select
-                                        className="w-full bg-black/50 border border-white/10 p-5 rounded-[24px] text-white font-bold uppercase outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none cursor-pointer"
-                                        value={selectedUserBR}
-                                        onChange={(e) => {
-                                            const val = e.target.value;
-                                            setSelectedUserBR(val);
-                                            if (val) fetchUserBRDocs(val);
-                                        }}
-                                    >
-                                        <option value="">Choose a user profile...</option>
-                                        {users.map(u => (
-                                            <option key={u._id} value={u.username}>{u.companyName} ({u.username})</option>
-                                        ))}
-                                    </select>
+                                    <div className="flex gap-2">
+                                        <select
+                                            className="flex-1 bg-black/50 border border-white/10 p-5 rounded-[24px] text-white font-bold uppercase outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none cursor-pointer"
+                                            value={selectedUserBR}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                setSelectedUserBR(val);
+                                                if (val) fetchUserBRDocs(val);
+                                            }}
+                                        >
+                                            <option value="">Choose a user profile...</option>
+                                            {users.map(u => (
+                                                <option key={u._id} value={u.username}>{u.companyName} ({u.username})</option>
+                                            ))}
+                                        </select>
+                                        <button
+                                            onClick={handleRecallScan}
+                                            disabled={isScanning || !selectedUserBR}
+                                            className="px-6 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl transition-all disabled:opacity-30 disabled:grayscale flex items-center justify-center group"
+                                            title="Sync from Google Drive"
+                                        >
+                                            <Brain size={20} className={isScanning ? "animate-pulse" : "group-hover:scale-110 transition-transform"} />
+                                        </button>
+                                    </div>
                                 </div>
 
                                 {/* Upload Dropzone (Enlarged) */}
