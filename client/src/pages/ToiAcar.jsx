@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useSocket } from '../context/SocketContext';
 import { useLocation } from 'react-router-dom';
 
-const ToiAcar = ({ onBack }) => {
+const ToiAcar = ({ onBack, packageId: propPackageId, year: propYear }) => {
     const socket = useSocket();
     const location = useLocation();
     const [activeTab, setActiveTab] = useState('TOI');
@@ -49,15 +49,15 @@ const ToiAcar = ({ onBack }) => {
 
         socket.on('form:data', onFormData);
 
-        // Join the workspace room (using packageId/year from URL)
+        // Join the workspace room (using packageId/year from URL or props)
         const searchParams = new URLSearchParams(window.location.search);
-        const packageId = searchParams.get('packageId') || "2024"; // Default for now
+        const packageId = propPackageId || searchParams.get('packageId') || "2024";
         socket.emit('workspace:join', { packageId });
 
         return () => {
             socket.off('form:data', onFormData);
         };
-    }, [socket]);
+    }, [socket, propPackageId]);
 
     const activeTemplate = templates[activePageIndex];
 
