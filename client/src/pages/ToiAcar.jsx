@@ -23,7 +23,14 @@ const ToiAcar = ({ onBack, packageId: propPackageId, year: propYear }) => {
         untilDate: `3112${year}`,
         enterpriseName: "",
         tin: "",
-        directorName: ""
+        directorName: "",
+        branchCount: "",
+        registrationDate: "",
+        mainActivity: "",
+        telephone: "",
+        email: "",
+        complianceStatus: "GOLD", // Default
+        legalForm: "Private Limited Company" // Default
     });
 
     // 1. Initial Load from Backend & Parity Check
@@ -222,30 +229,79 @@ const ToiAcar = ({ onBack, packageId: propPackageId, year: propYear }) => {
                                             </div>
 
                                             {/* HARDCODED FIELDS FOR PAGE 1 */}
+                                            {/* HARDCODED FIELDS FOR PAGE 1 - HIGH FIDELITY UPGRADE */}
                                             {activePage === 1 && (
-                                                <div className="grid grid-cols-2 gap-10 bg-white/5 p-10 rounded-3xl border border-white/5 animate-fade-in">
-                                                    <div className="flex flex-col gap-6">
-                                                        <div>
-                                                            <label className="text-gray-500 font-bold text-[10px] uppercase tracking-widest mb-2 block">Name of Enterprise / ឈ្មោះសហគ្រាស</label>
-                                                            <input
-                                                                type="text"
-                                                                className="w-full bg-transparent border-b border-white/30 pb-2 text-white font-black text-xl focus:border-rose-500 transition-colors uppercase outline-none"
-                                                                value={formValues.enterpriseName || ""}
-                                                                onChange={(e) => handleInputChange('enterpriseName', e.target.value)}
-                                                                style={{ pointerEvents: 'auto' }}
-                                                            />
+                                                <div className="flex flex-col lg:flex-row gap-10 animate-fade-in">
+                                                    {/* LEFT COLUMN: ENTERPRISE INFO TABLE */}
+                                                    <div className="flex-1">
+                                                        <div className="border border-white/20 rounded-2xl overflow-hidden bg-slate-900/40 shadow-2xl">
+                                                            {[
+                                                                { kh: "ឈ្មោះសហគ្រាស ៖", en: "Name of Enterprise:", key: "enterpriseName" },
+                                                                { kh: "ចំនួនសាខាក្នុងស្រុក ៖", en: "Number of Local Branch:", key: "branchCount" },
+                                                                { kh: "កាលបរិច្ឆេទចុះបញ្ជីសារពើពន្ធ ៖", en: "Date of Tax Registration:", key: "registrationDate" },
+                                                                { kh: "ឈ្មោះអភិបាល/អ្នកគ្រប់គ្រង/ម្ចាស់សហគ្រាស ៖", en: "Name of Director/Manager/Owner:", key: "directorName" },
+                                                                { kh: "សកម្មភាពអាជីវកម្មចម្បង ៖", en: "Main Business Activities:", key: "mainActivity" },
+                                                                { kh: "លេខទូរស័ព្ទ ៖", en: "Telephone:", key: "telephone" },
+                                                                { kh: "សារអេឡិចត្រូនិច ៖", en: "Email:", key: "email" }
+                                                            ].map((row, idx) => (
+                                                                <div key={idx} className="flex border-b border-white/10 last:border-0 min-h-[80px]">
+                                                                    <div className="w-[45%] border-r border-white/10 p-5 flex flex-col justify-center bg-white/[0.03]">
+                                                                        <span className="text-white font-bold text-base tracking-tight leading-snug mb-1" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
+                                                                        <span className="text-slate-500 text-[10px] font-black uppercase tracking-widest leading-none">{row.en}</span>
+                                                                    </div>
+                                                                    <div className="flex-1 p-5 flex items-center">
+                                                                        <input
+                                                                            type="text"
+                                                                            value={formValues[row.key] || ""}
+                                                                            onChange={(e) => handleInputChange(row.key, e.target.value)}
+                                                                            className="w-full bg-transparent border-none outline-none text-white text-lg font-bold px-2 placeholder:text-white/10 focus:ring-0"
+                                                                            placeholder="..."
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            ))}
                                                         </div>
                                                     </div>
-                                                    <div className="flex flex-col gap-6">
-                                                        <div>
-                                                            <label className="text-gray-500 font-bold text-[10px] uppercase tracking-widest mb-2 block">Director Name / ឈ្មោះអគ្គនាយក</label>
-                                                            <input
-                                                                type="text"
-                                                                className="w-full bg-transparent border-b border-white/30 pb-2 text-white font-black text-xl focus:border-rose-500 transition-colors uppercase outline-none"
-                                                                value={formValues.directorName || ""}
-                                                                onChange={(e) => handleInputChange('directorName', e.target.value)}
-                                                                style={{ pointerEvents: 'auto' }}
-                                                            />
+
+                                                    {/* RIGHT COLUMN: STATUS & LEGAL FORM */}
+                                                    <div className="w-full lg:w-[400px] flex flex-col gap-8">
+                                                        {/* COMPLIANCE STATUS */}
+                                                        <div className="bg-slate-900/60 border border-white/10 p-6 rounded-2xl shadow-xl">
+                                                            <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 border-b border-white/5 pb-2">Tax Compliance Status</h4>
+                                                            <div className="flex flex-wrap gap-4">
+                                                                {['GOLD', 'SILVER', 'BRONZE'].map(status => (
+                                                                    <button
+                                                                        key={status}
+                                                                        onClick={() => handleInputChange('complianceStatus', status)}
+                                                                        className={`flex-1 py-3 rounded-xl border text-[10px] font-black tracking-widest transition-all ${formValues.complianceStatus === status ? 'bg-rose-500/20 border-rose-500 text-rose-400 shadow-lg' : 'bg-white/5 border-white/5 text-slate-500 hover:border-white/20'}`}
+                                                                    >
+                                                                        {status}
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* LEGAL FORM */}
+                                                        <div className="bg-slate-900/60 border border-white/10 p-6 rounded-2xl shadow-xl flex-1">
+                                                            <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 border-b border-white/5 pb-2">Legal Form or Business Operations</h4>
+                                                            <div className="space-y-3">
+                                                                {[
+                                                                    'Sole Proprietorship', 'Limited Partnership', 'General Partnership',
+                                                                    'Private Limited Company', 'Public Limited Company', 'Foreign Branch',
+                                                                    'State Enterprise'
+                                                                ].map(form => (
+                                                                    <label key={form} className="flex items-center gap-3 cursor-pointer group">
+                                                                        <input
+                                                                            type="radio"
+                                                                            name="legalForm"
+                                                                            checked={formValues.legalForm === form}
+                                                                            onChange={() => handleInputChange('legalForm', form)}
+                                                                            className="w-4 h-4 bg-slate-800 border-white/10 text-rose-500 focus:ring-rose-500/50"
+                                                                        />
+                                                                        <span className={`text-[11px] font-bold uppercase tracking-tight transition-colors ${formValues.legalForm === form ? 'text-white' : 'text-slate-500 group-hover:text-slate-300'}`}>{form}</span>
+                                                                    </label>
+                                                                ))}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
