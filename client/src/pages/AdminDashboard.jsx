@@ -24,7 +24,7 @@ export default function AdminDashboard() {
     // --- BR Extraction State ---
     const [isScanning, setIsScanning] = useState(false);
     const [selectedDoc, setSelectedDoc] = useState(null);
-    const version = "v5.12.24_STICKY";
+    const version = "v5.12.24_CLEAN";
     const [brDocs, setBrDocs] = useState([]);
     const [uploadingBR, setUploadingBR] = useState(false);
     const [activeBRIndex, setActiveBRIndex] = useState(null);
@@ -544,14 +544,9 @@ export default function AdminDashboard() {
                                                 <option key={u._id} value={u.username}>{u.companyName} ({u.username})</option>
                                             ))}
                                         </select>
-                                        <button
-                                            onClick={handleRecallScan}
-                                            disabled={isScanning || !selectedUserBR}
-                                            className="px-6 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl transition-all disabled:opacity-30 disabled:grayscale flex items-center justify-center group"
-                                            title="Sync from Google Drive"
-                                        >
-                                            <Brain size={20} className={isScanning ? "animate-pulse" : "group-hover:scale-110 transition-transform"} />
-                                        </button>
+                                        <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/5">
+                                            <Brain size={20} className="text-indigo-400 opacity-20" />
+                                        </div>
                                     </div>
                                 </div>
 

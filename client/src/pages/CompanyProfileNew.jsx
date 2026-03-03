@@ -940,7 +940,7 @@ export default function CompanyProfile() {
 
             <div className="mt-auto py-8 px-2 flex justify-between items-center border-t border-white/5 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-600">
                 <div className="flex gap-8">
-                    <span>Core Hub v6.1.9_FINAL_RESTORE</span>
+                    <span>Core Hub v6.1.9_CLEAN</span>
                     <span>Database: Production (Live)</span>
                     <span>AI Model: Initialized</span>
                 </div>
@@ -1187,15 +1187,10 @@ export default function CompanyProfile() {
                         ))}
                     </div>
 
-                    <div className="p-4 border-t border-white/5">
-                        <button
-                            onClick={handleRecallScan}
-                            disabled={isDocScanning}
-                            className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
-                        >
-                            {isDocScanning ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
-                            {isDocScanning ? 'Scanning...' : 'Deep Recall Scan'}
-                        </button>
+                    <div className="p-4 border-t border-white/5 opacity-20 pointer-events-none">
+                        <div className="w-full py-4 bg-slate-800 text-slate-500 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2">
+                            <ShieldCheck size={14} /> System Autonomous
+                        </div>
                     </div>
                 </div>
 
@@ -1209,22 +1204,7 @@ export default function CompanyProfile() {
                             <span className="text-xs font-black text-slate-400 uppercase tracking-[0.3em]">ENTITY DATA VIEW</span>
                         </div>
                         <div className="flex gap-4">
-                            <button
-                                onClick={handleRecallScan}
-                                disabled={isDocScanning}
-                                className="bg-white/5 hover:bg-white/10 text-white px-6 py-2 rounded-lg font-black uppercase text-[10px] tracking-widest transition-all border border-white/10 flex items-center gap-2"
-                            >
-                                {isDocScanning ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
-                                Deep Recall Scan
-                            </button>
-                            <button
-                                onClick={handleSaveProfile}
-                                disabled={savingProfile}
-                                className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-black uppercase text-[10px] tracking-widest transition-all shadow-lg flex items-center gap-2"
-                            >
-                                {savingProfile ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
-                                Commit Changes
-                            </button>
+                            {/* Manual scan and commit removed - system is now autonomous */}
                         </div>
                     </div>
 
