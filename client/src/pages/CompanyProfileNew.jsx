@@ -1151,7 +1151,6 @@ export default function CompanyProfile() {
                             </button>
                             <div>
                                 <h2 className="text-xl font-black text-white tracking-tighter uppercase leading-none">Business Data</h2>
-                                <p className="text-[10px] mt-1 text-slate-500 font-bold uppercase tracking-widest">Enterprise Intelligence Hub</p>
                             </div>
                         </div>
                     </div>
@@ -1216,36 +1215,9 @@ export default function CompanyProfile() {
                                 <div className="bg-slate-900/40 border-b border-white/5 p-12 flex flex-col flex-1 overflow-hidden">
                                     {/* Titles/Badges removed per Clean Protocol */}
 
-                                    {/* CHAT/PROMPT HISTORY (MOCK FOR UI) */}
+                                    {/* CHAT/PROMPT HISTORY (CLEANED) */}
                                     <div className="flex-1 overflow-y-auto mb-10 space-y-8 custom-scrollbar pr-4">
-                                        <div className="flex gap-6">
-                                            <div className="w-10 h-10 bg-slate-800 rounded-xl flex items-center justify-center text-slate-500 shrink-0 font-black text-xs">GK</div>
-                                            <div className="flex-1">
-                                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">You</p>
-                                                <p className="text-slate-300 text-sm leading-relaxed max-w-3xl bg-white/5 p-6 rounded-2xl rounded-tl-none border border-white/5">
-                                                    Initialize cross-document audit for GKSMART operations. Summarize critical findings and flag any inconsistencies in registration dates.
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex gap-6">
-                                            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shrink-0 font-black text-xs shadow-lg shadow-blue-600/20 animate-pulse">AI</div>
-                                            <div className="flex-1">
-                                                <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-2">GPT Agent</p>
-                                                <div className="text-slate-200 text-sm leading-relaxed max-w-3xl bg-blue-600/5 p-8 rounded-3xl rounded-tl-none border border-blue-500/20 shadow-xl">
-                                                    <p className="mb-4">System initialized. I have analyzed {allSourceDocs.length} intelligence sources from the vault. Here is the isolated audit summary:</p>
-                                                    <ul className="space-y-3 list-disc list-inside text-slate-400 marker:text-blue-500">
-                                                        <li>Registration Consistency: High (13 April 2021 Verified)</li>
-                                                        <li>Jurisdiction: Phnom Penh (Correct)</li>
-                                                        <li>Financial Ledger: Sync Active with Google Mobile Banking extracts</li>
-                                                    </ul>
-                                                    <div className="mt-6 flex gap-4">
-                                                        <button className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-[9px] font-black text-slate-500 uppercase tracking-widest border border-white/5 transition-all">Copy Report</button>
-                                                        <button className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-[9px] font-black text-slate-500 uppercase tracking-widest border border-white/5 transition-all">Regenerate</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        {/* Blank space for interaction */}
                                     </div>
                                 </div>
 
