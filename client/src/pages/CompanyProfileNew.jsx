@@ -1156,7 +1156,7 @@ export default function CompanyProfile() {
                         </div>
                     </div>
 
-                    <div className="max-w-5xl mx-auto py-12 px-8">
+                    <div className="w-full h-full p-0">
                         {activeDocTemplateId ? (
                             /* --- INDIVIDUAL DOCUMENT VIEW --- */
                             <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
@@ -1210,28 +1210,11 @@ export default function CompanyProfile() {
                                 </div>
                             </div>
                         ) : (
-                            /* --- GPT AI AGENT PROMPTING WORKSPACE --- */
-                            <div className="flex flex-col h-full animate-in fade-in slide-in-from-bottom-8 duration-700">
+                            /* --- GPT AI AGENT PROMPTING WORKSPACE (FULLSCREEN CLEAN) --- */
+                            <div className="flex flex-col h-[calc(100vh-160px)] animate-in fade-in duration-700">
                                 {/* PROMPT AREA CORE */}
-                                <div className="bg-slate-900/40 border border-white/5 rounded-[40px] p-12 shadow-2xl backdrop-blur-sm flex flex-col min-h-[600px] border-b-0 rounded-b-none">
-                                    <div className="flex justify-between items-center mb-10">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 bg-blue-600/10 rounded-2xl flex items-center justify-center text-blue-500">
-                                                <Brain size={24} />
-                                            </div>
-                                            <div>
-                                                <h3 className="text-lg font-black text-white uppercase tracking-tighter leading-none">Isolated AI Assistant</h3>
-                                                <p className="text-[10px] mt-1 text-slate-500 font-bold uppercase tracking-widest">GPT Master Prompting Environment</p>
-                                            </div>
-                                        </div>
-                                        <div className="flex gap-3">
-                                            <div className="px-4 py-2 bg-white/5 border border-white/5 rounded-full text-[9px] font-black text-slate-400 uppercase tracking-widest">Context: Active</div>
-                                            <div className="px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[9px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-2">
-                                                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                                                Agent Online
-                                            </div>
-                                        </div>
-                                    </div>
+                                <div className="bg-slate-900/40 border-b border-white/5 p-12 flex flex-col flex-1 overflow-hidden">
+                                    {/* Titles/Badges removed per Clean Protocol */}
 
                                     {/* CHAT/PROMPT HISTORY (MOCK FOR UI) */}
                                     <div className="flex-1 overflow-y-auto mb-10 space-y-8 custom-scrollbar pr-4">
@@ -1266,25 +1249,17 @@ export default function CompanyProfile() {
                                     </div>
                                 </div>
 
-                                {/* INPUT AREA (BOTTOM FIXED TO CONTAINER) */}
-                                <div className="bg-slate-950 border border-white/10 p-8 rounded-[40px] rounded-t-none border-t-0 shadow-2xl relative overflow-hidden group">
-                                    <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
-                                    <div className="relative flex items-end gap-6 bg-slate-900/50 p-6 rounded-[32px] border border-white/5 focus-within:border-blue-500/50 transition-all duration-500">
+                                {/* INPUT AREA (IMBEDDED) */}
+                                <div className="bg-slate-950 p-12 relative">
+                                    <div className="relative flex items-end gap-6 bg-slate-900/50 p-8 rounded-[32px] border border-white/5 focus-within:border-blue-500/50 transition-all duration-500 shadow-2xl">
                                         <textarea
                                             placeholder="Type your AI instruction or prompt here..."
-                                            className="flex-1 bg-transparent border-none outline-none text-white text-sm leading-relaxed placeholder:text-slate-600 resize-none py-2 max-h-48 custom-scrollbar"
+                                            className="flex-1 bg-transparent border-none outline-none text-lg leading-relaxed text-white placeholder:text-slate-700 resize-none py-2 max-h-64 custom-scrollbar"
                                             rows={2}
                                         />
-                                        <button className="w-14 h-14 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-blue-600/20 transition-all active:scale-90 group-hover:scale-105">
-                                            <Sparkles size={24} />
+                                        <button className="w-16 h-16 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-blue-600/20 transition-all active:scale-90">
+                                            <Sparkles size={28} />
                                         </button>
-                                    </div>
-                                    <div className="mt-4 flex justify-between items-center px-4 overflow-hidden">
-                                        <div className="flex gap-6">
-                                            <button className="flex items-center gap-2 text-[10px] font-black text-slate-600 hover:text-blue-400 transition-colors uppercase tracking-widest"><FileText size={12} /> Attach Data</button>
-                                            <button className="flex items-center gap-2 text-[10px] font-black text-slate-600 hover:text-blue-400 transition-colors uppercase tracking-widest"><Terminal size={12} /> AI Config</button>
-                                        </div>
-                                        <span className="text-[9px] font-black text-slate-700 uppercase tracking-[0.2em]">GPT-4 Intelligence Protocol</span>
                                     </div>
                                 </div>
                             </div>
