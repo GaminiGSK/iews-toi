@@ -1164,7 +1164,7 @@ export default function CompanyProfile() {
                                     <FileText size={16} />
                                 </div>
                                 <div className="text-left overflow-hidden">
-                                    <p className="text-[10px] font-black uppercase tracking-tight truncate">{doc.name}</p>
+                                    <p className="text-[10px] font-black uppercase tracking-tight truncate">{doc.originalName || doc.name}</p>
                                     <p className="text-[8px] font-bold opacity-50 uppercase">{doc.status}</p>
                                 </div>
                             </button>
@@ -1280,8 +1280,8 @@ export default function CompanyProfile() {
                                         <div className="bg-slate-900/50 p-8 rounded-3xl border border-white/10 max-h-[600px] overflow-y-auto custom-scrollbar shadow-inner">
                                             <pre className="text-slate-400 font-mono text-xs leading-relaxed whitespace-pre-wrap">
                                                 {(formData.documents || [])
-                                                    .filter(doc => doc.text)
-                                                    .map(doc => `--- SOURCE: ${doc.filename || doc.docType} ---\n${doc.text}\n\n`)
+                                                    .filter(doc => doc.rawText)
+                                                    .map(doc => `--- SOURCE: ${doc.originalName || doc.docType} ---\n${doc.rawText}\n\n`)
                                                     .join('') || "No raw text harvested yet. Please run 'Deep Recall Scan' to sync archives."}
                                             </pre>
                                         </div>

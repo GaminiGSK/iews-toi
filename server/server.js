@@ -152,11 +152,17 @@ const startServer = async () => {
                 // Fetch current data and send to joining client
                 try {
                     const TaxPackage = require('./models/TaxPackage');
-                    const pkg = await TaxPackage.findById(packageId);
+                    // Enable lookup by both ID and Year (safety bridge)
+                    const pkg = mongoose.isValidObjectId(packageId)
+                        ? await TaxPackage.findById(packageId)
+                        : await TaxPackage.findOne({ year: packageId });
+
                     if (pkg) {
                         socket.emit('form:data', pkg.data);
                     }
-                } catch (e) { }
+                } catch (e) {
+                    console.error("Workspace join fetch error:", e);
+                }
 
                 require('./agents/TaxAgent').onWorkspaceEnter(socket, packageId);
             });
