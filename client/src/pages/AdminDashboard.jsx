@@ -14,7 +14,7 @@ export default function AdminDashboard() {
     const [editingId, setEditingId] = useState(null);
     const [formData, setFormData] = useState({ username: '', companyName: '', password: '' });
     const [message, setMessage] = useState('');
-    const [activeTab, setActiveTab] = useState('user');
+    const [activeTab, setActiveTab] = useState(() => localStorage.getItem('lastActiveTab') || 'user');
     const [viewingFile, setViewingFile] = useState(null);
     const [profileTemplate, setProfileTemplate] = useState(null);
     const [savingTemplate, setSavingTemplate] = useState(false);
@@ -24,13 +24,13 @@ export default function AdminDashboard() {
     // --- BR Extraction State ---
     const [isScanning, setIsScanning] = useState(false);
     const [selectedDoc, setSelectedDoc] = useState(null);
-    const version = "v5.12.24_BOOK_PROFILE";
+    const version = "v5.12.24_STICKY";
     const [brDocs, setBrDocs] = useState([]);
     const [uploadingBR, setUploadingBR] = useState(false);
     const [activeBRIndex, setActiveBRIndex] = useState(null);
     const [selectedUserBR, setSelectedUserBR] = useState(() => localStorage.getItem('lastSelectedBR') || '');
     const [organizingProfile, setOrganizingProfile] = useState(false);
-    const [brView, setBrView] = useState('organized'); // 'raw' or 'organized'
+    const [brView, setBrView] = useState(() => localStorage.getItem('lastBRView') || 'organized'); // 'raw' or 'organized'
 
     // --- Data Fetching ---
     const fetchUsers = async () => {
@@ -69,16 +69,22 @@ export default function AdminDashboard() {
         fetchProfileTemplate();
     }, []);
 
+    // SYNC PERSISTENCE
+    useEffect(() => {
+        localStorage.setItem('lastActiveTab', activeTab);
+    }, [activeTab]);
+
+    useEffect(() => {
+        localStorage.setItem('lastBRView', brView);
+    }, [brView]);
+
     useEffect(() => {
         if (selectedUserBR) {
+            localStorage.setItem('lastSelectedBR', selectedUserBR);
+            // On tab change or selection, force the dossier to reload from master record
             fetchUserBRDocs(selectedUserBR);
         }
-    }, [activeTab, selectedUserBR]);
-
-    // Track selection
-    useEffect(() => {
-        if (selectedUserBR) localStorage.setItem('lastSelectedBR', selectedUserBR);
-    }, [selectedUserBR]);
+    }, [selectedUserBR, activeTab]);
 
     const fetchFileContent = async (category, fileName) => {
         try {
