@@ -185,15 +185,24 @@ export default function AdminDashboard() {
         setUploadingBR(false);
     };
 
+    const [syncStatus, setSyncStatus] = useState('');
+
     const fetchUserBRDocs = async (username) => {
         if (!username) {
             setBrDocs([]);
+            setSyncStatus('');
             return;
         }
 
         const token = localStorage.getItem('token');
+        if (!token) {
+            setSyncStatus('Error: No Auth Token');
+            return;
+        }
+
+        setSyncStatus(`Syncing ${username}...`);
         try {
-            console.log("Fetching BR Docs for:", username);
+            console.log("[Intelligence] Fetching dossier for:", username);
             const res = await axios.get(`/api/company/admin/profile/${username}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -201,7 +210,7 @@ export default function AdminDashboard() {
             if (res.data && res.data.documents && Array.isArray(res.data.documents)) {
                 // Map CompanyProfile documents to brDocs UI state
                 const mappedDocs = res.data.documents.map((doc, idx) => ({
-                    id: doc.id || doc._id || Date.now() + idx,
+                    id: doc.id || doc._id || `doc-${Date.now()}-${idx}`,
                     name: doc.originalName || doc.docType || 'Intelligence Fragment',
                     text: doc.rawText || 'Text extraction active...',
                     organizedText: doc.organizedText || res.data.organizedProfile || '',
@@ -211,20 +220,23 @@ export default function AdminDashboard() {
                 // Sort newest first & Update State
                 const finalDocs = [...mappedDocs].reverse();
                 setBrDocs(finalDocs);
+                setSyncStatus(`Live: ${finalDocs.length} records found`);
 
                 if (finalDocs.length > 0) {
                     setActiveBRIndex(0);
-                    // Default to organized view if we have a profile summary
                     setBrView(res.data.organizedProfile ? 'organized' : 'raw');
                 } else {
                     setActiveBRIndex(null);
+                    setSyncStatus('Success: No Documents Yet');
                 }
             } else {
                 setBrDocs([]);
                 setActiveBRIndex(null);
+                setSyncStatus('Status: Empty Profile');
             }
         } catch (err) {
             console.error("Fetch BR Docs Error:", err);
+            setSyncStatus(`Sync Failed: ${err.response?.data?.message || err.message}`);
             setBrDocs([]);
             setActiveBRIndex(null);
         }
@@ -499,7 +511,14 @@ export default function AdminDashboard() {
                         <div className="h-full overflow-hidden flex animate-in fade-in duration-500">
                             {/* --- SIDEBAR: Uploaded Documents --- */}
                             <div className="w-[450px] border-r border-white/5 bg-slate-900/40 p-10 overflow-y-auto">
-                                <h3 className="text-xs font-black text-indigo-400 uppercase tracking-[0.3em] mb-8">BR Document Pool</h3>
+                                <div className="flex items-center justify-between mb-8">
+                                    <h3 className="text-xs font-black text-indigo-400 uppercase tracking-[0.3em]">BR Document Pool</h3>
+                                    {syncStatus && (
+                                        <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full ${syncStatus.includes('Error') || syncStatus.includes('Failed') ? 'bg-red-500/20 text-red-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
+                                            {syncStatus}
+                                        </span>
+                                    )}
+                                </div>
 
                                 {/* User Dropdown */}
                                 <div className="mb-8 space-y-3">
