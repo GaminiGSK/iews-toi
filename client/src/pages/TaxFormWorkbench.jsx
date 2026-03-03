@@ -294,11 +294,13 @@ const TaxFormWorkbench = () => {
                                     {/* ENTERPRISE DETAILS TABLE */}
                                     <div className="mt-20 border-[2px] border-white overflow-hidden">
                                         {[
-                                            { kh: "ឈ្មោះសហគ្រាស ៖", en: "Name of Enterprise:" },
-                                            { kh: "ចំនួនសាខាក្នុងស្រុក ៖", en: "Number of Local Branch:" },
-                                            { kh: "កាលបរិច្ឆេទចុះបញ្ជីសារពើពន្ធ ៖", en: "Date of Tax Registration:" },
-                                            { kh: "ឈ្មោះអភិបាល/អ្នកគ្រប់គ្រង/ម្ចាស់សហគ្រាស ៖", en: "Name of Director/Manager/Owner:" },
-                                            { kh: "សកម្មភាពអាជីវកម្មចម្បង ៖", en: "Main Business Activities:" }
+                                            { kh: "ឈ្មោះសហគ្រាស ៖", en: "Name of Enterprise:", key: "enterpriseName" },
+                                            { kh: "ចំនួនសាខាក្នុងស្រុក ៖", en: "Number of Local Branch:", key: "branchCount" },
+                                            { kh: "កាលបរិច្ឆេទចុះបញ្ជីសារពើពន្ធ ៖", en: "Date of Tax Registration:", key: "registrationDate" },
+                                            { kh: "ឈ្មោះអភិបាល/អ្នកគ្រប់គ្រង/ម្ចាស់សហគ្រាស ៖", en: "Name of Director/Manager/Owner:", key: "directorName" },
+                                            { kh: "សកម្មភាពអាជីវកម្មចម្បង ៖", en: "Main Business Activities:", key: "mainActivity" },
+                                            { kh: "លេខទូរស័ព្ទ ៖", en: "Telephone:", key: "telephone" },
+                                            { kh: "សារអេឡិចត្រូនិច ៖", en: "Email:", key: "email" }
                                         ].map((row, idx) => (
                                             <div key={idx} className="flex border-b-[2px] border-white last:border-0 h-24">
                                                 {/* LABEL COLUMN */}
@@ -310,6 +312,8 @@ const TaxFormWorkbench = () => {
                                                 <div className="flex-1 p-6 flex items-center">
                                                     <input
                                                         type="text"
+                                                        value={formData[row.key] || ""}
+                                                        onChange={(e) => handleFormChange(row.key, e.target.value)}
                                                         className="w-full bg-transparent border-none outline-none text-white text-2xl font-bold px-4"
                                                         placeholder="..."
                                                     />
@@ -341,9 +345,14 @@ const TaxFormWorkbench = () => {
                                     {/* ADDRESS DETAILS TABLE */}
                                     <div className="mt-8 border-[2px] border-white overflow-hidden">
                                         {[
-                                            { kh: "អាសយដ្ឋានបច្ចុប្បន្នរបស់ការិយាល័យចុះបញ្ជី ៖", en: "Current Registered Office Address:" },
-                                            { kh: "អាសយដ្ឋានបច្ចុប្បន្នរបស់កន្លែងប្រកបអាជីវកម្មចម្បង ៖", en: "Current Principal Establishment Address:" },
-                                            { kh: "អាសយដ្ឋានឃ្លាំង ៖", en: "Warehouse Address:" }
+                                            { kh: "អាសយដ្ឋានបច្ចុប្បន្នរបស់ការិយាល័យចុះបញ្ជី ៖", en: "Current Registered Office Address:", key: "registeredAddress" },
+                                            { kh: "ផ្ទះលេខ/ផ្លូវ ៖", en: "House No / Street:", key: "houseStreet" },
+                                            { kh: "ភូមិ ៖", en: "Village:", key: "village" },
+                                            { kh: "ឃុំ/សង្កាត់ ៖", en: "Commune / Sangkat:", key: "commune" },
+                                            { kh: "ក្រុង/ស្រុក/ខណ្ឌ ៖", en: "District / Khan:", key: "district" },
+                                            { kh: "រាជធានី/ខេត្ត ៖", en: "Province / City:", key: "province" },
+                                            { kh: "អាសយដ្ឋានបច្ចុប្បន្នរបស់កន្លែងប្រកបអាជីវកម្មចម្បង ៖", en: "Current Principal Establishment Address:", key: "principalAddress" },
+                                            { kh: "អាសយដ្ឋានឃ្លាំង ៖", en: "Warehouse Address:", key: "warehouseAddress" }
                                         ].map((row, idx) => (
                                             <div key={idx} className="flex border-b-[2px] border-white last:border-0 h-24">
                                                 {/* LABEL COLUMN */}
@@ -355,6 +364,8 @@ const TaxFormWorkbench = () => {
                                                 <div className="flex-1 p-6 flex items-center">
                                                     <input
                                                         type="text"
+                                                        value={formData[row.key] || ""}
+                                                        onChange={(e) => handleFormChange(row.key, e.target.value)}
                                                         className="w-full bg-transparent border-none outline-none text-white text-2xl font-bold px-4"
                                                         placeholder="..."
                                                     />

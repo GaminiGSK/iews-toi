@@ -501,7 +501,9 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                         { kh: "ចំនួនសាខាក្នុងស្រុក ៖", en: "Number of Local Branch:", key: "branchCount" },
                                         { kh: "កាលបរិច្ឆេទចុះបញ្ជីសារពើពន្ធ ៖", en: "Date of Tax Registration:", key: "registrationDate" },
                                         { kh: "ឈ្មោះអភិបាល/អ្នកគ្រប់គ្រង/ម្ចាស់សហគ្រាស ៖", en: "Name of Director/Manager/Owner:", key: "directorName" },
-                                        { kh: "សកម្មភាពអាជីវកម្មចម្បង ៖", en: "Main Business Activities:", key: "mainActivity" }
+                                        { kh: "សកម្មភាពអាជីវកម្មចម្បង ៖", en: "Main Business Activities:", key: "mainActivity" },
+                                        { kh: "លេខទូរស័ព្ទ ៖", en: "Telephone:", key: "telephone" },
+                                        { kh: "សារអេឡិចត្រូនិច ៖", en: "Email:", key: "email" }
                                     ].map((row, idx) => (
                                         <div key={idx} className="flex border-b border-white/5 last:border-0 min-h-[70px]">
                                             <div className="w-[40%] border-r border-white/5 p-5 flex flex-col justify-center bg-white/[0.02]">
@@ -536,6 +538,11 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                                 <div className="mt-8 border border-white/10 overflow-hidden bg-slate-900/40 rounded-2xl shadow-xl backdrop-blur-sm">
                                     {[
                                         { kh: "អាសយដ្ឋានបច្ចុប្បន្នរបស់ការិយាល័យចុះបញ្ជី ៖", en: "Current Registered Office Address:", key: "registeredAddress" },
+                                        { kh: "ផ្ទះលេខ/ផ្លូវ ៖", en: "House No / Street:", key: "houseStreet" },
+                                        { kh: "ភូមិ ៖", en: "Village:", key: "village" },
+                                        { kh: "ឃុំ/សង្កាត់ ៖", en: "Commune / Sangkat:", key: "commune" },
+                                        { kh: "ក្រុង/ស្រុក/ខណ្ឌ ៖", en: "District / Khan:", key: "district" },
+                                        { kh: "រាជធានី/ខេត្ត ៖", en: "Province / City:", key: "province" },
                                         { kh: "អាសយដ្ឋានបច្ចុប្បន្នរបស់កន្លែងប្រកបអាជីវកម្មចម្បង ៖", en: "Current Principal Establishment Address:", key: "principalAddress" },
                                         { kh: "អាសយដ្ឋានឃ្លាំង ៖", en: "Warehouse Address:", key: "warehouseAddress" }
                                     ].map((row, idx) => (
