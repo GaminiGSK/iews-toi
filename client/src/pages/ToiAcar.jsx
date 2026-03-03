@@ -57,22 +57,34 @@ const ToiAcar = ({ onBack, packageId: propPackageId, year: propYear }) => {
 
                 // 3. AUTO-FILL FROM COMPANY PROFILE (The "Sticking" Logic)
                 // If the form is mostly empty, pull the latest verified data from the company profile
+                // We use || prev.field to ensure we don't overwrite if profile is empty
                 if (!currentFormData.tin || !currentFormData.enterpriseName) {
                     try {
                         const profileRes = await axios.get('/api/company/profile');
                         if (profileRes.data) {
                             const p = profileRes.data;
-                            setFormValues(prev => ({
-                                ...prev,
-                                tin: currentFormData.tin || p.vatTin || prev.tin,
-                                enterpriseName: currentFormData.enterpriseName || p.companyNameKh || prev.enterpriseName,
-                                enterpriseNameLatin: currentFormData.enterpriseNameLatin || p.companyNameEn || prev.enterpriseNameLatin,
-                                directorName: currentFormData.directorName || p.director || prev.directorName,
-                                registrationDate: currentFormData.registrationDate || p.incorporationDate || prev.registrationDate,
-                                mainActivity: currentFormData.mainActivity || p.businessActivity || prev.mainActivity,
-                                email: currentFormData.email || p.email || prev.email,
-                                legalForm: currentFormData.legalForm || p.companyType || prev.legalForm
-                            }));
+                            setFormValues(prev => {
+                                const newValues = {
+                                    ...prev,
+                                    tin: currentFormData.tin || p.vatTin || prev.tin,
+                                    enterpriseName: currentFormData.enterpriseName || p.companyNameKh || prev.enterpriseName,
+                                    enterpriseNameLatin: currentFormData.enterpriseNameLatin || p.companyNameEn || prev.enterpriseNameLatin,
+                                    directorName: currentFormData.directorName || p.director || prev.directorName,
+                                    registrationDate: currentFormData.registrationDate || p.incorporationDate || prev.registrationDate,
+                                    mainActivity: currentFormData.mainActivity || p.businessActivity || prev.mainActivity,
+                                    email: currentFormData.email || p.email || prev.email,
+                                    legalForm: currentFormData.legalForm || p.companyType || prev.legalForm,
+                                    branchCount: currentFormData.branchCount || p.branchCount || prev.branchCount || "0"
+                                };
+
+                                // Bridge TIN to boxes: if we got a tin from profile, normalize it for the split boxes
+                                if (newValues.tin && newValues.tin.length > 5) {
+                                    // Remove prefix like 'K009-' if present to fit 9-digit boxes
+                                    newValues.tin = newValues.tin.replace(/[^0-9]/g, '').slice(-9);
+                                }
+
+                                return newValues;
+                            });
                         }
                     } catch (pErr) {
                         console.log("No profile auto-fill profile available.");

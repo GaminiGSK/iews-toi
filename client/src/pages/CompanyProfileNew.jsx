@@ -1294,12 +1294,12 @@ export default function CompanyProfile() {
                                             Harvested Intelligence (Raw)
                                         </h2>
                                         <div className="bg-slate-900/50 p-8 rounded-3xl border border-white/10 max-h-[600px] overflow-y-auto custom-scrollbar shadow-inner">
-                                            <pre className="text-slate-400 font-mono text-xs leading-relaxed whitespace-pre-wrap">
+                                            <div className="bg-slate-950/80 border border-white/5 rounded-2xl p-6 font-mono text-[11px] leading-relaxed text-slate-300 max-h-[500px] overflow-auto shadow-inner">
                                                 {(formData.documents || [])
-                                                    .filter(doc => doc.rawText)
-                                                    .map(doc => `--- SOURCE: ${doc.originalName || doc.docType} ---\n${doc.rawText}\n\n`)
-                                                    .join('') || "No raw text harvested yet. Please run 'Deep Recall Scan' to sync archives."}
-                                            </pre>
+                                                    .filter(doc => doc.rawText && doc.rawText.length > 50)
+                                                    .map(doc => `--- SOURCE: ${doc.originalName || doc.docType}\n${doc.rawText}\n\n`)
+                                                    .join('') || (formData.organizedProfile ? "Combined Intelligence Source Active" : "No raw text harvested yet. Please verify your document uploads.")}
+                                            </div>
                                         </div>
                                     </div>
 

@@ -570,7 +570,7 @@ router.get('/profile', auth, async (req, res) => {
         if (!companyCode) return res.status(400).json({ message: 'No Company Code associated with user' });
 
         // DB Lookup - Exclude Base64 Data for performance
-        const profile = await CompanyProfile.findOne({ user: req.user.id }).select('-documents.data');
+        let profile = await CompanyProfile.findOne({ user: req.user.id }).select('-documents.data');
 
         // If no profile, return minimal data based on User ID
         if (!profile) {
@@ -578,8 +578,32 @@ router.get('/profile', auth, async (req, res) => {
                 username: req.user.username,
                 companyCode: req.user.companyCode,
                 companyNameEn: req.user.companyName || '',
+                documents: []
             });
         }
+
+        // --- ON-THE-FLY NORMALIZATION (Fixes "Missing" status for generic uploads) ---
+        let modified = false;
+        profile.documents.forEach(doc => {
+            if (doc.docType === 'br_extraction' || doc.docType === 'br_extra' || !doc.docType) {
+                const name = (doc.originalName || "").toLowerCase();
+                let newType = doc.docType || 'br_extra';
+
+                if (name.includes('cert') || name.includes('incorporation')) newType = 'moc_cert';
+                else if (name.includes('khmer') || name.includes('khemer') || (name.includes('extract') && name.includes('kh'))) newType = 'kh_extract';
+                else if (name.includes('english') || (name.includes('extract') && name.includes('en'))) newType = 'en_extract';
+                else if (name.includes('patent')) newType = 'tax_patent';
+                else if (name.includes('vat') || name.includes('tax id')) newType = 'tax_id';
+                else if (name.includes('bank') || name.includes('opening')) newType = 'bank_opening';
+
+                if (newType !== doc.docType) {
+                    doc.docType = newType;
+                    modified = true;
+                }
+            }
+        });
+
+        if (modified) await profile.save();
 
         // Sync username into response
         const profileData = profile.toObject();
