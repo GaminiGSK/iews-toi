@@ -1166,22 +1166,39 @@ export default function CompanyProfile() {
                             <div className="bg-slate-950/50 border border-white/10 p-12 rounded-3xl animate-fade-in">
                                 <h1 className="text-2xl font-black text-white mb-8 border-b border-white/5 pb-4 uppercase tracking-tighter">Extracted Intelligence</h1>
 
-                                {formData.organizedProfile ? (
-                                    <pre className="text-slate-300 font-mono text-sm leading-relaxed whitespace-pre-wrap">
-                                        {formData.organizedProfile}
-                                    </pre>
-                                ) : (
+                                <div className="space-y-12">
+                                    {/* --- RAW HARVEST STREAM (ALWAYS VISIBLE FOR BLUE AGENT) --- */}
                                     <div className="space-y-6">
-                                        <h2 className="text-lg font-bold text-blue-400 mb-4 uppercase">Harvested Intelligence (Raw)</h2>
-                                        <div className="bg-slate-900/50 p-8 rounded-3xl border border-white/5 max-h-[700px] overflow-y-auto custom-scrollbar">
-                                            <pre className="text-slate-400 font-mono text-sm leading-relaxed whitespace-pre-wrap">
+                                        <h2 className="text-lg font-bold text-blue-400 mb-4 uppercase flex items-center gap-3">
+                                            <Terminal size={18} />
+                                            Harvested Intelligence (Raw)
+                                        </h2>
+                                        <div className="bg-slate-900/50 p-8 rounded-3xl border border-white/10 max-h-[600px] overflow-y-auto custom-scrollbar shadow-inner">
+                                            <pre className="text-slate-400 font-mono text-xs leading-relaxed whitespace-pre-wrap">
                                                 {(formData.documents || [])
                                                     .filter(doc => doc.text)
                                                     .map(doc => `--- SOURCE: ${doc.filename || doc.docType} ---\n${doc.text}\n\n`)
                                                     .join('') || "No raw text harvested yet. Please run 'Deep Recall Scan' to sync archives."}
                                             </pre>
                                         </div>
+                                    </div>
 
+                                    {/* --- ORGANIZED DOSSIER (IF GENERATED) --- */}
+                                    {formData.organizedProfile && (
+                                        <div className="pt-12 border-t border-white/5">
+                                            <h2 className="text-lg font-bold text-emerald-400 mb-6 uppercase flex items-center gap-3">
+                                                <Brain size={18} />
+                                                Organized Dossier
+                                            </h2>
+                                            <div className="bg-slate-900/30 p-10 rounded-3xl border border-white/5">
+                                                <pre className="text-slate-300 font-mono text-sm leading-relaxed whitespace-pre-wrap">
+                                                    {formData.organizedProfile}
+                                                </pre>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {!formData.organizedProfile && (
                                         <div className="mt-8 p-6 bg-blue-600/10 border border-blue-500/20 rounded-2xl flex items-center gap-4">
                                             <RefreshCw className={`text-blue-500 ${isDocScanning ? 'animate-spin' : ''}`} />
                                             <div>
@@ -1189,8 +1206,8 @@ export default function CompanyProfile() {
                                                 <p className="text-slate-400 text-xs mt-1">Click 'Deep Recall Scan' above to process all documents and generate the Khmer/English dossier.</p>
                                             </div>
                                         </div>
-                                    </div>
-                                )}
+                                    )}
+                                </div>
                             </div>
                         )}
                     </div>
