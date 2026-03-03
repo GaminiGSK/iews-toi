@@ -167,8 +167,6 @@ export default function CompanyProfile() {
         }
     }, [docTemplates, activeDocTemplateId]);
 
-    // --- IEWS ACCESS MANAGEMENT STATE ---
-    const [showAccessModal, setShowAccessModal] = useState(false);
     const [accessUnlocked, setAccessUnlocked] = useState(false);
     const [accessControlCode, setAccessControlCode] = useState('');
     const [accessUsers, setAccessUsers] = useState([]);
@@ -722,21 +720,7 @@ export default function CompanyProfile() {
 
     // --- REPURPOSED: Tax Packages (Was renderIEWS) ---
     const renderTaxPackages = () => (
-        <div className="w-full h-[calc(100vh-80px)] pt-6 px-10 animate-fade-in flex flex-col bg-slate-900">
-            <div className="mb-4 flex items-center gap-4">
-                <button onClick={() => setView('home')} className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition shadow-md shrink-0">
-                    <ArrowLeft size={20} />
-                </button>
-                <span className="text-gray-500 text-sm font-bold uppercase tracking-widest">TOI & ACAR Compliance Hub</span>
-            </div>
-            <div className="flex-1 flex items-center justify-center bg-slate-950/30 rounded-3xl border border-white/5">
-                <div className="text-center">
-                    <Sparkles size={48} className="text-rose-400 opacity-20 mx-auto mb-4" />
-                    <h3 className="text-xl font-bold text-slate-400">Compliance Logic Deployed</h3>
-                    <p className="text-slate-600 text-xs mt-2 italic">The system has been cleared for a fresh design implementation.</p>
-                </div>
-            </div>
-        </div>
+        <ToiAcar onBack={() => setView('home')} />
     );
 
 
@@ -1188,15 +1172,16 @@ export default function CompanyProfile() {
                                     </pre>
                                 ) : (
                                     <div className="space-y-6">
-                                        <p className="text-slate-500 italic text-sm">Organized profile not yet generated. Showing raw data:</p>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {Object.entries(formData.extractedData || {}).map(([key, val]) => (
-                                                <div key={key} className="bg-white/5 p-4 rounded-xl border border-white/5">
-                                                    <p className="text-[10px] font-black uppercase text-blue-500 mb-1">{key.replace(/_/g, ' ')}</p>
-                                                    <p className="text-white font-bold">{String(val)}</p>
-                                                </div>
-                                            ))}
+                                        <h2 className="text-lg font-bold text-blue-400 mb-4 uppercase">Harvested Intelligence (Raw)</h2>
+                                        <div className="bg-slate-900/50 p-8 rounded-3xl border border-white/5 max-h-[700px] overflow-y-auto custom-scrollbar">
+                                            <pre className="text-slate-400 font-mono text-sm leading-relaxed whitespace-pre-wrap">
+                                                {(formData.documents || [])
+                                                    .filter(doc => doc.text)
+                                                    .map(doc => `--- SOURCE: ${doc.filename || doc.docType} ---\n${doc.text}\n\n`)
+                                                    .join('') || "No raw text harvested yet. Please run 'Deep Recall Scan' to sync archives."}
+                                            </pre>
                                         </div>
+
                                         <div className="mt-8 p-6 bg-blue-600/10 border border-blue-500/20 rounded-2xl flex items-center gap-4">
                                             <RefreshCw className={`text-blue-500 ${isDocScanning ? 'animate-spin' : ''}`} />
                                             <div>
@@ -1802,157 +1787,6 @@ export default function CompanyProfile() {
                 </div>
             )}
 
-            {/* IEWS ACCESS MODAL */}
-            {showAccessModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-                    <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md" onClick={() => setShowAccessModal(false)} />
-                    <div className="relative w-full max-w-2xl bg-slate-900 border border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-                        <div className="p-8 border-b border-white/5 flex justify-between items-center bg-slate-800/50">
-                            <div>
-                                <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                                    <ShieldCheck className="text-emerald-400" />
-                                    Access Management
-                                </h2>
-                                <p className="text-slate-400 text-[10px] uppercase tracking-widest mt-1">Management • Approval • Data</p>
-                            </div>
-                            <button onClick={() => setShowAccessModal(false)} className="text-slate-400 hover:text-white transition">
-                                <ArrowLeft size={24} />
-                            </button>
-                        </div>
-
-                        {!accessUnlocked ? (
-                            <div className="p-12 text-center flex flex-col items-center">
-                                <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mb-6 border border-emerald-500/20">
-                                    <ShieldCheck size={40} className="text-emerald-400" />
-                                </div>
-                                <h3 className="text-xl font-bold text-white mb-2">Systems Locked</h3>
-                                <p className="text-slate-400 mb-8 max-w-sm">Enter the 6-digit control code to manage departmental access levels.</p>
-                                <input
-                                    type="password"
-                                    maxLength={6}
-                                    placeholder="888888"
-                                    value={accessControlCode}
-                                    onChange={(e) => setAccessControlCode(e.target.value)}
-                                    className="w-full max-w-[200px] bg-slate-950/50 border border-white/5 rounded-2xl px-4 py-4 text-center text-2xl tracking-[0.5em] text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all font-mono mb-6"
-                                />
-                                <button
-                                    onClick={handleAccessVerify}
-                                    className="w-full max-w-[200px] bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-2xl transition-all active:scale-[0.98] shadow-lg shadow-emerald-600/20"
-                                >
-                                    Verify Code
-                                </button>
-                            </div>
-                        ) : (
-                            <div className="p-8 overflow-y-auto flex-1">
-                                {/* Change Control Code Section */}
-                                <div className="mb-10 bg-slate-800/30 p-6 rounded-2xl border border-white/5">
-                                    <div className="flex justify-between items-center mb-4">
-                                        <h3 className="font-bold text-white uppercase text-xs tracking-widest">Master Control Code</h3>
-                                        <button
-                                            onClick={() => setIsChangingControlCode(!isChangingControlCode)}
-                                            className="text-[10px] text-blue-400 font-bold hover:underline"
-                                        >
-                                            {isChangingControlCode ? 'Cancel' : 'Change Master Code'}
-                                        </button>
-                                    </div>
-                                    {isChangingControlCode ? (
-                                        <div className="flex gap-4">
-                                            <input
-                                                type="password"
-                                                maxLength={6}
-                                                placeholder="Enter New 6-Digit Code"
-                                                value={newControlCodeInput}
-                                                onChange={(e) => setNewControlCodeInput(e.target.value)}
-                                                className="flex-1 bg-slate-950 border border-white/10 rounded-xl px-4 py-2 text-white font-mono"
-                                            />
-                                            <button onClick={handleUpdateControlCode} className="bg-blue-600 px-6 py-2 rounded-xl text-white font-bold text-sm">Save</button>
-                                        </div>
-                                    ) : (
-                                        <div className="text-slate-400 text-xs italic">Active master code is enforced.</div>
-                                    )}
-                                </div>
-
-                                {/* Create User Section */}
-                                <div className="mb-10">
-                                    <h3 className="font-bold text-white uppercase text-xs tracking-widest mb-6 flex items-center gap-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                        Create New Access Point
-                                    </h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                        <input
-                                            placeholder="Access Name (e.g. John Manager)"
-                                            value={newAccessUser.name}
-                                            onChange={(e) => setNewAccessUser({ ...newAccessUser, name: e.target.value })}
-                                            className="bg-slate-800 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
-                                        />
-                                        <select
-                                            value={newAccessUser.level}
-                                            onChange={(e) => setNewAccessUser({ ...newAccessUser, level: e.target.value })}
-                                            className="bg-slate-800 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
-                                        >
-                                            <option>Management</option>
-                                            <option>Approval</option>
-                                            <option>Data</option>
-                                        </select>
-                                    </div>
-                                    <div className="flex gap-4">
-                                        <input
-                                            placeholder="6-Digit Access Code"
-                                            maxLength={6}
-                                            value={newAccessUser.code}
-                                            onChange={(e) => setNewAccessUser({ ...newAccessUser, code: e.target.value })}
-                                            className="flex-1 bg-slate-800 border border-white/10 rounded-xl px-4 py-3 text-white font-mono text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
-                                        />
-                                        <button
-                                            onClick={handleCreateAccessUser}
-                                            className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-8 py-3 rounded-xl transition-all shadow-lg shadow-emerald-900/40"
-                                        >
-                                            + Access
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* User List */}
-                                <div>
-                                    <h3 className="font-bold text-white uppercase text-xs tracking-widest mb-6 flex items-center gap-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                                        Department Authority
-                                    </h3>
-                                    <div className="space-y-3 pb-8">
-                                        {accessUsers.map(user => (
-                                            <div key={user._id} className="flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-2xl hover:border-white/10 transition">
-                                                <div className="flex items-center gap-4">
-                                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xs ${user.level === 'Management' ? 'bg-rose-500/10 text-rose-400' :
-                                                        user.level === 'Approval' ? 'bg-indigo-500/10 text-indigo-400' :
-                                                            'bg-emerald-500/10 text-emerald-400'
-                                                        }`}>
-                                                        {user.level.charAt(0)}
-                                                    </div>
-                                                    <div>
-                                                        <div className="text-white font-bold text-sm">{user.name}</div>
-                                                        <div className="text-slate-500 text-[10px] uppercase font-bold tracking-tight">{user.level}</div>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-6">
-                                                    <div className="text-slate-400 font-mono text-[10px] tracking-widest bg-slate-950 px-3 py-1 rounded-lg">{user.code}</div>
-                                                    <button onClick={() => handleDeleteAccessUser(user._id)} className="text-red-400/30 hover:text-red-400 transition p-2">
-                                                        <X size={18} />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                        {accessUsers.length === 0 && (
-                                            <div className="text-center py-10 border border-dashed border-white/10 rounded-3xl">
-                                                <p className="text-slate-600 text-sm italic">No special access users created yet.</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
         </div>
     );
 }
