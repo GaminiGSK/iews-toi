@@ -69,6 +69,13 @@ export default function AdminDashboard() {
         fetchProfileTemplate();
     }, []);
 
+    // AUTO-LOAD BR DOCS ON SELECTION OR TAB CHANGE
+    useEffect(() => {
+        if (activeTab === 'profile' && selectedUserBR) {
+            fetchUserBRDocs(selectedUserBR);
+        }
+    }, [activeTab, selectedUserBR]);
+
     const fetchFileContent = async (category, fileName) => {
         try {
             const token = localStorage.getItem('token');
@@ -473,7 +480,11 @@ export default function AdminDashboard() {
                                     <select
                                         className="w-full bg-black/50 border border-white/10 p-5 rounded-[24px] text-white font-bold uppercase outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none cursor-pointer"
                                         value={selectedUserBR}
-                                        onChange={(e) => setSelectedUserBR(e.target.value)}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setSelectedUserBR(val);
+                                            if (val) fetchUserBRDocs(val);
+                                        }}
                                     >
                                         <option value="">Choose a user profile...</option>
                                         {users.map(u => (

@@ -312,13 +312,26 @@ router.get('/admin/profile/:username', auth, async (req, res) => {
         }
         const { username } = req.params;
         const User = require('../models/User');
-        const targetUser = await User.findOne({ username });
+        const targetUser = await User.findOne({ username: { $regex: new RegExp(`^${username}$`, 'i') } });
         if (!targetUser) return res.status(404).json({ message: 'Target user not found' });
 
-        const profile = await CompanyProfile.findOne({ user: targetUser._id }).select('-documents.data');
+        // IMPORTANT: Fetch FULL profile (with data) to avoid wiping it on mutations
+        const profile = await CompanyProfile.findOne({ user: targetUser._id });
         if (!profile) return res.json({ documents: [], organizedProfile: null, username: targetUser.username });
 
+        // Record Healing & Normalization logic is handled by a helper to keep it consistent
+        const { healAndNormalizeProfile } = require('../lib/profileUtils');
+        const wasModified = await healAndNormalizeProfile(profile);
+        if (wasModified) await profile.save();
+
+        // Convert to object and STRIP the heavy Base64 data for the list response
         const profileData = profile.toObject();
+        if (profileData.documents) {
+            profileData.documents = profileData.documents.map(d => {
+                const { data, ...rest } = d;
+                return rest;
+            });
+        }
         profileData.username = targetUser.username;
         res.json(profileData);
     } catch (err) {
@@ -562,17 +575,15 @@ router.post('/rescan', auth, async (req, res) => {
     }
 });
 
-// GET Profile
+// GET Profile (User Self-Service)
 router.get('/profile', auth, async (req, res) => {
     try {
-        // If admin, they might pass a companyCode query, but for now let's assume User flow
         const companyCode = req.user.companyCode;
         if (!companyCode) return res.status(400).json({ message: 'No Company Code associated with user' });
 
-        // DB Lookup - Exclude Base64 Data for performance
-        let profile = await CompanyProfile.findOne({ user: req.user.id }).select('-documents.data');
+        // Fetch FULL profile to allow for healing and normalization
+        let profile = await CompanyProfile.findOne({ user: req.user.id });
 
-        // If no profile, return minimal data based on User ID
         if (!profile) {
             return res.json({
                 username: req.user.username,
@@ -582,36 +593,27 @@ router.get('/profile', auth, async (req, res) => {
             });
         }
 
-        // --- ON-THE-FLY NORMALIZATION (Fixes "Missing" status for generic uploads) ---
-        let modified = false;
-        profile.documents.forEach(doc => {
-            if (doc.docType === 'br_extraction' || doc.docType === 'br_extra' || !doc.docType) {
-                const name = (doc.originalName || "").toLowerCase();
-                let newType = doc.docType || 'br_extra';
+        // --- HEALING & NORMALIZATION ---
+        const { healAndNormalizeProfile } = require('../lib/profileUtils');
+        const wasModified = await healAndNormalizeProfile(profile);
+        if (wasModified) {
+            console.log(`[Healing] Profile for ${req.user.username} repaired and saved.`);
+            await profile.save();
+        }
 
-                if (name.includes('cert') || name.includes('incorporation')) newType = 'moc_cert';
-                else if (name.includes('khmer') || name.includes('khemer') || (name.includes('extract') && name.includes('kh'))) newType = 'kh_extract';
-                else if (name.includes('english') || (name.includes('extract') && name.includes('en'))) newType = 'en_extract';
-                else if (name.includes('patent')) newType = 'tax_patent';
-                else if (name.includes('vat') || name.includes('tax id')) newType = 'tax_id';
-                else if (name.includes('bank') || name.includes('opening')) newType = 'bank_opening';
-
-                if (newType !== doc.docType) {
-                    doc.docType = newType;
-                    modified = true;
-                }
-            }
-        });
-
-        if (modified) await profile.save();
-
-        // Sync username into response
+        // Strip data for the initial profile response (images are fetched separately via /document-image/:type)
         const profileData = profile.toObject();
+        if (profileData.documents) {
+            profileData.documents = profileData.documents.map(d => {
+                const { data, ...rest } = d;
+                return rest;
+            });
+        }
         profileData.username = req.user.username;
 
         res.json(profileData);
     } catch (err) {
-        console.error(err);
+        console.error("[Profile Fetch Error]", err);
         res.status(500).json({ message: 'Server Error' });
     }
 });
