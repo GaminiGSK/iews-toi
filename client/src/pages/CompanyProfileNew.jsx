@@ -938,14 +938,7 @@ export default function CompanyProfile() {
                 </div>
             </div>
 
-            <div className="mt-auto py-8 px-2 flex justify-between items-center border-t border-white/5 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-600">
-                <div className="flex gap-8">
-                    <span>Core Hub v6.1.9_CLEAN</span>
-                    <span>Database: Production (Live)</span>
-                    <span>AI Model: Initialized</span>
-                </div>
-                <div>GKSMART AI OPERATING ENVIRONMENT</div>
-            </div>
+            {/* Bottom Status Bar Removed per Clean Protocol */}
         </div>
     );
 
@@ -1142,69 +1135,24 @@ export default function CompanyProfile() {
         return (
             <div className="w-full h-[calc(100vh-80px)] animate-fade-in flex bg-slate-900 font-sans overflow-hidden">
 
-                {/* --- SIDEBAR: DOCUMENT INTELLIGENCE --- */}
-                <div className="w-72 border-r border-white/5 bg-slate-950/50 flex flex-col shrink-0">
-                    <div className="p-6 border-b border-white/5">
-                        <button
-                            onClick={() => setView('home')}
-                            className="flex items-center gap-2 text-slate-500 hover:text-white transition-colors text-xs font-black uppercase tracking-widest mb-6"
-                        >
-                            <ArrowLeft size={14} /> Back to Hub
-                        </button>
-                        <h2 className="text-xl font-black text-white tracking-tighter uppercase mb-1">Intelligence</h2>
-                        <p className="text-[10px] text-blue-500 font-black uppercase tracking-widest">Document Registry</p>
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
-                        {/* DOSSIER TOGGLE */}
-                        <button
-                            onClick={() => setActiveDocTemplateId(null)}
-                            className={`w-full p-4 rounded-xl flex items-center gap-4 transition-all border ${!activeDocTemplateId ? 'bg-blue-600/20 border-blue-500/50 text-blue-400' : 'bg-white/5 border-transparent text-slate-500 hover:bg-white/10'}`}
-                        >
-                            <BookOpen size={18} />
-                            <div className="text-left">
-                                <p className="text-xs font-black uppercase tracking-tight leading-none">Main Dossier</p>
-                                <p className="text-[9px] mt-1 font-bold opacity-60">Combined Intelligence</p>
-                            </div>
-                        </button>
-
-                        <div className="h-[1px] bg-white/5 my-4"></div>
-
-                        {allSourceDocs.map(doc => (
-                            <button
-                                key={doc.id || doc.docType}
-                                onClick={() => setActiveDocTemplateId(doc.id)}
-                                className={`w-full p-3 rounded-xl flex items-center gap-3 transition-all border ${activeDocTemplateId === doc.id ? 'bg-blue-600/20 border-blue-500/30 text-white' : 'bg-transparent border-transparent text-slate-500 hover:bg-white/5'}`}
-                            >
-                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${doc.status === 'Verified' ? 'bg-green-500/10 text-green-500' : 'bg-slate-800 text-slate-600'}`}>
-                                    <FileText size={16} />
-                                </div>
-                                <div className="text-left overflow-hidden">
-                                    <p className="text-[10px] font-black uppercase tracking-tight truncate">{doc.name || doc.originalName}</p>
-                                    <p className="text-[8px] font-bold opacity-50 uppercase">{doc.status}</p>
-                                </div>
-                            </button>
-                        ))}
-                    </div>
-
-                    <div className="p-4 border-t border-white/5 opacity-20 pointer-events-none">
-                        <div className="w-full py-4 bg-slate-800 text-slate-500 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2">
-                            <ShieldCheck size={14} /> System Autonomous
-                        </div>
-                    </div>
-                </div>
+                {/* Sidebar Removed per Clean Protocol */}
 
                 {/* --- MAIN CONTENT AREA --- */}
                 <div className="flex-1 overflow-y-auto bg-slate-900 relative custom-scrollbar">
 
-                    {/* Header Action Bar */}
-                    <div className="sticky top-0 z-20 bg-slate-900/80 backdrop-blur-md p-6 flex justify-between items-center border-b border-white/5">
-                        <div className="flex items-center gap-4">
-                            <FileText size={20} className="text-blue-500" />
-                            <span className="text-xs font-black text-slate-400 uppercase tracking-[0.3em]">ENTITY DATA VIEW</span>
-                        </div>
-                        <div className="flex gap-4">
-                            {/* Manual scan and commit removed - system is now autonomous */}
+                    {/* Header Action Bar (Streamlined) */}
+                    <div className="sticky top-0 z-20 bg-slate-900/80 backdrop-blur-md p-8 flex justify-between items-center border-b border-white/5">
+                        <div className="flex items-center gap-8">
+                            <button
+                                onClick={() => setView('home')}
+                                className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-slate-400 hover:text-white transition-all border border-white/5 active:scale-95"
+                            >
+                                <ArrowLeft size={20} />
+                            </button>
+                            <div>
+                                <h2 className="text-xl font-black text-white tracking-tighter uppercase leading-none">Combined Intelligence</h2>
+                                <p className="text-[10px] mt-1 text-blue-500 font-black uppercase tracking-widest">Autonomous Sync Active</p>
+                            </div>
                         </div>
                     </div>
 
