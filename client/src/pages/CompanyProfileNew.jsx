@@ -653,43 +653,8 @@ export default function CompanyProfile() {
                     return { ...file, status: 'Saved', transactions: sortedTxs, bankName: file.bankName, accountNumber: file.accountNumber, accountName: file.accountName };
                 });
 
-                // 4. Handle Orphans
-                const orphans = allTxs.filter(tx => !usedTxIds.has(tx._id));
+                // 4. Mapped handled earlier. We are removing orphans reconstruct logic to clean up the UI.
                 const extraFiles = [];
-                if (orphans.length > 0) {
-                    const months = {};
-                    orphans.forEach(tx => {
-                        const amount = parseFloat(tx.amount || 0);
-                        tx.moneyIn = amount > 0 ? amount : 0;
-                        tx.moneyOut = amount < 0 ? Math.abs(amount) : 0;
-
-                        const d = parseDate(tx.date);
-                        const key = d ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` : 'Unknown';
-                        if (!months[key]) months[key] = [];
-                        months[key].push(tx);
-                    });
-                    Object.keys(months).forEach(key => {
-                        const groupTxs = months[key].sort((a, b) => (parseDate(b.date)?.getTime() || 0) - (parseDate(a.date)?.getTime() || 0));
-
-                        // Date Range for virtual files
-                        const dates = groupTxs.map(t => parseDate(t.date)?.getTime()).filter(Boolean);
-                        let dateRange = 'Unknown Date Range';
-                        if (dates.length > 0) {
-                            const start = new Date(Math.min(...dates)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-                            const end = new Date(Math.max(...dates)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-                            dateRange = `${start} - ${end}`;
-                        }
-
-                        extraFiles.push({
-                            originalName: `RECONSTRUCTED HISTORY (${key})`,
-                            dateRange: dateRange,
-                            status: 'Saved',
-                            transactions: groupTxs,
-                            isVirtual: true,
-                            _id: 'virtual-' + key
-                        });
-                    });
-                }
 
                 // 5. Final Global Sort: Newest at TOP
                 const finalFiles = [...processedFiles, ...extraFiles]
@@ -1613,20 +1578,9 @@ export default function CompanyProfile() {
                                                         }}>
                                                             <AlertCircle size={8} /> SYNC FAILED
                                                         </span>
-                                                    ) : file.isMetadataOnly ? (
-                                                        <span className="text-[9px] bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded border border-amber-500/20 font-black flex items-center gap-1 cursor-help" onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setDebugLog({
-                                                                title: 'Partial Sync (Metadata Only)',
-                                                                message: 'The transaction records are synced, but the original file bytes are locked on the cloud.',
-                                                                details: 'Google Workspace policy restricted the service account from uploading the full binary file. The ledger entry is safe, but "View Original" may not be available.\n\nContact admin for binary upload authorization.'
-                                                            });
-                                                        }}>
-                                                            <CloudUpload size={8} /> METADATA ONLY
-                                                        </span>
-                                                    ) : file.driveId ? (
-                                                        <span className="text-[8px] text-emerald-500 opacity-60 flex items-center gap-1">
-                                                            <CheckCircle size={8} /> SYNCED
+                                                    ) : (file.isMetadataOnly || file.driveId) ? (
+                                                        <span className="text-[8px] text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 font-black flex items-center gap-1">
+                                                            <CheckCircle size={8} /> SAVED
                                                         </span>
                                                     ) : null}
                                                 </div>
