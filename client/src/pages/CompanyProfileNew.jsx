@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Loader2, CheckCircle, AlertCircle, Table, Save, X, Eye, FileText, CloudUpload, Calendar, Book, Tag, DollarSign, Scale, TrendingUp, ArrowLeft, ShieldCheck, Sparkles, QrCode, BookOpen, RefreshCw, Terminal, Plus, Box, ChevronRight, Brain } from 'lucide-react';
@@ -57,6 +57,20 @@ export default function CompanyProfile() {
     // MOC Inspector State
     const [viewDoc, setViewDoc] = useState(null); // { docType, path, ... }
     const [regenerating, setRegenerating] = useState(false);
+
+    // --- WORKSPACE GPT AGENT STATE ---
+    const [workspacePrompt, setWorkspacePrompt] = useState('');
+    const [workspaceChat, setWorkspaceChat] = useState([]);
+    const [isAgentThinking, setIsAgentThinking] = useState(false);
+    const chatEndRef = useRef(null);
+
+    const scrollToChatBottom = () => {
+        chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    useEffect(() => {
+        scrollToChatBottom();
+    }, [workspaceChat]);
 
     // Helper: Parse Date (Handles DD/MM/YYYY and standard formats)
     const parseDate = (dateStr) => {
@@ -1128,6 +1142,43 @@ export default function CompanyProfile() {
         }
     };
 
+    const handleSendWorkspaceChat = async () => {
+        if (!workspacePrompt.trim() || isAgentThinking) return;
+
+        const userMsg = { role: 'user', text: workspacePrompt };
+        setWorkspaceChat(prev => [...prev, userMsg]);
+        setWorkspacePrompt('');
+        setIsAgentThinking(true);
+
+        try {
+            const token = localStorage.getItem('token');
+
+            // Build Context from BR Documents (Business Registration Data)
+            const brContext = (formData.documents || []).map(doc => ({
+                name: doc.docType || 'Source Document',
+                text: doc.rawText || 'Text unavailable for this fragment.'
+            }));
+
+            const res = await axios.post('/api/chat/message', {
+                message: userMsg.text,
+                context: {
+                    source: 'Absolute Workstation',
+                    brData: brContext,
+                    companyName: formData.companyNameEn
+                }
+            }, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            setWorkspaceChat(prev => [...prev, { role: 'assistant', text: res.data.text }]);
+        } catch (err) {
+            console.error("Agent Error:", err);
+            setWorkspaceChat(prev => [...prev, { role: 'assistant', text: "⚠️ Agent connection unstable. Please verify link to drive." }]);
+        } finally {
+            setIsAgentThinking(false);
+        }
+    };
+
     const renderProfile = () => {
         const activeDoc = allSourceDocs.find(d => d.id === activeDocTemplateId);
         const originalDocData = (formData.documents || []).find(d => d._id === activeDocTemplateId);
@@ -1213,11 +1264,31 @@ export default function CompanyProfile() {
                             <div className="flex flex-col h-[calc(100vh-160px)] animate-in fade-in duration-700">
                                 {/* PROMPT AREA CORE */}
                                 <div className="bg-slate-900/40 border-b border-white/5 p-12 flex flex-col flex-1 overflow-hidden">
-                                    {/* Titles/Badges removed per Clean Protocol */}
-
                                     {/* CHAT/PROMPT HISTORY (CLEANED) */}
-                                    <div className="flex-1 overflow-y-auto mb-10 space-y-8 custom-scrollbar pr-4">
-                                        {/* Blank space for interaction */}
+                                    <div className="flex-1 overflow-y-auto mb-10 space-y-12 custom-scrollbar pr-4">
+                                        {workspaceChat.length === 0 ? (
+                                            <div className="h-full flex flex-col items-center justify-center opacity-10">
+                                                <Brain size={120} className="mb-8" />
+                                                <p className="text-xl font-black uppercase tracking-[0.5em]">Agent Synced • Awaiting Command</p>
+                                            </div>
+                                        ) : (
+                                            workspaceChat.map((msg, i) => (
+                                                <div key={i} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start animate-in fade-in slide-in-from-bottom-4'}`}>
+                                                    <div className={`max-w-[80%] p-10 rounded-[40px] border ${msg.role === 'user'
+                                                        ? 'bg-blue-600/10 border-blue-500/20 text-blue-50'
+                                                        : 'bg-slate-950/80 border-white/5 text-slate-200'}`}>
+                                                        <p className="text-xl leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        )}
+                                        {isAgentThinking && (
+                                            <div className="flex items-center gap-4 text-blue-500 font-bold uppercase tracking-widest text-xs animate-pulse p-10">
+                                                <Loader2 size={16} className="animate-spin" />
+                                                Agent is analyzing BR datasets...
+                                            </div>
+                                        )}
+                                        <div ref={chatEndRef} />
                                     </div>
                                 </div>
 
@@ -1225,11 +1296,23 @@ export default function CompanyProfile() {
                                 <div className="bg-slate-950 p-12 relative">
                                     <div className="relative flex items-end gap-6 bg-slate-900/50 p-8 rounded-[32px] border border-white/5 focus-within:border-blue-500/50 transition-all duration-500 shadow-2xl">
                                         <textarea
+                                            value={workspacePrompt}
+                                            onChange={(e) => setWorkspacePrompt(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' && !e.shiftKey) {
+                                                    e.preventDefault();
+                                                    handleSendWorkspaceChat();
+                                                }
+                                            }}
                                             placeholder="Type your AI instruction or prompt here..."
-                                            className="flex-1 bg-transparent border-none outline-none text-lg leading-relaxed text-white placeholder:text-slate-700 resize-none py-2 max-h-64 custom-scrollbar"
+                                            className="flex-1 bg-transparent border-none outline-none text-xl leading-relaxed text-white placeholder:text-slate-700 resize-none py-2 max-h-64 custom-scrollbar"
                                             rows={2}
                                         />
-                                        <button className="w-16 h-16 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-blue-600/20 transition-all active:scale-90">
+                                        <button
+                                            onClick={handleSendWorkspaceChat}
+                                            disabled={isAgentThinking || !workspacePrompt.trim()}
+                                            className="w-16 h-16 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-blue-600/20 transition-all active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
                                             <Sparkles size={28} />
                                         </button>
                                     </div>

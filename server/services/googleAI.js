@@ -408,7 +408,7 @@ const TOI_KNOWLEDGE = require('../data/toi_knowledge'); // Import Knowledge Base
 
 exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
     try {
-        const { companyName, profile, codes, recentTransactions, summary, monthlyStats, ui } = context;
+        const { companyName, profile, codes, recentTransactions, summary, monthlyStats, ui, brData } = context;
         const prompt = `
             You are an expert, conversational Financial Assistant (BA) for the company "${companyName}".
             Your goal is to be helpful, professional, and engaging. Don't just execute tasks; talk to the user like a human partner.
@@ -421,7 +421,10 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
                - If the profile is incomplete, mention that a full evaluation requires those details first.
                - If the profile is complete and there are transactions, perform a high-level evaluation using "Cambodian Tax Law" knowledge below.
 
-            **Company Identity (MOC/Tax Profile):**
+            **Business Registration (BR) Context (Verified Intel Fragments):**
+            ${brData && brData.length > 0 ? brData.map(doc => `[${doc.name}]: ${doc.text}`).join('\n\n') : "No direct BR document fragments available for this query session."}
+
+            **Company Identity (MOC/Tax Profile Summary):**
             - **Entity Name (EN)**: ${profile?.nameEn || "N/A"}
             - **Entity Name (KH)**: ${profile?.nameKh || "N/A"}
             - **Registration ID**: ${profile?.regId || "N/A"}

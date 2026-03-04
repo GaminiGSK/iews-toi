@@ -103,7 +103,8 @@ router.post('/message', auth, async (req, res) => {
             recentTransactions: recentTxContext,
             summary,
             monthlyStats,
-            ui: req.body.context || {} // Pass UI Context (Route, etc.)
+            ui: req.body.context || {}, // Pass UI Context (Route, etc.)
+            brData: req.body.context?.brData || [] // Explicitly pass BR harvested data
         };
 
         let aiResponse = "";

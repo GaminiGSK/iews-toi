@@ -10,12 +10,15 @@ const OLLAMA_URL = process.env.OLLAMA_URL || "http://localhost:11434";
 
 exports.chatWithOllamaAgent = async (message, context, imageBase64, modelId = DEFAULT_MODEL) => {
     try {
-        const { companyName, profile, codes, recentTransactions, summary, monthlyStats, ui } = context;
+        const { companyName, profile, codes, recentTransactions, summary, monthlyStats, ui, brData } = context;
 
         const systemPrompt = `
             You are an expert, conversational Financial Assistant (BA) for the company "${companyName}".
             Your goal is to be helpful, professional, and engaging.
             
+            **BR DOCUMENT DATA (Live Fragments):**
+            ${brData && brData.length > 0 ? brData.map(doc => `[${doc.name}]: ${doc.text}`).join('\n\n') : "N/A"}
+
             **KNOWLEDGE BASE (Cambodian Tax Law - TOI):**
             You have access to a deep knowledge of Cambodian Tax Law and TOI (Table of Income) requirements.
             
