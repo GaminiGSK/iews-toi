@@ -141,7 +141,6 @@ export default function CompanyProfile() {
             companyNameKh: '',
             companyNameEn: '',
             companyCode: '',
-            companyCode: '',
             username: savedUser.username || '',
             role: savedUser.role || 'user'
         };

@@ -327,19 +327,47 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null }) => {
                 <div className="hidden"></div>
             )}
 
-            <div className="flex-1 bg-[#020617] overflow-auto px-4 md:px-8 py-8 flex justify-start lg:justify-center items-start no-scrollbar">
+            <div className={`flex-1 overflow-auto px-4 md:px-8 py-8 flex justify-start lg:justify-center items-start no-scrollbar ${embedded ? 'bg-transparent' : 'bg-[#020617]'}`}>
                 <div className="w-auto min-w-full lg:min-w-[1200px] max-w-[1580px] mx-auto flex flex-col items-start">
                     {/* PAGE 1 CONTENT */}
                     {activePage === 1 && (
                         <div className="animate-fade-in relative grid grid-cols-2 gap-12">
                             {/* LEFT COLUMN */}
                             <div className="flex flex-col">
-                                <div className="flex justify-between items-start border-b border-white/10 pb-8 relative">
-                                    {/* TIN HEADER ANCHORED TOP-LEFT */}
-                                    <div className="absolute -top-4 -left-2 flex items-center gap-4 bg-[#020617] pr-6 py-2 z-10">
-                                        <div className="flex flex-col">
-                                            <span className="text-[13px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
-                                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">Tax Identification Number (TIN)</span>
+                                <div className="flex flex-col border-b border-white/10 pb-8 gap-8">
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex flex-col gap-3">
+                                            <h2 className="text-white font-bold text-3xl leading-snug max-w-xl" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                                លិខិតប្រកាសពន្ធលើចំណូលប្រចាំឆ្នាំចំពោះសហគ្រាសជាប់ពន្ធលើចំណូលតាមរបបស្វ័យប្រកាស
+                                            </h2>
+                                            <h1 className="text-slate-400 font-bold text-sm uppercase tracking-[0.2em]">
+                                                Annual Income Tax Return <span className="text-slate-500 font-medium lowercase ml-1">for the year ended</span>
+                                            </h1>
+                                        </div>
+                                        <div className="flex gap-2 bg-black/30 p-2 rounded-xl border border-white/5 shadow-inner">
+                                            {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
+                                                <div key={i} className="w-10 h-14 border border-white/10 flex items-center justify-center bg-slate-800/50 rounded-lg shadow-sm">
+                                                    <input
+                                                        type="text"
+                                                        maxLength="1"
+                                                        className="w-full h-full text-center text-xl font-black outline-none bg-transparent text-white placeholder:text-white/10"
+                                                        value={char}
+                                                        placeholder="0"
+                                                        onChange={(e) => {
+                                                            const newDate = (formData.untilDate || "31122026").split('');
+                                                            newDate[4 + i] = e.target.value;
+                                                            handleFormChange('untilDate', newDate.join(''));
+                                                        }}
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-4 bg-black/40 p-3 rounded-xl border border-white/5 w-max">
+                                        <div className="flex flex-col pr-4 border-r border-white/10">
+                                            <span className="text-[14px] font-bold text-white px-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                            <span className="text-[10px] font-black text-rose-400 uppercase tracking-widest px-2">Tax Identification Number (TIN)</span>
                                         </div>
                                         <div className="flex gap-1 p-1 bg-black/40 rounded-lg border border-white/10 shadow-inner scale-90 origin-left">
                                             {Array.from({ length: 4 }).map((_, i) => (
@@ -374,33 +402,6 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null }) => {
                                                 </div>
                                             ))}
                                         </div>
-                                    </div>
-
-                                    <div className="flex flex-col gap-3 mt-16">
-                                        <h2 className="text-white font-bold text-3xl leading-snug max-w-xl" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
-                                            លិខិតប្រកាសពន្ធលើចំណូលប្រចាំឆ្នាំចំពោះសហគ្រាសជាប់ពន្ធលើចំណូលតាមរបបស្វ័យប្រកាស
-                                        </h2>
-                                        <h1 className="text-slate-400 font-bold text-sm uppercase tracking-[0.2em]">
-                                            Annual Income Tax Return <span className="text-slate-500 font-medium lowercase ml-1">for the year ended</span>
-                                        </h1>
-                                    </div>
-                                    <div className="flex gap-2 bg-black/30 p-2 rounded-xl border border-white/5 shadow-inner mr-4 -ml-4">
-                                        {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
-                                            <div key={i} className="w-10 h-14 border border-white/10 flex items-center justify-center bg-slate-800/50 rounded-lg shadow-sm">
-                                                <input
-                                                    type="text"
-                                                    maxLength="1"
-                                                    className="w-full h-full text-center text-xl font-black outline-none bg-transparent text-white placeholder:text-white/10"
-                                                    value={char}
-                                                    placeholder="0"
-                                                    onChange={(e) => {
-                                                        const newDate = (formData.untilDate || "31122026").split('');
-                                                        newDate[4 + i] = e.target.value;
-                                                        handleFormChange('untilDate', newDate.join(''));
-                                                    }}
-                                                />
-                                            </div>
-                                        ))}
                                     </div>
                                 </div>
 
