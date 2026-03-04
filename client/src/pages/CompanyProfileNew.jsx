@@ -1829,36 +1829,8 @@ export default function CompanyProfile() {
                     <span className="font-bold text-lg tracking-tight text-white group-hover:text-blue-400 transition-colors">GK SMART <span className="text-gray-500 font-normal">& Ai</span></span>
                 </div>
 
-                {/* GLOBAL ADMIN ENTITY SELECTOR */}
-                {formData.role === 'admin' && (
-                    <div className="flex items-center gap-4 bg-white/5 p-2 pr-6 rounded-2xl border border-white/10 ml-auto mr-8">
-                        <div className="w-8 h-8 bg-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-400">
-                            <Brain size={16} />
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Auditor Deep Link</span>
-                            <select
-                                value={adminSelectedUser}
-                                onChange={(e) => {
-                                    const val = e.target.value;
-                                    setAdminSelectedUser(val);
-                                    localStorage.setItem('lastSelectedBR', val);
-                                }}
-                                className="bg-transparent text-white font-bold uppercase text-xs outline-none cursor-pointer hover:text-blue-400 transition-colors"
-                            >
-                                <option value="" className="bg-slate-900 text-slate-500 italic">Select Targeted Intel...</option>
-                                {users.map(u => (
-                                    <option key={u._id} value={u.username} className="bg-slate-900">{u.companyName} ({u.username})</option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-                )}
-
                 <div className="flex items-center gap-4">
-                    <span className="bg-white/5 px-4 py-2 rounded-xl text-[10px] font-bold text-slate-400 uppercase tracking-widest border border-white/5">
-                        {formData.username} ({formData.role})
-                    </span>
+                    {/* Role badge removed per user request */}
                 </div>
             </header>
 

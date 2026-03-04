@@ -193,18 +193,11 @@ const ToiAcar = ({ onBack, packageId: propPackageId, year: propYear }) => {
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-rose-500/10 border border-rose-500/20 rounded-lg text-rose-400 text-[10px] font-bold">
-                        <Brain size={14} className="animate-pulse" />
-                        BLUE AGENT ACTIVE
+                    {/* Status indicators removed per user request - Auto-save remains active */}
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-400 text-[10px] font-bold">
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        SYSTEM SYNCED
                     </div>
-                    <button
-                        onClick={saveChanges}
-                        disabled={isSaving}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-[10px] font-bold flex items-center gap-2 transition disabled:opacity-50"
-                    >
-                        {isSaving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
-                        {isSaving ? "SAVING..." : "COMMIT CHANGES"}
-                    </button>
                 </div>
             </div>
 
