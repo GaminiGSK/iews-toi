@@ -317,23 +317,8 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
                     </div>
                 </div>
             ) : (
-                /* EMBEDDED SUB-NAVIGATOR FOR TABS */
-                <div className="bg-black/40 border-b border-white/5 overflow-x-auto no-scrollbar py-2">
-                    <div className="flex justify-start lg:justify-center gap-2 px-40 w-fit lg:w-full mx-auto">
-                        {Array.from({ length: 27 }, (_, i) => (
-                            <button
-                                key={i}
-                                onClick={() => setActivePage(i + 1)}
-                                className={`px-4 py-2 rounded-xl text-[18px] font-bold border transition-all shrink-0 active:scale-95 ${activePage === i + 1
-                                    ? 'bg-blue-600 border-blue-400 text-white shadow-lg shadow-blue-900/60'
-                                    : 'bg-slate-900/50 border-white/5 text-slate-400 hover:text-white hover:border-white/10'
-                                    }`}
-                            >
-                                P.{i + 1}
-                            </button>
-                        ))}
-                    </div>
-                </div>
+                /* EMBEDDED SUB-NAVIGATOR REMOVED FOR PAGE 1 GPT SPACE */
+                <div className="hidden"></div>
             )}
 
             <div className="flex-1 bg-[#020617] overflow-auto px-4 md:px-8 py-8 flex justify-start lg:justify-center items-start no-scrollbar">

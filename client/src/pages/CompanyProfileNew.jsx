@@ -582,14 +582,15 @@ export default function CompanyProfile() {
 
             // --- FETCH BANK DATA (Files + Transactions) ---
             try {
+                const targetCompanyCode = res?.data?.companyCode || '';
                 // 1. Get BankFile Registry
-                const fileRes = await axios.get('/api/company/bank-files', {
+                const fileRes = await axios.get(`/api/company/bank-files?companyCode=${targetCompanyCode}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const registryFiles = fileRes.data.files || [];
 
                 // 2. Get All Transactions
-                const txRes = await axios.get('/api/company/transactions', {
+                const txRes = await axios.get(`/api/company/transactions?companyCode=${targetCompanyCode}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const allTxs = txRes.data.transactions || [];

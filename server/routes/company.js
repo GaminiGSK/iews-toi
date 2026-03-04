@@ -1071,7 +1071,10 @@ router.post('/upload-bank-statement', auth, upload.array('files'), async (req, r
 router.get('/bank-files', auth, async (req, res) => {
     try {
         const BankFile = require('../models/BankFile');
-        const companyCode = req.user.companyCode;
+        let companyCode = req.user.companyCode;
+        if (req.user.role === 'admin' && req.query.companyCode) {
+            companyCode = req.query.companyCode;
+        }
 
         let files = await BankFile.find({ companyCode: companyCode })
             .sort({ uploadedAt: -1 });
@@ -1340,7 +1343,10 @@ router.post('/update-profile', auth, async (req, res) => {
 router.get('/transactions', auth, async (req, res) => {
     try {
         const Transaction = require('../models/Transaction');
-        const companyCode = req.user.companyCode;
+        let companyCode = req.user.companyCode;
+        if (req.user.role === 'admin' && req.query.companyCode) {
+            companyCode = req.query.companyCode;
+        }
 
         // Fetch all transactions for this company
         let transactions = await Transaction.find({
