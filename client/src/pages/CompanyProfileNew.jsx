@@ -1334,27 +1334,27 @@ export default function CompanyProfile() {
 
                                     {/* INPUT AREA (IMBEDDED) */}
                                     <div className="bg-slate-950 p-12 relative flex flex-col gap-6">
-                                        {/* RAPID INTEL BUTTONS - PRE-ARRANGED ACTIONS */}
-                                        <div className="flex gap-4 relative z-10 p-4 bg-white/5 rounded-3xl border border-white/5 shadow-2xl backdrop-blur-3xl">
+                                        {/* RAPID INTEL BUTTONS - RECURSIVE DEEP SCAN ACTIONS */}
+                                        <div className="flex gap-4 relative z-10 p-4 bg-white/5 rounded-3xl border border-white/10 shadow-2xl backdrop-blur-3xl">
                                             <button
                                                 onClick={() => handleSendWorkspaceChat("Summarize my company business profile from the BR registration documents.")}
-                                                className="flex-1 py-5 bg-gradient-to-br from-amber-500/10 to-transparent hover:from-amber-500/20 border border-amber-500/30 hover:border-amber-400 rounded-2xl text-[12px] font-black uppercase tracking-widest text-amber-100 transition-all flex items-center justify-center gap-4 active:scale-95 group"
+                                                className="flex-1 py-6 bg-gradient-to-br from-amber-500/10 to-transparent hover:from-amber-500/30 border-2 border-amber-500/50 hover:border-amber-400 rounded-3xl text-[13px] font-black uppercase tracking-widest text-amber-50 transition-all flex items-center justify-center gap-4 active:scale-95 group shadow-lg"
                                                 disabled={isAgentThinking}
                                             >
-                                                <div className="w-10 h-10 bg-amber-500/20 rounded-xl flex items-center justify-center text-amber-400 group-hover:bg-amber-500 group-hover:text-black transition-all">
-                                                    <FileText size={20} />
+                                                <div className="w-12 h-12 bg-amber-500/20 rounded-2xl flex items-center justify-center text-amber-400 group-hover:bg-amber-500 group-hover:text-black transition-all shadow-inner">
+                                                    <FileText size={24} />
                                                 </div>
-                                                1. My Business Profile
+                                                1. Business Profile
                                             </button>
                                             <button
-                                                onClick={() => handleSendWorkspaceChat("Detail my company business activities. IMPORTANT: Look inside the [kh_extractation] document for the 3-digit and 5-digit ISIC codes (e.g. 620, 62010). List every code and activity in a clean list format.")}
-                                                className="flex-1 py-5 bg-gradient-to-br from-indigo-500/10 to-transparent hover:from-indigo-500/20 border border-indigo-500/30 hover:border-indigo-400 rounded-2xl text-[12px] font-black uppercase tracking-widest text-indigo-100 transition-all flex items-center justify-center gap-4 active:scale-95 group"
+                                                onClick={() => handleSendWorkspaceChat("ULTRA-DEEP SCAN COMMAND: Perform a recursive re-read of the [kh_extractation] and [en_extract] documents. You MUST find and list EVERY business activity along with its specific 3-digit and 5-digit ISIC code (e.g. 620, 62010). If you previously missed them, RE-SCAN EVERYTHING NOW. They are definitely there.")}
+                                                className="flex-1 py-6 bg-gradient-to-br from-cyan-500/10 to-transparent hover:from-cyan-500/30 border-2 border-cyan-500/50 hover:border-cyan-400 rounded-3xl text-[13px] font-black uppercase tracking-widest text-cyan-50 transition-all flex items-center justify-center gap-4 active:scale-95 group shadow-lg"
                                                 disabled={isAgentThinking}
                                             >
-                                                <div className="w-10 h-10 bg-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-400 group-hover:bg-indigo-500 group-hover:text-white transition-all">
-                                                    <TrendingUp size={20} />
+                                                <div className="w-12 h-12 bg-cyan-500/20 rounded-2xl flex items-center justify-center text-cyan-400 group-hover:bg-cyan-500 group-hover:text-black transition-all shadow-inner">
+                                                    <TrendingUp size={24} />
                                                 </div>
-                                                2. My Business Activities
+                                                2. RECURSIVE DEEP SCAN
                                             </button>
                                         </div>
 

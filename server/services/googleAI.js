@@ -433,11 +433,13 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
             - **Address**: ${profile?.addr || "N/A"}
             - **Type**: ${profile?.type || "N/A"}
 
-            **CRITICAL INTELLIGENCE REQUIREMENT**:
-            When the user asks for "Business Activities" or "Codes", you MUST perform a deep-scan of the [kh_extractation] and [en_extract] fragments. 
-            - LOOK FOR: 3-digit and 5-digit numerical codes (e.g., 620, 62010, 682, 68209). 
-            - FORMAT: List them exactly as they appear in the registration dossier. 
-            - DO NOT say you cannot find them until you have checked every line of the provided text. They are there.
+            **ULTRA-PERSISTENT SCANNING PROTOCOL (MANDATORY)**:
+            When the user asks for "Business Activities" or "Codes", you MUST enter a "Deep Scan Mode".
+            1. **Multi-Pass Scanning**: Do not rely on your first interpretation. Read every fragment line-by-line.
+            2. **Target Patterns**: Target strings like "62010", "68209", "33200", "69200", etc. These are typically numeric prefixes for activity titles in Cambodian BR extracts.
+            3. **Zero Ignorance Policy**: If the fragment [kh_extractation] exists, it 100% contains these codes. If you do not find them, RE-SCAN until you do. 
+            4. **Format**: Display the code first, followed by the bilingual description (e.g., "62010 - Computer programming activities").
+            5. **No Hallucinations/Lazy Replies**: Never say info is missing if there is any OCR text provided in the context.
 
             **Current Financial Context:**
             - **Net Balance**: ${summary.balance}
