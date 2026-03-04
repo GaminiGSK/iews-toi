@@ -1333,31 +1333,31 @@ export default function CompanyProfile() {
                                     </div>
 
                                     {/* INPUT AREA (IMBEDDED) */}
-                                    {/* RAPID INTEL BUTTONS - ENHANCED VISIBILITY */}
-                                    <div className="bg-slate-950 px-12 pb-2 flex gap-4 -mb-8 relative z-10">
-                                        <button
-                                            onClick={() => handleSendWorkspaceChat("Summarize my company business profile from the BR documents.")}
-                                            className="px-6 py-3 bg-blue-600/10 hover:bg-blue-600/30 border border-blue-500/40 hover:border-blue-400 rounded-2xl text-[10px] font-black uppercase tracking-widest text-blue-100 transition-all flex items-center gap-3 active:scale-95 shadow-lg group"
-                                            disabled={isAgentThinking}
-                                        >
-                                            <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-all shadow-inner">
-                                                <FileText size={16} />
-                                            </div>
-                                            Summarize Business Profile
-                                        </button>
-                                        <button
-                                            onClick={() => handleSendWorkspaceChat("Detail my company business activities and include the specific activity codes (ISIC) based on registration records.")}
-                                            className="px-6 py-3 bg-emerald-600/10 hover:bg-emerald-600/30 border border-emerald-500/40 hover:border-emerald-400 rounded-2xl text-[10px] font-black uppercase tracking-widest text-emerald-100 transition-all flex items-center gap-3 active:scale-95 shadow-lg group"
-                                            disabled={isAgentThinking}
-                                        >
-                                            <div className="w-8 h-8 bg-emerald-500/20 rounded-lg flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-inner">
-                                                <TrendingUp size={16} />
-                                            </div>
-                                            List Business Activities
-                                        </button>
-                                    </div>
-
                                     <div className="bg-slate-950 p-12 relative">
+                                        {/* RAPID INTEL BUTTONS - HIGH CONTRAST & MOVED FOR VISIBILITY */}
+                                        <div className="flex gap-4 mb-6 relative z-10">
+                                            <button
+                                                onClick={() => handleSendWorkspaceChat("Summarize my company business profile from the BR documents.")}
+                                                className="px-6 py-4 bg-yellow-500/10 hover:bg-yellow-500/20 border-2 border-yellow-500/60 hover:border-yellow-400 rounded-2xl text-[11px] font-black uppercase tracking-widest text-yellow-50 transition-all flex items-center gap-3 active:scale-95 shadow-[0_0_20px_rgba(234,179,8,0.1)] group"
+                                                disabled={isAgentThinking}
+                                            >
+                                                <div className="w-8 h-8 bg-yellow-500/20 rounded-lg flex items-center justify-center text-yellow-400 group-hover:bg-yellow-500 group-hover:text-black transition-all">
+                                                    <FileText size={18} />
+                                                </div>
+                                                <span className="drop-shadow-md">Summarize Profile</span>
+                                            </button>
+                                            <button
+                                                onClick={() => handleSendWorkspaceChat("Detail my company business activities. IMPORTANT: You MUST extract and show the 5-digit ISIC classification codes (e.g. 62010, 68102) for each activity found in the registration dossiers.")}
+                                                className="px-6 py-4 bg-cyan-500/10 hover:bg-cyan-500/20 border-2 border-cyan-500/60 hover:border-cyan-400 rounded-2xl text-[11px] font-black uppercase tracking-widest text-cyan-50 transition-all flex items-center gap-3 active:scale-95 shadow-[0_0_20px_rgba(6,182,212,0.1)] group"
+                                                disabled={isAgentThinking}
+                                            >
+                                                <div className="w-8 h-8 bg-cyan-500/20 rounded-lg flex items-center justify-center text-cyan-400 group-hover:bg-cyan-500 group-hover:text-black transition-all">
+                                                    <TrendingUp size={18} />
+                                                </div>
+                                                <span className="drop-shadow-md">List ISIC Activities</span>
+                                            </button>
+                                        </div>
+
                                         <div className="relative flex items-end gap-6 bg-slate-900/50 p-8 rounded-[32px] border border-white/5 focus-within:border-blue-500/50 transition-all duration-500 shadow-2xl">
                                             <textarea
                                                 value={workspacePrompt}

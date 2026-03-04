@@ -433,6 +433,9 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
             - **Address**: ${profile?.addr || "N/A"}
             - **Type**: ${profile?.type || "N/A"}
 
+            **CRITICAL EXTRACTION RULE**:
+            When the user asks for "Business Activities" or "Codes", you MUST look into the [kh_extractation] or [en_extract] fragments for 5-digit numerical codes (e.g. 62010, 68209). These are mandatory ISIC codes. If found, list them next to each activity.
+
             **Current Financial Context:**
             - **Net Balance**: ${summary.balance}
             - **Total Income**: ${summary.income}
