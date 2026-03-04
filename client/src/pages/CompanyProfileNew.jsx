@@ -807,6 +807,14 @@ export default function CompanyProfile() {
                         <p className="text-slate-500 text-xs leading-relaxed">Enterprise Work System. Manage workflow packages.</p>
                     </div>
 
+                    <div onClick={() => setView('toi_acar')} className="group p-8 bg-slate-800/40 hover:bg-rose-600/10 border border-white/5 hover:border-rose-500/50 rounded-3xl transition-all duration-500 cursor-pointer relative overflow-hidden">
+                        <div className="w-14 h-14 bg-rose-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-500">
+                            <ShieldCheck size={28} className="text-rose-500" />
+                        </div>
+                        <h3 className="text-white font-bold text-xl mb-2">TOI & ACAR</h3>
+                        <p className="text-slate-500 text-xs leading-relaxed">Tax on Income & ACAR Compliance Hub. Manage annual filings.</p>
+                    </div>
+
                     <div onClick={() => setView('bank')} className="group p-8 bg-slate-800/40 hover:bg-emerald-600/10 border border-white/5 hover:border-emerald-500/50 rounded-3xl transition-all duration-500 cursor-pointer">
                         <div className="w-14 h-14 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-500">
                             <Table size={28} className="text-emerald-500" />
@@ -1865,6 +1873,7 @@ export default function CompanyProfile() {
                 {view === 'codes' && <AccountingCodes onBack={() => setView('home')} />}
                 {view === 'financials' && <FinancialStatements onBack={() => setView('home')} />}
                 {view === 'currency' && <CurrencyExchange onBack={() => setView('home')} />}
+                {view === 'toi_acar' && <ToiAcar onBack={() => setView('home')} />}
             </main>
 
             {/* DOCUMENT INSPECTOR MODAL */}
