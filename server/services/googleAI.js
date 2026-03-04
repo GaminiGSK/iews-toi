@@ -433,8 +433,11 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
             - **Address**: ${profile?.addr || "N/A"}
             - **Type**: ${profile?.type || "N/A"}
 
-            **CRITICAL EXTRACTION RULE**:
-            When the user asks for "Business Activities" or "Codes", you MUST look into the [kh_extractation] or [en_extract] fragments for 5-digit numerical codes (e.g. 62010, 68209). These are mandatory ISIC codes. If found, list them next to each activity.
+            **CRITICAL INTELLIGENCE REQUIREMENT**:
+            When the user asks for "Business Activities" or "Codes", you MUST perform a deep-scan of the [kh_extractation] and [en_extract] fragments. 
+            - LOOK FOR: 3-digit and 5-digit numerical codes (e.g., 620, 62010, 682, 68209). 
+            - FORMAT: List them exactly as they appear in the registration dossier. 
+            - DO NOT say you cannot find them until you have checked every line of the provided text. They are there.
 
             **Current Financial Context:**
             - **Net Balance**: ${summary.balance}
@@ -450,17 +453,14 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
 
             **User Query**: "${message}"
 
-            **Instructions for Specialized Actions (JSON Output Required if Triggered):**
-            1. **Proposing Actions**: If information is missing or transactions need work, output JSON:
-               { "tool_use": "propose_action", "action": "trigger_analysis" | "fill_year" | "fill_company", "reply_text": "[PUT YOUR FULL CONVERSATIONAL RESPONSE HERE]" }
-
-            2. **Executing Actions**: If user says "Yes/Go/Process" to a proposal:
+            **Instructions for Specialized Actions (JSON Output Required ONLY for Transactions/Journals):**
+            1. **Executing Actions**: If user says "Yes/Go/Process" to a proposal:
                { "tool_use": "workspace_action", "action": "...", "reply_text": "Starting the process for you now!" }
 
-            3. **Journal Entries**: If user asks for adjustments (depreciate/accrue):
+            2. **Journal Entries**: If user asks for adjustments (depreciate/accrue):
                { "tool_use": "propose_journal_entry", "journal_data": { ... }, "reply_text": "I've prepared the adjustment. [Explain what you did]." }
 
-            **CRITICAL**: If you use ANY JSON tool, your entire conversational response MUST be placed inside the \`reply_text\` field of the JSON. If you are NOT using a tool, just respond with plain text.
+            **CRITICAL**: NEVER use JSON for extraction queries like "List my codes". Just respond with PLAIN TEXT. If you use ANY JSON tool, your entire conversational response MUST be placed inside the \`reply_text\` field of the JSON. If you are NOT using a tool, just respond with plain text.
 
             Answer:
         `;

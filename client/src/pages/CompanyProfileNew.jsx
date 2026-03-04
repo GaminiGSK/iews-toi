@@ -1333,28 +1333,28 @@ export default function CompanyProfile() {
                                     </div>
 
                                     {/* INPUT AREA (IMBEDDED) */}
-                                    <div className="bg-slate-950 p-12 relative">
-                                        {/* RAPID INTEL BUTTONS - HIGH CONTRAST & MOVED FOR VISIBILITY */}
-                                        <div className="flex gap-4 mb-6 relative z-10">
+                                    <div className="bg-slate-950 p-12 relative flex flex-col gap-6">
+                                        {/* RAPID INTEL BUTTONS - PRE-ARRANGED ACTIONS */}
+                                        <div className="flex gap-4 relative z-10 p-4 bg-white/5 rounded-3xl border border-white/5 shadow-2xl backdrop-blur-3xl">
                                             <button
-                                                onClick={() => handleSendWorkspaceChat("Summarize my company business profile from the BR documents.")}
-                                                className="px-6 py-4 bg-yellow-500/10 hover:bg-yellow-500/20 border-2 border-yellow-500/60 hover:border-yellow-400 rounded-2xl text-[11px] font-black uppercase tracking-widest text-yellow-50 transition-all flex items-center gap-3 active:scale-95 shadow-[0_0_20px_rgba(234,179,8,0.1)] group"
+                                                onClick={() => handleSendWorkspaceChat("Summarize my company business profile from the BR registration documents.")}
+                                                className="flex-1 py-5 bg-gradient-to-br from-amber-500/10 to-transparent hover:from-amber-500/20 border border-amber-500/30 hover:border-amber-400 rounded-2xl text-[12px] font-black uppercase tracking-widest text-amber-100 transition-all flex items-center justify-center gap-4 active:scale-95 group"
                                                 disabled={isAgentThinking}
                                             >
-                                                <div className="w-8 h-8 bg-yellow-500/20 rounded-lg flex items-center justify-center text-yellow-400 group-hover:bg-yellow-500 group-hover:text-black transition-all">
-                                                    <FileText size={18} />
+                                                <div className="w-10 h-10 bg-amber-500/20 rounded-xl flex items-center justify-center text-amber-400 group-hover:bg-amber-500 group-hover:text-black transition-all">
+                                                    <FileText size={20} />
                                                 </div>
-                                                <span className="drop-shadow-md">Summarize Profile</span>
+                                                1. My Business Profile
                                             </button>
                                             <button
-                                                onClick={() => handleSendWorkspaceChat("Detail my company business activities. IMPORTANT: You MUST extract and show the 5-digit ISIC classification codes (e.g. 62010, 68102) for each activity found in the registration dossiers.")}
-                                                className="px-6 py-4 bg-cyan-500/10 hover:bg-cyan-500/20 border-2 border-cyan-500/60 hover:border-cyan-400 rounded-2xl text-[11px] font-black uppercase tracking-widest text-cyan-50 transition-all flex items-center gap-3 active:scale-95 shadow-[0_0_20px_rgba(6,182,212,0.1)] group"
+                                                onClick={() => handleSendWorkspaceChat("Detail my company business activities. IMPORTANT: Look inside the [kh_extractation] document for the 3-digit and 5-digit ISIC codes (e.g. 620, 62010). List every code and activity in a clean list format.")}
+                                                className="flex-1 py-5 bg-gradient-to-br from-indigo-500/10 to-transparent hover:from-indigo-500/20 border border-indigo-500/30 hover:border-indigo-400 rounded-2xl text-[12px] font-black uppercase tracking-widest text-indigo-100 transition-all flex items-center justify-center gap-4 active:scale-95 group"
                                                 disabled={isAgentThinking}
                                             >
-                                                <div className="w-8 h-8 bg-cyan-500/20 rounded-lg flex items-center justify-center text-cyan-400 group-hover:bg-cyan-500 group-hover:text-black transition-all">
-                                                    <TrendingUp size={18} />
+                                                <div className="w-10 h-10 bg-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-400 group-hover:bg-indigo-500 group-hover:text-white transition-all">
+                                                    <TrendingUp size={20} />
                                                 </div>
-                                                <span className="drop-shadow-md">List ISIC Activities</span>
+                                                2. My Business Activities
                                             </button>
                                         </div>
 
