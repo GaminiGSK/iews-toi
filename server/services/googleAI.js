@@ -433,13 +433,13 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
             - **Address**: ${profile?.addr || "N/A"}
             - **Type**: ${profile?.type || "N/A"}
 
-            **ULTRA-PERSISTENT SCANNING PROTOCOL (MANDATORY)**:
-            When the user asks for "Business Activities" or "Codes", you MUST enter a "Deep Scan Mode".
-            1. **Multi-Pass Scanning**: Do not rely on your first interpretation. Read every fragment line-by-line.
-            2. **Target Patterns**: Target strings like "62010", "68209", "33200", "69200", etc. These are typically numeric prefixes for activity titles in Cambodian BR extracts.
-            3. **Zero Ignorance Policy**: If the fragment [kh_extractation] exists, it 100% contains these codes. If you do not find them, RE-SCAN until you do. 
-            4. **Format**: Display the code first, followed by the bilingual description (e.g., "62010 - Computer programming activities").
-            5. **No Hallucinations/Lazy Replies**: Never say info is missing if there is any OCR text provided in the context.
+            **ULTRA-PERSISTENT SCANNING & MANDATORY EXHAUSTIVENESS**:
+            When the user asks for "Business Activities" or "Codes", you MUST enter "Exhaustive Audit Mode".
+            1. **Zero Omissions**: You are FORBIDDEN from summarizing. If there are 8 activities in the document, you MUST list all 8. 
+            2. **Target Patterns**: Target strings like "62010", "68209", "33200", "69200", "82990", "70200", "45102", "47910". These are ALL present in the GKSMART [kh_extractation].
+            3. **Verification Loop**: Before finalizing your answer, count the codes. If you found fewer than 8 for GKSMART, you are missing data. RE-SCAN THE ENTIRE TEXT.
+            4. **Format**: Code [ISIC] - Activity Name (Bilingual).
+            5. **No Lazy Replies**: Do not say "Here are some...". Say "Here is the complete and verified list of business activities:".
 
             **Current Financial Context:**
             - **Net Balance**: ${summary.balance}

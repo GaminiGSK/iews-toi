@@ -1334,27 +1334,27 @@ export default function CompanyProfile() {
 
                                     {/* INPUT AREA (IMBEDDED) */}
                                     <div className="bg-slate-950 p-12 relative flex flex-col gap-6">
-                                        {/* RAPID INTEL BUTTONS - RECURSIVE DEEP SCAN ACTIONS */}
-                                        <div className="flex gap-4 relative z-10 p-4 bg-white/5 rounded-3xl border border-white/10 shadow-2xl backdrop-blur-3xl">
+                                        {/* RAPID INTEL BUTTONS - INDUSTRIAL COMMAND CENTER */}
+                                        <div className="grid grid-cols-2 gap-6 relative z-10 p-6 bg-slate-900/80 rounded-[32px] border border-white/10 shadow-2xl backdrop-blur-3xl">
                                             <button
-                                                onClick={() => handleSendWorkspaceChat("Summarize my company business profile from the BR registration documents.")}
-                                                className="flex-1 py-6 bg-gradient-to-br from-amber-500/10 to-transparent hover:from-amber-500/30 border-2 border-amber-500/50 hover:border-amber-400 rounded-3xl text-[13px] font-black uppercase tracking-widest text-amber-50 transition-all flex items-center justify-center gap-4 active:scale-95 group shadow-lg"
+                                                onClick={() => handleSendWorkspaceChat("Perform a full administrative summary of the company profile using all available BR fragments. Do not summarize; list all key IDs and dates.")}
+                                                className="h-20 bg-amber-500/5 hover:bg-amber-500/20 border-2 border-amber-500/40 hover:border-amber-400 rounded-2xl text-[14px] font-black uppercase tracking-[0.2em] text-amber-50 transition-all flex items-center justify-center gap-6 active:scale-[0.98] group shadow-[0_0_30px_rgba(245,158,11,0.05)]"
                                                 disabled={isAgentThinking}
                                             >
-                                                <div className="w-12 h-12 bg-amber-500/20 rounded-2xl flex items-center justify-center text-amber-400 group-hover:bg-amber-500 group-hover:text-black transition-all shadow-inner">
+                                                <div className="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center text-amber-400 group-hover:bg-amber-500 group-hover:text-black transition-all">
                                                     <FileText size={24} />
                                                 </div>
-                                                1. Business Profile
+                                                Audit Profile
                                             </button>
                                             <button
-                                                onClick={() => handleSendWorkspaceChat("ULTRA-DEEP SCAN COMMAND: Perform a recursive re-read of the [kh_extractation] and [en_extract] documents. You MUST find and list EVERY business activity along with its specific 3-digit and 5-digit ISIC code (e.g. 620, 62010). If you previously missed them, RE-SCAN EVERYTHING NOW. They are definitely there.")}
-                                                className="flex-1 py-6 bg-gradient-to-br from-cyan-500/10 to-transparent hover:from-cyan-500/30 border-2 border-cyan-500/50 hover:border-cyan-400 rounded-3xl text-[13px] font-black uppercase tracking-widest text-cyan-50 transition-all flex items-center justify-center gap-4 active:scale-95 group shadow-lg"
+                                                onClick={() => handleSendWorkspaceChat("EXHAUSTIVE DATA EXTRACTION: Extract the COMPLETE list of all business activities and ISIC codes (3-digit and 5-digit) from the [kh_extractation] dossier. DO NOT SUMMARIZE. DO NOT OMIT ANY CODES. I need the full verified ledger of all 8+ registered activities.")}
+                                                className="h-20 bg-cyan-500/5 hover:bg-cyan-500/20 border-2 border-cyan-500/40 hover:border-cyan-400 rounded-2xl text-[14px] font-black uppercase tracking-[0.2em] text-cyan-50 transition-all flex items-center justify-center gap-6 active:scale-[0.98] group shadow-[0_0_30px_rgba(6,182,212,0.05)]"
                                                 disabled={isAgentThinking}
                                             >
-                                                <div className="w-12 h-12 bg-cyan-500/20 rounded-2xl flex items-center justify-center text-cyan-400 group-hover:bg-cyan-500 group-hover:text-black transition-all shadow-inner">
+                                                <div className="w-12 h-12 bg-cyan-500/20 rounded-xl flex items-center justify-center text-cyan-400 group-hover:bg-cyan-500 group-hover:text-black transition-all">
                                                     <TrendingUp size={24} />
                                                 </div>
-                                                2. RECURSIVE DEEP SCAN
+                                                Audit Activities
                                             </button>
                                         </div>
 
