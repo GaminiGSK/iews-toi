@@ -141,7 +141,9 @@ export default function CompanyProfile() {
             companyNameKh: '',
             companyNameEn: '',
             companyCode: '',
-            username: savedUser.username || ''
+            companyCode: '',
+            username: savedUser.username || '',
+            role: savedUser.role || 'user'
         };
     });
 
@@ -1193,7 +1195,8 @@ export default function CompanyProfile() {
                 context: {
                     source: 'Absolute Workstation',
                     brData: brContext,
-                    companyName: formData.companyNameEn
+                    companyName: formData.companyNameEn,
+                    targetUsername: adminSelectedUser // Crucial for backend entity switching
                 }
             }, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -1233,153 +1236,142 @@ export default function CompanyProfile() {
                                 <h2 className="text-xl font-black text-white tracking-tighter uppercase leading-none">Business Data</h2>
                             </div>
                         </div>
-
-                        {/* ADMIN ENTITY SELECTOR (RECONSTRUCTED) */}
-                        {JSON.parse(localStorage.getItem('user') || '{}').role === 'admin' && (
-                            <div className="flex items-center gap-4 bg-white/5 p-2 pr-6 rounded-2xl border border-white/10">
-                                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest pl-4">Target Entity</span>
-                                <select
-                                    value={adminSelectedUser}
-                                    onChange={(e) => {
-                                        const val = e.target.value;
-                                        setAdminSelectedUser(val);
-                                        localStorage.setItem('lastSelectedBR', val);
-                                    }}
-                                    className="bg-transparent text-white font-bold uppercase text-xs outline-none cursor-pointer hover:text-blue-400 transition-colors"
-                                >
-                                    <option value="" className="bg-slate-900">My System Profile</option>
-                                    {users.map(u => (
-                                        <option key={u._id} value={u.username} className="bg-slate-900">{u.companyName} ({u.username})</option>
-                                    ))}
-                                </select>
-                            </div>
-                        )}
                     </div>
 
                     <div className="w-full h-full p-0">
-                        {activeDocTemplateId ? (
-                            /* --- INDIVIDUAL DOCUMENT VIEW --- */
-                            <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <h1 className="text-3xl font-black text-white tracking-tighter uppercase leading-none mb-2">{activeDoc?.name}</h1>
-                                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Source Entity Document • {activeDoc?.status}</p>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <a
-                                            href={`/api/company/document-image/${activeDoc?.docType}?token=${localStorage.getItem('token')}`}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg text-[10px] font-black uppercase tracking-widest border border-white/5"
-                                        >
-                                            View Original
-                                        </a>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                    {/* HARVESTED TEXT */}
-                                    <div className="bg-slate-950 border border-white/5 p-8 rounded-2xl shadow-inner">
-                                        <div className="flex items-center gap-3 mb-6">
-                                            <Terminal size={16} className="text-blue-500" />
-                                            <h3 className="text-xs font-black text-white uppercase tracking-widest">Harvested Text (OCR)</h3>
-                                        </div>
-                                        <div className="font-mono text-[11px] text-slate-400 leading-relaxed whitespace-pre-wrap max-h-[500px] overflow-y-auto custom-scrollbar bg-black/20 p-4 rounded-xl">
-                                            {originalDocData?.rawText || 'No text extracted for this document. Try Recall Scan.'}
-                                        </div>
-                                    </div>
-
-                                    {/* IMAGE PREVIEW */}
-                                    <div className="bg-slate-950 border border-white/5 p-2 rounded-2xl overflow-hidden shadow-2xl">
-                                        <div className="aspect-[4/5] bg-slate-900 rounded-xl flex items-center justify-center overflow-hidden border border-white/5">
-                                            {originalDocData?.isMetadataOnly ? (
-                                                <div className="text-center p-8">
-                                                    <AlertCircle size={32} className="text-orange-500 mx-auto mb-4" />
-                                                    <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-2">Metadata Placeholder</p>
-                                                    <p className="text-[9px] text-slate-600 leading-relaxed">This file is sticked in the DB ledger. Binary preview is currently unavailable due to drive quota.</p>
-                                                </div>
-                                            ) : (
-                                                <img
-                                                    src={`/api/company/document-image/${activeDoc?.docType}?token=${localStorage.getItem('token')}&t=${Date.now()}`}
-                                                    alt="Preview"
-                                                    className="w-full h-full object-contain opacity-80 hover:opacity-100 transition-opacity"
-                                                />
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
+                        {formData.role === 'admin' && !adminSelectedUser ? (
+                            <div className="flex flex-col items-center justify-center h-[500px] text-center p-20">
+                                <AlertCircle size={64} className="text-indigo-500 mb-8 opacity-20" />
+                                <h3 className="text-2xl font-black text-white uppercase tracking-tighter mb-4">No Target Entity Selected</h3>
+                                <p className="text-slate-500 max-w-sm font-medium">Please use the dropdown menu at the top to select a company profile. This will link the AI agent to that entity's BR intelligence fragments.</p>
                             </div>
                         ) : (
-                            /* --- GPT AI AGENT PROMPTING WORKSPACE (FULLSCREEN CLEAN) --- */
-                            <div className="flex flex-col h-[calc(100vh-160px)] animate-in fade-in duration-700">
-                                {/* PROMPT AREA CORE */}
-                                <div className="bg-slate-900/40 border-b border-white/5 p-12 flex flex-col flex-1 overflow-hidden">
-                                    {/* CHAT/PROMPT HISTORY (CLEANED) */}
-                                    <div className="flex-1 overflow-y-auto mb-10 space-y-12 custom-scrollbar pr-4">
-                                        {workspaceChat.length === 0 ? (
-                                            <div className="h-full flex flex-col items-center justify-center opacity-10">
-                                                <Brain size={120} className="mb-8" />
-                                                <p className="text-xl font-black uppercase tracking-[0.5em]">Agent Synced • Awaiting Command</p>
-                                            </div>
-                                        ) : (
-                                            workspaceChat.map((msg, i) => (
-                                                <div key={i} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start animate-in fade-in slide-in-from-bottom-4'}`}>
-                                                    <div className={`max-w-[80%] p-10 rounded-[40px] border ${msg.role === 'user'
-                                                        ? 'bg-blue-600/10 border-blue-500/20 text-blue-50'
-                                                        : 'bg-slate-950/80 border-white/5 text-slate-200'}`}>
-                                                        <p className="text-xl leading-relaxed whitespace-pre-wrap">{msg.text}</p>
-                                                    </div>
-                                                </div>
-                                            ))
-                                        )}
-                                        {isAgentThinking && (
-                                            <div className="flex items-center gap-4 text-blue-500 font-bold uppercase tracking-widest text-xs animate-pulse p-10">
-                                                <Loader2 size={16} className="animate-spin" />
-                                                Agent is analyzing BR datasets...
-                                            </div>
-                                        )}
-                                        <div ref={chatEndRef} />
+                            activeDocTemplateId ? (
+                                /* --- INDIVIDUAL DOCUMENT VIEW --- */
+                                <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <h1 className="text-3xl font-black text-white tracking-tighter uppercase leading-none mb-2">{activeDoc?.name}</h1>
+                                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Source Entity Document • {activeDoc?.status}</p>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <a
+                                                href={`/api/company/document-image/${activeDoc?.docType}?token=${localStorage.getItem('token')}`}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg text-[10px] font-black uppercase tracking-widest border border-white/5"
+                                            >
+                                                View Original
+                                            </a>
+                                        </div>
                                     </div>
-                                </div>
 
-                                {/* INPUT AREA (IMBEDDED) */}
-                                <div className="bg-slate-950 p-12 relative">
-                                    <div className="relative flex items-end gap-6 bg-slate-900/50 p-8 rounded-[32px] border border-white/5 focus-within:border-blue-500/50 transition-all duration-500 shadow-2xl">
-                                        <textarea
-                                            value={workspacePrompt}
-                                            onChange={(e) => setWorkspacePrompt(e.target.value)}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter' && !e.shiftKey) {
-                                                    e.preventDefault();
-                                                    handleSendWorkspaceChat();
-                                                }
-                                            }}
-                                            placeholder="Type your AI instruction or prompt here..."
-                                            className="flex-1 bg-transparent border-none outline-none text-xl leading-relaxed text-white placeholder:text-slate-700 resize-none py-2 max-h-64 custom-scrollbar"
-                                            rows={2}
-                                        />
-                                        <button
-                                            onClick={handleSendWorkspaceChat}
-                                            disabled={isAgentThinking || !workspacePrompt.trim()}
-                                            className="w-16 h-16 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-blue-600/20 transition-all active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            <Sparkles size={28} />
-                                        </button>
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                        {/* HARVESTED TEXT */}
+                                        <div className="bg-slate-950 border border-white/5 p-8 rounded-2xl shadow-inner">
+                                            <div className="flex items-center gap-3 mb-6">
+                                                <Terminal size={16} className="text-blue-500" />
+                                                <h3 className="text-xs font-black text-white uppercase tracking-widest">Harvested Text (OCR)</h3>
+                                            </div>
+                                            <div className="font-mono text-[11px] text-slate-400 leading-relaxed whitespace-pre-wrap max-h-[500px] overflow-y-auto custom-scrollbar bg-black/20 p-4 rounded-xl">
+                                                {originalDocData?.rawText || 'No text extracted for this document. Try Recall Scan.'}
+                                            </div>
+                                        </div>
+
+                                        {/* IMAGE PREVIEW */}
+                                        <div className="bg-slate-950 border border-white/5 p-2 rounded-2xl overflow-hidden shadow-2xl">
+                                            <div className="aspect-[4/5] bg-slate-900 rounded-xl flex items-center justify-center overflow-hidden border border-white/5">
+                                                {originalDocData?.isMetadataOnly ? (
+                                                    <div className="text-center p-8">
+                                                        <AlertCircle size={32} className="text-orange-500 mx-auto mb-4" />
+                                                        <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-2">Metadata Placeholder</p>
+                                                        <p className="text-[9px] text-slate-600 leading-relaxed">This file is sticked in the DB ledger. Binary preview is currently unavailable due to drive quota.</p>
+                                                    </div>
+                                                ) : (
+                                                    <img
+                                                        src={`/api/company/document-image/${activeDoc?.docType}?token=${localStorage.getItem('token')}&t=${Date.now()}`}
+                                                        alt="Preview"
+                                                        className="w-full h-full object-contain opacity-80 hover:opacity-100 transition-opacity"
+                                                    />
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            ) : (
+                                /* --- GPT AI AGENT PROMPTING WORKSPACE (FULLSCREEN CLEAN) --- */
+                                <div className="flex flex-col h-[calc(100vh-160px)] animate-in fade-in duration-700">
+                                    {/* PROMPT AREA CORE */}
+                                    <div className="bg-slate-900/40 border-b border-white/5 p-12 flex flex-col flex-1 overflow-hidden">
+                                        {/* CHAT/PROMPT HISTORY (CLEANED) */}
+                                        <div className="flex-1 overflow-y-auto mb-10 space-y-12 custom-scrollbar pr-4">
+                                            {workspaceChat.length === 0 ? (
+                                                <div className="h-full flex flex-col items-center justify-center opacity-10">
+                                                    <Brain size={120} className="mb-8" />
+                                                    <p className="text-xl font-black uppercase tracking-[0.5em]">Agent Synced • Awaiting Command</p>
+                                                </div>
+                                            ) : (
+                                                workspaceChat.map((msg, i) => (
+                                                    <div key={i} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start animate-in fade-in slide-in-from-bottom-4'}`}>
+                                                        <div className={`max-w-[80%] p-10 rounded-[40px] border ${msg.role === 'user'
+                                                            ? 'bg-blue-600/10 border-blue-500/20 text-blue-50'
+                                                            : 'bg-slate-950/80 border-white/5 text-slate-200'}`}>
+                                                            <p className="text-xl leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            )}
+                                            {isAgentThinking && (
+                                                <div className="flex items-center gap-4 text-blue-500 font-bold uppercase tracking-widest text-xs animate-pulse p-10">
+                                                    <Loader2 size={16} className="animate-spin" />
+                                                    Agent is analyzing BR datasets...
+                                                </div>
+                                            )}
+                                            <div ref={chatEndRef} />
+                                        </div>
+                                    </div>
+
+                                    {/* INPUT AREA (IMBEDDED) */}
+                                    <div className="bg-slate-950 p-12 relative">
+                                        <div className="relative flex items-end gap-6 bg-slate-900/50 p-8 rounded-[32px] border border-white/5 focus-within:border-blue-500/50 transition-all duration-500 shadow-2xl">
+                                            <textarea
+                                                value={workspacePrompt}
+                                                onChange={(e) => setWorkspacePrompt(e.target.value)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                                        e.preventDefault();
+                                                        handleSendWorkspaceChat();
+                                                    }
+                                                }}
+                                                placeholder="Type your AI instruction or prompt here..."
+                                                className="flex-1 bg-transparent border-none outline-none text-xl leading-relaxed text-white placeholder:text-slate-700 resize-none py-2 max-h-64 custom-scrollbar"
+                                                rows={2}
+                                            />
+                                            <button
+                                                onClick={handleSendWorkspaceChat}
+                                                disabled={isAgentThinking || !workspacePrompt.trim()}
+                                                className="w-16 h-16 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-blue-600/20 transition-all active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                <Sparkles size={28} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )
                         )}
                     </div>
                 </div>
 
-                {isDocScanning && (
-                    <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-xl flex flex-col items-center justify-center z-[100] animate-in fade-in duration-300">
-                        <Loader2 className="animate-spin text-blue-500 h-16 w-16 mb-6" />
-                        <h2 className="text-2xl font-black text-white uppercase tracking-widest mb-2">Recall Scan Active</h2>
-                        <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.4em] animate-pulse">Syncing Google Drive Archives with DB Ledger...</p>
-                    </div>
-                )}
-            </div>
+                {
+                    isDocScanning && (
+                        <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-xl flex flex-col items-center justify-center z-[100] animate-in fade-in duration-300">
+                            <Loader2 className="animate-spin text-blue-500 h-16 w-16 mb-6" />
+                            <h2 className="text-2xl font-black text-white uppercase tracking-widest mb-2">Recall Scan Active</h2>
+                            <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.4em] animate-pulse">Syncing Google Drive Archives with DB Ledger...</p>
+                        </div>
+                    )
+                }
+            </div >
         );
     };
 
@@ -1917,7 +1909,38 @@ export default function CompanyProfile() {
                     </div>
                     <span className="font-bold text-lg tracking-tight text-white group-hover:text-blue-400 transition-colors">GK SMART <span className="text-gray-500 font-normal">& Ai</span></span>
                 </div>
-                {/* Quick Actions or User Menu could go here */}
+
+                {/* GLOBAL ADMIN ENTITY SELECTOR */}
+                {formData.role === 'admin' && (
+                    <div className="flex items-center gap-4 bg-white/5 p-2 pr-6 rounded-2xl border border-white/10 ml-auto mr-8">
+                        <div className="w-8 h-8 bg-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-400">
+                            <Brain size={16} />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Auditor Deep Link</span>
+                            <select
+                                value={adminSelectedUser}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    setAdminSelectedUser(val);
+                                    localStorage.setItem('lastSelectedBR', val);
+                                }}
+                                className="bg-transparent text-white font-bold uppercase text-xs outline-none cursor-pointer hover:text-blue-400 transition-colors"
+                            >
+                                <option value="" className="bg-slate-900 text-slate-500 italic">Select Targeted Intel...</option>
+                                {users.map(u => (
+                                    <option key={u._id} value={u.username} className="bg-slate-900">{u.companyName} ({u.username})</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                )}
+
+                <div className="flex items-center gap-4">
+                    <span className="bg-white/5 px-4 py-2 rounded-xl text-[10px] font-bold text-slate-400 uppercase tracking-widest border border-white/5">
+                        {formData.username} ({formData.role})
+                    </span>
+                </div>
             </header>
 
             {/* Main Content */}
@@ -1949,21 +1972,33 @@ export default function CompanyProfile() {
             )}
 
             {debugLog && (
-                <div className="fixed bottom-6 left-6 max-w-sm bg-red-50 border border-red-200 text-red-800 p-4 rounded-xl shadow-lg animate-slide-up z-50">
-                    <div className="flex justify-between items-start mb-2">
-                        <strong className="text-sm flex items-center gap-2"><AlertCircle size={14} /> {debugLog.title}</strong>
-                        <button onClick={() => setDebugLog(null)}><X size={14} /></button>
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-6">
+                    <div className="bg-white rounded-[32px] shadow-2xl max-w-lg w-full p-10 relative animate-in zoom-in-95 duration-300">
+                        <button
+                            onClick={() => setDebugLog(null)}
+                            className="absolute top-8 right-8 text-gray-400 hover:text-gray-900 transition-colors"
+                        >
+                            <X />
+                        </button>
+                        <h3 className="text-xl font-bold text-red-600 mb-2 flex items-center">
+                            <span className="bg-red-100 p-2 rounded-full mr-3">⚠️</span>
+                            {debugLog.title}
+                        </h3>
+                        <p className="text-gray-800 font-medium mb-4">{debugLog.message}</p>
+
+                        <div className="bg-gray-100 p-4 rounded-lg overflow-x-auto mb-4">
+                            <pre className="text-xs font-mono text-gray-600">
+                                {debugLog.details}
+                            </pre>
+                        </div>
+
+                        <p className="text-xs text-gray-400 text-center">
+                            Please take a screenshot of this error and send it to support.
+                        </p>
                     </div>
-                    <p className="text-xs mb-2">{debugLog.message}</p>
-                    <pre className="bg-white p-2 rounded border border-red-100 text-[10px] overflow-auto max-h-32">
-                        {debugLog.details}
-                    </pre>
-                    <p className="text-[10px] text-red-400 mt-2">
-                        Please take a screenshot of this error and send it to support.
-                    </p>
                 </div>
             )}
-
         </div>
     );
 }
+

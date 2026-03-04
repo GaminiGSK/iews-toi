@@ -11,17 +11,28 @@ const CompanyProfile = require('../models/CompanyProfile');
 // POST /api/chat/message
 router.post('/message', auth, async (req, res) => {
     try {
-        const { message, image, model } = req.body;
+        const { message, image, model, context: chatContext } = req.body;
         if (!message && !image) return res.status(400).json({ message: "Message or Image is required" });
 
-        // 1. Fetch Context Data
-        const companyCode = req.user.companyCode;
+        // 1. Fetch Context Data (with Admin Entity Override)
+        let userId = req.user.id;
+        let companyCode = req.user.companyCode;
+        let targetUsername = chatContext?.targetUsername;
+
+        // If Admin is querying a target entity, switch context source
+        if (req.user.role === 'admin' && targetUsername) {
+            const targetUser = await User.findOne({ username: { $regex: new RegExp(`^${targetUsername.trim()}$`, 'i') } });
+            if (targetUser) {
+                userId = targetUser._id;
+                companyCode = targetUser.companyCode;
+            }
+        }
 
         // Fetch Company Profile (Source of Truth for Entity Info)
-        const profile = await CompanyProfile.findOne({ user: req.user.id }).lean() || {};
+        const profile = await CompanyProfile.findOne({ user: userId }).lean() || {};
 
         // Fetch Company Name (Fallback)
-        const user = await User.findById(req.user.id);
+        const user = await User.findById(userId);
         const companyName = profile.companyNameEn || (user ? user.companyName : null) || companyCode;
 
         // Fetch recent transactions (Limit 15 for context)
