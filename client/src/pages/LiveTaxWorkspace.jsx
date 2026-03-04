@@ -2081,14 +2081,14 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null }) => {
 
                                     {/* SECTION: OTHER PRODUCTION COSTS */}
                                     <div className="border-[2px] border-white overflow-hidden text-white bg-white/5 shadow-xl">
-                                        <div className="flex bg-rose-500/10 border-b-[2px] border-white h-14 items-center">
-                                            <div className="w-[50%] border-r-[2px] border-white px-4">
-                                                <span className="font-bold text-[36px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណាយផ្សេងៗក្នុងផលិតកម្ម</span>
-                                                <span className="text-[22px] block font-black uppercase">Other Production Costs (C7)</span>
+                                        <div className="flex bg-rose-500/10 border-b border-white/10 h-12 items-center">
+                                            <div className="w-[50%] border-r border-white/10 px-4">
+                                                <span className="font-bold text-xs" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណាយផ្សេងៗក្នុងផលិតកម្ម</span>
+                                                <span className="text-[8px] block font-black uppercase">Other Production Costs (C7)</span>
                                             </div>
-                                            <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center font-black text-[28px]">REF</div>
-                                            <div className="w-[20%] border-r border-white/10 flex items-center justify-center text-[22px] font-bold">YEAR N</div>
-                                            <div className="flex-1 flex items-center justify-center text-[22px] font-bold">YEAR N-1</div>
+                                            <div className="w-[10%] border-r border-white/10 flex items-center justify-center font-black text-[10px]">REF</div>
+                                            <div className="w-[20%] border-r border-white/10 flex items-center justify-center text-[9px] font-bold">YEAR N</div>
+                                            <div className="flex-1 flex items-center justify-center text-[9px] font-bold">YEAR N-1</div>
                                         </div>
                                         {[
                                             { ref: "C 8", kh: "ប្រាក់បៀវត្សអ្នកគ្រប់គ្រង និងកម្មករផលិតកម្ម", en: "Salaries for production staff", key: "c8" },
@@ -2099,24 +2099,24 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null }) => {
                                             { ref: "C 13", kh: "សេវាម៉ៅការបន្ត និងសេវាផលិតដទៃ", en: "Sub-contract & production services", key: "c13" },
                                             { ref: "C 14", kh: "ចំណាយផ្សេងៗក្នុងផលិតកម្ម", en: "Other manufacturing costs", key: "c14" }
                                         ].map((row, idx) => (
-                                            <div key={idx} className="flex border-b border-white/10 h-12 items-center last:border-0 hover:bg-white/5 transition-colors">
-                                                <div className="w-[50%] border-r-[2px] border-white px-6 flex flex-col">
-                                                    <span className="font-bold text-[26px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
-                                                    <span className="text-[20px] font-bold opacity-70">{row.en}</span>
+                                            <div key={idx} className="flex border-b border-white/10 h-11 items-center last:border-0 hover:bg-white/5 transition-colors">
+                                                <div className="w-[50%] border-r border-white/10 px-4 flex flex-col overflow-hidden">
+                                                    <span className="font-bold text-[11px] leading-tight truncate" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
+                                                    <span className="text-[8px] font-bold text-slate-500 uppercase truncate">{row.en}</span>
                                                 </div>
-                                                <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center opacity-40 text-[20px] font-black">{row.ref}</div>
-                                                <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-4">
+                                                <div className="w-[10%] border-r border-white/10 flex items-center justify-center text-[9px] font-black text-slate-500 bg-white/5 h-full">{row.ref}</div>
+                                                <div className="w-[20%] border-r border-white/10 flex items-center justify-end gap-1.5 px-3 font-black text-xs">
                                                     {formData[row.key + '_n'] || '-'}
                                                 </div>
-                                                <div className="flex-1 flex items-center justify-end px-4">
+                                                <div className="flex-1 flex items-center justify-end gap-1.5 px-3 font-black text-xs text-white/50">
                                                     {formData[row.key + '_n1'] || '-'}
                                                 </div>
                                             </div>
                                         ))}
-                                        <div className="flex bg-rose-500/20 h-14 items-center font-black border-t-[2px] border-white">
-                                            <div className="w-[60%] border-r-[2px] border-white px-8 text-[32px]">TOTAL OTHER COSTS (C7)</div>
-                                            <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-4 text-rose-400">{formData.c7_n || '-'}</div>
-                                            <div className="flex-1 flex items-center justify-end px-4 text-rose-400">{formData.c7_n1 || '-'}</div>
+                                        <div className="flex bg-rose-500/20 h-11 items-center font-black border-t border-white/30">
+                                            <div className="w-[60%] border-r border-white/10 px-4 text-xs font-bold leading-none">TOTAL OTHER COSTS (C7)</div>
+                                            <div className="w-[20%] border-r border-white/10 flex items-center justify-end gap-1.5 px-3 text-xs text-rose-400">{formData.c7_n || '-'}</div>
+                                            <div className="flex-1 flex items-center justify-end gap-1.5 px-3 text-xs text-rose-400">{formData.c7_n1 || '-'}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -2125,29 +2125,29 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null }) => {
                                 <div className="flex flex-col gap-8">
                                     {/* SECTION: WORK IN PROGRESS */}
                                     <div className="border-[2px] border-white overflow-hidden text-white bg-white/5 shadow-xl">
-                                        <div className="flex bg-amber-500/10 border-b-[2px] border-white h-14 items-center">
-                                            <div className="w-[50%] border-r-[2px] border-white px-4">
-                                                <span className="font-bold text-[36px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការងារកំពុងដំណើរការ (WIP)</span>
-                                                <span className="text-[22px] block font-black uppercase">Work In Progress</span>
+                                        <div className="flex bg-amber-500/10 border-b border-white/10 h-12 items-center">
+                                            <div className="w-[50%] border-r border-white/10 px-4">
+                                                <span className="font-bold text-xs" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការងារកំពុងដំណើរការ (WIP)</span>
+                                                <span className="text-[8px] block font-black uppercase">Work In Progress</span>
                                             </div>
-                                            <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center font-black text-[28px]">REF</div>
-                                            <div className="w-[20%] border-r border-white/10 flex items-center justify-center text-[22px] font-bold">YEAR N</div>
-                                            <div className="flex-1 flex items-center justify-center text-[22px] font-bold">YEAR N-1</div>
+                                            <div className="w-[10%] border-r border-white/10 flex items-center justify-center font-black text-[10px]">REF</div>
+                                            <div className="w-[20%] border-r border-white/10 flex items-center justify-center text-[9px] font-bold">YEAR N</div>
+                                            <div className="flex-1 flex items-center justify-center text-[9px] font-bold">YEAR N-1</div>
                                         </div>
                                         {[
                                             { ref: "C 15", kh: "ការងារកំពុងដំណើរការនៅដើមគ្រា", en: "Work in progress at the beginning", key: "c15" },
                                             { ref: "C 16", kh: "ដក៖ ការងារកំពុងដំណើរការនៅចុងគ្រា", en: "Less: Work in progress at the end", key: "c16" }
                                         ].map((row, idx) => (
-                                            <div key={idx} className="flex border-b border-white/10 h-14 items-center last:border-0 hover:bg-white/5 transition-colors">
-                                                <div className="w-[50%] border-r-[2px] border-white px-6 flex flex-col">
-                                                    <span className="font-bold text-[28px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
-                                                    <span className="text-[22px] font-bold opacity-70">{row.en}</span>
+                                            <div key={idx} className="flex border-b border-white/10 h-11 items-center last:border-0 hover:bg-white/5 transition-colors">
+                                                <div className="w-[50%] border-r border-white/10 px-4 flex flex-col overflow-hidden">
+                                                    <span className="font-bold text-[11px] leading-tight truncate" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
+                                                    <span className="text-[8px] font-bold text-slate-500 uppercase truncate">{row.en}</span>
                                                 </div>
-                                                <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center opacity-40 text-[22px] font-black">{row.ref}</div>
-                                                <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-4">
+                                                <div className="w-[10%] border-r border-white/10 flex items-center justify-center text-[9px] font-black text-slate-500 bg-white/5 h-full">{row.ref}</div>
+                                                <div className="w-[20%] border-r border-white/10 flex items-center justify-end gap-1.5 px-3 font-black text-xs">
                                                     {formData[row.key + '_n'] || '-'}
                                                 </div>
-                                                <div className="flex-1 flex items-center justify-end px-4">
+                                                <div className="flex-1 flex items-center justify-end gap-1.5 px-3 font-black text-xs text-white/50">
                                                     {formData[row.key + '_n1'] || '-'}
                                                 </div>
                                             </div>
@@ -2172,29 +2172,29 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null }) => {
 
                                     {/* SECTION: FINISHED PRODUCTS */}
                                     <div className="border-[2px] border-white overflow-hidden text-white bg-white/5 shadow-xl mt-4">
-                                        <div className="flex bg-emerald-500/10 border-b-[2px] border-white h-14 items-center">
-                                            <div className="w-[50%] border-r-[2px] border-white px-4">
-                                                <span className="font-bold text-[36px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ផលិតផលសម្រេច</span>
-                                                <span className="text-[22px] block font-black uppercase">Finished Products</span>
+                                        <div className="flex bg-emerald-500/10 border-b border-white/10 h-12 items-center">
+                                            <div className="w-[50%] border-r border-white/10 px-4">
+                                                <span className="font-bold text-xs" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ផលិតផលសម្រេច</span>
+                                                <span className="text-[8px] block font-black uppercase">Finished Products</span>
                                             </div>
-                                            <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center font-black text-[28px]">REF</div>
-                                            <div className="w-[20%] border-r border-white/10 flex items-center justify-center text-[22px] font-bold">YEAR N</div>
-                                            <div className="flex-1 flex items-center justify-center text-[22px] font-bold">YEAR N-1</div>
+                                            <div className="w-[10%] border-r border-white/10 flex items-center justify-center font-black text-[10px]">REF</div>
+                                            <div className="w-[20%] border-r border-white/10 flex items-center justify-center text-[9px] font-bold">YEAR N</div>
+                                            <div className="flex-1 flex items-center justify-center text-[9px] font-bold">YEAR N-1</div>
                                         </div>
                                         {[
                                             { ref: "C 18", kh: "ស្តុកផលិតផលសម្រេចនៅដើមគ្រា", en: "Stock of finished products at the beginning", key: "c18" },
                                             { ref: "C 19", kh: "ដក៖ ស្តុកផលិតផលសម្រេចនៅចុងគ្រា", en: "Less: Stock of finished products at the end", key: "c19" }
                                         ].map((row, idx) => (
-                                            <div key={idx} className="flex border-b border-white/10 h-14 items-center last:border-0 hover:bg-white/5 transition-colors">
-                                                <div className="w-[50%] border-r-[2px] border-white px-6 flex flex-col">
-                                                    <span className="font-bold text-[28px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
-                                                    <span className="text-[22px] font-bold opacity-70">{row.en}</span>
+                                            <div key={idx} className="flex border-b border-white/10 h-11 items-center last:border-0 hover:bg-white/5 transition-colors">
+                                                <div className="w-[50%] border-r border-white/10 px-4 flex flex-col overflow-hidden">
+                                                    <span className="font-bold text-[11px] leading-tight truncate" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
+                                                    <span className="text-[8px] font-bold text-slate-500 uppercase truncate">{row.en}</span>
                                                 </div>
-                                                <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center opacity-40 text-[22px] font-black">{row.ref}</div>
-                                                <div className="w-[20%] border-r border-white/10 flex items-center justify-end px-4">
+                                                <div className="w-[10%] border-r border-white/10 flex items-center justify-center text-[9px] font-black text-slate-500 bg-white/5 h-full">{row.ref}</div>
+                                                <div className="w-[20%] border-r border-white/10 flex items-center justify-end gap-1.5 px-3 font-black text-xs">
                                                     {formData[row.key + '_n'] || '-'}
                                                 </div>
-                                                <div className="flex-1 flex items-center justify-end px-4">
+                                                <div className="flex-1 flex items-center justify-end gap-1.5 px-3 font-black text-xs text-white/50">
                                                     {formData[row.key + '_n1'] || '-'}
                                                 </div>
                                             </div>
@@ -2202,15 +2202,15 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null }) => {
                                     </div>
 
                                     {/* SECTION: FINAL COST OF PRODUCTS SOLD (C20) */}
-                                    <div className="border-[4px] border-white h-28 bg-emerald-500/30 flex items-center font-black text-white shadow-3xl">
-                                        <div className="w-[60%] border-r-[2px] border-white px-8">
-                                            <span className="text-[52px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ថ្លៃដើមផលិតផលបានលក់ (C20)</span>
-                                            <span className="text-[32px] block opacity-80 uppercase">Cost of Finished Products Sold (C17 + C18 - C19)</span>
+                                    <div className="border-[2px] border-white h-20 bg-emerald-500/30 flex items-center font-black text-white shadow-2xl overflow-hidden backdrop-blur-sm">
+                                        <div className="w-[60%] border-r-[2px] border-white px-6">
+                                            <span className="text-xl leading-tight block" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ថ្លៃដើមផលិតផលបានលក់ (C20)</span>
+                                            <span className="text-[9px] block text-emerald-100 uppercase mt-0.5 tracking-wider">Cost of Finished Products Sold (C17 + C18 - C19)</span>
                                         </div>
-                                        <div className="w-[20%] border-r-[2px] border-white flex items-center justify-end px-6 text-[56px] text-emerald-400">
+                                        <div className="w-[20%] border-r-[2px] border-white flex items-center justify-end px-4 text-2xl text-emerald-400">
                                             {formData.c20_n || '-'}
                                         </div>
-                                        <div className="flex-1 flex items-center justify-end px-6 text-[56px] text-emerald-400">
+                                        <div className="flex-1 flex items-center justify-end px-4 text-2xl text-emerald-400">
                                             {formData.c20_n1 || '-'}
                                         </div>
                                     </div>
