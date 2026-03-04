@@ -1333,27 +1333,27 @@ export default function CompanyProfile() {
                                     </div>
 
                                     {/* INPUT AREA (IMBEDDED) */}
-                                    {/* RAPID INTEL BUTTONS */}
-                                    <div className="bg-slate-950 px-12 pt-6 flex gap-4">
+                                    {/* RAPID INTEL BUTTONS - ENHANCED VISIBILITY */}
+                                    <div className="bg-slate-950 px-12 pb-2 flex gap-4 -mb-8 relative z-10">
                                         <button
                                             onClick={() => handleSendWorkspaceChat("Summarize my company business profile from the BR documents.")}
-                                            className="px-6 py-3 bg-white/5 hover:bg-blue-600/20 border border-white/10 hover:border-blue-500/50 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-300 hover:text-white transition-all flex items-center gap-3 active:scale-95 shadow-lg group"
+                                            className="px-6 py-3 bg-blue-600/10 hover:bg-blue-600/30 border border-blue-500/40 hover:border-blue-400 rounded-2xl text-[10px] font-black uppercase tracking-widest text-blue-100 transition-all flex items-center gap-3 active:scale-95 shadow-lg group"
                                             disabled={isAgentThinking}
                                         >
-                                            <div className="w-6 h-6 bg-blue-500/20 rounded-lg flex items-center justify-center text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-all">
-                                                <FileText size={14} />
+                                            <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-all shadow-inner">
+                                                <FileText size={16} />
                                             </div>
-                                            My Company Business Profile
+                                            Summarize Business Profile
                                         </button>
                                         <button
                                             onClick={() => handleSendWorkspaceChat("Detail my company business activities based on registration records.")}
-                                            className="px-6 py-3 bg-white/5 hover:bg-emerald-600/20 border border-white/10 hover:border-emerald-500/50 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-300 hover:text-white transition-all flex items-center gap-3 active:scale-95 shadow-lg group"
+                                            className="px-6 py-3 bg-emerald-600/10 hover:bg-emerald-600/30 border border-emerald-500/40 hover:border-emerald-400 rounded-2xl text-[10px] font-black uppercase tracking-widest text-emerald-100 transition-all flex items-center gap-3 active:scale-95 shadow-lg group"
                                             disabled={isAgentThinking}
                                         >
-                                            <div className="w-6 h-6 bg-emerald-500/20 rounded-lg flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-all">
-                                                <TrendingUp size={14} />
+                                            <div className="w-8 h-8 bg-emerald-500/20 rounded-lg flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-inner">
+                                                <TrendingUp size={16} />
                                             </div>
-                                            My Company Business Activities
+                                            List Business Activities
                                         </button>
                                     </div>
 
