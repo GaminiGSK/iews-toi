@@ -66,7 +66,7 @@ const INITIAL_SCHEMA = {
     ]
 };
 
-const LiveTaxWorkspace = ({ embedded = false }) => {
+const LiveTaxWorkspace = ({ embedded = false, forcePage = null }) => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const packageId = searchParams.get('packageId') || searchParams.get('year') || 'admin_preview';
@@ -74,6 +74,12 @@ const LiveTaxWorkspace = ({ embedded = false }) => {
     const [isSyncing, setIsSyncing] = useState(false);
     const [activePage, setActivePage] = useState(1);
     const [formData, setFormData] = useState({});
+
+    useEffect(() => {
+        if (forcePage !== null && forcePage !== undefined) {
+            setActivePage(forcePage);
+        }
+    }, [forcePage]);
 
     useEffect(() => {
         if (socket && packageId) {

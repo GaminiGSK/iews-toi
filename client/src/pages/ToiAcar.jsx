@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ArrowLeft, Brain, Sparkles, Loader2, ShieldCheck, Activity } from 'lucide-react';
 import LiveTaxWorkspace from './LiveTaxWorkspace';
 
 const ToiAcar = ({ onBack, packageId, year }) => {
+    const [activeWorkspacePage, setActiveWorkspacePage] = useState(1);
     return (
         <div className="w-full min-h-screen bg-black text-white flex flex-col font-sans relative overflow-hidden">
 
@@ -41,7 +42,8 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         return (
                             <button
                                 key={i}
-                                className={`w-8 h-8 rounded-full bg-slate-900 border border-slate-800 transition-all duration-300 flex items-center justify-center shrink-0 font-bold text-[10px] shadow-sm hover:scale-110 ${colorClass}`}
+                                onClick={() => setActiveWorkspacePage(i + 1)}
+                                className={`w-8 h-8 rounded-full transition-all duration-300 flex items-center justify-center shrink-0 font-bold text-[10px] shadow-sm hover:scale-110 ${activeWorkspacePage === i + 1 ? 'bg-white text-black border-white ring-2 ring-indigo-500/50 scale-110' : 'bg-slate-900 border border-slate-800 ' + colorClass}`}
                             >
                                 {i + 1}
                             </button>
@@ -56,7 +58,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                 {/* LEFT SIDE: GPT Result Landing Page (Totally Black, empty) */}
                 <div className="flex-1 overflow-y-auto relative bg-black custom-scrollbar">
                     {/* Embedded TOI Page 1 Admin Template for GPT Engine to dictate */}
-                    <LiveTaxWorkspace embedded={true} />
+                    <LiveTaxWorkspace embedded={true} forcePage={activeWorkspacePage} />
                 </div>
 
                 {/* RIGHT SIDE: Agent Terminal (Right Top Side) */}
