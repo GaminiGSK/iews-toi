@@ -848,6 +848,15 @@ export default function CompanyProfile() {
                         <p className="text-slate-500 text-xs leading-relaxed">Generate final audited reports (Income, Balance Sheet, Cash Flow).</p>
                     </div>
 
+                    {/* NEW TOI ACAR PACK CARD (In the middle) */}
+                    <div onClick={() => setView('toi_acar')} className="group p-8 bg-gradient-to-br from-slate-800/40 to-slate-900/60 hover:from-rose-600/20 hover:to-indigo-600/20 border border-white/5 hover:border-rose-400/50 rounded-3xl transition-all duration-500 cursor-pointer relative overflow-hidden shadow-xl hover:shadow-rose-500/20">
+                        <span className="absolute top-4 right-4 bg-gradient-to-r from-rose-500 to-indigo-500 text-white text-[9px] font-black px-3 py-1 rounded-full shadow-lg animate-pulse uppercase tracking-widest">Premium Pack</span>
+                        <div className="w-14 h-14 bg-rose-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-500 border border-rose-500/20 shadow-inner">
+                            <Box size={28} className="text-rose-400" />
+                        </div>
+                        <h3 className="text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-300 font-black text-2xl mb-2 tracking-tight">TOI ACAR PACK</h3>
+                        <p className="text-slate-400 text-xs leading-relaxed font-medium">All-in-one compliance bundle for Tax on Income and ACAR reporting. Rebuilt architecture.</p>
+                    </div>
 
                     <div onClick={() => setView('profile')} className="group p-8 bg-slate-800/40 hover:bg-blue-600/10 border border-white/5 hover:border-blue-500/50 rounded-3xl transition-all duration-500 cursor-pointer text-left">
                         <div className="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-500">
