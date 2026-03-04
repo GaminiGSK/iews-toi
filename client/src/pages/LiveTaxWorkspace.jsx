@@ -2299,15 +2299,15 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null }) => {
 
                             <div className="w-full max-w-5xl flex flex-col gap-10">
                                 {/* MAIN TABLE SECTION */}
-                                <div className="border-[2px] border-white overflow-hidden text-white bg-white/5 backdrop-blur-sm shadow-2xl">
-                                    <div className="flex bg-indigo-500/20 border-b-[2px] border-white h-16 items-center">
-                                        <div className="w-[50%] border-r-[2px] border-white px-6">
-                                            <span className="font-bold text-[40px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បរិយាយ</span>
-                                            <span className="text-[24px] block font-black uppercase tracking-tight">Description</span>
+                                <div className="border border-white/10 overflow-hidden text-white bg-slate-900/40 backdrop-blur-sm shadow-2xl rounded-2xl">
+                                    <div className="flex bg-indigo-500/20 border-b border-white/10 h-12 items-center">
+                                        <div className="w-[50%] border-r border-white/10 px-6">
+                                            <span className="font-bold text-xs" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បរិយាយ</span>
+                                            <span className="text-[8px] block font-black uppercase tracking-tight">Description</span>
                                         </div>
-                                        <div className="w-[10%] border-r-[2px] border-white flex items-center justify-center font-black text-[28px]">REF</div>
-                                        <div className="w-[20%] border-r-[2px] border-white flex items-center justify-center text-[24px] font-bold">YEAR N</div>
-                                        <div className="flex-1 flex items-center justify-center text-[24px] font-bold">YEAR N-1</div>
+                                        <div className="w-[10%] border-r border-white/10 flex items-center justify-center font-black text-[10px]">REF</div>
+                                        <div className="w-[20%] border-r border-white/10 flex items-center justify-center text-[9px] font-bold">YEAR N</div>
+                                        <div className="flex-1 flex items-center justify-center text-[9px] font-bold">YEAR N-1</div>
                                     </div>
 
                                     {[
