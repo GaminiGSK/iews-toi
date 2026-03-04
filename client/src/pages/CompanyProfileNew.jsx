@@ -58,6 +58,10 @@ export default function CompanyProfile() {
     const [viewDoc, setViewDoc] = useState(null); // { docType, path, ... }
     const [regenerating, setRegenerating] = useState(false);
 
+    // --- ADMIN & USER SELECT STATE ---
+    const [users, setUsers] = useState([]);
+    const [adminSelectedUser, setAdminSelectedUser] = useState(localStorage.getItem('lastSelectedBR') || '');
+
     // --- WORKSPACE GPT AGENT STATE ---
     const [workspacePrompt, setWorkspacePrompt] = useState('');
     const [workspaceChat, setWorkspaceChat] = useState([]);
@@ -504,13 +508,38 @@ export default function CompanyProfile() {
             window.location.href = '/login';
             return;
         }
+
+        const savedUser = JSON.parse(localStorage.getItem('user') || '{}');
+        if (savedUser.role === 'admin') {
+            fetchUsersList();
+        }
+
         fetchProfile();
-    }, []);
+    }, [adminSelectedUser]);
+
+    const fetchUsersList = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.get('/api/auth/users', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            setUsers(res.data);
+        } catch (err) {
+            console.error("Failed to fetch users", err);
+        }
+    };
 
     const fetchProfile = async () => {
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.get('/api/company/profile', {
+            const savedUser = JSON.parse(localStorage.getItem('user') || '{}');
+
+            // ADMIN OVERRIDE: If admin has selected a target, fetch that instead
+            const endpoint = (savedUser.role === 'admin' && adminSelectedUser)
+                ? `/api/company/admin/profile/${adminSelectedUser}`
+                : '/api/company/profile';
+
+            const res = await axios.get(endpoint, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.data) {
@@ -1204,6 +1233,27 @@ export default function CompanyProfile() {
                                 <h2 className="text-xl font-black text-white tracking-tighter uppercase leading-none">Business Data</h2>
                             </div>
                         </div>
+
+                        {/* ADMIN ENTITY SELECTOR (RECONSTRUCTED) */}
+                        {JSON.parse(localStorage.getItem('user') || '{}').role === 'admin' && (
+                            <div className="flex items-center gap-4 bg-white/5 p-2 pr-6 rounded-2xl border border-white/10">
+                                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest pl-4">Target Entity</span>
+                                <select
+                                    value={adminSelectedUser}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        setAdminSelectedUser(val);
+                                        localStorage.setItem('lastSelectedBR', val);
+                                    }}
+                                    className="bg-transparent text-white font-bold uppercase text-xs outline-none cursor-pointer hover:text-blue-400 transition-colors"
+                                >
+                                    <option value="" className="bg-slate-900">My System Profile</option>
+                                    {users.map(u => (
+                                        <option key={u._id} value={u.username} className="bg-slate-900">{u.companyName} ({u.username})</option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
                     </div>
 
                     <div className="w-full h-full p-0">
