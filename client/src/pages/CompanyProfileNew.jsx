@@ -1346,7 +1346,7 @@ export default function CompanyProfile() {
                                             Summarize Business Profile
                                         </button>
                                         <button
-                                            onClick={() => handleSendWorkspaceChat("Detail my company business activities based on registration records.")}
+                                            onClick={() => handleSendWorkspaceChat("Detail my company business activities and include the specific activity codes (ISIC) based on registration records.")}
                                             className="px-6 py-3 bg-emerald-600/10 hover:bg-emerald-600/30 border border-emerald-500/40 hover:border-emerald-400 rounded-2xl text-[10px] font-black uppercase tracking-widest text-emerald-100 transition-all flex items-center gap-3 active:scale-95 shadow-lg group"
                                             disabled={isAgentThinking}
                                         >
