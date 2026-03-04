@@ -438,7 +438,7 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
             1. **Zero Omissions**: You are FORBIDDEN from summarizing. If there are 8 activities in the document, you MUST list all 8. 
             2. **Target Patterns**: Target strings like "62010", "68209", "33200", "69200", "82990", "70200", "45102", "47910". These are ALL present in the GKSMART [kh_extractation].
             3. **Verification Loop**: Before finalizing your answer, count the codes. If you found fewer than 8 for GKSMART, you are missing data. RE-SCAN THE ENTIRE TEXT.
-            4. **Format**: Code [ISIC] - Activity Name (Bilingual).
+            4. **Format**: Code [ISIC] - Activity Name (Bilingual: Show both Khmer and English text as found in the document).
             5. **No Lazy Replies**: Do not say "Here are some...". Say "Here is the complete and verified list of business activities:".
 
             **Current Financial Context:**
