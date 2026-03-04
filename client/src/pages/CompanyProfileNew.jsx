@@ -764,113 +764,6 @@ export default function CompanyProfile() {
         </div>
     );
 
-    // --- REPURPOSED: Tax Packages (Was renderIEWS) ---
-    const renderTaxPackages = () => (
-        <div className="w-full h-[calc(100vh-80px)] pt-6 px-10 animate-fade-in flex flex-col bg-slate-900 text-white overflow-y-auto pb-20">
-            <div className="max-w-6xl mx-auto w-full">
-                {/* Header Section */}
-                <div className="flex items-center justify-between mb-10">
-                    <div className="flex items-center gap-6">
-                        <button onClick={() => setView('home')} className="p-3 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl transition shadow-xl border border-white/5">
-                            <ArrowLeft size={24} />
-                        </button>
-                        <div>
-                            <h1 className="text-4xl font-black tracking-tight flex items-center gap-3">
-                                <ShieldCheck className="text-indigo-500" size={32} /> TOI & ACAR Compliance Hub
-                            </h1>
-                            <p className="text-slate-500 font-medium mt-1">Select or create a tax package by fiscal year.</p>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Create Package Section */}
-                <div className="bg-slate-800/40 p-10 rounded-[40px] border border-white/5 mb-10 shadow-2xl backdrop-blur-sm">
-                    <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-                        <Plus size={20} className="text-indigo-400" /> Initialize New Fiscal Year
-                    </h2>
-                    <div className="flex items-center gap-4">
-                        <input
-                            type="text"
-                            placeholder="Enter Year (e.g. 2025)"
-                            className="bg-slate-900/80 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 w-64 text-lg font-bold transition-all"
-                            value={createYear}
-                            onChange={(e) => setCreateYear(e.target.value)}
-                        />
-                        <button
-                            onClick={handleCreatePackage}
-                            disabled={!createYear}
-                            className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 text-white px-8 py-4 rounded-2xl font-bold transition shadow-xl shadow-indigo-600/20 active:scale-95 flex items-center gap-2"
-                        >
-                            <Sparkles size={20} /> Create Registry
-                        </button>
-                    </div>
-                </div>
-
-                {/* Package List Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {toiPackages.length === 0 ? (
-                        <div className="col-span-full py-20 bg-slate-800/20 rounded-[40px] border border-dashed border-white/10 text-center">
-                            <Box size={48} className="text-slate-700 mx-auto mb-4" />
-                            <p className="text-slate-500 font-medium">No tax packages found. Initialize one above.</p>
-                        </div>
-                    ) : (
-                        toiPackages.map(pkg => (
-                            <div key={pkg._id} className="group bg-slate-800/40 hover:bg-slate-800/60 border border-white/5 hover:border-indigo-500/30 rounded-[40px] p-8 transition-all duration-500 shadow-xl relative overflow-hidden">
-                                {/* Decorator Card Glow */}
-                                <div className="absolute -top-24 -right-24 w-48 h-48 bg-indigo-600/5 rounded-full blur-[64px] group-hover:bg-indigo-600/10 transition-colors" />
-
-                                <div className="flex justify-between items-start mb-6">
-                                    <div className="w-16 h-16 bg-slate-950/50 rounded-2xl flex items-center justify-center text-indigo-400 shadow-inner">
-                                        <Calendar size={28} />
-                                    </div>
-                                    <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${pkg.status === 'Draft' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
-                                        pkg.status === 'Filed' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
-                                            'bg-blue-500/10 text-blue-500 border-blue-500/20'
-                                        }`}>
-                                        {pkg.status}
-                                    </span>
-                                </div>
-
-                                <h3 className="text-3xl font-black mb-1">FY {pkg.year}</h3>
-                                <p className="text-slate-500 text-sm font-medium mb-8">Full TOI Form (27 Pages) & Compliance Docs</p>
-
-                                <div className="space-y-4 pt-4 border-t border-white/5">
-                                    <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest text-slate-500">
-                                        <span>Filling Progress</span>
-                                        <span className="text-indigo-400">{pkg.progress || 0}%</span>
-                                    </div>
-                                    <div className="h-2 bg-slate-950 rounded-full overflow-hidden shadow-inner">
-                                        <div
-                                            className="h-full bg-gradient-to-r from-indigo-600 to-blue-600 rounded-full transition-all duration-1000"
-                                            style={{ width: `${pkg.progress || 0}%` }}
-                                        />
-                                    </div>
-                                </div>
-
-                                <button
-                                    onClick={() => {
-                                        setSelectedPackage(pkg);
-                                        setView('tax_form');
-                                    }}
-                                    className="w-full mt-8 py-4 bg-slate-900 border border-white/10 hover:border-indigo-500/50 hover:bg-slate-950 text-white rounded-2xl font-bold transition-all shadow-xl flex items-center justify-center gap-2 group-hover:gap-4 active:scale-95"
-                                >
-                                    Open Compliance Hub <ChevronRight size={18} className="text-indigo-500" />
-                                </button>
-                            </div>
-                        ))
-                    )}
-                </div>
-            </div>
-        </div>
-    );
-
-    const renderTaxForm = () => (
-        <ToiAcar
-            packageId={selectedPackage?._id}
-            year={selectedPackage?.year}
-            onBack={() => setView('tax_packages')}
-        />
-    );
 
 
     const renderHome = () => (
@@ -947,13 +840,6 @@ export default function CompanyProfile() {
                         <p className="text-slate-500 text-xs leading-relaxed">Generate final audited reports (Income, Balance Sheet, Cash Flow).</p>
                     </div>
 
-                    <div onClick={() => setView('tax_packages')} className="group p-8 bg-slate-800/40 hover:bg-rose-600/10 border border-white/5 hover:border-rose-500/50 rounded-3xl transition-all duration-500 cursor-pointer">
-                        <div className="w-14 h-14 bg-rose-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-500">
-                            <Sparkles size={28} className="text-rose-500" />
-                        </div>
-                        <h3 className="text-white font-bold text-xl mb-2">TOI & ACAR</h3>
-                        <p className="text-slate-500 text-xs leading-relaxed">Live Tax Form, Tax on Income & ACAR Compliance.</p>
-                    </div>
 
                     <div onClick={() => setView('profile')} className="group p-8 bg-slate-800/40 hover:bg-blue-600/10 border border-white/5 hover:border-blue-500/50 rounded-3xl transition-all duration-500 cursor-pointer text-left">
                         <div className="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-500">
@@ -1974,8 +1860,6 @@ export default function CompanyProfile() {
                 {view === 'profile' && renderProfile()}
                 {view === 'bank' && renderBank()}
                 {view === 'iews' && renderIEWS()}
-                {view === 'tax_packages' && renderTaxPackages()}
-                {view === 'tax_form' && renderTaxForm()}
                 {view === 'ledger' && <GeneralLedger onBack={() => setView('home')} />}
                 {view === 'tb' && <TrialBalance onBack={() => setView('home')} />}
                 {view === 'codes' && <AccountingCodes onBack={() => setView('home')} />}
