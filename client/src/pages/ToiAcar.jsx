@@ -72,10 +72,10 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     </div>
 
                     {/* Agent Chat Interface */}
-                    <div className="w-full bg-black border border-white/5 rounded-3xl shadow-2xl overflow-hidden flex flex-col mt-2 flex-shrink-0 animate-in fade-in slide-in-from-right-4 duration-700">
+                    <div className="w-full h-[800px] bg-black border border-white/5 rounded-3xl shadow-2xl overflow-hidden flex flex-col mt-2 flex-shrink-0 animate-in fade-in slide-in-from-right-4 duration-700">
 
                         {/* Header */}
-                        <div className="px-6 py-4 bg-slate-900/40 border-b border-white/5 flex items-center justify-between">
+                        <div className="px-6 py-4 bg-slate-900/40 border-b border-white/5 flex items-center justify-between shrink-0">
                             <div className="flex items-center gap-2">
                                 <Activity size={14} className="text-slate-400" />
                                 <span className="text-[10px] font-black text-slate-400 tracking-widest uppercase">Agent Terminal</span>
@@ -87,22 +87,22 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         </div>
 
                         {/* Chat Area */}
-                        <div className="p-6 overflow-y-auto space-y-6 bg-slate-950/20 max-h-[400px]">
+                        <div className="p-6 overflow-y-auto space-y-6 bg-slate-950/20 flex-1 custom-scrollbar">
                             {/* Agent Initial Message */}
                             <div className="flex items-start gap-4">
-                                <div className="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center shrink-0">
-                                    <Brain size={14} className="text-indigo-400" />
-                                </div>
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-700 shadow-[0_0_10px_rgba(59,130,246,0.3)] flex items-center justify-center shrink-0 border border-white/10" />
                                 <div className="bg-slate-900 border border-white/5 rounded-2xl rounded-tl-none px-4 py-3">
                                     <p className="text-slate-300 text-[13px] leading-relaxed">
-                                        System initialized for <b>Page 1 Analytics</b>.<br /><br />
-                                        I can read company registration profiles, bank statements, and compliance history to auto-fill the entity identifiers and compliance indicators on this page.
+                                        Hello. I am <b>the blue agent</b>.<br /><br />
+                                        I can read company registration profiles, bank statements, and compliance history to auto-fill identifiers and compliance indicators on this workspace. How can I help you today?
                                     </p>
                                 </div>
                             </div>
+                        </div>
 
-                            {/* GPT Input Area */}
-                            <div className="flex flex-col gap-3 mt-4 border border-white/10 bg-slate-900/50 p-3 rounded-2xl focus-within:border-blue-500/50 transition-all shadow-inner">
+                        {/* GPT Input Area */}
+                        <div className="p-4 bg-slate-950/50 border-t border-white/5 shrink-0">
+                            <div className="flex flex-col gap-3 border border-white/10 bg-black/40 p-3 rounded-2xl focus-within:border-blue-500/50 transition-all shadow-inner">
                                 <textarea
                                     placeholder="Message GPT Agent..."
                                     className="w-full bg-transparent border-none outline-none text-sm text-white placeholder:text-slate-600 resize-none custom-scrollbar px-1 leading-relaxed"
