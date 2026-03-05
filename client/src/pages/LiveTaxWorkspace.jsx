@@ -2435,7 +2435,7 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null }) => {
                                 </div>
                             </div>
 
-<div className="w-full grid grid-cols-2 gap-10 items-start">
+                            <div className="w-full grid grid-cols-2 gap-10 items-start">
                                 {/* LEFT COLUMN: PROFIT & NON-DEDUCTIBLE EXPENSES */}
                                 <div className="flex flex-col gap-8">
                                     {/* SECTION: INITIAL PROFIT/LOSS */}
@@ -2585,7 +2585,8 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null }) => {
                             </div>
                         </div>
                     )}
-{activePage === 10 && (
+
+                    {activePage === 10 && (
                         <div className="animate-fade-in relative px-10 py-16 flex flex-col items-center">
                             {/* TIN HEADER ANCHORED MATCH */}
                             <div className="w-full flex justify-between items-start mb-8">
@@ -3879,26 +3880,27 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null }) => {
                             {/* LUXURY CONTAINER */}
                             <div className="w-full flex flex-col items-center">
                                 {/* PAGE HEADER */}
-                                <div className="w-full bg-slate-900 border border-white/20 p-8 shadow-2xl mb-8 flex flex-col items-center relative rounded-2xl">
-                                    <h2 className="text-3xl font-bold text-white text-center leading-tight mb-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
-                                        ការបញ្ជាក់ប្រតិបត្តិការជាមួយភាគីពាក់ព័ន្ធ
-                                    </h2>
-                                    <h1 className="text-xl font-black text-white text-center uppercase tracking-[0.25em]">
-                                        LIST OF RELATED-PARTY TRANSACTIONS
-                                    </h1>
+                                <div className="w-full bg-slate-900/40 backdrop-blur-md border border-white/20 p-8 rounded-2xl shadow-2xl mb-8 flex justify-between items-center text-left">
+                                    <div className="flex flex-col max-w-[70%] gap-2 items-start justify-center">
+                                        <h2 className="text-2xl lg:text-3xl font-bold text-white leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                            ការបញ្ជាក់ប្រតិបត្តិការជាមួយភាគីពាក់ព័ន្ធ
+                                        </h2>
+                                        <h1 className="text-slate-400 font-black text-sm lg:text-base uppercase tracking-widest mt-1">
+                                            LIST OF RELATED-PARTY TRANSACTIONS
+                                        </h1>
+                                    </div>
 
                                     {/* YEAR BOXES TOP RIGHT */}
-                                    <div className="absolute right-8 top-1/2 -translate-y-1/2 flex items-center gap-4 bg-black/40 px-4 py-2 border border-white/20 rounded-xl">
-                                        <div className="flex flex-col items-end">
-                                            <span className="text-sm font-bold text-white" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំជាប់ពន្ធ / </span>
-                                            <span className="text-xs font-black text-white/40 uppercase">Tax Year :</span>
-                                        </div>
-                                        <div className="flex gap-1.5">
+                                    <div className="flex flex-col items-end gap-2 bg-black/40 px-6 py-4 border border-white/10 rounded-xl shadow-inner">
+                                        <div className="flex gap-2">
                                             {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
-                                                <div key={i} className="w-8 h-10 border border-white/30 flex items-center justify-center bg-white/5 shadow-inner">
-                                                    <span className="text-xl font-black text-white">{char}</span>
+                                                <div key={i} className="w-10 h-12 border-2 border-slate-600 flex items-center justify-center bg-slate-800 rounded">
+                                                    <span className="text-2xl font-black text-white">{char}</span>
                                                 </div>
                                             ))}
+                                        </div>
+                                        <div className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-1">
+                                            Tax Period Year
                                         </div>
                                     </div>
                                 </div>
