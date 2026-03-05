@@ -116,13 +116,6 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                             </div>
                         </div>
 
-                        {/* Footer (Status) */}
-                        <div className="px-5 py-4 bg-black border-t border-white/5">
-                            <div className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl p-3 flex items-center justify-center gap-2 group">
-                                <ShieldCheck size={16} className="text-slate-600 group-hover:text-slate-500 transition-colors" />
-                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest transition-colors">Standby Mode</span>
-                            </div>
-                        </div>
 
                     </div>
                 </div>

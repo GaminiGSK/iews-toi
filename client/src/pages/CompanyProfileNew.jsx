@@ -1791,10 +1791,8 @@ export default function CompanyProfile() {
                             <ArrowLeft size={16} /> Back
                         </button>
                     )}
-                </div>
 
-                <div className="flex items-center gap-3 sm:gap-4">
-                    <div className="hidden md:flex items-center">
+                    <div className="hidden md:flex items-center ml-2">
                         <span className="text-slate-300 font-black text-xs uppercase tracking-wider bg-white/5 px-3 py-1.5 rounded-lg border border-white/5 flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                             {formData?.username || 'GK SMART'}
@@ -1815,6 +1813,9 @@ export default function CompanyProfile() {
                         Log Out
                     </button>
                 </div>
+
+                {/* Empty div to preserve justify-between layout if needed */}
+                <div className="flex items-center gap-3 sm:gap-4"></div>
             </header>
 
             {/* Main Content */}
