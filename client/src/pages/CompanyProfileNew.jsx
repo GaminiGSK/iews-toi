@@ -743,16 +743,6 @@ export default function CompanyProfile() {
                     </h1>
                     <div className="flex items-center gap-4">
                         <p className="text-slate-400 text-lg font-medium">Manage your entity and financial data with AI precision.</p>
-                        <span className="bg-red-600/20 text-red-500 border border-red-500/30 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">v2.3 Night</span>
-                        <button
-                            onClick={() => {
-                                localStorage.removeItem('token');
-                                window.location.href = '/login';
-                            }}
-                            className="text-[10px] text-red-500 hover:text-white font-bold uppercase tracking-widest bg-red-500/10 hover:bg-red-500 px-4 py-2 rounded-lg transition border border-red-500/20 shadow-xl"
-                        >
-                            Log Out
-                        </button>
                     </div>
                 </div>
 
@@ -1785,15 +1775,45 @@ export default function CompanyProfile() {
         <div className="min-h-screen bg-slate-900 flex flex-col font-sans text-white">
             {/* Header */}
             <header className="bg-slate-900/80 backdrop-blur-md border-b border-white/10 sticky top-0 z-30 shadow-lg h-16 flex items-center px-6 justify-between">
-                <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setView('home')}>
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/20 text-sm tracking-tighter group-hover:scale-105 transition-transform">
-                        GK
+                <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setView('home')} title="Home / Dashboard">
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/20 text-sm tracking-tighter group-hover:scale-105 transition-transform">
+                            GK
+                        </div>
+                        <span className="font-bold text-lg tracking-tight text-white group-hover:text-blue-400 transition-colors hidden sm:block">GK SMART <span className="text-gray-500 font-normal">& Ai</span></span>
                     </div>
-                    <span className="font-bold text-lg tracking-tight text-white group-hover:text-blue-400 transition-colors">GK SMART <span className="text-gray-500 font-normal">& Ai</span></span>
+
+                    {view !== 'home' && (
+                        <button
+                            onClick={() => setView('home')}
+                            className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all border border-white/5 active:scale-95 shadow-md"
+                        >
+                            <ArrowLeft size={16} /> Back
+                        </button>
+                    )}
                 </div>
 
-                <div className="flex items-center gap-4">
-                    {/* Role badge removed per user request */}
+                <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="hidden md:flex items-center">
+                        <span className="text-slate-300 font-black text-xs uppercase tracking-wider bg-white/5 px-3 py-1.5 rounded-lg border border-white/5 flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            {formData?.username || 'GK SMART'}
+                        </span>
+                    </div>
+
+                    <span className="bg-red-600/20 text-red-500 border border-red-500/30 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest hidden sm:flex items-center shadow-inner">
+                        v2.3 Night
+                    </span>
+
+                    <button
+                        onClick={() => {
+                            localStorage.removeItem('token');
+                            window.location.href = '/login';
+                        }}
+                        className="text-[10px] text-red-500 hover:text-white font-black uppercase tracking-widest bg-red-500/10 hover:bg-red-500 px-4 py-1.5 rounded-lg transition-all border border-red-500/20 shadow-xl flex items-center active:scale-95 hover:shadow-red-500/20"
+                    >
+                        Log Out
+                    </button>
                 </div>
             </header>
 
