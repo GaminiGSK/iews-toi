@@ -65,21 +65,10 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                 <div className="w-[450px] shrink-0 border-l border-white/5 bg-slate-950/30 p-8 overflow-y-auto flex flex-col justify-start items-center custom-scrollbar">
 
                     {/* AI Orb / Avatar */}
-                    <div className="relative mb-8 flex flex-col items-center mt-2">
-                        <div className="w-20 h-20 bg-black border border-white/10 shadow-[0_0_40px_rgba(59,130,246,0.1)] rounded-full flex items-center justify-center relative overflow-hidden">
-                            <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/20 to-rose-500/20 opacity-50" />
-                            <Brain size={32} className="text-indigo-400 relative z-10" />
-                        </div>
-
-                        <div className="mt-5 text-center animate-in fade-in duration-700">
-                            <h2 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 tracking-tight">
-                                Page 1 Intelligence <span className="text-indigo-500">v3.0</span>
-                            </h2>
-                            <p className="text-slate-500 text-[10px] mt-2 flex items-center justify-center gap-1.5 font-bold uppercase tracking-widest">
-                                <Sparkles size={12} className="text-rose-400" />
-                                Form Automation Module
-                            </p>
-                        </div>
+                    <div className="relative mb-8 flex items-center justify-center gap-3 mt-8 animate-in fade-in duration-700">
+                        <span className="text-3xl font-medium tracking-tight text-white/90 drop-shadow-md pb-1">the</span>
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-700 shadow-[0_0_20px_rgba(59,130,246,0.5),inset_0_-4px_10px_rgba(0,0,0,0.5)] flex items-center justify-center relative overflow-hidden" />
+                        <span className="text-3xl font-medium tracking-tight text-white/90 drop-shadow-md pb-1">blue agent</span>
                     </div>
 
                     {/* Agent Chat Interface */}
@@ -113,15 +102,17 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                             </div>
 
                             {/* GPT Input Area */}
-                            <div className="flex items-center gap-2 mt-4 border border-white/10 bg-slate-900/50 p-1.5 rounded-2xl focus-within:border-indigo-500/50 transition-all shadow-inner">
-                                <input
-                                    type="text"
+                            <div className="flex flex-col gap-3 mt-4 border border-white/10 bg-slate-900/50 p-3 rounded-2xl focus-within:border-blue-500/50 transition-all shadow-inner">
+                                <textarea
                                     placeholder="Message GPT Agent..."
-                                    className="flex-1 bg-transparent border-none outline-none text-sm text-white placeholder:text-slate-600 px-3 py-2"
+                                    className="w-full bg-transparent border-none outline-none text-sm text-white placeholder:text-slate-600 resize-none custom-scrollbar px-1 leading-relaxed"
+                                    rows={4}
                                 />
-                                <button className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95 shadow-[0_0_20px_rgba(99,102,241,0.2)]">
-                                    Send &gt;
-                                </button>
+                                <div className="flex justify-end">
+                                    <button className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition active:scale-95 shadow-[0_0_20px_rgba(59,130,246,0.2)]">
+                                        Send &gt;
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
