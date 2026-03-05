@@ -380,6 +380,15 @@ export default function AdminDashboard() {
                                                 </div>
                                             </div>
                                             <div className="flex gap-3 relative z-10">
+                                                <a
+                                                    href={`/tax-live?packageId=${user.username}_2026`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="w-12 h-12 flex items-center justify-center bg-emerald-500/10 text-emerald-400 hover:bg-emerald-600 hover:text-white rounded-2xl transition-all duration-300"
+                                                    title="Open Tax Workspace"
+                                                >
+                                                    <FileSpreadsheet size={18} />
+                                                </a>
                                                 <button
                                                     onClick={() => {
                                                         setSelectedUserBR(user.username);
