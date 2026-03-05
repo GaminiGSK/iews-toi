@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Loader2, CheckCircle, AlertCircle, Table, Save, X, Eye, FileText, CloudUpload, Calendar, Book, Tag, DollarSign, Scale, TrendingUp, ArrowLeft, ShieldCheck, Sparkles, QrCode, BookOpen, RefreshCw, Terminal, Plus, Box, ChevronRight, Brain } from 'lucide-react';
+import { Loader2, CheckCircle, AlertCircle, Table, Save, X, Eye, FileText, CloudUpload, Calendar, Book, Tag, DollarSign, Scale, TrendingUp, ArrowLeft, ShieldCheck, Sparkles, QrCode, BookOpen, RefreshCw, Terminal, Plus, Box, ChevronRight, Brain, Layers } from 'lucide-react';
 import GeneralLedger from './GeneralLedger';
 import AccountingCodes from './AccountingCodes';
 import CurrencyExchange from './CurrencyExchange';
 import TrialBalance from './TrialBalance';
 import FinancialStatements from './FinancialStatements';
 import ToiAcar from './ToiAcar';
+import BankStatementV2Workspace from '../components/BankStatementV2Workspace';
 import MOCCertificate from '../components/MOCCertificate';
 
 export default function CompanyProfile() {
@@ -776,6 +777,15 @@ export default function CompanyProfile() {
                         </div>
                         <h3 className="text-white font-bold text-xl mb-2">Bank Statements</h3>
                         <p className="text-slate-500 text-xs leading-relaxed">Upload monthly statements, parse transactions via AI, and sync data.</p>
+                    </div>
+
+                    <div onClick={() => setView('bank_v2')} className="group p-8 bg-slate-800/40 hover:bg-emerald-600/10 border border-white/5 hover:border-emerald-500/50 rounded-3xl transition-all duration-500 cursor-pointer relative overflow-hidden">
+                        <span className="absolute top-4 right-4 bg-emerald-500 text-white text-[9px] font-black px-2 py-1 rounded-sm shadow-sm uppercase tracking-widest">Multi-Bank</span>
+                        <div className="w-14 h-14 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-500">
+                            <Layers size={28} className="text-emerald-500" />
+                        </div>
+                        <h3 className="text-white font-bold text-xl mb-2">Bank Statements V2</h3>
+                        <p className="text-slate-500 text-xs leading-relaxed">Create isolated statement baskets for multiple separate bank accounts.</p>
                     </div>
 
                     <div onClick={() => setView('ledger')} className="group p-8 bg-slate-800/40 hover:bg-orange-600/10 border border-white/5 hover:border-orange-500/50 rounded-3xl transition-all duration-500 cursor-pointer">
@@ -1823,6 +1833,7 @@ export default function CompanyProfile() {
                 {view === 'home' && renderHome()}
                 {view === 'profile' && renderProfile()}
                 {view === 'bank' && renderBank()}
+                {view === 'bank_v2' && <BankStatementV2Workspace onBack={() => setView('home')} />}
                 {view === 'iews' && renderIEWS()}
                 {view === 'ledger' && <GeneralLedger onBack={() => setView('home')} />}
                 {view === 'tb' && <TrialBalance onBack={() => setView('home')} />}
