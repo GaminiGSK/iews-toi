@@ -245,6 +245,10 @@ const startServer = async () => {
         });
         console.log('MongoDB Connected Successfully');
 
+        // Start Auto-Reconciliation Background Jobs
+        const reconciliationService = require('./services/ReconciliationService');
+        reconciliationService.startCronJobs();
+
         // Seed Master Accounts (Ensure GK SMART exists)
         const User = require('./models/User');
         const bcrypt = require('bcryptjs');
