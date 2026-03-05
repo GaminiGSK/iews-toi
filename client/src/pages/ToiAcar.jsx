@@ -112,16 +112,15 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                                 </div>
                             </div>
 
-                            {/* Action Buttons */}
-                            <div className="flex flex-col gap-2 mt-4">
-                                <button className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition shadow-[0_0_20px_rgba(99,102,241,0.2)]">
-                                    Sync From Company Profile
-                                </button>
-                                <button className="w-full py-2.5 px-4 bg-slate-800 hover:bg-slate-700 border border-white/5 text-slate-300 hover:text-white rounded-xl text-xs font-bold transition shadow-sm">
-                                    Analyze Tax Compliance Status
-                                </button>
-                                <button className="w-full py-2.5 px-4 bg-slate-800 hover:bg-slate-700 border border-white/5 text-slate-300 hover:text-white rounded-xl text-xs font-bold transition shadow-sm">
-                                    Scan For Audit Requirements
+                            {/* GPT Input Area */}
+                            <div className="flex items-center gap-2 mt-4 border border-white/10 bg-slate-900/50 p-1.5 rounded-2xl focus-within:border-indigo-500/50 transition-all shadow-inner">
+                                <input
+                                    type="text"
+                                    placeholder="Message GPT Agent..."
+                                    className="flex-1 bg-transparent border-none outline-none text-sm text-white placeholder:text-slate-600 px-3 py-2"
+                                />
+                                <button className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition active:scale-95 shadow-[0_0_20px_rgba(99,102,241,0.2)]">
+                                    Send &gt;
                                 </button>
                             </div>
                         </div>
