@@ -909,6 +909,112 @@ router.post('/regenerate-document', auth, async (req, res) => {
     }
 });
 
+// Save Multi-Account Bank Basket
+router.post('/save-bank-basket', auth, async (req, res) => {
+    try {
+        const { basketId, basketName, files } = req.body;
+        if (!files || files.length === 0) {
+            return res.status(400).json({ message: 'Basket is empty' });
+        }
+
+        const { createFolder, findFolder, moveFile } = require('../services/googleDrive');
+        const BankStatement = require('../models/BankStatement');
+
+        // 1. Determine Bank Name and Account Number
+        let bankName = 'Unknown Bank';
+        let accountNumber = 'Unknown Account';
+
+        for (const f of files) {
+            if (f.bankName && f.bankName !== 'Unknown Bank') bankName = f.bankName;
+            if (f.accountNumber) accountNumber = f.accountNumber;
+            if (bankName !== 'Unknown Bank' && accountNumber !== 'Unknown Account') break;
+        }
+
+        const newFolderName = `${bankName} - ${accountNumber}`;
+
+        // 2. Locate / Create User's main bank statements folder
+        let driveRoot = req.user.driveFolderId;
+        if (!driveRoot && process.env.GOOGLE_DRIVE_FOLDER_ID) {
+            driveRoot = await findFolder(req.user.username, process.env.GOOGLE_DRIVE_FOLDER_ID).then(f => f?.id);
+        }
+
+        let mainBankFolderId = req.user.bankStatementsFolderId;
+        if (!mainBankFolderId && driveRoot) {
+            let bankSub = await findFolder('bank statements', driveRoot);
+            if (!bankSub) bankSub = await createFolder('bank statements', driveRoot);
+            mainBankFolderId = bankSub.id;
+            // Update User Profile with the ID
+            const User = require('../models/User');
+            await User.findByIdAndUpdate(req.user._id, { bankStatementsFolderId: mainBankFolderId });
+        }
+
+        // 3. Create Specific Basket Sub-folder
+        let basketFolderId = null;
+        if (mainBankFolderId) {
+            let basketFolder = await findFolder(newFolderName, mainBankFolderId);
+            if (!basketFolder) basketFolder = await createFolder(newFolderName, mainBankFolderId);
+            basketFolderId = basketFolder.id;
+        }
+
+        const savedFileRecords = [];
+
+        // 4. Process each file: Move in Drive and Save Transactions to DB
+        for (const file of files) {
+            // Move file in Google Drive if it exists
+            if (file.driveId && basketFolderId && (!file.syncError || file.isMetadataOnly)) {
+                try {
+                    await moveFile(file.driveId.id || file.driveId, basketFolderId);
+                } catch (moveErr) {
+                    console.error(`Failed to move file ${file.originalName} to ${newFolderName}:`, moveErr);
+                }
+            }
+
+            // Save Transactions
+            if (file.transactions && file.transactions.length > 0) {
+                // Determine Date Range
+                const dates = file.transactions.map(t => new Date(t.date).getTime()).filter(d => !isNaN(d));
+                const minDate = dates.length > 0 ? new Date(Math.min(...dates)) : new Date();
+                const maxDate = dates.length > 0 ? new Date(Math.max(...dates)) : new Date();
+
+                // Add transactions
+                for (const tx of file.transactions) {
+                    tx.accountCode = tx.accountCode || null;
+                    if (tx.moneyIn && parseFloat(tx.moneyIn) > 0 && !tx.accountCode) tx.accountCode = "10110";
+                }
+
+                const bankStmtRecord = await BankStatement.create({
+                    companyCode: req.user.companyCode,
+                    originalName: file.originalName,
+                    path: file.driveId ? `drive:${file.driveId.id || file.driveId}` : file.path,
+                    driveId: file.driveId ? (file.driveId.id || file.driveId) : null,
+                    uploadedBy: req.user._id,
+                    bankName: file.bankName || bankName,
+                    accountNumber: file.accountNumber || accountNumber,
+                    dateRangeStart: minDate,
+                    dateRangeEnd: maxDate,
+                    transactions: file.transactions,
+                    isSticked: true,
+                    status: 'Saved',
+                    driveFolderId: basketFolderId
+                });
+
+                savedFileRecords.push(bankStmtRecord);
+            }
+        }
+
+        res.json({
+            message: 'Basket Saved Successfully',
+            basketName: newFolderName,
+            filesSaved: savedFileRecords.length
+        });
+
+    } catch (err) {
+        console.error('Basket Save Error:', err);
+        res.status(500).json({ message: 'Error saving basket and syncing to Drive' });
+    }
+});
+
+
 // Upload Bank Statement (Multiple Images/PDFs) for OCR
 router.post('/upload-bank-statement', auth, upload.array('files'), async (req, res) => {
     try {

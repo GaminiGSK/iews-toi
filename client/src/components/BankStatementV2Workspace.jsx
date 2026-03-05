@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Layers, Plus, FolderUp, ArrowLeft, CloudUpload, Loader2, Save, Trash2 } from 'lucide-react';
+import { Layers, Plus, FolderUp, ArrowLeft, CloudUpload, Loader2, Save, Trash2, FileText, CheckCircle, AlertCircle, ShieldCheck, Eye, X, Tag, Table } from 'lucide-react';
 import axios from 'axios';
 
 export default function BankStatementV2Workspace({ onBack }) {
@@ -114,8 +114,47 @@ export default function BankStatementV2Workspace({ onBack }) {
     };
 
     const handleSaveBasket = async () => {
-        // Placeholder for the next architectural step: "Save All" sub-folder sync
-        alert("Connected! Next step will trigger the backend folder generation.");
+        const activeBasket = baskets.find(b => b.id === activeBasketId);
+        if (!activeBasket || activeBasket.files.length === 0) return;
+
+        setSavingBank(true);
+        setMessage('Generating Sync Request... Creating Drive Folder...');
+
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.post('/api/company/save-bank-basket', {
+                basketId: activeBasket.id,
+                basketName: activeBasket.name,
+                files: activeBasket.files
+            }, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            const newFolderName = res.data.basketName || activeBasket.name;
+
+            // Update UI State locally
+            setBaskets(prev => prev.map(b => {
+                if (b.id === activeBasketId) {
+                    return {
+                        ...b,
+                        name: newFolderName,
+                        status: 'Saved',
+                        files: b.files.map(f => ({ ...f, status: 'Saved' }))
+                    };
+                }
+                return b;
+            }));
+
+            setMessage(`✅ Successfully Saved to Folder: ${newFolderName}`);
+            setTimeout(() => setMessage(''), 5000);
+
+        } catch (err) {
+            console.error('Save Basket Error:', err);
+            setMessage('❌ Failed to save basket/sync to drive. See console.');
+            setTimeout(() => setMessage(''), 5000);
+        } finally {
+            setSavingBank(false);
+        }
     };
 
     const renderDashboard = () => (
@@ -177,157 +216,300 @@ export default function BankStatementV2Workspace({ onBack }) {
 
         const currentFile = activeBasket.files[activeFileIndex];
 
+        // --- Date Helpers (Inlined to ensure standalone execution) ---
+        const parseDate = (dateStr) => {
+            if (!dateStr || String(dateStr).trim() === '') return null;
+            let d = new Date(dateStr);
+            if (!isNaN(d.getTime()) && d.getFullYear() > 1970) return d;
+            const s = String(dateStr).trim();
+            const cleanS = s.replace(/^(FATAL_ERR|DEBUG_ERR|Unknown Date Range)\s*[-]*/i, '').trim();
+            if (!cleanS) return null;
+            if (cleanS.match(/^\d{1,2}\/\d{1,2}\/\d{4}/)) {
+                const [day, month, year] = cleanS.split('/');
+                d = new Date(`${year}-${month}-${day}`);
+                if (!isNaN(d.getTime())) return d;
+            }
+            if (cleanS.match(/^\d{4}-\d{2}-\d{2}/)) {
+                d = new Date(cleanS.substring(0, 10));
+                if (!isNaN(d.getTime())) return d;
+            }
+            if (cleanS.match(/^[A-Za-z]{3}\s\d{1,2},?\s\d{4}/)) {
+                d = new Date(cleanS.replace(',', ''));
+                if (!isNaN(d.getTime())) return d;
+            }
+            if (cleanS.match(/^\d{1,2}-[A-Za-z]{3}-\d{4}/)) {
+                d = new Date(cleanS);
+                if (!isNaN(d.getTime())) return d;
+            }
+            return null;
+        };
+
+        const formatDateSafe = (dateStr) => {
+            if (!dateStr) return '-';
+            const d = parseDate(dateStr);
+            if (!d) return dateStr;
+            return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        };
+        // -------------------------------------------------------------
+
         return (
-            <div className="w-full h-[calc(100vh-80px)] pt-6 pl-10 pr-[100px] animate-fade-in flex flex-col relative">
-                <div className="mb-6 flex items-center justify-between shrink-0">
+            <div className="w-full h-[calc(100vh-80px)] pt-6 pl-10 pr-[450px] animate-fade-in flex flex-col bg-slate-900">
+                <div className="mb-4 flex items-center justify-between shadow-sm">
                     <div className="flex items-center gap-4">
                         <button
                             onClick={() => setActiveBasketId(null)}
-                            className="p-3 bg-slate-800 hover:bg-slate-700 text-white rounded-full transition shadow-lg shrink-0 border border-white/5"
-                            title="Back to Baskets"
+                            className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-sm font-medium transition shrink-0 shadow-md"
+                            title="Back to Dashboard"
                         >
                             <ArrowLeft size={20} />
                         </button>
-                        <div>
-                            <h1 className="text-3xl font-black text-white tracking-tighter uppercase whitespace-nowrap overflow-hidden text-ellipsis max-w-[400px]">{activeBasket.name}</h1>
-                            <p className="text-emerald-400 font-bold text-xs mt-1 uppercase tracking-widest bg-emerald-500/10 inline-block px-2 py-0.5 rounded">ISOLATED ZONE ACTIVE</p>
-                        </div>
+                        <span className="text-gray-400 text-sm font-medium">Back to Dashboard</span>
                     </div>
                 </div>
 
-                <div className="flex flex-col lg:flex-row gap-6 h-full pb-6 overflow-hidden">
-                    {/* Left: Drop + Preview */}
-                    <div className="flex-1 flex flex-col gap-6 h-full overflow-hidden">
-                        {/* Dropzone */}
+                <div className="flex flex-1 gap-6 min-h-0 bg-slate-900 border-none">
+
+                    {/* COLUMN 1: UPLOAD ZONE (Vertical) */}
+                    <div className="w-64 shrink-0 flex flex-col">
                         <div
-                            onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
+                            className={`flex-1 bg-white border-2 border-dashed ${dragActive ? 'border-green-500 bg-green-50/50' : 'border-green-200'} rounded-2xl p-4 text-center hover:border-green-400 hover:bg-green-50/30 transition relative group flex flex-col items-center justify-center cursor-pointer`}
+                            onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setDragActive(true); }}
                             onDragLeave={() => setDragActive(false)}
-                            onDrop={handleDrop}
+                            onDrop={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setDragActive(false);
+                                if (uploadingBank) return;
+                                const fileList = Array.from(e.dataTransfer.files);
+                                if (fileList.length === 0) return;
+                                handleUploadFiles(fileList);
+                            }}
                             onClick={() => fileInputRef.current?.click()}
-                            className={`border-2 border-dashed rounded-3xl p-8 text-center cursor-pointer transition-all duration-300 shrink-0 ${dragActive ? 'border-emerald-500 bg-emerald-500/10' : 'border-white/10 bg-slate-900 hover:border-emerald-500/30'}`}
                         >
                             <input
                                 type="file"
+                                accept="image/*,.pdf"
                                 ref={fileInputRef}
-                                onChange={(e) => {
-                                    if (e.target.files) handleUploadFiles(Array.from(e.target.files));
-                                }}
-                                className="hidden"
                                 multiple
-                                accept=".pdf,image/*"
+                                onChange={(e) => {
+                                    if (e.target.files?.length > 0) handleUploadFiles(Array.from(e.target.files));
+                                }}
+                                disabled={uploadingBank}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                             />
-                            <div className="w-14 h-14 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <CloudUpload size={28} />
-                            </div>
-                            <h3 className="text-xl font-bold text-white mb-2">Drop Statements Here</h3>
-                            <p className="text-slate-500 text-xs">Supports PDF, PNG, JPG (Multi-page allowed)</p>
-                        </div>
 
-                        {/* Table Preview */}
-                        <div className="flex-1 bg-slate-900 border border-white/5 rounded-3xl flex flex-col overflow-hidden relative shadow-lg">
-                            <div className="p-6 shrink-0 border-b border-white/5 flex justify-between items-center bg-slate-950/50">
-                                <h3 className="text-white font-bold">Extracted Transactions</h3>
-                                <span className="text-xs text-slate-500 font-medium bg-white/5 px-2 py-1 rounded">
-                                    {currentFile ? (currentFile.transactions?.length || 0) + ' items' : 'No file selected'}
-                                </span>
-                            </div>
+                            {uploadingBank && (
+                                <div className="absolute inset-0 bg-white/95 z-20 flex flex-col items-center justify-center backdrop-blur-md rounded-2xl">
+                                    <Loader2 className="animate-spin h-8 w-8 text-blue-600 mb-2" />
+                                    <p className="text-xs font-bold text-gray-700 animate-pulse">Ai is Analyzing...</p>
+                                </div>
+                            )}
 
-                            <div className="flex-1 overflow-auto custom-scrollbar">
-                                <table className="w-full text-left border-collapse">
-                                    <thead className="bg-slate-900 border-b border-white/5 sticky top-0 z-10">
-                                        <tr>
-                                            <th className="px-6 py-4 text-[10px] uppercase font-black tracking-widest text-slate-400">Date</th>
-                                            <th className="px-6 py-4 text-[10px] uppercase font-black tracking-widest text-slate-400">Description</th>
-                                            <th className="px-6 py-4 text-[10px] uppercase font-black tracking-widest text-emerald-500 text-right">In (+)</th>
-                                            <th className="px-6 py-4 text-[10px] uppercase font-black tracking-widest text-rose-500 text-right">Out (-)</th>
-                                            <th className="px-6 py-4 text-[10px] uppercase font-black tracking-widest text-slate-400 text-right">Balance</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-white/5 relative bg-slate-950/30 text-xs font-mono">
-                                        {currentFile?.transactions?.length > 0 ? (
-                                            currentFile.transactions.map((tx, idx) => (
-                                                <tr key={idx} className="hover:bg-slate-900/50 transition duration-150">
-                                                    <td className="px-6 py-4 text-emerald-400 font-medium whitespace-nowrap">{tx.date}</td>
-                                                    <td className="px-6 py-4 text-slate-300 leading-relaxed max-w-sm" style={{ fontFamily: 'inherit' }}>{tx.description}</td>
-                                                    <td className="px-6 py-4 text-right text-emerald-400 font-bold tabular-nums">{tx.moneyIn && parseFloat(tx.moneyIn) > 0 ? tx.moneyIn : ''}</td>
-                                                    <td className="px-6 py-4 text-right text-rose-400 font-bold tabular-nums">{tx.moneyOut && parseFloat(tx.moneyOut) > 0 ? tx.moneyOut : ''}</td>
-                                                    <td className="px-6 py-4 text-right text-slate-300 font-bold tabular-nums whitespace-nowrap">{tx.balance}</td>
-                                                </tr>
-                                            ))
-                                        ) : (
-                                            <tr>
-                                                <td colSpan="5" className="text-center py-20 text-slate-500 text-sm italic border-none bg-slate-900/10">Basket empty or no transactions parsed</td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
+                            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-700 mb-4">
+                                <CloudUpload size={24} />
                             </div>
+                            <h3 className="font-bold text-gray-800 text-sm mb-2 leading-tight">
+                                Submit your bank statement
+                            </h3>
+                            <p className="text-xs text-gray-400">
+                                Drag & drop or Click to Upload
+                            </p>
                         </div>
                     </div>
 
-                    {/* Right: File List Sidebar */}
-                    <div className="w-full lg:w-96 shrink-0 flex flex-col gap-6 h-full overflow-hidden">
-                        <div className="bg-slate-900 border border-white/5 p-6 rounded-3xl flex flex-col shadow-lg shrink-0">
-                            <h3 className="text-white font-bold mb-2">Basket Overview</h3>
-                            <div className="flex items-center gap-2 mb-6">
-                                <span className={`w-2 h-2 rounded-full ${activeBasket.files.length > 0 ? 'bg-amber-500 animate-pulse' : 'bg-slate-500'}`}></span>
-                                <span className="text-xs text-slate-400 font-medium uppercase tracking-widest">
-                                    {activeBasket.files.length > 0 ? 'Draft Pending Save' : 'Empty'}
-                                </span>
+                    {/* COLUMN 2: FILE LIST */}
+                    <div className="w-80 shrink-0 flex flex-col space-y-4">
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col h-full overflow-hidden">
+                            <div className="p-4 bg-gray-50 border-b border-gray-100 font-bold text-gray-700 flex flex-col gap-3 shrink-0">
+                                <div className="flex justify-between items-center">
+                                    <span>Uploaded Files ({activeBasket.files.length})</span>
+                                    {activeBasket.files.length > 0 && activeBasket.files.every(f => f.status === 'Saved') ? (
+                                        <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded flex items-center gap-1">
+                                            <CheckCircle size={10} /> All Saved
+                                        </span>
+                                    ) : activeBasket.files.length > 0 ? (
+                                        <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded flex items-center gap-1">
+                                            <CheckCircle size={10} /> All Saved
+                                        </span>
+                                    ) : null}
+                                </div>
+                                {activeBasket.files.length > 0 && (
+                                    <button
+                                        onClick={handleSaveBasket}
+                                        disabled={savingBank}
+                                        className="w-full bg-black text-white px-3 py-2 rounded-lg font-bold hover:bg-gray-800 transition disabled:bg-gray-400 flex items-center justify-center gap-2 shadow-sm text-xs"
+                                    >
+                                        {savingBank ? <Loader2 className="animate-spin h-3 w-3" /> : <Save size={14} />}
+                                        {savingBank ? 'SAVING...' : 'SAVE ALL'}
+                                    </button>
+                                )}
                             </div>
-                            <button
-                                onClick={handleSaveBasket}
-                                disabled={activeBasket.files.length === 0 || savingBank}
-                                className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-500 disabled:border-slate-700 disabled:shadow-none text-white font-black uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(16,185,129,0.2)] border border-emerald-500/50 active:scale-95 duration-200"
-                            >
-                                {savingBank ? <Loader2 className="animate-spin" /> : <Save size={18} />}
-                                SAVE BASEKT & SYNC
-                            </button>
-                        </div>
-
-                        <div className="flex-1 bg-slate-900 border border-white/5 p-4 rounded-3xl flex flex-col overflow-hidden shadow-lg">
-                            <h4 className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-4 px-2 tracking-[0.2em]">Live Documents ({activeBasket.files.length})</h4>
-                            <div className="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+                            <div className="divide-y divide-gray-100 overflow-y-auto flex-1 p-2 custom-scrollbar">
                                 {activeBasket.files.map((file, idx) => (
                                     <div
                                         key={idx}
+                                        className={`p-3 mb-2 rounded-lg flex items-center justify-between transition cursor-pointer group ${activeFileIndex === idx ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50 border border-transparent'}`}
                                         onClick={() => setActiveFileIndex(idx)}
-                                        className={`p-4 rounded-2xl cursor-pointer transition-all duration-200 flex items-center group relative border ${activeFileIndex === idx ? 'bg-emerald-500/10 border-emerald-500/30 shadow-inner' : 'bg-slate-950/50 border-white/5 hover:border-emerald-500/20'}`}
                                     >
-                                        <div className="flex-1 min-w-0 pr-8">
-                                            <p className="text-xs font-bold text-white truncate mb-1">
-                                                {file.dateRange && file.dateRange !== "Unknown Date Range" ? file.dateRange : (file.originalName || 'Bank Statement')}
+                                        <div className="flex-1 min-w-0 mr-2">
+                                            {/* Primary Title: Date Range */}
+                                            <p className="font-bold text-gray-800 text-xs truncate mb-1">
+                                                {(() => {
+                                                    const rangeStr = file.dateRange || "";
+                                                    if (rangeStr.includes(" - ") && !rangeStr.includes("FATAL_ERR")) {
+                                                        const parts = rangeStr.split(' - ');
+                                                        const s = formatDateSafe(parts[0].trim());
+                                                        const e = formatDateSafe(parts[1].trim());
+                                                        if (s !== '-' && e !== '-') return `${s} - ${e}`;
+                                                    }
+                                                    if (file.transactions?.length > 0) {
+                                                        const dates = file.transactions.map(t => parseDate(t.date)?.getTime()).filter(Boolean);
+                                                        if (dates.length > 0) {
+                                                            const s = new Date(Math.min(...dates)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                                                            const e = new Date(Math.max(...dates)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                                                            return `${s} - ${e}`;
+                                                        }
+                                                    }
+                                                    if (file.originalName && !file.originalName.includes('-')) return file.originalName;
+                                                    return 'Bank Statement';
+                                                })()}
                                             </p>
-                                            <p className="text-[10px] text-slate-500 font-mono tracking-tight">{file.transactions?.length || 0} extracted txs</p>
+
+                                            {/* Metadata */}
+                                            <div className="flex flex-col text-[10px] text-gray-400 mt-1 space-y-0.5">
+                                                <div className="flex items-center">
+                                                    <FileText size={10} className="mr-1 opacity-50" />
+                                                    <span className="truncate max-w-[120px] mr-2" title={file.originalName}>{file.originalName}</span>
+                                                    <span className="text-gray-300">|</span>
+                                                    <span className="ml-2 font-mono">{(file.transactions || []).length} txs</span>
+
+                                                    <div className="ml-auto flex items-center gap-1.5">
+                                                        <span className="text-[8px] text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 font-black flex items-center gap-1">
+                                                            <CheckCircle size={8} /> SAVED
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                {(file.bankName || file.accountNumber) && (
+                                                    <div className="flex items-center text-blue-500/60 font-medium">
+                                                        <Tag size={10} className="mr-1" />
+                                                        <span className="truncate">{file.bankName || 'Unknown Bank'} {file.accountNumber ? `(${file.accountNumber})` : ''}</span>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); handleDeleteFile(idx); }}
-                                            className="absolute right-4 text-slate-600 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100 p-2 hover:bg-rose-500/10 rounded-lg"
-                                            title="Remove File from Draft"
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
+
+                                        <div className="flex gap-1">
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); handleDeleteFile(idx); }}
+                                                className="p-1.5 rounded-full hover:bg-red-100 text-gray-300 hover:text-red-500 transition"
+                                            >
+                                                <X size={14} />
+                                            </button>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); setActiveFileIndex(idx); }}
+                                                className={`p-1.5 rounded-full transition ${activeFileIndex === idx ? 'text-blue-600 bg-blue-100' : 'text-gray-300 hover:text-blue-500'}`}
+                                            >
+                                                <Eye size={14} />
+                                            </button>
+                                        </div>
                                     </div>
                                 ))}
                                 {activeBasket.files.length === 0 && (
-                                    <div className="h-full flex flex-col items-center justify-center opacity-30 text-center px-4">
-                                        <FileText size={48} className="mb-4 text-slate-400" />
-                                        <p className="text-slate-500 text-xs font-medium">Your parsed files will queue up here.</p>
+                                    <div className="text-center py-10 text-gray-300 text-xs italic">
+                                        No files yet.
                                     </div>
                                 )}
                             </div>
                         </div>
                     </div>
+
+                    {/* COLUMN 3: DETAILS TABLE */}
+                    <div className="flex-1 min-w-0 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col overflow-hidden h-full">
+                        <div className="p-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between shrink-0">
+                            <div className="flex items-center">
+                                <div className="p-2 bg-blue-50 rounded-lg mr-3">
+                                    <Table className="text-blue-500" size={20} />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-gray-800">Page Details</h3>
+                                    <p className="text-xs text-gray-500">
+                                        {currentFile?.transactions?.length > 0
+                                            ? (() => {
+                                                const dates = currentFile.transactions.map(t => parseDate(t.date)?.getTime()).filter(Boolean);
+                                                const s = new Date(Math.min(...dates)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                                                const e = new Date(Math.max(...dates)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                                                return `${s} - ${e}`;
+                                            })()
+                                            : (currentFile?.dateRange || 'Select a file')}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <a
+                                    href="#"
+                                    onClick={(e) => e.preventDefault()}
+                                    className="text-xs bg-white border border-gray-200 text-gray-600 px-3 py-1 rounded-full hover:text-blue-600 hover:border-blue-300 transition flex items-center gap-2 mr-2"
+                                >
+                                    <FileText size={12} />
+                                    <span>View Original</span>
+                                </a>
+                                <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium flex items-center">
+                                    <CheckCircle size={12} className="mr-1" /> Verified
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="flex-1 overflow-auto bg-white custom-scrollbar">
+                            <table className="w-full text-left">
+                                <thead className="bg-white text-gray-800 text-[10px] font-bold uppercase sticky top-0 z-10 border-b border-gray-200 shadow-sm">
+                                    <tr>
+                                        <th className="px-4 py-3 whitespace-nowrap w-[80px]">Date</th>
+                                        <th className="px-4 py-3 w-full">Transaction Details</th>
+                                        <th className="px-4 py-3 text-right w-[110px]">Money In</th>
+                                        <th className="px-4 py-3 text-right w-[110px]">Money Out</th>
+                                        <th className="px-4 py-3 text-right w-[110px]">Balance</th>
+                                        <th className="px-4 py-3 w-[100px]">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                    {(currentFile?.transactions || []).length === 0 ? (
+                                        <tr>
+                                            <td colSpan="6" className="text-center py-10 text-gray-400 text-sm">No transactions to display</td>
+                                        </tr>
+                                    ) : (
+                                        (currentFile?.transactions || []).map((tx, idx) => (
+                                            <tr key={idx} className="hover:bg-gray-50 transition group">
+                                                <td className="px-4 py-3 text-xs text-gray-600 font-bold whitespace-nowrap align-top">
+                                                    {formatDateSafe(tx?.date)}
+                                                </td>
+                                                <td className="px-4 py-3 text-[11px] text-gray-700 font-medium align-top">
+                                                    <div className="whitespace-pre-wrap leading-relaxed max-w-lg">
+                                                        {tx?.description || ''}
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-3 text-[11px] text-right font-medium text-green-600 align-top whitespace-nowrap">
+                                                    {tx?.moneyIn && parseFloat(tx.moneyIn) > 0 ? parseFloat(tx.moneyIn).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''}
+                                                </td>
+                                                <td className="px-4 py-3 text-[11px] text-right font-medium text-red-600 align-top whitespace-nowrap">
+                                                    {tx?.moneyOut && parseFloat(tx.moneyOut) > 0 ? parseFloat(tx.moneyOut).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''}
+                                                </td>
+                                                <td className="px-4 py-3 text-[11px] text-right text-gray-800 font-bold align-top whitespace-nowrap">
+                                                    {tx?.balance ? parseFloat(String(tx.balance).replace(/[^0-9.-]+/g, "")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}
+                                                </td>
+                                                <td className="px-4 py-3 text-xs align-top">
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
 
-                {uploadingBank && (
-                    <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex flex-col items-center justify-center rounded-[40px] m-4 border border-white/10 shadow-2xl animate-in fade-in zoom-in-95 duration-300">
-                        <div className="relative">
-                            <div className="absolute inset-0 bg-emerald-500 blur-[50px] opacity-20 rounded-full animate-pulse"></div>
-                            <Loader2 size={64} className="text-emerald-500 animate-spin mb-8 relative z-10" />
-                        </div>
-                        <h2 className="text-3xl font-black text-white uppercase tracking-[0.2em] mb-3">Scanning Database</h2>
-                        <p className="text-emerald-400 font-mono text-sm tracking-tight">{message}</p>
+                {message && (
+                    <div className="fixed top-24 left-1/2 -translate-x-1/2 bg-black text-white px-6 py-3 rounded-full shadow-lg font-bold text-sm z-[9999]">
+                        {message}
                     </div>
                 )}
             </div>

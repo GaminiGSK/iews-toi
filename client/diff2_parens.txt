@@ -1,0 +1,50 @@
+map: +                                        {Array.from({ length: 4 }).map((_, i) => (
+close: +                                        ))}
+map: +                                        {Array.from({ length: 9 }).map((_, i) => (
+close: +                                        ))}
+map: +                                        {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
+close: +                                        ))}
+map: +                                        {Array.from({ length: 4 }).map((_, i) => (
+close: +                                        ))}
+map: +                                        {Array.from({ length: 9 }).map((_, i) => (
+close: +                                        ))}
+map: +                                        {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
+close: +                                        ))}
+map: +                                        {Array.from({ length: 4 }).map((_, i) => (
+close: +                                        ))}
+map: +                                        {Array.from({ length: 9 }).map((_, i) => (
+close: +                                        ))}
+map: +                                        {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
+close: +                                        ))}
+map: +                                        {Array.from({ length: 4 }).map((_, i) => (
+close: +                                        ))}
+map: +                                        {Array.from({ length: 9 }).map((_, i) => (
+close: +                                        ))}
+map: +                                        {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
+close: +                                        ))}
+map: +                                            {Array.from({ length: 4 }).map((_, i) => (
+close: +                                            ))}
+map: +                                            {Array.from({ length: 9 }).map((_, i) => (
+close: +                                            ))}
+map: +                                            {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
+close: +                                            ))}
+map: +                                        {Array.from({ length: 4 }).map((_, i) => (
+close: +                                        ))}
+map: +                                        {Array.from({ length: 9 }).map((_, i) => (
+close: +                                        ))}
+map: +                                        {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
+close: +                                        ))}
+map: +                                        {[1, 2, 3].map(i => (
+map: +                                                {Array(10).fill(0).map((_, j) => (
+close: +                                                ))}
+close: +                                        ))}
+map: +                                            {Array(10).fill(0).map((_, j) => (
+close: +                                            ))}
+map: +                                            {Array(10).fill(0).map((_, j) => (
+close: +                                            ))}
+map: +                                            {Array(10).fill(0).map((_, j) => (
+close: +                                            ))}
+map: +                                            {Array(10).fill(0).map((_, j) => (
+close: +                                            ))}
+map: +                                            ].map((row, i) => (
+map: +                                                    {Array(5).fill(0).map((_, j) => (

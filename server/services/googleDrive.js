@@ -211,11 +211,40 @@ async function deleteFile(fileId) {
     }
 }
 
+/**
+ * Move a file to a new folder
+ * @param {string} fileId
+ * @param {string} newFolderId
+ */
+async function moveFile(fileId, newFolderId) {
+    try {
+        const file = await getDrive().files.get({
+            fileId: fileId,
+            fields: 'parents'
+        });
+
+        const previousParents = file.data.parents ? file.data.parents.join(',') : '';
+
+        await getDrive().files.update({
+            fileId: fileId,
+            addParents: newFolderId,
+            removeParents: previousParents,
+            fields: 'id, parents'
+        });
+
+        console.log(`📁 Moved file ${fileId} to folder ${newFolderId}`);
+    } catch (error) {
+        console.error('❌ Google Drive Move Error:', error.message);
+        throw error;
+    }
+}
+
 module.exports = {
     uploadFile,
     getFileStream,
     deleteFile,
     createFolder,
     findFolder,
-    uploadFileMetadataOnly
+    uploadFileMetadataOnly,
+    moveFile
 };

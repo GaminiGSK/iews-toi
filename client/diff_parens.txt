@@ -1,0 +1,65 @@
+Line 53: 2 | +                                        {Array.from({ length: 4 }).map((_, i) => (
+Line 67: -2 | +                                        ))}
+Line 69: 2 | +                                        {Array.from({ length: 9 }).map((_, i) => (
+Line 83: -2 | +                                        ))}
+Line 118: 2 | +                                        {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
+Line 132: -2 | +                                        ))}
+Line 260: 2 | +                                        {Array.from({ length: 4 }).map((_, i) => (
+Line 274: -2 | +                                        ))}
+Line 276: 2 | +                                        {Array.from({ length: 9 }).map((_, i) => (
+Line 290: -2 | +                                        ))}
+Line 325: 2 | +                                        {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
+Line 339: -2 | +                                        ))}
+Line 355: 1 | +                                            <span className="text-base font-bold block leading-tight text-white mb-1" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>釣斸煉釣氠灦釣€釤嬦瀰釤嗎瀻釤佱瀴/(釣佱灦釣? 釣樶灮釣撫灁釣勧煁釣栣灀釤掅瀿 (E1 = B46)</span>
+Line 516: 2 | +                                        {Array.from({ length: 4 }).map((_, i) => (
+Line 520: -2 | +                                        ))}
+Line 522: 2 | +                                        {Array.from({ length: 9 }).map((_, i) => (
+Line 526: -2 | +                                        ))}
+Line 551: 2 | +                                        {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
+Line 555: -2 | +                                        ))}
+Line 649: 1 | +                                                <span className="text-sm font-bold block leading-tight text-white mb-1" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>釣斸煉釣氠灦釣€釤嬦瀰釤嗎瀻釤佱瀴/(釣佱灦釣? 釣€釤掅灇釤勧灆釣€釣夺灇釣斸灀釤掅灍釤娽灦釤?(E36 = E1 + E18 + E25 - E31 - E35)</span>
+Line 681: 1 | +                                                <span className="text-xs font-bold leading-tight mb-1" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>釣斸煉釣氠灦釣€釤嬦瀰釤嗎瀻釤佱瀴/(釣佱灦釣? 釣樶灮釣撫瀫釣夺灇釣斸灀釤掅灍釤娽灦釤嗎瀫釣夺灇釣斸煉釣氠灦釣€釤?(E38 = E36 + E37)</span>
+Line 709: 1 | +                                                <span className="text-base font-bold leading-tight block mb-1" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>釣斸煉釣氠灦釣€釤嬦瀰釤嗎瀻釤佱瀴/(釣佱灦釣? 釣€釤掅灀釣会瀯釣傖煉釣氠灦 (E40 = E38 +/- E39)</span>
+Line 752: 1 | +                                                <span className="text-base font-bold leading-tight block mb-1 text-white" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>釣斸煉釣氠灦釣€釤嬦瀰釤嗎瀻釣坚灈釣囜灦釣斸煁釣栣灀釤掅瀿 / (釣佱灦釣? 釣呩灇釣撫煉釣?(E42 = E40 - E41)</span>
+Line 872: 2 | +                                        {Array.from({ length: 4 }).map((_, i) => (
+Line 876: -2 | +                                        ))}
+Line 878: 2 | +                                        {Array.from({ length: 9 }).map((_, i) => (
+Line 882: -2 | +                                        ))}
+Line 961: 2 | +                                        {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
+Line 966: -2 | +                                        ))}
+Line 1174: 2 | +                                            {Array.from({ length: 4 }).map((_, i) => (
+Line 1178: -2 | +                                            ))}
+Line 1180: 2 | +                                            {Array.from({ length: 9 }).map((_, i) => (
+Line 1184: -2 | +                                            ))}
+Line 1227: 2 | +                                            {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
+Line 1231: -2 | +                                            ))}
+Line 1292: 1 | +                                                                {i === 5 ? (
+Line 1297: -1 | +                                                                ) : <input type="text" className="w-full bg-transparent text-right outline-none text-white px-4" value={formData[`g8_${i}`] || ""} onChange={(e) => handleFormChange(`g8_${i}`, e.target.value)} placeholder="0.00" />}
+Line 1304: 1 | +                                                                {i !== 5 ? (
+Line 1308: -1 | +                                                                ) : <input type="text" className="w-full bg-transparent text-right outline-none text-white px-4" value={formData[`g9_${i}`] || ""} onChange={(e) => handleFormChange(`g9_${i}`, e.target.value)} placeholder="0.00" />}
+Line 1425: 2 | +                                        {Array.from({ length: 4 }).map((_, i) => (
+Line 1441: -2 | +                                        ))}
+Line 1443: 2 | +                                        {Array.from({ length: 9 }).map((_, i) => (
+Line 1448: -2 | +                                        ))}
+Line 1465: 2 | +                                        {(formData.untilDate?.slice(-4) || "2026").split('').map((char, i) => (
+Line 1469: -2 | +                                        ))}
+Line 1500: 2 | +                                        {[1, 2, 3].map(i => (
+Line 1504: 2 | +                                                {Array(10).fill(0).map((_, j) => (
+Line 1506: -2 | +                                                ))}
+Line 1508: -2 | +                                        ))}
+Line 1517: 2 | +                                            {Array(10).fill(0).map((_, j) => (
+Line 1519: -2 | +                                            ))}
+Line 1524: 2 | +                                            {Array(10).fill(0).map((_, j) => (
+Line 1526: -2 | +                                            ))}
+Line 1536: 2 | +                                            {Array(10).fill(0).map((_, j) => (
+Line 1540: -2 | +                                            ))}
+Line 1545: 2 | +                                            {Array(10).fill(0).map((_, j) => (
+Line 1549: -2 | +                                            ))}
+Line 1558: 1 | +                                    <h3 className="text-white font-bold text-sm" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>IV-釣氠焼釣涐灍釤嬦瀾釤掅灇釣栣煉釣欋灇釣坚灁釣羔瀽釤掅灀釣夺瀫釤?釤?釣娽灈釤?釣愥煉釣撫灦釣€釤?釤?(釣氠焼釣涐灍釤嬦瀼釣夺灅釣溼灧釣掅灨釣熱灦釣欋灍釤掅灇釣会瀼釣愥灆釣呩灮釤囜瀼釣夺灅釣熱灅釣忈灮釣涐煉釣?</h3>
+Line 1607: 2 | +                                            ].map((row, i) => (
+Line 1611: 2 | +                                                    {Array(5).fill(0).map((_, j) => (
+Line 2144: 1 | +                                                    <span className="block font-bold mb-1">釣斸煉釣氠灄釤佱瀾釣斸灅釤掅灇釣会瀯 (釣斸瀴釤掅瀲釣夺瀫釤嬦灁釤掅灇釣椺焷釣戓灁釣樶煉釣氠灮釣勧灀釣羔灅釣结灆釤?</span>
+Line 2331: 1 | +                                                                <span className="block mb-1 font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>釣呩焼釣撫灲釣撫瀾釣贯瀫釣斸煉釣氠灦釣€釤?(釣氠焵釣?</span>
+Line 2733: 1 | +                                            <span className="text-white font-bold text-base" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>釤? 釣堘煉釣樶焺釤囜灍釣犪瀭釤掅灇釣夺灍 (釣€釣夺灇釣丰灆釣夺灈釤愥灆釣€釣庒煉釣忈灦釣? :</span>
+Line 2836: 1 | +                                                    <span className="text-white font-bold text-sm" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>釣斸煉釣氠灳釣斸煉釣氠灦釣熱煁釣€釣樶煉釣樶灉釣丰瀿釣羔瀭釣庒灀釤佱灆釤掅灆釣€釣会焼釣栣煉釣欋灱釣戓煇釣?(釣堘煉釣樶焺釤囜瀫釣樶煉釣樶灉釣丰瀿釣? 釤?/span>
+Line 3001: 1 | +                                            <span className="text-white font-bold text-xl" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>釣п灁釣熱灅釤掅灃釤愥灀釤掅瀿 釤?(釣?</span>
