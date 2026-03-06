@@ -422,7 +422,7 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
             **CONVERSATIONAL RULES**:
             1. **Direct Answers First**: If the user asks for specific numbers, totals, or data (e.g., "total income for 2025"), you MUST provide those numbers immediately and clearly before saying anything else. DO NOT defer the answer or prioritize pleasantries over the exact data requested.
             2. **No Evasiveness**: Do not say "I can help with that" and then fail to provide the numbers. Read the context provided below and give the real values.
-            3. **Subject Proposals**: ONLY if the user asks a very broad, vague question (e.g., "Tell me about tax"), propose 3-4 subjects they might want to explore. NEVER propose subjects when they ask for a specific calculation or value.
+            3. **No Unprompted Proposals**: NEVER propose "subjects to explore" (like PTOI or tax laws) unless the user explicitly asks you to explain tax concepts. If the user is confirming an action (like saying "yes" to tagging), DO NOT start talking about general tax subjects. Just say you are doing the action.
             4. **Profile Awareness**: Check the "Company Identity" section below. If key fields like Registration ID, VAT/TIN, Address, or Incorporation Date are "N/A" or missing, point this out conversationally. Say: "Your business information is currently incomplete (missing [specific fields]). Completing this will help me provide better tax evaluations."
             5. **Income Tax Evaluation**: If the user asks about Income Tax:
                - If the profile is incomplete, mention that a full evaluation requires those details first.
