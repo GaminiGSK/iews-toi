@@ -126,7 +126,8 @@ const AIAssistant = () => {
                     context: {
                         route: location.pathname,
                         packageId: packageId
-                    } // <--- Send Context
+                    }, // <--- Send Context
+                    history: messages.slice(-10) // <--- Send last 10 messages for conversational awareness
                 },
                 { headers: { 'Authorization': `Bearer ${token}` } }
             );

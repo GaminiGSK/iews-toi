@@ -408,7 +408,13 @@ const TOI_KNOWLEDGE = require('../data/toi_knowledge'); // Import Knowledge Base
 
 exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
     try {
-        const { companyName, profile, codes, recentTransactions, summary, monthlyStats, yearlyStats, ui, brData } = context;
+        const { companyName, profile, codes, recentTransactions, summary, monthlyStats, yearlyStats, ui, brData, history } = context;
+
+        let historyStr = "No previous conversation.";
+        if (history && history.length > 0) {
+            historyStr = history.map(msg => `${msg.role.toUpperCase()}: ${msg.text}`).join('\n');
+        }
+
         const prompt = `
             You are an expert, conversational Financial Assistant (BA) for the company "${companyName}".
             Your goal is to be helpful, professional, and engaging. Don't just execute tasks; talk to the user like a human partner.
@@ -459,7 +465,10 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
             **App Context (User UI):**
             - **Current Page**: ${ui?.route || "Dashboard"}
 
-            **User Query**: "${message}"
+            **Conversation History**:
+            ${historyStr}
+
+            **Latest Follow-up User Query**: "${message}"
 
             **Instructions for Specialized Actions (JSON Output Required ONLY for Transactions/Journals/Ledger Actions):**
             1. **Executing Tax Workspace Actions**: If user says "Yes/Go/Process" to a tax proposal:
