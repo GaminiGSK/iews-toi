@@ -7,6 +7,7 @@ const Transaction = require('../models/Transaction');
 const AccountCode = require('../models/AccountCode');
 const User = require('../models/User');
 const CompanyProfile = require('../models/CompanyProfile');
+const BankStatement = require('../models/BankStatement');
 
 // POST /api/chat/message
 router.post('/message', auth, async (req, res) => {
@@ -98,6 +99,24 @@ router.post('/message', auth, async (req, res) => {
             code: t.accountCode ? t.accountCode.code : 'Uncategorized'
         }));
 
+        // Fetch recent harvested Bank Statements
+        const bankStatements = await BankStatement.find({ companyCode })
+            .sort({ createdAt: -1 })
+            .limit(2)
+            .lean();
+
+        const harvestedBankContext = bankStatements.map(bs => ({
+            bankName: bs.bankName || 'Unknown Bank',
+            accountNumber: bs.accountNumber || '',
+            dateRange: `${bs.dateRangeStart || 'Unknown'} to ${bs.dateRangeEnd || 'Unknown'}`,
+            transactions: (bs.transactions || []).slice(0, 50).map(tx => ({
+                date: tx.date ? new Date(tx.date).toISOString().split('T')[0] : 'N/A',
+                desc: tx.description || '',
+                in: tx.moneyIn || 0,
+                out: tx.moneyOut || 0
+            }))
+        }));
+
         // 2. Call AI Service (Route based on model selection)
         const context = {
             companyName,
@@ -112,6 +131,7 @@ router.post('/message', auth, async (req, res) => {
             },
             codes,
             recentTransactions: recentTxContext,
+            harvestedBankStatements: harvestedBankContext,
             summary,
             monthlyStats,
             ui: req.body.context || {}, // Pass UI Context (Route, etc.)

@@ -446,6 +446,9 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
             - **Total Income**: ${summary.income}
             - **Total Expenses**: ${summary.expense}
             - **Recent Monthly Net**: ${monthlyStats.length > 0 ? monthlyStats[monthlyStats.length - 1].net : "N/A"}
+            
+            **Harvested Bank Statements Context:**
+            ${context.harvestedBankStatements && context.harvestedBankStatements.length > 0 ? context.harvestedBankStatements.map(bs => `Bank: ${bs.bankName} | Account: ${bs.accountNumber} | Date Range: ${bs.dateRange}\nTransactions (Preview):\n${bs.transactions.map(tx => `  - Date: ${tx.date}, Desc: ${tx.desc}, IN: ${tx.in}, OUT: ${tx.out}`).join('\n')}`).join('\n\n') : "No harvested bank statements available."}
 
             **KNOWLEDGE BASE (Cambodian Tax Law - TOI):**
             ${TOI_KNOWLEDGE}
