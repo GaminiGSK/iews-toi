@@ -489,6 +489,12 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
                Schema: { "tool_use": "workspace_action", "action": "bulk_tag_ledger", "params": { "condition": "money_in", "targetCode": "10110" }, "reply_text": "Processing the bulk tag update for your ledger." }
                *Valid constraints for params.condition*: "money_in" (amount > 0), "money_out" (amount < 0), "all" (any amount).
 
+            4. **auto_match_codes**: Uses AI directly on the server to auto-match all currently empty/untagged transactions to their most likely Account Code based on description and past behavior.
+               Schema: { "tool_use": "workspace_action", "action": "auto_match_codes", "params": {}, "reply_text": "I'll start automatically matching all empty ledger assignments based on your existing rules and my trained AI logic." }
+
+            5. **delete_untagged_transactions**: PERMANENTLY deletes all bank transactions from the ledger that are currently sitting without an Account Code tag. Do not run this unless explicitly requested.
+               Schema: { "tool_use": "workspace_action", "action": "delete_untagged_transactions", "params": {}, "reply_text": "I am initiating the mass deletion of all untagged ledger entries as you requested." }
+
             **CRITICAL EXECUTOR LOOP**: 
             1. Did the user ask for an action, OR say "yes/do it" to a proposal in the history?
             2. If YES: Find the matching tool in the Registry above. Output ONLY the JSON Schema for that tool.
