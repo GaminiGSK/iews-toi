@@ -36,6 +36,10 @@ class AgentExecutor {
                     await this.deleteUntaggedTransactions(socket, params);
                     break;
 
+                case 'escalate_to_antigravity':
+                    await this.escalateToAntigravity(socket, params);
+                    break;
+
                 default:
                     console.log(`[AgentExecutor] Unknown action: ${action}`);
                     socket.emit('agent:message', { text: `Sorry, I don't know how to perform the action: ${action}` });
@@ -119,6 +123,33 @@ class AgentExecutor {
 
         socket.emit('agent:message', { text: `Successfully deleted ${result.deletedCount} untagged transactions from your ledger.` });
         socket.emit('ledger:updated');
+    }
+    async escalateToAntigravity(socket, params) {
+        const { companyCode, reason, history } = params;
+
+        console.log(`[AgentExecutor] Escalating to Antigravity. Reason: ${reason}`);
+
+        try {
+            const Bridge = require('../models/Bridge');
+            const newEscalation = new Bridge({
+                type: 'escalation',
+                source: 'Blue Agent (' + (companyCode || 'Unknown') + ')',
+                content: {
+                    reason: reason || 'AI encountered an execution error or user request for engineering assistance.',
+                    companyCode: companyCode,
+                    historyCapture: history || 'History not provided by client.',
+                    timestamp: new Date().toISOString()
+                }
+            });
+            await newEscalation.save();
+
+            socket.emit('agent:message', {
+                text: "Priority transmission sent. The Antigravity Engineer has received my memory logs and is reviewing the situation. The administrator can check the terminal."
+            });
+        } catch (e) {
+            console.error("Failed to commit escalation to Bridge:", e);
+            socket.emit('agent:message', { text: "Failed to connect to the Antigravity secure line. I'm on my own for now." });
+        }
     }
 }
 

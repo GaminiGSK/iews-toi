@@ -495,6 +495,9 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
             5. **delete_untagged_transactions**: PERMANENTLY deletes all bank transactions from the ledger that are currently sitting without an Account Code tag. Do not run this unless explicitly requested.
                Schema: { "tool_use": "workspace_action", "action": "delete_untagged_transactions", "params": {}, "reply_text": "I am initiating the mass deletion of all untagged ledger entries as you requested." }
 
+            6. **escalate_to_antigravity**: Sends your entire memory buffer and the current conversation context directly to the Senior Engineering terminal. Use this ONLY if you are failing to complete a task, you are confused, or the user explicitly asks you to "contact engineering" or "ask the bridge".
+               Schema: { "tool_use": "workspace_action", "action": "escalate_to_antigravity", "params": { "reason": "Explain briefly why you are escalating this." }, "reply_text": "I seem to be struggling with this request. I have packaged my memory and sent it directly via the Bridge to the Antigravity Terminal. The engineers will review this immediately." }
+
             **CRITICAL EXECUTOR LOOP**: 
             1. Did the user ask for an action, OR say "yes/do it" to a proposal in the history?
             2. If YES: Find the matching tool in the Registry above. Output ONLY the JSON Schema for that tool.

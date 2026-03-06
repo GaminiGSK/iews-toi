@@ -148,13 +148,19 @@ const AIAssistant = () => {
                 const packageId = searchParams.get('packageId') || searchParams.get('year');
 
                 console.log("[AI Assistant] Autonomous Execution: Triggering Workspace Action:", toolAction.action);
+
+                // Merge default context with AI-generated params
+                const actionParams = {
+                    year: packageId,
+                    companyCode: localStorage.getItem('companyCode'),
+                    history: messages.slice(-10),
+                    ...toolAction.params
+                };
+
                 socket.emit('workspace:perform_action', {
                     action: toolAction.action,
                     packageId: packageId,
-                    params: {
-                        year: packageId,
-                        companyCode: localStorage.getItem('companyCode')
-                    }
+                    params: actionParams
                 });
             }
 
