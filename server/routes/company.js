@@ -1015,6 +1015,42 @@ router.post('/save-bank-basket', auth, async (req, res) => {
 });
 
 
+// GET Saved Bank Baskets
+router.get('/saved-bank-baskets', auth, async (req, res) => {
+    try {
+        const BankStatement = require('../models/BankStatement');
+        const stmts = await BankStatement.find({ companyCode: req.user.companyCode }).lean();
+
+        const baskets = {};
+        stmts.forEach(s => {
+            const key = s.driveFolderId || `${s.bankName}-${s.accountNumber}`;
+            if (!baskets[key]) {
+                baskets[key] = {
+                    id: key,
+                    name: `${s.bankName || 'Unknown Bank'} - ${s.accountNumber || 'Unknown Account'}`,
+                    files: [],
+                    status: 'saved'
+                };
+            }
+            baskets[key].files.push({
+                index: baskets[key].files.length,
+                originalName: s.originalName,
+                bankName: s.bankName,
+                accountNumber: s.accountNumber,
+                status: 'Saved',
+                transactions: s.transactions || [],
+                fileType: s.originalName && s.originalName.endsWith('pdf') ? 'pdf' : 'image',
+                extractedData: s.transactions && s.transactions.length > 0 ? "Data Preserved" : null
+            });
+        });
+
+        res.json({ baskets: Object.values(baskets) });
+    } catch (err) {
+        console.error('Error fetching bank baskets:', err);
+        res.status(500).json({ message: 'Error fetching saved bank baskets' });
+    }
+});
+
 // Upload Bank Statement (Multiple Images/PDFs) for OCR
 router.post('/upload-bank-statement', auth, upload.array('files'), async (req, res) => {
     try {
@@ -1810,6 +1846,13 @@ router.get('/trial-balance', auth, async (req, res) => {
             const txYear = new Date(tx.date).getFullYear();
             const rate = getRate(tx.date);
 
+            // 2. Handle Account Code Aggregation (Skip if untagged completely to maintain balance)
+            if (!tx.accountCode) return;
+            const codeId = tx.accountCode._id;
+
+            // Safety check
+            if (!reportMap[codeId]) return;
+
             // 1. Handle Bank Control (10130) Accumulation
             if (txYear === currentYear) {
                 netControlUSD += amtUSD;
@@ -1818,13 +1861,6 @@ router.get('/trial-balance', auth, async (req, res) => {
                 netControlPriorUSD += amtUSD;
                 netControlPriorKHR += (amtUSD * rate);
             }
-
-            // 2. Handle Account Code Aggregation
-            if (!tx.accountCode) return;
-            const codeId = tx.accountCode._id;
-
-            // Safety check
-            if (!reportMap[codeId]) return;
 
             const amtKHR = amtUSD * rate;
 
@@ -1985,51 +2021,79 @@ router.get('/financials-monthly', auth, async (req, res) => {
         });
 
         // 4. Process Transactions
+        let netControlBS = Array(13).fill(0); // Bank offset
+
         allTransactions.forEach(tx => {
             const date = new Date(tx.date);
             const year = date.getFullYear();
             const month = date.getMonth() + 1; // 1-12
 
-            // Resolve Account Code
             let acId = tx.accountCode;
             if (!acId) return; // Skip untagged
 
-            // We need to map _id back to Code String to find it in our Data Maps
             const acObj = codes.find(c => String(c._id) === String(acId));
             if (!acObj) return;
 
             const code = acObj.code;
             const amount = parseFloat(tx.amount || 0);
 
-            // Logic:
-            // If Year < CurrentYear => Add to Opening Balance (BS Only)
-            // If Year == CurrentYear => 
-            //    If BS => Add to Month Activity (to be summed cumulatively later)
-            //    If PL => Add to Month Activity
-
             if (year < currentYear) {
                 if (bsData[code]) {
                     openingBalances[code] += amount;
                 }
-                // P&L resets every year, so prior year P&L doesn't affect this year's specific month columns,
-                // BUT it affects Retained Earnings (Equity) in BS. 
-                // Simplified: We assume Retained Earnings is calculated as Diff.
+                netControlBS[0] += amount;
             } else if (year === currentYear) {
                 if (plData[code]) {
-                    // In P&L, Money In = Credit (+), Money Out = Debit (-) usually?
-                    // Actually, Revenue (4xxx) is Credit. Expense (6xxx) is Debit.
-                    // My Transaction amount: +ve is In, -ve is Out.
-                    // Revenue: +ve amount -> Increases Credit (Good).
-                    // Expense: -ve amount -> Increases Debit (Good).
-                    // So simply adding `amount` works for "Net Impact". 
-                    // But for display, usually Exp are positive numbers in list.
-                    // We will store raw signed amounts and format on frontend.
                     plData[code].months[month] += amount;
                     plData[code].months[0] += amount; // Total
                 } else if (bsData[code]) {
                     bsData[code].months[month] += amount;
                 }
+                netControlBS[month] += amount;
             }
+        });
+
+        // Add to Bank Account (10130)
+        if (bsData['10130']) {
+            openingBalances['10130'] += netControlBS[0];
+            for (let m = 1; m <= 12; m++) {
+                bsData['10130'].months[m] += netControlBS[m];
+            }
+        }
+
+        // 4.5 Process Journal Entries
+        allJournals.forEach(je => {
+            if (je.status !== 'Posted') return;
+            const date = new Date(je.date);
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+
+            je.lines.forEach(line => {
+                const acObj = codes.find(c => String(c._id) === String(line.accountCode));
+                if (!acObj) return;
+                const code = acObj.code;
+
+                let signedAmount = 0;
+                if (code.startsWith('1')) {
+                    // Assets increase with Debits (like Bank +amount)
+                    signedAmount = line.debit - line.credit;
+                } else {
+                    // Liab/Equity/Income increase with Credits (Positive amount)
+                    // Expenses increase with Debits (Negative amount in this system)
+                    signedAmount = line.credit - line.debit;
+                }
+
+                if (year < currentYear) {
+                    if (bsData[code]) openingBalances[code] += signedAmount;
+                } else if (year === currentYear) {
+                    if (plData[code]) {
+                        plData[code].months[month] += signedAmount;
+                        plData[code].months[0] += signedAmount;
+                    } else if (bsData[code]) {
+                        bsData[code].months[month] += signedAmount;
+                    }
+                }
+            });
         });
 
         // 5. Calculate Running Balance for BS

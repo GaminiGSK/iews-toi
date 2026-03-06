@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Layers, Plus, FolderUp, ArrowLeft, CloudUpload, Loader2, Save, Trash2, FileText, CheckCircle, AlertCircle, ShieldCheck, Eye, X, Tag, Table } from 'lucide-react';
 import axios from 'axios';
 
@@ -11,8 +11,27 @@ export default function BankStatementV2Workspace({ onBack }) {
     const [uploadingBank, setUploadingBank] = useState(false);
     const [savingBank, setSavingBank] = useState(false);
     const [activeFileIndex, setActiveFileIndex] = useState(0);
+
     const [message, setMessage] = useState('');
     const fileInputRef = useRef(null);
+
+    useEffect(() => {
+        fetchSavedBaskets();
+    }, []);
+
+    const fetchSavedBaskets = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.get('/api/company/saved-bank-baskets', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.data.baskets) {
+                setBaskets(res.data.baskets);
+            }
+        } catch (err) {
+            console.error('Failed to fetch saved baskets:', err);
+        }
+    };
 
     const handleCreateBasket = () => {
         if (baskets.length >= 10) {

@@ -26,6 +26,24 @@ const auth = async (req, res, next) => {
             brFolderId: user.brFolderId
         };
 
+        // --- ADMIN SPOOFING FOR DASHBOARD ---
+        if (req.user.role === 'admin') {
+            const targetUserHeader = req.header('x-target-user') || req.query.targetUser;
+            if (targetUserHeader) {
+                const target = await User.findOne({ username: targetUserHeader }).select('_id username companyCode driveFolderId bankStatementsFolderId brFolderId');
+                if (target) {
+                    req.user.id = target._id;
+                    req.user._id = target._id;
+                    req.user.username = target.username;
+                    req.user.companyCode = target.companyCode;
+                    req.user.driveFolderId = target.driveFolderId;
+                    req.user.bankStatementsFolderId = target.bankStatementsFolderId;
+                    req.user.brFolderId = target.brFolderId;
+                    req.user._isSpoofed = true;
+                }
+            }
+        }
+
         next();
     } catch (e) {
         console.error('[Auth Middleware Error]', e.message);

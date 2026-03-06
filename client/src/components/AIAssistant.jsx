@@ -236,13 +236,13 @@ const AIAssistant = () => {
     const GK_LOGO = "/gk-logo.png"; // Placeholder for user asset
 
     return (
-        // KEY CHANGE: Reverted to Right-6, Items-End (standard chatbot position)
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none">
+        // KEY CHANGE: Moved to Left-6, Items-Start to accommodate UI needs
+        <div className="fixed bottom-6 left-6 z-50 flex flex-col items-start pointer-events-none">
             {/* Chat Window */}
             {isOpen && (
                 <div
                     className="bg-slate-900 pointer-events-auto rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.7)] border-2 border-blue-500/40 w-[650px] max-w-[calc(100vw-48px)] flex flex-col mb-4 overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300"
-                    style={{ height: '95vh', maxHeight: '1200px' }}
+                    style={{ height: '98vh', maxHeight: 'none' }}
                 >
                     {/* Header - Enforce Blue Gradient */}
                     <div className="bg-gradient-to-tr from-blue-700 via-blue-800 to-indigo-900 p-6 shrink-0 flex justify-between items-center text-white shadow-2xl border-b border-white/10 relative z-30">

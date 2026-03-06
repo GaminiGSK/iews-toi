@@ -8,7 +8,25 @@ import AIAssistant from './components/AIAssistant';
 import LiveTaxWorkspace from './pages/LiveTaxWorkspace';
 import TaxFormWorkbench from './pages/TaxFormWorkbench';
 
+import axios from 'axios';
 import SiteGate from './components/SiteGate';
+
+// GLOBAL AXIOS INTERCEPTOR FOR ADMIN SPOOFING
+axios.interceptors.request.use(config => {
+  const userStr = localStorage.getItem('user');
+  if (userStr) {
+    try {
+      const user = JSON.parse(userStr);
+      if (user.role === 'admin') {
+        const lastSelectedBR = localStorage.getItem('lastSelectedBR');
+        if (lastSelectedBR) {
+          config.headers['x-target-user'] = lastSelectedBR;
+        }
+      }
+    } catch (e) { }
+  }
+  return config;
+});
 
 const AppLayout = ({ children }) => {
   const location = useLocation();
