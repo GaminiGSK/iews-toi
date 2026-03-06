@@ -470,18 +470,29 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
 
             **Latest Follow-up User Query**: "${message}"
 
-            **Instructions for Specialized Actions (JSON Output Required ONLY for Transactions/Journals/Ledger Actions):**
-            1. **Executing Tax Workspace Actions**: If user says "Yes/Go/Process" to a tax proposal:
-               { "tool_use": "workspace_action", "action": "fill_year", "reply_text": "Starting the process for you now!" }
+            =========================================
+            **EXECUTION CAPABILITIES & TOOL USAGE (MANDATORY RULES)**
+            =========================================
+            You are an Agent with EXECUTION CAPABILITIES. You can update databases and perform backend tasks using defined TOOLS.
+            If the user asks you to perform an action (or confirms an action you just proposed in the chat history), you MUST output your response as a strict JSON block identifying the tool. 
+            Do NOT wrap the JSON in conversational fluff. Include your conversational response ONLY inside the 'reply_text' field of the JSON.
 
-            2. **Journal Entries**: If user asks for adjustments (depreciate/accrue):
-               { "tool_use": "propose_journal_entry", "journal_data": { ... }, "reply_text": "I've prepared the adjustment." }
+            **AVAILABLE TOOL REGISTRY**:
 
-            3. **Ledger Bulk Tagging**: If user asks to tag/categorize transactions in the general ledger (e.g. "change all money in to 10110"):
-               { "tool_use": "workspace_action", "action": "bulk_tag_ledger", "params": { "condition": "money_in", "targetCode": "10110" }, "reply_text": "Processing the bulk tag update for your ledger." }
-               *Valid conditions*: "money_in" (amount > 0), "money_out" (amount < 0), "all" (any amount).
+            1. **fill_tax_year**: Executes the tax calculation workspace for a given year.
+               Schema: { "tool_use": "workspace_action", "action": "fill_year", "reply_text": "Starting the process for you now!" }
 
-            **CRITICAL**: NEVER use JSON for extraction queries like "List my codes". Just respond with PLAIN TEXT. If you use ANY JSON tool, your entire conversational response MUST be placed inside the \`reply_text\` field of the JSON. If you are NOT using a tool, just respond with plain text.
+            2. **propose_journal_entry**: Prepares a manual journal adjustment (depreciate, accrue, manual move).
+               Schema: { "tool_use": "propose_journal_entry", "journal_data": { "description": "...", "entries": [{ "code": "...", "amount": 0 }] }, "reply_text": "I've prepared the adjustment." }
+
+            3. **bulk_tag_ledger**: Categorizes/tags multiple transactions in the general ledger based on conditions (e.g. "change all money in to 10110" or "tag all expenses as 61220").
+               Schema: { "tool_use": "workspace_action", "action": "bulk_tag_ledger", "params": { "condition": "money_in", "targetCode": "10110" }, "reply_text": "Processing the bulk tag update for your ledger." }
+               *Valid constraints for params.condition*: "money_in" (amount > 0), "money_out" (amount < 0), "all" (any amount).
+
+            **CRITICAL EXECUTOR LOOP**: 
+            1. Did the user ask for an action, OR say "yes/do it" to a proposal in the history?
+            2. If YES: Find the matching tool in the Registry above. Output ONLY the JSON Schema for that tool.
+            3. If NO: You are just answering a question. Output PLAIN TEXT. NO JSON.
 
             Answer:
         `;
