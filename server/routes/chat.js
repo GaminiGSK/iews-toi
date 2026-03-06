@@ -186,6 +186,12 @@ router.post('/message', auth, async (req, res) => {
             if (jsonMatch) {
                 const cleanJson = jsonMatch[0];
                 const toolPayload = JSON.parse(cleanJson);
+
+                // --- INJECT SECURE CONTEXT ---
+                // Overwrite frontend params with the authorized/impersonated backend context
+                if (!toolPayload.params) toolPayload.params = {};
+                toolPayload.params.companyCode = companyCode;
+
                 toolAction = toolPayload;
                 finalText = toolPayload.reply_text || "Suggestion received.";
 

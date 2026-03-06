@@ -461,12 +461,16 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
 
             **User Query**: "${message}"
 
-            **Instructions for Specialized Actions (JSON Output Required ONLY for Transactions/Journals):**
-            1. **Executing Actions**: If user says "Yes/Go/Process" to a proposal:
-               { "tool_use": "workspace_action", "action": "...", "reply_text": "Starting the process for you now!" }
+            **Instructions for Specialized Actions (JSON Output Required ONLY for Transactions/Journals/Ledger Actions):**
+            1. **Executing Tax Workspace Actions**: If user says "Yes/Go/Process" to a tax proposal:
+               { "tool_use": "workspace_action", "action": "fill_year", "reply_text": "Starting the process for you now!" }
 
             2. **Journal Entries**: If user asks for adjustments (depreciate/accrue):
-               { "tool_use": "propose_journal_entry", "journal_data": { ... }, "reply_text": "I've prepared the adjustment. [Explain what you did]." }
+               { "tool_use": "propose_journal_entry", "journal_data": { ... }, "reply_text": "I've prepared the adjustment." }
+
+            3. **Ledger Bulk Tagging**: If user asks to tag/categorize transactions in the general ledger (e.g. "change all money in to 10110"):
+               { "tool_use": "workspace_action", "action": "bulk_tag_ledger", "params": { "condition": "money_in", "targetCode": "10110" }, "reply_text": "Processing the bulk tag update for your ledger." }
+               *Valid conditions*: "money_in" (amount > 0), "money_out" (amount < 0), "all" (any amount).
 
             **CRITICAL**: NEVER use JSON for extraction queries like "List my codes". Just respond with PLAIN TEXT. If you use ANY JSON tool, your entire conversational response MUST be placed inside the \`reply_text\` field of the JSON. If you are NOT using a tool, just respond with plain text.
 

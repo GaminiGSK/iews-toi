@@ -178,6 +178,32 @@ const startServer = async () => {
                 } else if (action === 'trigger_analysis') {
                     console.log(`[Admin] AI requested analysis trigger for ${packageId}`);
                     io.emit('admin:trigger_analysis', { packageId });
+                } else if (action === 'bulk_tag_ledger' && params) {
+                    try {
+                        console.log(`[AI] Bulk tagging ledger for ${params.companyCode} to ${params.targetCode} (Condition: ${params.condition})`);
+                        const Transaction = require('./models/Transaction');
+                        const AccountCode = require('./models/AccountCode');
+
+                        const targetCodeObj = await AccountCode.findOne({ companyCode: params.companyCode, code: params.targetCode });
+                        if (targetCodeObj) {
+                            const query = { companyCode: params.companyCode };
+                            if (params.condition === 'money_in') query.amount = { $gt: 0 };
+                            else if (params.condition === 'money_out') query.amount = { $lt: 0 };
+
+                            const result = await Transaction.updateMany(query, { accountCode: targetCodeObj._id, tagSource: 'ai' });
+                            console.log(`[AI] Tagged ${result.modifiedCount} transactions.`);
+                            socket.emit('agent:message', {
+                                text: `Successfully updated ${result.modifiedCount} transactions to ${params.targetCode} (${targetCodeObj.description}).`
+                            });
+                            // Force frontend to refresh Ledger view
+                            socket.emit('ledger:updated');
+                        } else {
+                            socket.emit('agent:message', { text: `Failed to tag. Code ${params.targetCode} not found in your Chart of Accounts.` });
+                        }
+                    } catch (e) {
+                        console.error("[AI Tagging Error]", e);
+                        socket.emit('agent:message', { text: "Failed to perform bulk tagging due to an internal error." });
+                    }
                 }
             });
 

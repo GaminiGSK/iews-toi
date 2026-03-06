@@ -78,9 +78,14 @@ const AIAssistant = () => {
             if (!isOpen) setIsOpen(true);
         };
 
+        const onLedgerUpdated = () => {
+            window.dispatchEvent(new Event('ledger:refresh'));
+        };
+
         socket.on('connect', onConnect);
         socket.on('disconnect', onDisconnect);
         socket.on('agent:message', onAgentMessage);
+        socket.on('ledger:updated', onLedgerUpdated);
 
         // If socket is already connected when effect runs, fire onConnect logic
         if (socket.connected) onConnect();
@@ -89,6 +94,7 @@ const AIAssistant = () => {
             socket.off('connect', onConnect);
             socket.off('disconnect', onDisconnect);
             socket.off('agent:message', onAgentMessage);
+            socket.off('ledger:updated', onLedgerUpdated);
         };
     }, [socket]); // Only depend on socket instance
 

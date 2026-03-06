@@ -14,6 +14,9 @@ const GeneralLedger = ({ onBack }) => {
 
     useEffect(() => {
         fetchLedger();
+        const handleRefresh = () => fetchLedger();
+        window.addEventListener('ledger:refresh', handleRefresh);
+        return () => window.removeEventListener('ledger:refresh', handleRefresh);
     }, []);
 
     const fetchLedger = async () => {
