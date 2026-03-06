@@ -242,7 +242,7 @@ const AIAssistant = () => {
             {isOpen && (
                 <div
                     className="bg-slate-900 pointer-events-auto rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.7)] border-2 border-blue-500/40 w-[650px] max-w-[calc(100vw-48px)] flex flex-col mb-4 overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300"
-                    style={{ height: '85vh', maxHeight: '950px' }}
+                    style={{ height: '95vh', maxHeight: '1200px' }}
                 >
                     {/* Header - Enforce Blue Gradient */}
                     <div className="bg-gradient-to-tr from-blue-700 via-blue-800 to-indigo-900 p-6 shrink-0 flex justify-between items-center text-white shadow-2xl border-b border-white/10 relative z-30">

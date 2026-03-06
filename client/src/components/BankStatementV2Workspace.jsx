@@ -159,7 +159,7 @@ export default function BankStatementV2Workspace({ onBack }) {
 
     const renderDashboard = () => (
         <div className="w-full h-[calc(100vh-80px)] pt-6 pl-10 pr-[100px] animate-fade-in flex flex-col overflow-y-auto">
-            <div className="mb-8 flex items-center justify-between">
+            <div className="mb-8 flex flex-col items-start gap-5">
                 <div className="flex items-center gap-4">
                     <button
                         onClick={onBack}
@@ -174,13 +174,15 @@ export default function BankStatementV2Workspace({ onBack }) {
                     </div>
                 </div>
 
-                <button
-                    onClick={handleCreateBasket}
-                    className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl shadow-xl shadow-emerald-600/20 transition-all active:scale-95 flex items-center gap-2 border border-emerald-400/30"
-                >
-                    <Plus size={20} />
-                    CREATE BASKET
-                </button>
+                <div className="pl-[68px]">
+                    <button
+                        onClick={handleCreateBasket}
+                        className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl shadow-xl shadow-emerald-600/20 transition-all active:scale-95 flex items-center gap-2 border border-emerald-400/30"
+                    >
+                        <Plus size={20} />
+                        CREATE BASKET
+                    </button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
