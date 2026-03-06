@@ -64,7 +64,7 @@ router.post('/message', auth, async (req, res) => {
             }
         ]);
 
-        // Calculate Monthly Trends (Last 12 Months)
+        // Calculate Monthly Trends (Last 36 Months)
         const monthlyStatsRaw = await Transaction.aggregate([
             { $match: { companyCode: companyCode } },
             {
@@ -75,8 +75,22 @@ router.post('/message', auth, async (req, res) => {
                 }
             },
             { $sort: { _id: -1 } }, // Newest first
-            { $limit: 12 },
+            { $limit: 36 },
             { $sort: { _id: 1 } }   // Restore chronological order
+        ]);
+
+        // Calculate Yearly Trends
+        const yearlyStatsRaw = await Transaction.aggregate([
+            { $match: { companyCode: companyCode } },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y", date: "$date" } },
+                    income: { $sum: { $cond: [{ $gt: ["$amount", 0] }, "$amount", 0] } },
+                    expense: { $sum: { $cond: [{ $lt: ["$amount", 0] }, "$amount", 0] } }
+                }
+            },
+            { $sort: { _id: -1 } },
+            { $limit: 5 }
         ]);
 
         const monthlyStats = monthlyStatsRaw.map(m => ({
@@ -84,6 +98,13 @@ router.post('/message', auth, async (req, res) => {
             income: m.income.toFixed(2),
             expense: m.expense.toFixed(2),
             net: (m.income + m.expense).toFixed(2)
+        }));
+
+        const yearlyStats = yearlyStatsRaw.map(y => ({
+            year: y._id,
+            income: y.income.toFixed(2),
+            expense: y.expense.toFixed(2),
+            net: (y.income + y.expense).toFixed(2)
         }));
 
         const summary = {
@@ -134,6 +155,7 @@ router.post('/message', auth, async (req, res) => {
             harvestedBankStatements: harvestedBankContext,
             summary,
             monthlyStats,
+            yearlyStats,
             ui: req.body.context || {}, // Pass UI Context (Route, etc.)
             brData: req.body.context?.brData || [] // Explicitly pass BR harvested data
         };

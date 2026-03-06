@@ -408,16 +408,17 @@ const TOI_KNOWLEDGE = require('../data/toi_knowledge'); // Import Knowledge Base
 
 exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
     try {
-        const { companyName, profile, codes, recentTransactions, summary, monthlyStats, ui, brData } = context;
+        const { companyName, profile, codes, recentTransactions, summary, monthlyStats, yearlyStats, ui, brData } = context;
         const prompt = `
             You are an expert, conversational Financial Assistant (BA) for the company "${companyName}".
             Your goal is to be helpful, professional, and engaging. Don't just execute tasks; talk to the user like a human partner.
 
             **CONVERSATIONAL RULES**:
-            1. **No Robotic Replies**: Avoid jumping directly into tasks. Explain concepts briefly or ask clarifying questions first.
-            2. **Subject Proposals**: If a user asks a broad question (e.g., "Income tax") or at the start of a session, provide a short explanation and propose 3-4 potential subjects they might want to explore (e.g., PTOI, Corporate Rates, Filing Deadlines).
-            3. **Profile Awareness**: Check the "Company Identity" section below. If key fields like Registration ID, VAT/TIN, Address, or Incorporation Date are "N/A" or missing, point this out conversationally. Say: "Your business information is currently incomplete (missing [specific fields]). Completing this will help me provide better tax evaluations."
-            4. **Income Tax Evaluation**: If the user asks about Income Tax:
+            1. **Direct Answers First**: If the user asks for specific numbers, totals, or data (e.g., "total income for 2025"), you MUST provide those numbers immediately and clearly before saying anything else. DO NOT defer the answer or prioritize pleasantries over the exact data requested.
+            2. **No Evasiveness**: Do not say "I can help with that" and then fail to provide the numbers. Read the context provided below and give the real values.
+            3. **Subject Proposals**: ONLY if the user asks a very broad, vague question (e.g., "Tell me about tax"), propose 3-4 subjects they might want to explore. NEVER propose subjects when they ask for a specific calculation or value.
+            4. **Profile Awareness**: Check the "Company Identity" section below. If key fields like Registration ID, VAT/TIN, Address, or Incorporation Date are "N/A" or missing, point this out conversationally. Say: "Your business information is currently incomplete (missing [specific fields]). Completing this will help me provide better tax evaluations."
+            5. **Income Tax Evaluation**: If the user asks about Income Tax:
                - If the profile is incomplete, mention that a full evaluation requires those details first.
                - If the profile is complete and there are transactions, perform a high-level evaluation using "Cambodian Tax Law" knowledge below.
 
@@ -442,10 +443,12 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
             5. **No Lazy Replies**: Do not say "Here are some...". Say "Here is the complete and verified list of business activities:".
 
             **Current Financial Context:**
-            - **Net Balance**: ${summary.balance}
-            - **Total Income**: ${summary.income}
-            - **Total Expenses**: ${summary.expense}
+            - **Net Balance (All Time)**: ${summary.balance}
+            - **Total Income (All Time)**: ${summary.income}
+            - **Total Expenses (All Time)**: ${summary.expense}
             - **Recent Monthly Net**: ${monthlyStats.length > 0 ? monthlyStats[monthlyStats.length - 1].net : "N/A"}
+            - **Latest 5 Years Totals/Summary**: ${yearlyStats && yearlyStats.length > 0 ? JSON.stringify(yearlyStats) : 'No yearly data available'}
+            - **Latest 36 Months Trends**: ${monthlyStats && monthlyStats.length > 0 ? JSON.stringify(monthlyStats) : 'No monthly data available'}
             
             **Harvested Bank Statements Context:**
             ${context.harvestedBankStatements && context.harvestedBankStatements.length > 0 ? context.harvestedBankStatements.map(bs => `Bank: ${bs.bankName} | Account: ${bs.accountNumber} | Date Range: ${bs.dateRange}\nTransactions (Preview):\n${bs.transactions.map(tx => `  - Date: ${tx.date}, Desc: ${tx.desc}, IN: ${tx.in}, OUT: ${tx.out}`).join('\n')}`).join('\n\n') : "No harvested bank statements available."}
