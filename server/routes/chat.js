@@ -8,6 +8,7 @@ const AccountCode = require('../models/AccountCode');
 const User = require('../models/User');
 const CompanyProfile = require('../models/CompanyProfile');
 const BankStatement = require('../models/BankStatement');
+const Bridge = require('../models/Bridge');
 
 // POST /api/chat/message
 router.post('/message', auth, async (req, res) => {
@@ -231,7 +232,23 @@ router.post('/message', auth, async (req, res) => {
             // Not JSON or parse error, just return raw text
         }
 
-        // 4. Return Response
+        // --- 4. Live Log for Antigravity Debugging ---
+        try {
+            await Bridge.create({
+                type: 'live_chat_log',
+                source: `User:${req.user.username} | Comp:${companyCode}`,
+                content: {
+                    userQuery: message,
+                    aiResponse: finalText,
+                    toolAction: toolAction,
+                    timestamp: new Date()
+                }
+            });
+        } catch (logErr) {
+            console.error("Failed to write to Live Chat Log:", logErr);
+        }
+
+        // 5. Return Response
         res.json({ text: finalText, toolAction });
 
     } catch (err) {
