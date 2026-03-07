@@ -91,38 +91,49 @@ const TrialBalance = ({ onBack }) => {
     const activeAccounts = report.filter(r => r.drUSD > 0 || r.crUSD > 0);
 
     // Accounting Principles Mapping (Assets = Liabilities + Equity)
-    const assetData = activeAccounts.filter(r => r.code.startsWith('1')).map(r => ({
+    // Assets: Normal balance is Debit (Dr - Cr)
+    const assetData = report.filter(r => r.code.startsWith('1')).map(r => ({
         name: r.description,
-        size: Math.abs(r.drUSD - r.crUSD),
+        size: r.drUSD - r.crUSD,
         code: r.code
-    })).filter(a => a.size > 0);
+    })).filter(a => a.size !== 0);
 
-    const liabilityData = activeAccounts.filter(r => r.code.startsWith('2')).map(r => ({
+    const totalAssets = assetData.reduce((sum, item) => sum + item.size, 0);
+
+    // Liabilities: Normal balance is Credit (Cr - Dr)
+    const liabilityData = report.filter(r => r.code.startsWith('2')).map(r => ({
         name: r.description,
-        size: Math.abs(r.crUSD - r.drUSD),
+        size: r.crUSD - r.drUSD,
         code: r.code
-    })).filter(a => a.size > 0);
+    })).filter(a => a.size !== 0);
+
+    const totalLiabilities = liabilityData.reduce((sum, item) => sum + item.size, 0);
 
     // Calculate Net Profit for Equity
-    const netProfit =
-        activeAccounts.filter(r => ['4', '7', '8', '9'].some(p => r.code.startsWith(p))).reduce((sum, r) => sum + r.crUSD - r.drUSD, 0) -
-        activeAccounts.filter(r => ['5', '6'].some(p => r.code.startsWith(p))).reduce((sum, r) => sum + r.drUSD - r.crUSD, 0);
+    // Income (Cr - Dr) - Expenses (Dr - Cr)
+    const totalIncome = report.filter(r => ['4', '7', '8', '9'].some(p => r.code.startsWith(p))).reduce((sum, r) => sum + (r.crUSD - r.drUSD), 0);
+    const totalExpense = report.filter(r => ['5', '6'].some(p => r.code.startsWith(p))).reduce((sum, r) => sum + (r.drUSD - r.crUSD), 0);
+    const netProfit = totalIncome - totalExpense;
 
-    const baseEquityData = activeAccounts.filter(r => r.code.startsWith('3')).map(r => ({
+    // Base Equity: Normal balance is Credit (Cr - Dr)
+    const baseEquityData = report.filter(r => r.code.startsWith('3')).map(r => ({
         name: r.description,
-        size: Math.abs(r.crUSD - r.drUSD),
+        size: r.crUSD - r.drUSD,
         code: r.code
-    })).filter(a => a.size > 0);
+    })).filter(a => a.size !== 0);
 
     // Append Net Profit to Equity Data for accurate representation of the Accounting Equation
     const equityData = [
         ...baseEquityData,
         ...(netProfit !== 0 ? [{
             name: 'Current Year Retained Earnings (Net Profit)',
-            size: Math.abs(netProfit),
+            size: netProfit, // Allow negative size for a loss
             code: 'N/A'
         }] : [])
     ];
+
+    const totalEquity = equityData.reduce((sum, item) => sum + item.size, 0);
+    const isAccountingBalanced = Math.abs(totalAssets - (totalLiabilities + totalEquity)) < 0.01;
 
     // Fallbacks for the insight generator
     const debitData = activeAccounts.filter(r => r.drUSD > r.crUSD).map(r => ({
@@ -255,36 +266,33 @@ const TrialBalance = ({ onBack }) => {
                         <div className="bg-gray-900 rounded-2xl p-8 text-white shadow-xl border border-gray-800 font-sans">
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 divide-y md:divide-y-0 md:divide-x divide-gray-700">
                                 <div className="px-2">
-                                    <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Net Profit (Est)</p>
-                                    <p className="text-4xl font-bold text-teal-400">
-                                        ${(
-                                            activeAccounts.filter(r => ['4', '7', '8', '9'].some(p => r.code.startsWith(p))).reduce((sum, r) => sum + r.crUSD, 0) -
-                                            activeAccounts.filter(r => ['5', '6'].some(p => r.code.startsWith(p))).reduce((sum, r) => sum + r.drUSD, 0)
-                                        ).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                    </p>
-                                    <p className="text-xs text-gray-500 mt-2">Income - Expenses</p>
-                                </div>
-                                <div className="px-2">
                                     <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Total Assets</p>
                                     <p className="text-4xl font-bold text-blue-400">
-                                        ${activeAccounts.filter(r => r.code.startsWith('1')).reduce((sum, r) => sum + r.drUSD, 0).toLocaleString()}
+                                        ${totalAssets.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                     </p>
-                                    <p className="text-xs text-gray-500 mt-2">Active Debits (Class 1)</p>
+                                    <p className="text-xs text-gray-500 mt-2">What You Own</p>
                                 </div>
                                 <div className="px-2">
                                     <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Total Liabilities</p>
                                     <p className="text-4xl font-bold text-rose-400">
-                                        ${activeAccounts.filter(r => r.code.startsWith('2')).reduce((sum, r) => sum + r.crUSD, 0).toLocaleString()}
+                                        ${totalLiabilities.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                     </p>
-                                    <p className="text-xs text-gray-500 mt-2">Active Credits (Class 2)</p>
+                                    <p className="text-xs text-gray-500 mt-2">What You Owe</p>
+                                </div>
+                                <div className="px-2">
+                                    <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Total Equity</p>
+                                    <p className={`text-4xl font-bold ${totalEquity >= 0 ? 'text-emerald-400' : 'text-orange-400'}`}>
+                                        ${totalEquity.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    </p>
+                                    <p className="text-xs text-gray-500 mt-2">Net Worth (Incl. Net Profit: ${netProfit.toLocaleString(undefined, { minimumFractionDigits: 2 })})</p>
                                 </div>
                                 <div className="px-2">
                                     <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Ledger Status</p>
-                                    <div className={`mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-lg border ${isBalancedUSD ? 'border-green-500/30 bg-green-900/20 text-green-400' : 'border-red-500/30 bg-red-900/20 text-red-400'}`}>
-                                        <span className={`w-2.5 h-2.5 rounded-full ${isBalancedUSD ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></span>
-                                        <span className="font-bold text-lg">{isBalancedUSD ? 'BALANCED' : 'UNBALANCED'}</span>
+                                    <div className={`mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-lg border ${isAccountingBalanced ? 'border-green-500/30 bg-green-900/20 text-green-400' : 'border-red-500/30 bg-red-900/20 text-red-400'}`}>
+                                        <span className={`w-2.5 h-2.5 rounded-full ${isAccountingBalanced ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></span>
+                                        <span className="font-bold text-lg">{isAccountingBalanced ? 'BALANCED' : 'UNBALANCED'}</span>
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-2 font-mono">Diff: ${Math.abs(totals.drUSD - totals.crUSD).toFixed(5)}</p>
+                                    <p className="text-xs text-gray-500 mt-2 font-mono">Eq Diff: ${Math.abs(totalAssets - (totalLiabilities + totalEquity)).toFixed(5)}</p>
                                 </div>
                             </div>
                         </div>
@@ -295,27 +303,37 @@ const TrialBalance = ({ onBack }) => {
                                 <h3 className="font-bold text-gray-300 mb-6 flex justify-between items-center text-lg">
                                     <span>Assets (What You Own)</span>
                                     <span className="text-xs text-blue-400 bg-blue-900/20 px-3 py-1 rounded-full border border-blue-900">
-                                        Total: ${assetData.reduce((sum, item) => sum + item.size, 0).toLocaleString()}
+                                        Total: ${totalAssets.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                     </span>
                                 </h3>
                                 <div className="flex-1">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart
-                                            layout="vertical"
-                                            data={assetData.sort((a, b) => b.size - a.size).slice(0, 10)}
-                                            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                                        >
-                                            <XAxis type="number" stroke="#6B7280" fontSize={12} tickFormatter={(val) => `$${val / 1000}k`} />
-                                            <YAxis type="category" dataKey="name" width={120} stroke="#9CA3AF" fontSize={11} tick={{ fill: '#E5E7EB' }} />
-                                            <Tooltip
-                                                cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                                                contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151', color: '#F3F4F6' }}
-                                                itemStyle={{ color: '#60A5FA' }}
-                                                formatter={(value) => [`$${value.toLocaleString()}`, 'Amount']}
-                                            />
-                                            <Bar dataKey="size" fill="#3B82F6" radius={[0, 4, 4, 0]} barSize={20} />
-                                        </BarChart>
-                                    </ResponsiveContainer>
+                                    {assetData.length > 0 ? (
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart
+                                                layout="vertical"
+                                                data={assetData.sort((a, b) => b.size - a.size).slice(0, 10)}
+                                                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                                            >
+                                                <XAxis type="number" stroke="#6B7280" fontSize={12} tickFormatter={(val) => `$${val / 1000}k`} />
+                                                <YAxis type="category" dataKey="name" width={120} stroke="#9CA3AF" fontSize={11} tick={{ fill: '#E5E7EB' }} />
+                                                <Tooltip
+                                                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                                                    contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151', color: '#F3F4F6' }}
+                                                    itemStyle={{ color: '#60A5FA' }}
+                                                    formatter={(value) => [`$${value.toLocaleString()}`, 'Amount']}
+                                                />
+                                                <Bar dataKey="size" fill="#3B82F6" radius={[0, 4, 4, 0]} barSize={20}>
+                                                    {assetData.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={entry.size >= 0 ? '#3B82F6' : '#EF4444'} />
+                                                    ))}
+                                                </Bar>
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    ) : (
+                                        <div className="flex bg-gray-800/50 rounded-lg border border-gray-700 h-full items-center justify-center text-gray-500">
+                                            No asset data found.
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -324,27 +342,37 @@ const TrialBalance = ({ onBack }) => {
                                 <h3 className="font-bold text-gray-300 mb-6 flex justify-between items-center text-lg">
                                     <span>Liabilities (What You Owe)</span>
                                     <span className="text-xs text-rose-400 bg-rose-900/20 px-3 py-1 rounded-full border border-rose-900">
-                                        Total: ${liabilityData.reduce((sum, item) => sum + item.size, 0).toLocaleString()}
+                                        Total: ${totalLiabilities.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                     </span>
                                 </h3>
                                 <div className="flex-1">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart
-                                            layout="vertical"
-                                            data={liabilityData.sort((a, b) => b.size - a.size).slice(0, 10)}
-                                            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                                        >
-                                            <XAxis type="number" stroke="#6B7280" fontSize={12} tickFormatter={(val) => `$${val / 1000}k`} />
-                                            <YAxis type="category" dataKey="name" width={120} stroke="#9CA3AF" fontSize={11} tick={{ fill: '#E5E7EB' }} />
-                                            <Tooltip
-                                                cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                                                contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151', color: '#F3F4F6' }}
-                                                itemStyle={{ color: '#FB7185' }}
-                                                formatter={(value) => [`$${value.toLocaleString()}`, 'Amount']}
-                                            />
-                                            <Bar dataKey="size" fill="#F43F5E" radius={[0, 4, 4, 0]} barSize={20} />
-                                        </BarChart>
-                                    </ResponsiveContainer>
+                                    {liabilityData.length > 0 ? (
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart
+                                                layout="vertical"
+                                                data={liabilityData.sort((a, b) => b.size - a.size).slice(0, 10)}
+                                                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                                            >
+                                                <XAxis type="number" stroke="#6B7280" fontSize={12} tickFormatter={(val) => `$${val / 1000}k`} />
+                                                <YAxis type="category" dataKey="name" width={120} stroke="#9CA3AF" fontSize={11} tick={{ fill: '#E5E7EB' }} />
+                                                <Tooltip
+                                                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                                                    contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151', color: '#F3F4F6' }}
+                                                    itemStyle={{ color: '#FB7185' }}
+                                                    formatter={(value) => [`$${value.toLocaleString()}`, 'Amount']}
+                                                />
+                                                <Bar dataKey="size" fill="#F43F5E" radius={[0, 4, 4, 0]} barSize={20}>
+                                                    {liabilityData.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={entry.size >= 0 ? '#F43F5E' : '#3B82F6'} />
+                                                    ))}
+                                                </Bar>
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    ) : (
+                                        <div className="flex bg-gray-800/50 rounded-lg border border-gray-700 h-full items-center justify-center text-gray-500">
+                                            No active liabilities.
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -353,27 +381,40 @@ const TrialBalance = ({ onBack }) => {
                                 <h3 className="font-bold text-gray-300 mb-6 flex justify-between items-center text-lg">
                                     <span>Equity (Net Worth)</span>
                                     <span className="text-xs text-emerald-400 bg-emerald-900/20 px-3 py-1 rounded-full border border-emerald-900">
-                                        Total: ${equityData.reduce((sum, item) => sum + item.size, 0).toLocaleString()}
+                                        Total: ${totalEquity.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                     </span>
                                 </h3>
                                 <div className="flex-1">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart
-                                            layout="vertical"
-                                            data={equityData.sort((a, b) => b.size - a.size).slice(0, 10)}
-                                            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                                        >
-                                            <XAxis type="number" stroke="#6B7280" fontSize={12} tickFormatter={(val) => `$${val / 1000}k`} />
-                                            <YAxis type="category" dataKey="name" width={120} stroke="#9CA3AF" fontSize={11} tick={{ fill: '#E5E7EB' }} />
-                                            <Tooltip
-                                                cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                                                contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151', color: '#F3F4F6' }}
-                                                itemStyle={{ color: '#34D399' }}
-                                                formatter={(value) => [`$${value.toLocaleString()}`, 'Amount']}
-                                            />
-                                            <Bar dataKey="size" fill="#10B981" radius={[0, 4, 4, 0]} barSize={20} />
-                                        </BarChart>
-                                    </ResponsiveContainer>
+                                    {equityData.length > 0 ? (
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart
+                                                layout="vertical"
+                                                data={equityData.sort((a, b) => b.size - a.size).slice(0, 10)}
+                                                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                                            >
+                                                {/* Allow domain to auto-adjust for negative values (losses) */}
+                                                <XAxis type="number" stroke="#6B7280" fontSize={12} tickFormatter={(val) => `$${val / 1000}k`} />
+                                                <YAxis type="category" dataKey="name" width={120} stroke="#9CA3AF" fontSize={11} tick={{ fill: '#E5E7EB' }} />
+                                                <Tooltip
+                                                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                                                    contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151', color: '#F3F4F6' }}
+                                                    itemStyle={{ color: '#34D399' }}
+                                                    formatter={(value) => [`$${value.toLocaleString()}`, 'Amount']}
+                                                />
+                                                <Bar dataKey="size" radius={[0, 4, 4, 0]} barSize={20}>
+                                                    {
+                                                        equityData.sort((a, b) => b.size - a.size).slice(0, 10).map((entry, index) => (
+                                                            <Cell key={`cell-${index}`} fill={entry.size >= 0 ? '#10B981' : '#F97316'} />
+                                                        ))
+                                                    }
+                                                </Bar>
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    ) : (
+                                        <div className="flex bg-gray-800/50 rounded-lg border border-gray-700 h-full items-center justify-center text-gray-500">
+                                            No equity data found.
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
