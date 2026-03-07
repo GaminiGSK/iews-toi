@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Scale, RefreshCw, AlertCircle, ArrowLeft, PieChart, Table as TableIcon, LayoutDashboard, Brain, Download } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Cell, Treemap } from 'recharts';
+import { Scale, RefreshCw, AlertCircle, ArrowLeft, PieChart as PieChartIcon, Table as TableIcon, LayoutDashboard, Brain, Download } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Cell, Treemap, PieChart, Pie } from 'recharts';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
@@ -151,20 +151,22 @@ const TrialBalance = ({ onBack }) => {
     const generateInsight = () => {
         if (report.length === 0) return "No data available yet.";
 
-        const biggestExpense = debitData.sort((a, b) => b.size - a.size)[0];
-        const biggestIncome = creditData.sort((a, b) => b.size - a.size)[0];
+        const biggestAsset = assetData.sort((a, b) => b.size - a.size)[0];
+        const biggestLiability = liabilityData.sort((a, b) => b.size - a.size)[0];
 
         return (
             <div className="space-y-2">
                 <p>Based on your current ledger:</p>
                 <ul className="list-disc pl-5 space-y-1">
-                    {biggestExpense && <li>Your largest active debit account is <strong>{biggestExpense.name}</strong> (${biggestExpense.size.toLocaleString()}).</li>}
-                    {biggestIncome && <li>Your largest active credit source is <strong>{biggestIncome.name}</strong> (${biggestIncome.size.toLocaleString()}).</li>}
+                    {biggestAsset && <li>Your largest active asset is <strong>{biggestAsset.name}</strong> (${biggestAsset.size.toLocaleString()}).</li>}
+                    {biggestLiability && <li>Your largest active liability is <strong>{biggestLiability.name}</strong> (${biggestLiability.size.toLocaleString()}).</li>}
                     <li>The trial balance is currently <strong>{isBalancedUSD ? 'BALANCED' : 'UNBALANCED'}</strong>.</li>
                 </ul>
             </div>
         );
     };
+
+    const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#6366F1', '#EC4899', '#8B5CF6', '#14B8A6'];
 
     const CustomTooltip = ({ active, payload, dark }) => {
         if (active && payload && payload.length) {
@@ -298,36 +300,47 @@ const TrialBalance = ({ onBack }) => {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {/* Assets Visualization */}
+                            {/* Assets Visualization (Donut Chart for Liquidity Breakdown) */}
                             <div className="bg-gray-900 p-6 rounded-2xl shadow-xl border border-gray-800 h-[500px] flex flex-col">
                                 <h3 className="font-bold text-gray-300 mb-6 flex justify-between items-center text-lg">
-                                    <span>Assets (What You Own)</span>
+                                    <span>Assets (Liquidity Mix)</span>
                                     <span className="text-xs text-blue-400 bg-blue-900/20 px-3 py-1 rounded-full border border-blue-900">
                                         Total: ${totalAssets.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                     </span>
                                 </h3>
-                                <div className="flex-1">
+                                <div className="flex-1 -mt-4">
                                     {assetData.length > 0 ? (
                                         <ResponsiveContainer width="100%" height="100%">
-                                            <BarChart
-                                                layout="vertical"
-                                                data={assetData.sort((a, b) => b.size - a.size).slice(0, 10)}
-                                                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                                            >
-                                                <XAxis type="number" stroke="#6B7280" fontSize={12} tickFormatter={(val) => `$${val / 1000}k`} />
-                                                <YAxis type="category" dataKey="name" width={120} stroke="#9CA3AF" fontSize={11} tick={{ fill: '#E5E7EB' }} />
-                                                <Tooltip
-                                                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                                                    contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151', color: '#F3F4F6' }}
-                                                    itemStyle={{ color: '#60A5FA' }}
-                                                    formatter={(value) => [`$${value.toLocaleString()}`, 'Amount']}
-                                                />
-                                                <Bar dataKey="size" fill="#3B82F6" radius={[0, 4, 4, 0]} barSize={20}>
+                                            <PieChart>
+                                                <Pie
+                                                    data={assetData.map(a => ({ name: a.name, value: Math.abs(a.size), actualSize: a.size }))}
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    innerRadius={80}
+                                                    outerRadius={120}
+                                                    paddingAngle={5}
+                                                    dataKey="value"
+                                                    stroke="none"
+                                                >
                                                     {assetData.map((entry, index) => (
-                                                        <Cell key={`cell-${index}`} fill={entry.size >= 0 ? '#3B82F6' : '#EF4444'} />
+                                                        <Cell key={`cell-${index}`} fill={entry.size < 0 ? '#EF4444' : COLORS[index % COLORS.length]} />
                                                     ))}
-                                                </Bar>
-                                            </BarChart>
+                                                </Pie>
+                                                <Tooltip
+                                                    contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151', color: '#F3F4F6', borderRadius: '8px' }}
+                                                    itemStyle={{ color: '#E5E7EB', fontWeight: 'bold' }}
+                                                    formatter={(value, name, props) => {
+                                                        const actualSize = props.payload.actualSize;
+                                                        return [`$${actualSize.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, 'Balance'];
+                                                    }}
+                                                />
+                                                <Legend
+                                                    verticalAlign="bottom"
+                                                    height={36}
+                                                    iconType="circle"
+                                                    wrapperStyle={{ fontSize: '11px', color: '#9CA3AF' }}
+                                                />
+                                            </PieChart>
                                         </ResponsiveContainer>
                                     ) : (
                                         <div className="flex bg-gray-800/50 rounded-lg border border-gray-700 h-full items-center justify-center text-gray-500">
