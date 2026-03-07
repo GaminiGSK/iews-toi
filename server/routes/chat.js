@@ -37,33 +37,47 @@ router.post('/message', auth, async (req, res) => {
         const user = await User.findById(userId);
         const companyName = profile.companyNameEn || (user ? user.companyName : null) || companyCode;
 
-        // Fetch recent transactions (Limit 15 for context)
-        const transactions = await Transaction.find({ companyCode })
+        // Fetch ALL transactions to calculate accurate Balance Sheet (Assets, Liabilities, Equity)
+        // and sort by newest first for recent transactions context
+        const allTransactions = await Transaction.find({ companyCode })
             .sort({ date: -1 }) // Newest first
-            .limit(15)
             .populate('accountCode')
             .lean();
 
-        // Fetch Chart of Accounts
-        const rawCodes = await AccountCode.find({ companyCode }).sort({ code: 1 }).lean();
-        const codes = rawCodes.map(c => ({ code: c.code, description: c.description }));
+        let totalAssets = 0;
+        let totalLiabilities = 0;
+        let totalEquity = 0;
+        let totalIncome = 0;
+        let totalExpense = 0;
 
-        // Calculate a quick Financial Summary (All time or YTD?)
-        // Let's do a simple aggregation for Total Income/Expense
-        const summaryStats = await Transaction.aggregate([
-            { $match: { companyCode: companyCode } },
-            {
-                $group: {
-                    _id: null,
-                    totalIncome: {
-                        $sum: { $cond: [{ $gt: ["$amount", 0] }, "$amount", 0] }
-                    },
-                    totalExpense: {
-                        $sum: { $cond: [{ $lt: ["$amount", 0] }, "$amount", 0] }
-                    }
-                }
+        allTransactions.forEach(t => {
+            const code = t.accountCode?.code || "";
+            const amount = t.amount || 0;
+
+            // Standard Accounting Equation Grouping
+            if (code.startsWith('1')) totalAssets += amount;
+            else if (code.startsWith('2')) totalLiabilities += amount;
+            else if (code.startsWith('3')) totalEquity += amount;
+
+            // Income / Expense tracking
+            if (amount > 0 && !code.startsWith('1') && !code.startsWith('2') && !code.startsWith('3')) {
+                totalIncome += amount;
+            } else if (amount < 0 && !code.startsWith('1') && !code.startsWith('2') && !code.startsWith('3')) {
+                totalExpense += amount; // expenses are negative natively
             }
-        ]);
+        });
+
+        // Add Retained Earnings (Net Income) into Equity to balance the ledger
+        const netIncome = totalIncome + totalExpense;
+        totalEquity += netIncome; // P&L rolls into Equity
+
+        const summaryStats = [{
+            totalIncome,
+            totalExpense,
+            totalAssets,
+            totalLiabilities,
+            totalEquity
+        }];
 
         // Calculate Monthly Trends (Last 36 Months)
         const monthlyStatsRaw = await Transaction.aggregate([
@@ -111,15 +125,22 @@ router.post('/message', auth, async (req, res) => {
         const summary = {
             balance: summaryStats[0] ? (summaryStats[0].totalIncome + summaryStats[0].totalExpense).toFixed(2) : "0.00",
             income: summaryStats[0] ? summaryStats[0].totalIncome.toFixed(2) : "0.00",
-            expense: summaryStats[0] ? summaryStats[0].totalExpense.toFixed(2) : "0.00"
+            expense: summaryStats[0] ? summaryStats[0].totalExpense.toFixed(2) : "0.00",
+            assets: summaryStats[0] ? summaryStats[0].totalAssets.toFixed(2) : "0.00",
+            liabilities: summaryStats[0] ? summaryStats[0].totalLiabilities.toFixed(2) : "0.00",
+            equity: summaryStats[0] ? summaryStats[0].totalEquity.toFixed(2) : "0.00"
         };
 
-        const recentTxContext = transactions.map(t => ({
+        const recentTxContext = allTransactions.slice(0, 100).map(t => ({
             date: t.date ? t.date.toISOString().split('T')[0] : 'No Date',
             description: t.description,
             amount: t.amount,
             code: t.accountCode ? t.accountCode.code : 'Uncategorized'
         }));
+
+        // Fetch Chart of Accounts
+        const rawCodes = await AccountCode.find({ companyCode }).sort({ code: 1 }).lean();
+        const codes = rawCodes.map(c => ({ code: c.code, description: c.description }));
 
         // Fetch recent harvested Bank Statements
         const bankStatements = await BankStatement.find({ companyCode })

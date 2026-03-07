@@ -457,6 +457,9 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
             5. **No Lazy Replies**: Do not say "Here are some...". Say "Here is the complete and verified list of business activities:".
 
             **Current Financial Context:**
+            - **Total Assets**: ${summary.assets}
+            - **Total Liabilities**: ${summary.liabilities}
+            - **Total Equity**: ${summary.equity}
             - **Net Balance (All Time)**: ${summary.balance}
             - **Total Income (All Time)**: ${summary.income}
             - **Total Expenses (All Time)**: ${summary.expense}
@@ -464,7 +467,13 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
             - **Latest 5 Years Totals/Summary**: ${yearlyStats && yearlyStats.length > 0 ? JSON.stringify(yearlyStats) : 'No yearly data available'}
             - **Latest 36 Months Trends**: ${monthlyStats && monthlyStats.length > 0 ? JSON.stringify(monthlyStats) : 'No monthly data available'}
             
-            **Harvested Bank Statements Context:**
+            **Chart of Accounts**:
+            ${codes ? JSON.stringify(codes) : 'No account codes available'}
+            
+            **Recent General Ledger Transactions (Sample)**:
+            ${recentTransactions && recentTransactions.length > 0 ? JSON.stringify(recentTransactions) : 'No recent transactions available'}
+
+            **Harvested Bank Statements Context (from PDF OCR):**
             ${context.harvestedBankStatements && context.harvestedBankStatements.length > 0 ? context.harvestedBankStatements.map(bs => `Bank: ${bs.bankName} | Account: ${bs.accountNumber} | Date Range: ${bs.dateRange}\nTransactions (Preview):\n${bs.transactions.map(tx => `  - Date: ${tx.date}, Desc: ${tx.desc}, IN: ${tx.in}, OUT: ${tx.out}`).join('\n')}`).join('\n\n') : "No harvested bank statements available."}
 
             **KNOWLEDGE BASE (Cambodian Tax Law - TOI):**
