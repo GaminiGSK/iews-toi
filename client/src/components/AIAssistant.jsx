@@ -1,9 +1,13 @@
 ﻿import axios from 'axios';
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquare, X, Send, Sparkles, Bot, Paperclip, Minus, ChevronDown } from 'lucide-react';
+import { MessageSquare, X, Send, Sparkles, Bot, Paperclip, Minus, ChevronDown, PieChart as PieChartIcon } from 'lucide-react';
 
 import { useLocation } from 'react-router-dom';
 import { useSocket } from '../context/SocketContext'; // Import Context
+import {
+    BarChart, Bar, XAxis, YAxis, CartesianGrid,
+    Tooltip as RechartsTooltip, Legend, ResponsiveContainer
+} from 'recharts';
 
 const AIAssistant = () => {
     // LOCATION
@@ -395,6 +399,37 @@ const AIAssistant = () => {
                                             >
                                                 PROCESS NOW
                                             </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Tool Action: Chart Visualization */}
+                                {msg.toolAction && msg.toolAction.tool_use === 'generate_chart' && msg.toolAction.chart_data && (
+                                    <div className="w-[85%] bg-slate-900 border border-fuchsia-500/40 rounded-2xl shadow-2xl mt-4 overflow-hidden animate-in fade-in zoom-in-95 duration-300">
+                                        <div className="bg-fuchsia-900/40 px-6 py-3 border-b border-fuchsia-500/30 flex justify-between items-center text-fuchsia-300">
+                                            <span className="text-xl font-bold uppercase tracking-widest flex items-center gap-2 font-mono"><PieChartIcon size={16} /> Chart Mode</span>
+                                        </div>
+                                        <div className="p-6">
+                                            <h4 className="text-lg font-bold text-white mb-6 text-center">{msg.toolAction.chart_data.title}</h4>
+
+                                            <div className="h-[300px] w-full">
+                                                <ResponsiveContainer width="100%" height="100%">
+                                                    <BarChart
+                                                        data={msg.toolAction.chart_data.data}
+                                                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                                                    >
+                                                        <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+                                                        <XAxis dataKey="name" stroke="#94a3b8" tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                                                        <YAxis stroke="#94a3b8" tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                                                        <RechartsTooltip
+                                                            contentStyle={{ backgroundColor: '#1e293b', borderColor: '#475569', borderRadius: '8px' }}
+                                                            itemStyle={{ color: '#e2e8f0' }}
+                                                        />
+                                                        <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                                                        <Bar dataKey="value" fill="#d946ef" radius={[4, 4, 0, 0]} maxBarSize={60} />
+                                                    </BarChart>
+                                                </ResponsiveContainer>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
