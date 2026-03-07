@@ -90,14 +90,46 @@ const TrialBalance = ({ onBack }) => {
     // Filter out zero balances for cleaner charts
     const activeAccounts = report.filter(r => r.drUSD > 0 || r.crUSD > 0);
 
-    // Group for Treemap (Assets/Liabilities vs Income/Expense logic is complex without explicit types, 
-    // so we'll visualize based on Debit vs Credit prominence)
+    // Accounting Principles Mapping (Assets = Liabilities + Equity)
+    const assetData = activeAccounts.filter(r => r.code.startsWith('1')).map(r => ({
+        name: r.description,
+        size: Math.abs(r.drUSD - r.crUSD),
+        code: r.code
+    })).filter(a => a.size > 0);
+
+    const liabilityData = activeAccounts.filter(r => r.code.startsWith('2')).map(r => ({
+        name: r.description,
+        size: Math.abs(r.crUSD - r.drUSD),
+        code: r.code
+    })).filter(a => a.size > 0);
+
+    // Calculate Net Profit for Equity
+    const netProfit =
+        activeAccounts.filter(r => ['4', '7', '8', '9'].some(p => r.code.startsWith(p))).reduce((sum, r) => sum + r.crUSD - r.drUSD, 0) -
+        activeAccounts.filter(r => ['5', '6'].some(p => r.code.startsWith(p))).reduce((sum, r) => sum + r.drUSD - r.crUSD, 0);
+
+    const baseEquityData = activeAccounts.filter(r => r.code.startsWith('3')).map(r => ({
+        name: r.description,
+        size: Math.abs(r.crUSD - r.drUSD),
+        code: r.code
+    })).filter(a => a.size > 0);
+
+    // Append Net Profit to Equity Data for accurate representation of the Accounting Equation
+    const equityData = [
+        ...baseEquityData,
+        ...(netProfit !== 0 ? [{
+            name: 'Current Year Retained Earnings (Net Profit)',
+            size: Math.abs(netProfit),
+            code: 'N/A'
+        }] : [])
+    ];
+
+    // Fallbacks for the insight generator
     const debitData = activeAccounts.filter(r => r.drUSD > r.crUSD).map(r => ({
         name: r.description,
         size: r.drUSD - r.crUSD,
         code: r.code
     }));
-
     const creditData = activeAccounts.filter(r => r.crUSD > r.drUSD).map(r => ({
         name: r.description,
         size: r.crUSD - r.drUSD,
@@ -257,18 +289,20 @@ const TrialBalance = ({ onBack }) => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Debits Visualization - Bar Chart */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {/* Assets Visualization */}
                             <div className="bg-gray-900 p-6 rounded-2xl shadow-xl border border-gray-800 h-[500px] flex flex-col">
                                 <h3 className="font-bold text-gray-300 mb-6 flex justify-between items-center text-lg">
-                                    <span>Top Debits (Assets/Expenses)</span>
-                                    <span className="text-xs text-blue-400 bg-blue-900/20 px-3 py-1 rounded-full border border-blue-900">Total: ${totals.drUSD.toLocaleString()}</span>
+                                    <span>Assets (What You Own)</span>
+                                    <span className="text-xs text-blue-400 bg-blue-900/20 px-3 py-1 rounded-full border border-blue-900">
+                                        Total: ${assetData.reduce((sum, item) => sum + item.size, 0).toLocaleString()}
+                                    </span>
                                 </h3>
                                 <div className="flex-1">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <BarChart
                                             layout="vertical"
-                                            data={debitData.sort((a, b) => b.size - a.size).slice(0, 10)}
+                                            data={assetData.sort((a, b) => b.size - a.size).slice(0, 10)}
                                             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                                         >
                                             <XAxis type="number" stroke="#6B7280" fontSize={12} tickFormatter={(val) => `$${val / 1000}k`} />
@@ -285,17 +319,48 @@ const TrialBalance = ({ onBack }) => {
                                 </div>
                             </div>
 
-                            {/* Credits Visualization - Bar Chart */}
+                            {/* Liabilities Visualization */}
                             <div className="bg-gray-900 p-6 rounded-2xl shadow-xl border border-gray-800 h-[500px] flex flex-col">
                                 <h3 className="font-bold text-gray-300 mb-6 flex justify-between items-center text-lg">
-                                    <span>Top Credits (Liabilities/Income)</span>
-                                    <span className="text-xs text-emerald-400 bg-emerald-900/20 px-3 py-1 rounded-full border border-emerald-900">Total: ${totals.crUSD.toLocaleString()}</span>
+                                    <span>Liabilities (What You Owe)</span>
+                                    <span className="text-xs text-rose-400 bg-rose-900/20 px-3 py-1 rounded-full border border-rose-900">
+                                        Total: ${liabilityData.reduce((sum, item) => sum + item.size, 0).toLocaleString()}
+                                    </span>
                                 </h3>
                                 <div className="flex-1">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <BarChart
                                             layout="vertical"
-                                            data={creditData.sort((a, b) => b.size - a.size).slice(0, 10)}
+                                            data={liabilityData.sort((a, b) => b.size - a.size).slice(0, 10)}
+                                            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                                        >
+                                            <XAxis type="number" stroke="#6B7280" fontSize={12} tickFormatter={(val) => `$${val / 1000}k`} />
+                                            <YAxis type="category" dataKey="name" width={120} stroke="#9CA3AF" fontSize={11} tick={{ fill: '#E5E7EB' }} />
+                                            <Tooltip
+                                                cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                                                contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151', color: '#F3F4F6' }}
+                                                itemStyle={{ color: '#FB7185' }}
+                                                formatter={(value) => [`$${value.toLocaleString()}`, 'Amount']}
+                                            />
+                                            <Bar dataKey="size" fill="#F43F5E" radius={[0, 4, 4, 0]} barSize={20} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+
+                            {/* Equity Visualization */}
+                            <div className="bg-gray-900 p-6 rounded-2xl shadow-xl border border-gray-800 h-[500px] flex flex-col">
+                                <h3 className="font-bold text-gray-300 mb-6 flex justify-between items-center text-lg">
+                                    <span>Equity (Net Worth)</span>
+                                    <span className="text-xs text-emerald-400 bg-emerald-900/20 px-3 py-1 rounded-full border border-emerald-900">
+                                        Total: ${equityData.reduce((sum, item) => sum + item.size, 0).toLocaleString()}
+                                    </span>
+                                </h3>
+                                <div className="flex-1">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart
+                                            layout="vertical"
+                                            data={equityData.sort((a, b) => b.size - a.size).slice(0, 10)}
                                             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                                         >
                                             <XAxis type="number" stroke="#6B7280" fontSize={12} tickFormatter={(val) => `$${val / 1000}k`} />
