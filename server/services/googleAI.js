@@ -463,14 +463,13 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
             - **Net Balance (All Time)**: ${summary.balance}
             - **Total Income (All Time)**: ${summary.income}
             - **Total Expenses (All Time)**: ${summary.expense}
-            - **Recent Monthly Net**: ${monthlyStats.length > 0 ? monthlyStats[monthlyStats.length - 1].net : "N/A"}
-            - **Latest 5 Years Totals/Summary**: ${yearlyStats && yearlyStats.length > 0 ? JSON.stringify(yearlyStats) : 'No yearly data available'}
-            - **Latest 36 Months Trends**: ${monthlyStats && monthlyStats.length > 0 ? JSON.stringify(monthlyStats) : 'No monthly data available'}
+            **Live Trial Balance (Aggregated across ALL historical transactions):**
+            ${context.accountBalances ? Object.entries(context.accountBalances).map(([code, bal]) => `- Account ${code}: $${bal.toFixed ? bal.toFixed(2) : bal}`).join('\n') : 'No aggregated balances available'}
             
             **Chart of Accounts**:
             ${codes ? JSON.stringify(codes) : 'No account codes available'}
             
-            **Recent General Ledger Transactions (Sample)**:
+            **Recent General Ledger Transactions (Last 500 Sample)**:
             ${recentTransactions && recentTransactions.length > 0 ? JSON.stringify(recentTransactions) : 'No recent transactions available'}
 
             **Harvested Bank Statements Context (from PDF OCR):**

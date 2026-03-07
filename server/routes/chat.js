@@ -49,10 +49,15 @@ router.post('/message', auth, async (req, res) => {
         let totalEquity = 0;
         let totalIncome = 0;
         let totalExpense = 0;
+        const accountBalances = {}; // Track precise totals per account code
 
         allTransactions.forEach(t => {
-            const code = t.accountCode?.code || "";
+            const code = t.accountCode?.code || "UNTAGGED";
             const amount = t.amount || 0;
+
+            // Track precise balance for this specific account type
+            if (!accountBalances[code]) accountBalances[code] = 0;
+            accountBalances[code] += amount;
 
             // Standard Accounting Equation Grouping
             if (code.startsWith('1')) totalAssets += amount;
@@ -131,7 +136,7 @@ router.post('/message', auth, async (req, res) => {
             equity: summaryStats[0] ? summaryStats[0].totalEquity.toFixed(2) : "0.00"
         };
 
-        const recentTxContext = allTransactions.slice(0, 100).map(t => ({
+        const recentTxContext = allTransactions.slice(0, 500).map(t => ({
             date: t.date ? t.date.toISOString().split('T')[0] : 'No Date',
             description: t.description,
             amount: t.amount,
@@ -174,6 +179,7 @@ router.post('/message', auth, async (req, res) => {
             },
             codes,
             recentTransactions: recentTxContext,
+            accountBalances, /* NEW: Full Trial Balance Aggregation */
             harvestedBankStatements: harvestedBankContext,
             summary,
             monthlyStats,
