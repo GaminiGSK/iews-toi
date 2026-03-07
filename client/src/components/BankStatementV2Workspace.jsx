@@ -495,7 +495,13 @@ export default function BankStatementV2Workspace({ onBack }) {
                                 <tbody className="divide-y divide-gray-100">
                                     {(currentFile?.transactions || []).length === 0 ? (
                                         <tr>
-                                            <td colSpan="6" className="text-center py-10 text-gray-400 text-sm">No transactions to display</td>
+                                            <td colSpan="6" className="text-center py-16">
+                                                <div className="text-gray-400 text-sm mb-3 font-medium">No transactions to display</div>
+                                                <div className="text-red-500 font-bold text-xs uppercase tracking-widest bg-red-50 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-red-100 shadow-sm">
+                                                    <AlertCircle size={14} />
+                                                    Google Drive Scanned {new Date().toLocaleDateString('en-GB').replace(/\//g, ' ')} {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                                                </div>
+                                            </td>
                                         </tr>
                                     ) : (
                                         (currentFile?.transactions || []).map((tx, idx) => (

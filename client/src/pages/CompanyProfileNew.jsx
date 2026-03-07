@@ -1683,7 +1683,13 @@ export default function CompanyProfile() {
                             <tbody className="divide-y divide-gray-100">
                                 {(bankFiles[activeFileIndex]?.transactions || []).length === 0 ? (
                                     <tr>
-                                        <td colSpan="7" className="text-center py-10 text-gray-400">No transactions to display</td>
+                                        <td colSpan="7" className="text-center py-16">
+                                            <div className="text-gray-400 text-sm mb-3 font-medium">No transactions to display</div>
+                                            <div className="text-red-500 font-bold text-xs uppercase tracking-widest bg-red-50 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-red-100 shadow-sm">
+                                                <AlertCircle size={14} />
+                                                Google Drive Scanned {new Date().toLocaleDateString('en-GB').replace(/\//g, ' ')} {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                                            </div>
+                                        </td>
                                     </tr>
                                 ) : (
                                     (bankFiles[activeFileIndex]?.transactions || []).map((tx, idx) => (

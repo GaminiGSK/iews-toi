@@ -249,8 +249,8 @@ const AIAssistant = () => {
     const GK_LOGO = "/gk-logo.png"; // Placeholder for user asset
 
     return (
-        // KEY CHANGE: Moved to Left-6, Items-Start to accommodate UI needs
-        <div className="fixed bottom-6 left-6 z-50 flex flex-col items-start pointer-events-none">
+        // KEY CHANGE: Moved to Right-6, Items-End to accommodate UI needs
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none">
             {/* Chat Window */}
             {isOpen && (
                 <div
@@ -462,7 +462,7 @@ const AIAssistant = () => {
                 </div>
             )}
 
-            {/* Toggle Button (Collapsed State) - Left Side */}
+            {/* Toggle Button (Collapsed State) - Right Side */}
             {!isOpen && (
                 <button
                     onClick={() => setIsOpen(true)}
