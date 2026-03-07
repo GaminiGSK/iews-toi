@@ -1799,9 +1799,20 @@ router.get('/trial-balance', auth, async (req, res) => {
 
         // Determine Report Year for Prior Year Rate Logic
         // Find max date in transactions, or default to current year
-        const currentYear = transactions.length > 0
-            ? new Date(Math.max(...transactions.map(t => new Date(t.date).getTime()))).getFullYear()
-            : new Date().getFullYear();
+        const availableYears = [...new Set(transactions.map(t => new Date(t.date).getFullYear()))].sort((a, b) => b - a);
+
+        const isAllYears = req.query.fiscalYear === 'all';
+        let currentYear;
+
+        if (isAllYears) {
+            currentYear = availableYears.length > 0 ? availableYears[0] : new Date().getFullYear();
+        } else {
+            currentYear = req.query.fiscalYear
+                ? parseInt(req.query.fiscalYear)
+                : (transactions.length > 0
+                    ? new Date(Math.max(...transactions.map(t => new Date(t.date).getTime()))).getFullYear()
+                    : new Date().getFullYear());
+        }
 
         const priorRateObj = rates.find(r => r.year === currentYear - 1);
         const priorRate = priorRateObj ? priorRateObj.rate : 4000; // Fallback 4000 if no rate set
@@ -1825,10 +1836,10 @@ router.get('/trial-balance', auth, async (req, res) => {
                 crKHR: 0,
 
                 // Prior Year Data (Static from Code Definition)
-                priorDrUSD: c.priorYearDr || 0,
-                priorCrUSD: c.priorYearCr || 0,
-                priorDrKHR: (c.priorYearDr || 0) * priorRate,
-                priorCrKHR: (c.priorYearCr || 0) * priorRate
+                priorDrUSD: !isAllYears ? (c.priorYearDr || 0) : 0,
+                priorCrUSD: !isAllYears ? (c.priorYearCr || 0) : 0,
+                priorDrKHR: !isAllYears ? ((c.priorYearDr || 0) * priorRate) : 0,
+                priorCrKHR: !isAllYears ? ((c.priorYearCr || 0) * priorRate) : 0
             };
         });
 
@@ -1854,10 +1865,10 @@ router.get('/trial-balance', auth, async (req, res) => {
             if (!reportMap[codeId]) return;
 
             // 1. Handle Bank Control (10130) Accumulation
-            if (txYear === currentYear) {
+            if (isAllYears || txYear === currentYear) {
                 netControlUSD += amtUSD;
                 netControlKHR += (amtUSD * rate);
-            } else if (txYear === currentYear - 1) {
+            } else if (!isAllYears && txYear === currentYear - 1) {
                 netControlPriorUSD += amtUSD;
                 netControlPriorKHR += (amtUSD * rate);
             }
@@ -1870,13 +1881,15 @@ router.get('/trial-balance', auth, async (req, res) => {
             let targetDrKHR = 'drKHR';
             let targetCrKHR = 'crKHR';
 
-            if (txYear === currentYear - 1) {
-                targetDr = 'priorDrUSD';
-                targetCr = 'priorCrUSD';
-                targetDrKHR = 'priorDrKHR';
-                targetCrKHR = 'priorCrKHR';
-            } else if (txYear !== currentYear) {
-                return; // Ignore years outside of Current & Prior Scope
+            if (!isAllYears) {
+                if (txYear === currentYear - 1) {
+                    targetDr = 'priorDrUSD';
+                    targetCr = 'priorCrUSD';
+                    targetDrKHR = 'priorDrKHR';
+                    targetCrKHR = 'priorCrKHR';
+                } else if (txYear !== currentYear) {
+                    return; // Ignore years outside of Current & Prior Scope
+                }
             }
 
             if (amtUSD > 0) {
@@ -1901,13 +1914,15 @@ router.get('/trial-balance', auth, async (req, res) => {
             let targetDrKHR = 'drKHR';
             let targetCrKHR = 'crKHR';
 
-            if (jeYear === currentYear - 1) {
-                targetDr = 'priorDrUSD';
-                targetCr = 'priorCrUSD';
-                targetDrKHR = 'priorDrKHR';
-                targetCrKHR = 'priorCrKHR';
-            } else if (jeYear !== currentYear) {
-                return;
+            if (!isAllYears) {
+                if (jeYear === currentYear - 1) {
+                    targetDr = 'priorDrUSD';
+                    targetCr = 'priorCrUSD';
+                    targetDrKHR = 'priorDrKHR';
+                    targetCrKHR = 'priorCrKHR';
+                } else if (jeYear !== currentYear) {
+                    return;
+                }
             }
 
             je.lines.forEach(line => {
@@ -1937,12 +1952,14 @@ router.get('/trial-balance', auth, async (req, res) => {
                 reportMap[bankCode._id].crKHR += Math.abs(netControlKHR);
             }
             // Prior Year
-            if (netControlPriorUSD > 0) {
-                reportMap[bankCode._id].priorDrUSD += netControlPriorUSD;
-                reportMap[bankCode._id].priorDrKHR += netControlPriorKHR;
-            } else {
-                reportMap[bankCode._id].priorCrUSD += Math.abs(netControlPriorUSD);
-                reportMap[bankCode._id].priorCrKHR += Math.abs(netControlPriorKHR);
+            if (!isAllYears) {
+                if (netControlPriorUSD > 0) {
+                    reportMap[bankCode._id].priorDrUSD += netControlPriorUSD;
+                    reportMap[bankCode._id].priorDrKHR += netControlPriorKHR;
+                } else {
+                    reportMap[bankCode._id].priorCrUSD += Math.abs(netControlPriorUSD);
+                    reportMap[bankCode._id].priorCrKHR += Math.abs(netControlPriorKHR);
+                }
             }
         }
 
@@ -1970,7 +1987,8 @@ router.get('/trial-balance', auth, async (req, res) => {
         res.json({
             report: report,
             totals: totals,
-            currentYear: currentYear,
+            currentYear: isAllYears ? 'all' : currentYear,
+            availableYears: availableYears,
             companyName: profile ? profile.companyNameEn : req.user.companyCode
         });
 
