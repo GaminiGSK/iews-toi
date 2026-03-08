@@ -9,7 +9,7 @@ const FinancialStatements = ({ onBack }) => {
     const [error, setError] = useState(null);
     const [viewMode, setViewMode] = useState('annual'); // 'annual' | 'monthly'
     const [companyName, setCompanyName] = useState('Your Company');
-    const [inThousands, setInThousands] = useState(false);
+    const [inUSD, setInUSD] = useState(false);
     const [report, setReport] = useState([]); // Annual Data
     const [monthlyData, setMonthlyData] = useState({ pl: [], bs: [] }); // Monthly Data
     const [activeTab, setActiveTab] = useState('pl'); // 'pl' | 'bs' | 'cf' | 'sce' | 'notes'
@@ -57,7 +57,8 @@ const FinancialStatements = ({ onBack }) => {
     };
 
     // --- Calculation Logic (Annual) ---
-    const scale = inThousands ? 1000 : 1;
+    const exchangeRate = 4050; // Standard yearly KHR to USD exchange rate
+    const scale = inUSD ? exchangeRate : 1;
 
     // 1. Profit & Loss Data (Annual)
     const revenue = report.filter(r => r.code.startsWith('4'));
@@ -180,7 +181,7 @@ const FinancialStatements = ({ onBack }) => {
         doc.setFontSize(10);
         doc.setFont('serif', 'normal');
         doc.text(`For the year ended 31 December ${new Date().getFullYear()}`, 14, 34);
-        doc.text(`Expressed in ${inThousands ? "thousands of " : ""}Cambodian Riel (KHR)`, 14, 40);
+        doc.text(`Expressed in ${inUSD ? "United States Dollar (USD)" : "Cambodian Riel (KHR)"}`, 14, 40);
 
         // Content
         if (activeTab === 'notes') {
@@ -255,11 +256,11 @@ const FinancialStatements = ({ onBack }) => {
                     <label className="flex items-center gap-2 cursor-pointer select-none bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-200 transition">
                         <input
                             type="checkbox"
-                            checked={inThousands}
-                            onChange={(e) => setInThousands(e.target.checked)}
+                            checked={inUSD}
+                            onChange={(e) => setInUSD(e.target.checked)}
                             className="rounded text-blue-600 focus:ring-blue-500 h-4 w-4"
                         />
-                        <span className="text-gray-700 font-sans text-xs font-semibold">Values in {inThousands ? "KHR'000" : "KHR"}</span>
+                        <span className="text-gray-700 font-sans text-xs font-semibold">View in {inUSD ? "USD" : "KHR"}</span>
                     </label>
                     <button onClick={handleDownloadPDF} className="bg-gray-900 hover:bg-black text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition shadow-md">
                         <Download size={16} /> Export PDF
@@ -281,7 +282,7 @@ const FinancialStatements = ({ onBack }) => {
                 </div>
                 <div className="flex gap-4 font-mono text-xs opacity-80">
                     <span>Code Standard: TOI-2025</span>
-                    <span>Currency: KHR</span>
+                    <span>Currency: {inUSD ? "USD" : "KHR"}</span>
                 </div>
             </div>
 
@@ -347,7 +348,7 @@ const FinancialStatements = ({ onBack }) => {
                             {activeTab === 'bs' ? 'As at' : 'For the year ended'} 31 December {new Date().getFullYear()}
                         </p>
                         <p className="text-xs text-gray-400 mt-2 uppercase font-sans">
-                            (Expressed in {inThousands ? "thousands of Cambodian Riel" : "Cambodian Riel"}) - {viewMode === 'monthly' ? 'Monthly Breakdown' : 'Annual Total'}
+                            (Expressed in {inUSD ? "United States Dollar (USD)" : "Cambodian Riel (KHR)"}) - {viewMode === 'monthly' ? 'Monthly Breakdown' : 'Annual Total'}
                         </p>
                     </div>
 
