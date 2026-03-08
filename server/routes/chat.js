@@ -44,25 +44,44 @@ router.post('/message', auth, async (req, res) => {
             .populate('accountCode')
             .lean();
 
-        let totalAssets = 0;
+        let bankCashBalance = 0;
+        allTransactions.forEach(t => bankCashBalance += (t.amount || 0));
+
+        let totalAssets = bankCashBalance;
         let totalLiabilities = 0;
         let totalEquity = 0;
         let totalIncome = 0;
         let totalExpense = 0;
         const accountBalances = {}; // Track precise totals per account code
 
+        // Also expose the raw implicitly tracked Bank account in the trial balance so AI sees it
+        accountBalances['Implicit_Bank_Cash'] = bankCashBalance;
+
         allTransactions.forEach(t => {
             const code = t.accountCode?.code || "UNTAGGED";
             const amount = t.amount || 0;
 
-            // Track precise balance for this specific account type
             if (!accountBalances[code]) accountBalances[code] = 0;
-            accountBalances[code] += amount;
 
-            // Standard Accounting Equation Grouping
-            if (code.startsWith('1')) totalAssets += amount;
-            else if (code.startsWith('2')) totalLiabilities += amount;
-            else if (code.startsWith('3')) totalEquity += amount;
+            // Single-entry accounting correction: 
+            // Assets (like fixed assets or cash on hand) increase when bank cash is spent (so amount is negative).
+            // Hence their standard positive value is the inverse of the cash flow.
+            if (code.startsWith('1')) {
+                accountBalances[code] += (-amount);
+                totalAssets += (-amount);
+            }
+            // Liabilities/Equity normal balances align with bank cash inflows (+amount -> liability grows)
+            else if (code.startsWith('2')) {
+                accountBalances[code] += amount;
+                totalLiabilities += amount;
+            }
+            else if (code.startsWith('3')) {
+                accountBalances[code] += amount;
+                totalEquity += amount;
+            }
+            else {
+                accountBalances[code] += amount;
+            }
 
             // Income / Expense tracking
             if (amount > 0 && !code.startsWith('1') && !code.startsWith('2') && !code.startsWith('3')) {
