@@ -4,6 +4,8 @@ const Bridge = require('../models/Bridge');
 const Transaction = require('../models/Transaction');
 const AccountCode = require('../models/AccountCode');
 const BankStatement = require('../models/BankStatement');
+const TaxTemplate = require('../models/TaxTemplate');
+const TaxPackage = require('../models/TaxPackage');
 
 // POST data to the bridge (External calls this)
 router.post('/send', async (req, res) => {
@@ -113,6 +115,16 @@ router.post('/sync', async (req, res) => {
             if (scope && scope.includes('BankStatements_2025')) {
                 const banks = await BankStatement.find({ companyCode }).lean();
                 responseData.data.BankStatements = banks;
+            }
+
+            if (scope && scope.includes('TOI_Templates')) {
+                const templates = await TaxTemplate.find({}).lean();
+                responseData.data.ToiTemplates = templates;
+            }
+
+            if (scope && scope.includes('TOI_Feed')) {
+                const packages = await TaxPackage.find({}).lean();
+                responseData.data.ToiPackages = packages;
             }
 
             return res.json(responseData);
