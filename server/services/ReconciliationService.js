@@ -8,6 +8,7 @@ const Transaction = require('../models/Transaction');
 const BankFile = require('../models/BankFile');
 const Bridge = require('../models/Bridge');
 const AccountCode = require('../models/AccountCode');
+const User = require('../models/User');
 
 // Setup Google Drive Auth
 let driveInstance = null;
@@ -122,6 +123,9 @@ async function cleanupDuplicateTransactions() {
 // -------------------------------------------------------------
 async function pushGlobalAuditorSync() {
     try {
+        const users = await User.find({ role: { $ne: 'admin' } }).lean();
+        const systemCapacity = users.filter(u => u.companyCode).length;
+
         const txns = await Transaction.find({}).populate('accountCode').lean();
         const companies = [...new Set(txns.map(t => t.companyCode).filter(Boolean))];
 
@@ -162,7 +166,9 @@ async function pushGlobalAuditorSync() {
         const content = {
             message: "Live Universal Audit Sync (Admin 999999 View)",
             timestamp: new Date().toISOString(),
-            totalUnitsActive: companies.length,
+            systemCapacityTotal: Math.max(200, systemCapacity), // Simulating full capacity projection alongside existing units
+            activeTransactionUnits: companies.length,
+            registeredUnitsFound: systemCapacity,
             globalStats: {
                 totalMoneyIn: globalMoneyIn,
                 totalMoneyOut: globalMoneyOut
