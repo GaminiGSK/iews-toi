@@ -546,213 +546,212 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null }) => {
                                         ))}
                                     </div>
                                 </div>
+                            </div>
 
-                                {/* RIGHT COLUMN */}
-                                <div className="flex flex-col border-l border-white/10 pl-12">
-                                    {/* REMOVED FOR P.1 AS IT MOVED TO TOP-LEFT */}
+                            {/* RIGHT COLUMN */}
+                            <div className="flex flex-col border-l border-white/10 pl-12">
+                                {/* REMOVED FOR P.1 AS IT MOVED TO TOP-LEFT */}
 
-                                    {/* SECTION: ACCOUNTING RECORDS */}
-                                    <div className="border border-white/10 overflow-hidden bg-slate-900/40 rounded-2xl shadow-2xl backdrop-blur-sm">
-                                        <div className="flex border-b border-white/5 min-h-[90px]">
-                                            <div className="w-[40%] border-r border-white/5 p-5 flex flex-col justify-center bg-white/[0.04]">
-                                                <span className="text-white font-bold text-base tracking-tight leading-tight mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការរក្សាទុកបញ្ជីគណនេយ្យ ៖</span>
-                                                <span className="text-slate-500 text-[10px] font-black uppercase tracking-wider leading-none">Accounting Records:</span>
-                                            </div>
-                                            <div className="flex-1 flex items-center px-6 gap-8 flex-wrap">
-                                                <div className="flex items-center gap-3">
-                                                    <input type="checkbox" className="w-5 h-5 accent-rose-500 bg-slate-800 border-white/10 rounded" />
-                                                    <div className="flex flex-col">
-                                                        <span className="text-white font-bold text-sm leading-tight mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រើប្រាស់កម្មវិធី (ឈ្មោះ) ៖</span>
-                                                        <span className="text-slate-500 text-[9px] font-black uppercase leading-none">Using Software:</span>
-                                                    </div>
-                                                    <input type="text" value={formData.accountingSoftware || ""} onChange={(e) => handleFormChange('accountingSoftware', e.target.value)} className="w-32 border-b border-white/10 bg-transparent outline-none text-white text-sm font-bold px-1" placeholder="..." />
-                                                </div>
-                                                <div className="flex items-center gap-3">
-                                                    <input type="checkbox" className="w-5 h-5 accent-rose-500 bg-slate-800 border-white/10 rounded" />
-                                                    <div className="flex flex-col">
-                                                        <span className="text-white font-bold text-sm leading-tight mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>មិនបានប្រើប្រាស់កម្មវិធី</span>
-                                                        <span className="text-slate-500 text-[9px] font-black uppercase leading-none">Not Using Software</span>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                {/* SECTION: ACCOUNTING RECORDS */}
+                                <div className="border border-white/10 overflow-hidden bg-slate-900/40 rounded-2xl shadow-2xl backdrop-blur-sm">
+                                    <div className="flex border-b border-white/5 min-h-[90px]">
+                                        <div className="w-[40%] border-r border-white/5 p-5 flex flex-col justify-center bg-white/[0.04]">
+                                            <span className="text-white font-bold text-base tracking-tight leading-tight mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការរក្សាទុកបញ្ជីគណនេយ្យ ៖</span>
+                                            <span className="text-slate-500 text-[10px] font-black uppercase tracking-wider leading-none">Accounting Records:</span>
                                         </div>
-
-                                        {/* SECTION: TAX COMPLIANCE */}
-                                        <div className="flex border-b border-white/5 min-h-[80px]">
-                                            <div className="w-[40%] border-r border-white/5 p-5 flex flex-col justify-center bg-white/[0.04]">
-                                                <span className="text-white font-bold text-base tracking-tight leading-tight mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ស្ថានភាពអនុលោមភាពសារពើពន្ធ</span>
-                                                <span className="text-slate-500 text-[10px] font-black uppercase tracking-wider leading-none">Tax Compliance Status:</span>
-                                            </div>
-                                            <div className="flex-1 flex items-center px-6 gap-10">
-                                                {['GOLD', 'SILVER', 'BRONZE'].map((level, i) => (
-                                                    <div key={i} className="flex items-center gap-3">
-                                                        <input type="checkbox" className="w-5 h-5 accent-amber-500 bg-slate-800 border-white/10 rounded" />
-                                                        <span className="text-white font-black text-xs tracking-widest">{level}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-
-                                        {/* SECTION: STATUTORY AUDIT */}
-                                        <div className="flex min-h-[90px]">
-                                            <div className="w-[40%] border-r border-white/5 p-5 flex flex-col justify-center bg-white/[0.04]">
-                                                <span className="text-white font-bold text-base tracking-tight leading-tight mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>តម្រូវឱ្យមានការធ្វើសវនកម្មដែលឬទេ?</span>
-                                                <span className="text-slate-500 text-[10px] font-black uppercase tracking-wider leading-none">Statutory Audit:</span>
-                                            </div>
-                                            <div className="flex-1 flex items-center px-6 gap-10">
-                                                <div className="flex items-center gap-3">
-                                                    <input type="checkbox" className="w-5 h-5 accent-rose-500 bg-slate-800 border-white/10 rounded" />
-                                                    <div className="flex flex-col">
-                                                        <span className="text-white font-bold text-sm leading-tight mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>តម្រូវឱ្យមាន (ភ្ជាប់របាយការណ៍)</span>
-                                                        <span className="text-slate-500 text-[9px] font-black uppercase opacity-60">Required</span>
-                                                    </div>
+                                        <div className="flex-1 flex items-center px-6 gap-8 flex-wrap">
+                                            <div className="flex items-center gap-3">
+                                                <input type="checkbox" className="w-5 h-5 accent-rose-500 bg-slate-800 border-white/10 rounded" />
+                                                <div className="flex flex-col">
+                                                    <span className="text-white font-bold text-sm leading-tight mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រើប្រាស់កម្មវិធី (ឈ្មោះ) ៖</span>
+                                                    <span className="text-slate-500 text-[9px] font-black uppercase leading-none">Using Software:</span>
                                                 </div>
-                                                <div className="flex items-center gap-3">
-                                                    <input type="checkbox" className="w-5 h-5 accent-rose-500 bg-slate-800 border-white/10 rounded" />
-                                                    <div className="flex flex-col">
-                                                        <span className="text-white font-bold text-sm leading-tight mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>មិនតម្រូវឱ្យមាន</span>
-                                                        <span className="text-slate-500 text-[9px] font-black uppercase opacity-60">Not Required</span>
-                                                    </div>
+                                                <input type="text" value={formData.accountingSoftware || ""} onChange={(e) => handleFormChange('accountingSoftware', e.target.value)} className="w-32 border-b border-white/10 bg-transparent outline-none text-white text-sm font-bold px-1" placeholder="..." />
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <input type="checkbox" className="w-5 h-5 accent-rose-500 bg-slate-800 border-white/10 rounded" />
+                                                <div className="flex flex-col">
+                                                    <span className="text-white font-bold text-sm leading-tight mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>មិនបានប្រើប្រាស់កម្មវិធី</span>
+                                                    <span className="text-slate-500 text-[9px] font-black uppercase leading-none">Not Using Software</span>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* SECTION: LEGAL FORM / BUSINESS OPERATIONS */}
-                                    <div className="mt-8 border border-white/10 overflow-hidden bg-slate-900/40 rounded-2xl shadow-xl backdrop-blur-sm">
-                                        <div className="border-b border-white/5 min-h-[60px] flex items-center px-6 bg-white/[0.04]">
-                                            <div className="flex flex-col">
-                                                <span className="text-white font-bold text-base tracking-tight leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>រូបភាពគតិយុត្ត ឬ ទម្រង់នៃការធ្វើអាជីវកម្ម ឬ សកម្មភាពផ្សេងៗ</span>
-                                                <span className="text-slate-500 text-[10px] font-black uppercase tracking-widest mt-0.5">Legal Form or Form of Business Operations:</span>
-                                            </div>
+                                    {/* SECTION: TAX COMPLIANCE */}
+                                    <div className="flex border-b border-white/5 min-h-[80px]">
+                                        <div className="w-[40%] border-r border-white/5 p-5 flex flex-col justify-center bg-white/[0.04]">
+                                            <span className="text-white font-bold text-base tracking-tight leading-tight mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ស្ថានភាពអនុលោមភាពសារពើពន្ធ</span>
+                                            <span className="text-slate-500 text-[10px] font-black uppercase tracking-wider leading-none">Tax Compliance Status:</span>
                                         </div>
-                                        <div className="p-6 grid grid-cols-2 gap-y-4 gap-x-10">
-                                            {[
-                                                { kh: "សហគ្រាសឯកបុគ្គល/រូបវន្តបុគ្គល", en: "Sole Proprietorship / Physical Person" },
-                                                { kh: "ក្រុមហ៊ុនសហកម្មសិទ្ធិទូទៅ", en: "General Partnership" },
-                                                { kh: "ក្រុមហ៊ុនសហកម្មសិទ្ធិមានកម្រិត", en: "Limited Partnership" },
-                                                { kh: "ក្រុមហ៊ុនឯកជនទទួលខុសត្រូវមានកម្រិតមានសមាជិកតែម្នាក់", en: "Single Member Private Limited" },
-                                                { kh: "ក្រុមហ៊ុនឯកជនទទួលខុសត្រូវមានកម្រិត", en: "Private Limited Company" },
-                                                { kh: "ក្រុមហ៊ុនមហាជនទទួលខុសត្រូវមានកម្រិត", en: "Public Limited Company" },
-                                                { kh: "ចំណែកក្នុងសហគ្រាសចម្រុះ", en: "Interest in Joint Venture" },
-                                                { kh: "សហគ្រាសសាធារណៈ", en: "Public Enterprise" },
-                                                { kh: "សហគ្រាសរដ្ឋ", en: "State Enterprise" },
-                                                { kh: "ក្រុមហ៊ុនរដ្ឋចម្រុះ", en: "State Joint Venture" },
-                                                { kh: "សាខាក្រុមហ៊ុនបរទេស", en: "Foreign Company's Branch" },
-                                                { kh: "ការិយាល័យតំណាង", en: "Representative Office" },
-                                                { kh: "អង្គការ NGO / សមាគម", en: "NGO / Association" },
-                                            ].map((type, idx) => (
-                                                <div key={idx} className="flex items-start gap-3 hover:bg-white/[0.04] p-2 transition-all rounded-lg group cursor-pointer">
-                                                    <input type="checkbox" className="w-4 h-4 accent-emerald-500 bg-slate-800 border-white/10 rounded mt-1 shadow-sm" />
-                                                    <div className="flex flex-col">
-                                                        <span className="text-slate-200 font-bold text-[13px] leading-tight transition-colors group-hover:text-white" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{type.kh}</span>
-                                                        <span className="text-slate-500 text-[9px] font-black uppercase mt-0.5">{type.en}</span>
-                                                    </div>
+                                        <div className="flex-1 flex items-center px-6 gap-10">
+                                            {['GOLD', 'SILVER', 'BRONZE'].map((level, i) => (
+                                                <div key={i} className="flex items-center gap-3">
+                                                    <input type="checkbox" className="w-5 h-5 accent-amber-500 bg-slate-800 border-white/10 rounded" />
+                                                    <span className="text-white font-black text-xs tracking-widest">{level}</span>
                                                 </div>
                                             ))}
-                                            <div className="flex items-start gap-3 p-2 col-span-1">
-                                                <input type="checkbox" className="w-4 h-4 accent-emerald-500 bg-slate-800 border-white/10 rounded mt-1" />
-                                                <div className="flex flex-col flex-1">
-                                                    <span className="text-slate-200 font-bold text-[13px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សហគ្រាសផ្សេងៗ</span>
-                                                    <div className="flex items-center gap-2 mt-1">
-                                                        <span className="text-slate-500 text-[9px] font-black uppercase whitespace-nowrap">Others:</span>
-                                                        <input type="text" value={formData.legalFormOther || ""} onChange={(e) => handleFormChange('legalFormOther', e.target.value)} className="flex-1 bg-transparent border-b border-white/10 outline-none text-slate-200 text-xs font-bold px-1 focus:border-emerald-500/50 transition-colors" placeholder="..." />
-                                                    </div>
-                                                </div>
-                                            </div>
                                         </div>
                                     </div>
 
-                                    {/* SECTION: INCOME TAX DETAILS */}
-                                    <div className="mt-8 border border-white/10 overflow-hidden bg-slate-900/40 rounded-2xl shadow-xl backdrop-blur-sm">
-                                        {/* EXEMPTION DETAILS */}
-                                        <div className="flex border-b border-white/5 min-h-[80px]">
-                                            <div className="w-[40%] border-r border-white/5 p-5 flex flex-col justify-center bg-white/[0.04]">
-                                                <span className="text-white font-bold text-base tracking-tight leading-tight mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការលើកលែងពន្ធលើចំណូល</span>
-                                                <span className="text-slate-500 text-[10px] font-black uppercase tracking-wider">Income Tax Exemption:</span>
+                                    {/* SECTION: STATUTORY AUDIT */}
+                                    <div className="flex min-h-[90px]">
+                                        <div className="w-[40%] border-r border-white/5 p-5 flex flex-col justify-center bg-white/[0.04]">
+                                            <span className="text-white font-bold text-base tracking-tight leading-tight mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>តម្រូវឱ្យមានការធ្វើសវនកម្មដែលឬទេ?</span>
+                                            <span className="text-slate-500 text-[10px] font-black uppercase tracking-wider leading-none">Statutory Audit:</span>
+                                        </div>
+                                        <div className="flex-1 flex items-center px-6 gap-10">
+                                            <div className="flex items-center gap-3">
+                                                <input type="checkbox" className="w-5 h-5 accent-rose-500 bg-slate-800 border-white/10 rounded" />
+                                                <div className="flex flex-col">
+                                                    <span className="text-white font-bold text-sm leading-tight mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>តម្រូវឱ្យមាន (ភ្ជាប់របាយការណ៍)</span>
+                                                    <span className="text-slate-500 text-[9px] font-black uppercase opacity-60">Required</span>
+                                                </div>
                                             </div>
-                                            <div className="flex-1 flex font-black">
-                                                <div className="w-[30%] border-r border-white/5 p-4 flex flex-col justify-center">
-                                                    <span className="text-slate-400 font-bold text-[11px] leading-tight mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំចំណូលដំបូង</span>
-                                                    <span className="text-slate-500 text-[9px] uppercase leading-none">First Revenue:</span>
-                                                    <input type="text" value={formData.firstRevenueYear || ""} onChange={(e) => handleFormChange('firstRevenueYear', e.target.value)} className="mt-1 w-full bg-transparent border-none outline-none text-white text-base font-bold focus:text-indigo-400 transition-colors" placeholder="..." />
-                                                </div>
-                                                <div className="w-[30%] border-r border-white/5 p-4 flex flex-col justify-center bg-white/[0.02]">
-                                                    <span className="text-slate-400 font-bold text-[11px] leading-tight mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំចំណេញដំបូង</span>
-                                                    <span className="text-slate-500 text-[9px] uppercase leading-none">First Profit:</span>
-                                                    <input type="text" value={formData.firstProfitYear || ""} onChange={(e) => handleFormChange('firstProfitYear', e.target.value)} className="mt-1 w-full bg-transparent border-none outline-none text-white text-base font-bold focus:text-indigo-400 transition-colors" placeholder="..." />
-                                                </div>
-                                                <div className="flex-1 p-4 flex flex-col justify-center">
-                                                    <div className="flex justify-between items-start">
-                                                        <div className="flex flex-col">
-                                                            <span className="text-slate-400 font-bold text-[11px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>រយៈពេលអនុគ្រោះ</span>
-                                                            <p className="text-slate-500 text-[9px] uppercase leading-none mt-0.5">Priority Period:</p>
-                                                        </div>
-                                                        <div className="flex flex-col items-center">
-                                                            <span className="text-slate-500 font-black text-[9px] uppercase">Year</span>
-                                                        </div>
-                                                    </div>
-                                                    <input type="text" value={formData.priorityPeriod || ""} onChange={(e) => handleFormChange('priorityPeriod', e.target.value)} className="mt-1 w-full bg-transparent border-none outline-none text-white text-base font-bold focus:text-indigo-400 transition-colors" placeholder="..." />
+                                            <div className="flex items-center gap-3">
+                                                <input type="checkbox" className="w-5 h-5 accent-rose-500 bg-slate-800 border-white/10 rounded" />
+                                                <div className="flex flex-col">
+                                                    <span className="text-white font-bold text-sm leading-tight mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>មិនតម្រូវឱ្យមាន</span>
+                                                    <span className="text-slate-500 text-[9px] font-black uppercase opacity-60">Not Required</span>
                                                 </div>
                                             </div>
                                         </div>
-
-                                        {/* TAX RATE SELECTION */}
-                                        <div className="flex border-b border-white/5 min-h-[80px]">
-                                            <div className="w-[40%] border-r border-white/5 p-5 flex flex-col justify-center bg-white/[0.04]">
-                                                <span className="text-white font-bold text-base tracking-tight leading-tight mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>អត្រាពន្ធលើចំណូល</span>
-                                                <span className="text-slate-500 text-[10px] font-black uppercase tracking-wider">Income Tax Rate:</span>
-                                            </div>
-                                            <div className="flex-1 flex items-center px-10 justify-between">
-                                                {["30%", "20%", "5%", "0%", "0-20%"].map((rate, i) => (
-                                                    <div key={i} className="flex flex-col items-center gap-1.5 group cursor-pointer">
-                                                        <input type="checkbox" className="w-4 h-4 accent-emerald-500 bg-slate-800 border-white/10 rounded group-hover:border-emerald-500/50 transition-all" />
-                                                        <span className="text-slate-300 font-black text-[10px] tracking-widest">{rate}</span>
-                                                    </div>
-                                                ))}
-                                                <div className="flex items-center gap-4 border-l border-white/10 pl-8">
-                                                    <div className="flex flex-col items-end">
-                                                        <span className="text-slate-300 font-bold text-[11px] leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>អត្រាតាមថ្នាក់</span>
-                                                        <span className="text-slate-500 text-[9px] font-black uppercase mt-1">Progressive</span>
-                                                    </div>
-                                                    <input type="checkbox" className="w-5 h-5 accent-emerald-500 bg-slate-800 border-white/10 rounded shadow-sm" />
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* TAX DUE & BOX 18 */}
-                                        <div className="flex min-h-[90px]">
-                                            <div className="w-[40%] border-r border-white/5 p-5 flex flex-col justify-center bg-white/[0.04]">
-                                                <span className="text-white font-bold text-base tracking-tight leading-tight mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ទឹកប្រាក់ពន្ធត្រូវបង់</span>
-                                                <span className="text-slate-500 text-[10px] font-black uppercase tracking-wider">Income Tax Due:</span>
-                                            </div>
-                                            <div className="w-[16%] border-r border-white/5 p-5 flex items-center">
-                                                <input type="text" value={formData.incomeTaxDue || ""} onChange={(e) => handleFormChange('incomeTaxDue', e.target.value)} className="w-full bg-transparent border-none outline-none text-emerald-400 text-xl font-black placeholder:text-emerald-500/20" placeholder="0.00" />
-                                            </div>
-                                            <div className="w-[10%] border-r border-white/5 flex flex-col items-center justify-center bg-rose-500/5 transition-colors hover:bg-rose-500/10">
-                                                <span className="text-rose-400 text-[9px] font-black uppercase tracking-tighter">Box</span>
-                                                <span className="text-rose-400 text-2xl font-black">18</span>
-                                            </div>
-                                            <div className="w-[18%] border-r border-white/5 p-4 flex flex-col justify-center bg-white/[0.02]">
-                                                <span className="text-slate-400 font-bold text-[10px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឥណទានពន្ធ</span>
-                                                <span className="text-slate-500 text-[8px] font-black uppercase mt-0.5">Tax Credit CF:</span>
-                                            </div>
-                                            <div className="flex-1 p-5 flex items-center">
-                                                <input type="text" value={formData.taxCreditCarriedForward || ""} onChange={(e) => handleFormChange('taxCreditCarriedForward', e.target.value)} className="w-full bg-transparent border-none outline-none text-white text-base font-black placeholder:text-white/10" placeholder="0.00" />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="mt-16 flex flex-col items-center group cursor-default">
-                                        <div className="w-px bg-slate-700 h-12 group-hover:h-20 transition-all duration-700" />
-                                        <p className="text-slate-500 font-black text-[10px] uppercase tracking-[0.8em] mt-4 group-hover:tracking-[1.2em] transition-all duration-700">Page 1 Version 1.0.1 - Blue Print</p>
                                     </div>
                                 </div>
 
+                                {/* SECTION: LEGAL FORM / BUSINESS OPERATIONS */}
+                                <div className="mt-8 border border-white/10 overflow-hidden bg-slate-900/40 rounded-2xl shadow-xl backdrop-blur-sm">
+                                    <div className="border-b border-white/5 min-h-[60px] flex items-center px-6 bg-white/[0.04]">
+                                        <div className="flex flex-col">
+                                            <span className="text-white font-bold text-base tracking-tight leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>រូបភាពគតិយុត្ត ឬ ទម្រង់នៃការធ្វើអាជីវកម្ម ឬ សកម្មភាពផ្សេងៗ</span>
+                                            <span className="text-slate-500 text-[10px] font-black uppercase tracking-widest mt-0.5">Legal Form or Form of Business Operations:</span>
+                                        </div>
+                                    </div>
+                                    <div className="p-6 grid grid-cols-2 gap-y-4 gap-x-10">
+                                        {[
+                                            { kh: "សហគ្រាសឯកបុគ្គល/រូបវន្តបុគ្គល", en: "Sole Proprietorship / Physical Person" },
+                                            { kh: "ក្រុមហ៊ុនសហកម្មសិទ្ធិទូទៅ", en: "General Partnership" },
+                                            { kh: "ក្រុមហ៊ុនសហកម្មសិទ្ធិមានកម្រិត", en: "Limited Partnership" },
+                                            { kh: "ក្រុមហ៊ុនឯកជនទទួលខុសត្រូវមានកម្រិតមានសមាជិកតែម្នាក់", en: "Single Member Private Limited" },
+                                            { kh: "ក្រុមហ៊ុនឯកជនទទួលខុសត្រូវមានកម្រិត", en: "Private Limited Company" },
+                                            { kh: "ក្រុមហ៊ុនមហាជនទទួលខុសត្រូវមានកម្រិត", en: "Public Limited Company" },
+                                            { kh: "ចំណែកក្នុងសហគ្រាសចម្រុះ", en: "Interest in Joint Venture" },
+                                            { kh: "សហគ្រាសសាធារណៈ", en: "Public Enterprise" },
+                                            { kh: "សហគ្រាសរដ្ឋ", en: "State Enterprise" },
+                                            { kh: "ក្រុមហ៊ុនរដ្ឋចម្រុះ", en: "State Joint Venture" },
+                                            { kh: "សាខាក្រុមហ៊ុនបរទេស", en: "Foreign Company's Branch" },
+                                            { kh: "ការិយាល័យតំណាង", en: "Representative Office" },
+                                            { kh: "អង្គការ NGO / សមាគម", en: "NGO / Association" },
+                                        ].map((type, idx) => (
+                                            <div key={idx} className="flex items-start gap-3 hover:bg-white/[0.04] p-2 transition-all rounded-lg group cursor-pointer">
+                                                <input type="checkbox" className="w-4 h-4 accent-emerald-500 bg-slate-800 border-white/10 rounded mt-1 shadow-sm" />
+                                                <div className="flex flex-col">
+                                                    <span className="text-slate-200 font-bold text-[13px] leading-tight transition-colors group-hover:text-white" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{type.kh}</span>
+                                                    <span className="text-slate-500 text-[9px] font-black uppercase mt-0.5">{type.en}</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        <div className="flex items-start gap-3 p-2 col-span-1">
+                                            <input type="checkbox" className="w-4 h-4 accent-emerald-500 bg-slate-800 border-white/10 rounded mt-1" />
+                                            <div className="flex flex-col flex-1">
+                                                <span className="text-slate-200 font-bold text-[13px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សហគ្រាសផ្សេងៗ</span>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className="text-slate-500 text-[9px] font-black uppercase whitespace-nowrap">Others:</span>
+                                                    <input type="text" value={formData.legalFormOther || ""} onChange={(e) => handleFormChange('legalFormOther', e.target.value)} className="flex-1 bg-transparent border-b border-white/10 outline-none text-slate-200 text-xs font-bold px-1 focus:border-emerald-500/50 transition-colors" placeholder="..." />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* SECTION: INCOME TAX DETAILS */}
+                                <div className="mt-8 border border-white/10 overflow-hidden bg-slate-900/40 rounded-2xl shadow-xl backdrop-blur-sm">
+                                    {/* EXEMPTION DETAILS */}
+                                    <div className="flex border-b border-white/5 min-h-[80px]">
+                                        <div className="w-[40%] border-r border-white/5 p-5 flex flex-col justify-center bg-white/[0.04]">
+                                            <span className="text-white font-bold text-base tracking-tight leading-tight mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការលើកលែងពន្ធលើចំណូល</span>
+                                            <span className="text-slate-500 text-[10px] font-black uppercase tracking-wider">Income Tax Exemption:</span>
+                                        </div>
+                                        <div className="flex-1 flex font-black">
+                                            <div className="w-[30%] border-r border-white/5 p-4 flex flex-col justify-center">
+                                                <span className="text-slate-400 font-bold text-[11px] leading-tight mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំចំណូលដំបូង</span>
+                                                <span className="text-slate-500 text-[9px] uppercase leading-none">First Revenue:</span>
+                                                <input type="text" value={formData.firstRevenueYear || ""} onChange={(e) => handleFormChange('firstRevenueYear', e.target.value)} className="mt-1 w-full bg-transparent border-none outline-none text-white text-base font-bold focus:text-indigo-400 transition-colors" placeholder="..." />
+                                            </div>
+                                            <div className="w-[30%] border-r border-white/5 p-4 flex flex-col justify-center bg-white/[0.02]">
+                                                <span className="text-slate-400 font-bold text-[11px] leading-tight mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំចំណេញដំបូង</span>
+                                                <span className="text-slate-500 text-[9px] uppercase leading-none">First Profit:</span>
+                                                <input type="text" value={formData.firstProfitYear || ""} onChange={(e) => handleFormChange('firstProfitYear', e.target.value)} className="mt-1 w-full bg-transparent border-none outline-none text-white text-base font-bold focus:text-indigo-400 transition-colors" placeholder="..." />
+                                            </div>
+                                            <div className="flex-1 p-4 flex flex-col justify-center">
+                                                <div className="flex justify-between items-start">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-slate-400 font-bold text-[11px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>រយៈពេលអនុគ្រោះ</span>
+                                                        <p className="text-slate-500 text-[9px] uppercase leading-none mt-0.5">Priority Period:</p>
+                                                    </div>
+                                                    <div className="flex flex-col items-center">
+                                                        <span className="text-slate-500 font-black text-[9px] uppercase">Year</span>
+                                                    </div>
+                                                </div>
+                                                <input type="text" value={formData.priorityPeriod || ""} onChange={(e) => handleFormChange('priorityPeriod', e.target.value)} className="mt-1 w-full bg-transparent border-none outline-none text-white text-base font-bold focus:text-indigo-400 transition-colors" placeholder="..." />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* TAX RATE SELECTION */}
+                                    <div className="flex border-b border-white/5 min-h-[80px]">
+                                        <div className="w-[40%] border-r border-white/5 p-5 flex flex-col justify-center bg-white/[0.04]">
+                                            <span className="text-white font-bold text-base tracking-tight leading-tight mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>អត្រាពន្ធលើចំណូល</span>
+                                            <span className="text-slate-500 text-[10px] font-black uppercase tracking-wider">Income Tax Rate:</span>
+                                        </div>
+                                        <div className="flex-1 flex items-center px-10 justify-between">
+                                            {["30%", "20%", "5%", "0%", "0-20%"].map((rate, i) => (
+                                                <div key={i} className="flex flex-col items-center gap-1.5 group cursor-pointer">
+                                                    <input type="checkbox" className="w-4 h-4 accent-emerald-500 bg-slate-800 border-white/10 rounded group-hover:border-emerald-500/50 transition-all" />
+                                                    <span className="text-slate-300 font-black text-[10px] tracking-widest">{rate}</span>
+                                                </div>
+                                            ))}
+                                            <div className="flex items-center gap-4 border-l border-white/10 pl-8">
+                                                <div className="flex flex-col items-end">
+                                                    <span className="text-slate-300 font-bold text-[11px] leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>អត្រាតាមថ្នាក់</span>
+                                                    <span className="text-slate-500 text-[9px] font-black uppercase mt-1">Progressive</span>
+                                                </div>
+                                                <input type="checkbox" className="w-5 h-5 accent-emerald-500 bg-slate-800 border-white/10 rounded shadow-sm" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* TAX DUE & BOX 18 */}
+                                    <div className="flex min-h-[90px]">
+                                        <div className="w-[40%] border-r border-white/5 p-5 flex flex-col justify-center bg-white/[0.04]">
+                                            <span className="text-white font-bold text-base tracking-tight leading-tight mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ទឹកប្រាក់ពន្ធត្រូវបង់</span>
+                                            <span className="text-slate-500 text-[10px] font-black uppercase tracking-wider">Income Tax Due:</span>
+                                        </div>
+                                        <div className="w-[16%] border-r border-white/5 p-5 flex items-center">
+                                            <input type="text" value={formData.incomeTaxDue || ""} onChange={(e) => handleFormChange('incomeTaxDue', e.target.value)} className="w-full bg-transparent border-none outline-none text-emerald-400 text-xl font-black placeholder:text-emerald-500/20" placeholder="0.00" />
+                                        </div>
+                                        <div className="w-[10%] border-r border-white/5 flex flex-col items-center justify-center bg-rose-500/5 transition-colors hover:bg-rose-500/10">
+                                            <span className="text-rose-400 text-[9px] font-black uppercase tracking-tighter">Box</span>
+                                            <span className="text-rose-400 text-2xl font-black">18</span>
+                                        </div>
+                                        <div className="w-[18%] border-r border-white/5 p-4 flex flex-col justify-center bg-white/[0.02]">
+                                            <span className="text-slate-400 font-bold text-[10px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឥណទានពន្ធ</span>
+                                            <span className="text-slate-500 text-[8px] font-black uppercase mt-0.5">Tax Credit CF:</span>
+                                        </div>
+                                        <div className="flex-1 p-5 flex items-center">
+                                            <input type="text" value={formData.taxCreditCarriedForward || ""} onChange={(e) => handleFormChange('taxCreditCarriedForward', e.target.value)} className="w-full bg-transparent border-none outline-none text-white text-base font-black placeholder:text-white/10" placeholder="0.00" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="mt-16 flex flex-col items-center group cursor-default">
+                                    <div className="w-px bg-slate-700 h-12 group-hover:h-20 transition-all duration-700" />
+                                    <p className="text-slate-500 font-black text-[10px] uppercase tracking-[0.8em] mt-4 group-hover:tracking-[1.2em] transition-all duration-700">Page 1 Version 1.0.1 - Blue Print</p>
+                                </div>
                             </div>
 
                             {/* SECTION: DECLARATION AND SIGNATURE */}
-                            <div className="mt-12 ml-6 mr-6 mb-16 border border-white/10 overflow-hidden bg-[#020617] rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col max-w-[1250px]">
+                            <div className="col-span-2 mt-12 mx-auto mb-16 border border-white/10 overflow-hidden bg-[#020617] rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col max-w-[1250px] w-full">
                                 <div className="bg-slate-900 border-b border-white/5 p-4 flex items-center justify-center">
                                     <span className="text-slate-400 font-black text-xs tracking-[0.3em] uppercase">សេចក្តីប្រកាស / DECLARATION</span>
                                 </div>
