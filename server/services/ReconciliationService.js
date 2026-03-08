@@ -6,6 +6,8 @@ const fs = require('fs');
 
 const Transaction = require('../models/Transaction');
 const BankFile = require('../models/BankFile');
+const Bridge = require('../models/Bridge');
+const AccountCode = require('../models/AccountCode');
 
 // Setup Google Drive Auth
 let driveInstance = null;
@@ -116,10 +118,84 @@ async function cleanupDuplicateTransactions() {
 }
 
 // -------------------------------------------------------------
+// Stage 3: Global Auditor Sync (Every Minute)
+// -------------------------------------------------------------
+async function pushGlobalAuditorSync() {
+    try {
+        const txns = await Transaction.find({}).populate('accountCode').lean();
+        const companies = [...new Set(txns.map(t => t.companyCode).filter(Boolean))];
+
+        let globalMoneyIn = 0;
+        let globalMoneyOut = 0;
+        let companyStats = {};
+
+        for (const company of companies) {
+            const companyTxns = txns.filter(t => t.companyCode === company);
+            let inSum = 0;
+            let outSum = 0;
+            let assets = 0;
+            let liabilities = 0;
+            let equity = 0;
+
+            companyTxns.forEach(t => {
+                if (t.amount > 0) inSum += t.amount;
+                else if (t.amount < 0) outSum += Math.abs(t.amount);
+
+                // Detailed ledger classification
+                const codeStr = t.accountCode ? t.accountCode.code.toString() : (t.code || "");
+                if (codeStr.startsWith('1')) assets += -(t.amount || 0); // Assuming standard debit/credit mappings
+                else if (codeStr.startsWith('2')) liabilities += (t.amount || 0);
+                else if (codeStr.startsWith('3')) equity += (t.amount || 0);
+            });
+
+            companyStats[company] = {
+                transactionCount: companyTxns.length,
+                moneyIn: inSum,
+                moneyOut: outSum,
+                assets, liabilities, equity
+            };
+
+            globalMoneyIn += inSum;
+            globalMoneyOut += outSum;
+        }
+
+        const content = {
+            message: "Live Universal Audit Sync (Admin 999999 View)",
+            timestamp: new Date().toISOString(),
+            totalUnitsActive: companies.length,
+            globalStats: {
+                totalMoneyIn: globalMoneyIn,
+                totalMoneyOut: globalMoneyOut
+            },
+            unitBreakdown: companyStats
+        };
+
+        // Clean up previous recurring syncs to prevent DB bloat
+        await Bridge.deleteMany({ source: 'System Guardian', type: 'status', 'content.message': "Live Universal Audit Sync (Admin 999999 View)" });
+
+        // Push fresh multi-tenant sync to the auditing bridge
+        await Bridge.create({
+            source: 'System Guardian',
+            type: 'status',
+            content: content,
+            status: 'unread'
+        });
+
+    } catch (e) {
+        console.error("[ReconciliationService] Global Auditor Sync Error:", e.message);
+    }
+}
+
+// -------------------------------------------------------------
 // Initialize Cron Jobs
 // -------------------------------------------------------------
 function startCronJobs() {
     console.log("[ReconciliationService] System Guardian cron jobs initialized.");
+
+    // Run this process every minute matching external auditor needs
+    cron.schedule('* * * * *', async () => {
+        await pushGlobalAuditorSync();
+    });
 
     // Run this process at Minute 0 of every hour ("0 * * * *")
     cron.schedule('0 * * * *', async () => {

@@ -1,0 +1,650 @@
+{
+  "metadata": {
+    "company": "GK_SMART_AI",
+    "standard": "IFRS/GDT_Cambodia",
+    "timestamp": "2026-03-08T01:24:41.133Z"
+  },
+  "data": {
+    "GeneralLedger": {
+      "Implicit_Bank_Cash": 351.4900000000016,
+      "10110 - Cash on hand": -78080.16999999998,
+      "17290 - COST OF AUTOMOBILE": 20810,
+      "61041 - Office Supply": -1018.67,
+      "61070 - Rental expenses": 315,
+      "61051 - Meal expense": -305,
+      "17250 - COST OF COMPUTER": 27455,
+      "17230 - COST OF FURNITURE": 304.99,
+      "40000 - Service Revenues": -305,
+      "61220 - BANK CHARGE": -195.02,
+      "30100 - Owner Drawings": -2540,
+      "61241 - Business Register": -25110
+    },
+    "TransactionLogs": [
+      {
+        "date": "2025-12-30",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 1,000.00 USD REF# 100FT36376433199 On Dec 30, 2025 10:59 AM REMARK: Registration",
+        "amount": -1000,
+        "account": "61241 - Business Register"
+      },
+      {
+        "date": "2025-12-11",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 3,000.00 USD REF# 100FT36207080313 On Dec 11, 2025 07:44 AM REMARK: Registration",
+        "amount": -3000,
+        "account": "61241 - Business Register"
+      },
+      {
+        "date": "2025-12-11",
+        "description": "TRF from/to other A/C in ABA. FUNDS RECEIVED FROM GUNASINGHA KASSAPA GAMINI (000 100 117) ORIGINAL AMOUNT 6,000.00 USD REF# 100FT36206870907 ON Dec 11, 2025 07:16 AM REMARK: NONUNICODE-",
+        "amount": 6000,
+        "account": "10110 - Cash on hand"
+      },
+      {
+        "date": "2025-11-25",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 500.00 USD REF# 100FT36061897580 On Nov 25, 2025 07:45 AM REMARK: Registration",
+        "amount": -500,
+        "account": "61241 - Business Register"
+      },
+      {
+        "date": "2025-11-23",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO APOLLO INSTITUTE OF ADVANCED SCIENCES AND APPLIED BUSINESS CO LTD 001106816 ORIGINAL AMOUNT 100.00 USD REF# 100FT36052005655 On Nov 23, 2025 09:55 PM REMARK: Accounting Training",
+        "amount": -100,
+        "account": "61041 - Office Supply"
+      },
+      {
+        "date": "2025-11-21",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 500.00 USD REF# 100FT36027882516 On Nov 21, 2025 04:45 AM REMARK: Registration",
+        "amount": -500,
+        "account": "61241 - Business Register"
+      },
+      {
+        "date": "2025-11-17",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO APOLLO INSTITUTE OF ADVANCED SCIENCES AND APPLIED BUSINESS CO LTD 001106816 ORIGINAL AMOUNT 100.00 USD REF# 100FT35996018335 On Nov 17, 2025 10:35 AM REMARK: Accounting Training",
+        "amount": -100,
+        "account": "61041 - Office Supply"
+      },
+      {
+        "date": "2025-11-13",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 2,000.00 USD REF# 100FT35964776032 On Nov 13, 2025 04:05 PM REMARK: Registration",
+        "amount": -2000,
+        "account": "61241 - Business Register"
+      },
+      {
+        "date": "2025-11-11",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 4,400.00 USD REF# 100FT35943471600 On Nov 11, 2025 10:10 AM REMARK: Registration",
+        "amount": -4400,
+        "account": "61241 - Business Register"
+      },
+      {
+        "date": "2025-11-11",
+        "description": "TRF from/to other A/C in ABA. FUNDS RECEIVED FROM GUNASINGHA KASSAPA GAMINI (008 338 910) ORIGINAL AMOUNT 5,900.00 USD REF# 100FT35943382410 ON Nov 11, 2025 09:59 AM REMARK: NONUNICODE-",
+        "amount": 5900,
+        "account": "10110 - Cash on hand"
+      },
+      {
+        "date": "2025-10-20",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 1,000.00 USD REF# 100FT35759501328 On Oct 20, 2025 12:50 PM REMARK: Registration",
+        "amount": -1000,
+        "account": "61241 - Business Register"
+      },
+      {
+        "date": "2025-10-20",
+        "description": "TRF from/to other A/C in ABA. FUNDS RECEIVED FROM SEN SREYNOCH (002 239 546) ORIGINAL AMOUNT 49.50 USD REF# 100FT35759607452 ON Oct 20, 2025 01:01 PM REMARK: NONUNICODE-Water machine",
+        "amount": 49.5,
+        "account": "10110 - Cash on hand"
+      },
+      {
+        "date": "2025-10-20",
+        "description": "TRF from/to other A/C in ABA. FUNDS RECEIVED FROM PICH DALY (000 916 202) ORIGINAL AMOUNT 4.00 USD REF# 100FT35760302841 ON Oct 20, 2025 02:14 PM REMARK: NONUNICODE-Jumper cables",
+        "amount": 4,
+        "account": "10110 - Cash on hand"
+      },
+      {
+        "date": "2025-10-11",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 3,000.00 USD REF# 100FT35684136433 On Oct 11, 2025 10:05 AM REMARK: Registration",
+        "amount": -3000,
+        "account": "61241 - Business Register"
+      },
+      {
+        "date": "2025-10-11",
+        "description": "TRF from/to other A/C in ABA. FUNDS RECEIVED FROM GUNASINGHA KASSAPA GAMINI (000 100 117) ORIGINAL AMOUNT 6,000.00 USD REF# 100FT35684097892 ON Oct 11, 2025 10:00 AM REMARK: NONUNICODE-Salary",
+        "amount": 6000,
+        "account": "10110 - Cash on hand"
+      },
+      {
+        "date": "2025-09-24",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 1,010.00 USD REF# 100FT35549489115 On Sep 24, 2025 12:20 PM REMARK: Registration",
+        "amount": -1010,
+        "account": "61241 - Business Register"
+      },
+      {
+        "date": "2025-09-21",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 1,200.00 USD REF# 100FT35536890835 On Sep 21, 2025 07:55 PM REMARK: Registration",
+        "amount": -1200,
+        "account": "61241 - Business Register"
+      },
+      {
+        "date": "2025-09-20",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 400.00 USD REF# 100FT35525380503 On Sep 20, 2025 10:10 AM REMARK: Registration",
+        "amount": -400,
+        "account": "61241 - Business Register"
+      },
+      {
+        "date": "2025-09-19",
+        "description": "Merchant installation/configuration fee. Merchant installation/configuration fee ORIGINAL AMOUNT 100.00 USD REF# 100FT35519831192 ON Sep 19, 2025 04:23 PM. REMARK: Configuration Fee for Payway GK SMART",
+        "amount": -100,
+        "account": "61041 - Office Supply"
+      },
+      {
+        "date": "2025-09-18",
+        "description": "TRF from/to other A/C in ABA. FUNDS RECEIVED FROM GUNASINGHA KASSAPA GAMINI (008 338 910) ORIGINAL AMOUNT 2,000.00 USD REF# 100FT35509501967 ON Sep 18, 2025 12:51 PM REMARK: NONUNICODE-",
+        "amount": 2000,
+        "account": "10110 - Cash on hand"
+      },
+      {
+        "date": "2025-09-11",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 1,000.00 USD REF# 100FT35453010579 On Sep 11, 2025 02:55 PM REMARK: Registration",
+        "amount": -1000,
+        "account": "61241 - Business Register"
+      },
+      {
+        "date": "2025-09-10",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 3,500.00 USD REF# 100FT35445871243 On Sep 10, 2025 06:00 PM REMARK: Registration",
+        "amount": -3500,
+        "account": "61241 - Business Register"
+      },
+      {
+        "date": "2025-09-10",
+        "description": "TRF from/to other A/C in ABA. FUNDS RECEIVED FROM GUNASINGHA KASSAPA GAMINI (000 100 117) ORIGINAL AMOUNT 6,200.00 USD REF# 100FT35445727159 ON Sep 10, 2025 05:48 PM REMARK: NONUNICODE-",
+        "amount": 6200,
+        "account": "10110 - Cash on hand"
+      },
+      {
+        "date": "2025-09-01",
+        "description": "Interest PMNT or CAPT(ACCR DE1). Interest PMNT or CAPT(ACCR DE1) Date 31-AUG-25 Time 31-AUG-25 11.14.36.602395 PM Amount .11 USD",
+        "amount": 0.11,
+        "account": "10110 - Cash on hand"
+      },
+      {
+        "date": "2025-08-14",
+        "description": "OTT Charge Fee (Commission). INTERNATIONAL OUTWARD TRANSFER FEE TO GGMT PTE LTD 100FT25081407386 REF# 100FT35235797754",
+        "amount": -18,
+        "account": "61041 - Office Supply"
+      },
+      {
+        "date": "2025-08-14",
+        "description": "OTT Single. INTERNATIONAL FUNDS TRANSFER TO GGMT PTE LTD 100FT25081407386 SINGAPORE SWIFT OCBCSGSGBRN OUR FEE 63.00 USD ORIGINAL AMOUNT 12,000.00 USD REF# 100FT35235797750 On Aug 14, 2025 05:50 PM REMARK: OTHER: Vish",
+        "amount": -12000,
+        "account": "17250 - COST OF COMPUTER"
+      },
+      {
+        "date": "2025-08-14",
+        "description": "OTT Charge Cable. CABLE FEE FOR INTERNATIONAL OUTWARD TRANSFER TO GGMT PTE LTD 100FT25081407386 REF# 100FT35235797752",
+        "amount": -15,
+        "account": "61041 - Office Supply"
+      },
+      {
+        "date": "2025-08-14",
+        "description": "OTT Charge (Our Fee). INTERNATIONAL OUTWARD TRANSFER FEE TO GGMT PTE LTD ?100FT25081407386 REF# 100FT35235797757",
+        "amount": -30,
+        "account": "61041 - Office Supply"
+      },
+      {
+        "date": "2025-08-13",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 400.00 USD REF# 100FT35228441004 On Aug 13, 2025 05:55 PM REMARK: Registration",
+        "amount": -400,
+        "account": "61241 - Business Register"
+      },
+      {
+        "date": "2025-08-11",
+        "description": "TRF from/to other A/C in ABA. FUNDS RECEIVED FROM GUNASINGHA KASSAPA GAMINI (009 165 879) ORIGINAL AMOUNT 8,600.00 USD REF# 100FT35208460347 ON Aug 11, 2025 09:21 AM REMARK: NONUNICODE-Salary",
+        "amount": 8600,
+        "account": "10110 - Cash on hand"
+      },
+      {
+        "date": "2025-08-07",
+        "description": "OTT Charge (Our Fee). INTERNATIONAL OUTWARD TRANSFER FEE TO GGMT PTE LTD ?100FT25080703207 REF# 100FT35183079524",
+        "amount": -30,
+        "account": "61041 - Office Supply"
+      },
+      {
+        "date": "2025-08-07",
+        "description": "OTT Charge Fee (Commission). INTERNATIONAL OUTWARD TRANSFER FEE TO GGMT PTE LTD 100FT25080703207 REF# 100FT35183079523",
+        "amount": -15,
+        "account": "61041 - Office Supply"
+      },
+      {
+        "date": "2025-08-07",
+        "description": "OTT Charge Cable. CABLE FEE FOR INTERNATIONAL OUTWARD TRANSFER TO GGMT PTE LTD 100FT25080703207 REF# 100FT35183079521",
+        "amount": -15,
+        "account": "61220 - BANK CHARGE"
+      },
+      {
+        "date": "2025-08-07",
+        "description": "OTT Single. INTERNATIONAL FUNDS TRANSFER TO GGMT PTE LTD 100FT25080703207 SINGAPORE SWIFT OCBCSGSGBRN OUR FEE 60.00 USD ORIGINAL AMOUNT 2,500.00 USD REF# 100FT35183079518 On Aug 07, 2025 08:35 PM REMARK: OTHER: vish",
+        "amount": -2500,
+        "account": "17250 - COST OF COMPUTER"
+      },
+      {
+        "date": "2025-08-01",
+        "description": "INT Withhold Tax(PMNT or CAPT). Withholding tax on interest INT Withhold Tax(PMNT or CAPT) Date 31-JUL-25 Time 31-JUL-25 10.49.37.194404 PM Amount .02 USD",
+        "amount": -0.02,
+        "account": "61220 - BANK CHARGE"
+      },
+      {
+        "date": "2025-08-01",
+        "description": "Interest PMNT or CAPT(ACCR DE1). Interest PMNT or CAPT(ACCR DE1) Date 31-JUL-25 Time 31-JUL-25 10.49.37.183909 PM Amount .49 USD",
+        "amount": 0.49,
+        "account": "10110 - Cash on hand"
+      },
+      {
+        "date": "2025-07-18",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 1,400.00 USD REF# 100FT35032224850 On Jul 18, 2025 11:50 AM REMARK: Registration",
+        "amount": -1400,
+        "account": "61241 - Business Register"
+      },
+      {
+        "date": "2025-07-15",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 800.00 USD REF# 100FT35010274496 On Jul 15, 2025 01:20 PM REMARK: Registration",
+        "amount": -800,
+        "account": "61241 - Business Register"
+      },
+      {
+        "date": "2025-07-10",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 4,500.00 USD REF# 100FT34973833766 On Jul 10, 2025 04:45 PM REMARK: Lifeng reg",
+        "amount": -4500,
+        "account": "17250 - COST OF COMPUTER"
+      },
+      {
+        "date": "2025-07-06",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 400.00 USD REF# 100FT34945543916 On Jul 06, 2025 09:30 PM REMARK: Lifeng reg",
+        "amount": -400,
+        "account": "17250 - COST OF COMPUTER"
+      },
+      {
+        "date": "2025-07-04",
+        "description": "Single transfer from/to ABA account.\nFUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 530.00 USD REF# 100FT34929803422 On Jul 04, 2025 06:40 PM REMARK: Lifeng reg",
+        "amount": -530,
+        "account": "17250 - COST OF COMPUTER"
+      },
+      {
+        "date": "2025-07-04",
+        "description": "TRF from/to other A/C in ABA.\nFUNDS RECEIVED FROM GUNASINGHA KASSAPA GAMINI (000 100 117) ORIGINAL AMOUNT 1,550.00 USD REF# 100FT34926061972 ON Jul 04, 2025 11:06 AM REMARK: NONUNICODE-TBCG Soth",
+        "amount": 1550,
+        "account": "10110 - Cash on hand"
+      },
+      {
+        "date": "2025-07-02",
+        "description": "TRF from/to other A/C in ABA.\nFUNDS RECEIVED FROM GUNASINGHA KASSAPA GAMINI (000 100 117) ORIGINAL AMOUNT 1,600.00 USD REF# 100FT34910804586 ON Jul 02, 2025 10:28 AM REMARK: NONUNICODE-Capital",
+        "amount": 1600,
+        "account": "10110 - Cash on hand"
+      },
+      {
+        "date": "2025-07-01",
+        "description": "TRF from/to other A/C in ABA.\nFUNDS RECEIVED FROM GUNASINGHA KASSAPA GAMINI (009 165 879) ORIGINAL AMOUNT 1,450.00 USD REF# 100FT34903512899 ON Jul 01, 2025 11:43 AM REMARK: NONUNICODE-",
+        "amount": 1450,
+        "account": "10110 - Cash on hand"
+      },
+      {
+        "date": "2025-07-01",
+        "description": "INT Withhold Tax(PMNT or CAPT).\nWithholding tax on interest INT Withhold Tax(PMNT or CAPT) Date 30-JUN-25 Time 30-JUN-25 11.42.14.746241 PM Amount .02 USD",
+        "amount": -0.02,
+        "account": "61041 - Office Supply"
+      },
+      {
+        "date": "2025-07-01",
+        "description": "Interest PMNT or CAPT(ACCR DE1).\nInterest PMNT or CAPT(ACCR DE1) Date 30-JUN-25 Time 30-JUN-25 11.42.14.735876 PM Amount .6 USD",
+        "amount": 0.6,
+        "account": "10110 - Cash on hand"
+      },
+      {
+        "date": "2025-06-10",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 540.00 USD REF# 100FT34752014607 On Jun 09, 2025 11:45 PM REMARK: owner capital take back",
+        "amount": -540,
+        "account": "30100 - Owner Drawings"
+      },
+      {
+        "date": "2025-06-05",
+        "description": "Cardless deposit by QR. CASH DEPOSIT FROM QR DEPOSIT TO OTHER ACCOUNT ORIGINAL AMOUNT 1,500.00 USD AT ABA CRM MITTAPHEAP BRANCH Phnom Penh, No 37ABCD ID: R1221211 ON Jun 05, 2025 07:41 PM REF# 122CDP52515601YD RRN# 001186529462",
+        "amount": 1500,
+        "account": "10110 - Cash on hand"
+      },
+      {
+        "date": "2025-06-03",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 400.00 USD REF# 100FT34703666404 On Jun 03, 2025 10:35 AM REMARK: owner capital take back",
+        "amount": -400,
+        "account": "30100 - Owner Drawings"
+      },
+      {
+        "date": "2025-06-01",
+        "description": "Interest PMNT or CAPT(ACCR DE1). Interest PMNT or CAPT(ACCR DE1) Date 31-MAY-25 Time 31-MAY-25 11.01.38.580288 PM Amount .1 USD",
+        "amount": 0.1,
+        "account": "10110 - Cash on hand"
+      },
+      {
+        "date": "2025-06-01",
+        "description": "Interest PMNT or CAPT(ACCR DE1). Interest PMNT or CAPT(ACCR DE1)Date 31-MAY-25 Time 31-MAY-25 11.01.38.580288 PM Amount .1 USD",
+        "amount": 0.1,
+        "account": "10110 - Cash on hand"
+      },
+      {
+        "date": "2025-06-01",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 600.00 USD REF# 100FT34689602563 On Jun 01, 2025 12:15 PM REMARK: owner capital take back",
+        "amount": -600,
+        "account": "30100 - Owner Drawings"
+      },
+      {
+        "date": "2025-05-28",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 1,000.00 USD REF# 100FT34661661888 On May 28, 2025 11:30 AM REMARK: owner capital take back",
+        "amount": -1000,
+        "account": "30100 - Owner Drawings"
+      },
+      {
+        "date": "2025-05-22",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 4,000.00 USD REF# 100FT34620426549 On May 22, 2025 10:15 AM REMARK: owner capital take back",
+        "amount": -4000,
+        "account": "17290 - COST OF AUTOMOBILE"
+      },
+      {
+        "date": "2025-05-19",
+        "description": "TRF from/to other A/C in ABA. FUNDS RECEIVED FROM GUNASINGHA KASSAPA GAMINI (000 100 117) ORIGINAL AMOUNT 5,000.00 USD REF# 100FT34602593395 ON May 19, 2025 04:32 PM REMARK: NONUNICODE-Owners Capital",
+        "amount": 5000,
+        "account": "10110 - Cash on hand"
+      },
+      {
+        "date": "2025-05-15",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 1,500.00 USD REF# 100FT34573161748 On May 15, 2025 10:25 AM REMARK: Dushmantha",
+        "amount": -1500,
+        "account": "17290 - COST OF AUTOMOBILE"
+      },
+      {
+        "date": "2025-05-12",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 700.00 USD REF# 100FT34556205751 On May 12, 2025 06:00 PM REMARK: Dushmantha",
+        "amount": -700,
+        "account": "17250 - COST OF COMPUTER"
+      },
+      {
+        "date": "2025-05-10",
+        "description": "TRF from/to other A/C in ABA. FUNDS RECEIVED FROM GUNASINGHA KASSAPA GAMINI (000 100 117) ORIGINAL AMOUNT 5,500.00 USD REF# 100FT34540655850 ON May 10, 2025 03:36 PM REMARK: NONUNICODE-Capital",
+        "amount": 5500,
+        "account": "10110 - Cash on hand"
+      },
+      {
+        "date": "2025-05-10",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 1,100.00 USD REF# 100FT34537076255 On May 10, 2025 07:10 AM REMARK: Dushmantha",
+        "amount": -1100,
+        "account": "17250 - COST OF COMPUTER"
+      },
+      {
+        "date": "2025-05-06",
+        "description": "Tax Revenue Collection by Account. TAX PAYMENT FROM GK SMART 003 102 780 10.65 USD #100GDTA251260735 ON May 06, 2025 04:59 PM REMARK: TAX PAYMENT ON 04-2025",
+        "amount": -10.65,
+        "account": "61041 - Office Supply"
+      },
+      {
+        "date": "2025-04-19",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 300.00 USD REF# 100FT34395643040 On Apr 19, 2025 06:30 AM REMARK: Dushmantha",
+        "amount": -300,
+        "account": "17250 - COST OF COMPUTER"
+      },
+      {
+        "date": "2025-04-15",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 2,000.00 USD REF# 100FT34376577677 On Apr 15, 2025 09:50 AM REMARK: Dushmantha",
+        "amount": -2000,
+        "account": "17290 - COST OF AUTOMOBILE"
+      },
+      {
+        "date": "2025-04-11",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 1,000.00 USD REF# 100FT34352940004 On Apr 11, 2025 11:50 AM REMARK: Dushmantha",
+        "amount": -1000,
+        "account": "17250 - COST OF COMPUTER"
+      },
+      {
+        "date": "2025-04-10",
+        "description": "TRF from/to other A/C in ABA. FUNDS RECEIVED FROM GUNASINGHA KASSAPA GAMINI (000 100 117) ORIGINAL AMOUNT 5,600.00 USD REF# 100FT34348031391 ON Apr 10, 2025 05:49 PM REMARK: NONUNICODE-",
+        "amount": 5600,
+        "account": "10110 - Cash on hand"
+      },
+      {
+        "date": "2025-04-02",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 2,020.00 USD REF# 100FT34287583172 On Apr 02, 2025 09:00 AM REMARK: Xin",
+        "amount": -2020,
+        "account": "17290 - COST OF AUTOMOBILE"
+      },
+      {
+        "date": "2025-03-20",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 1,000.00 USD REF# 100FT34203724024 On Mar 20, 2025 03:40 PM REMARK: Family",
+        "amount": -1000,
+        "account": "17250 - COST OF COMPUTER"
+      },
+      {
+        "date": "2025-03-11",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 1,200.00 USD REF# 100FT34147087249 On Mar 11, 2025 10:10 PM REMARK:",
+        "amount": -1200,
+        "account": "17290 - COST OF AUTOMOBILE"
+      },
+      {
+        "date": "2025-03-11",
+        "description": "TRF from/to other A/C in ABA. FUNDS RECEIVED FROM GUNASINGHA KASSAPA GAMINI (000 100 117) ORIGINAL AMOUNT 2,090.00 USD REF# 100FT34142986460 ON Mar 11, 2025 12:44 PM REMARK: NONUNICODE-Capital",
+        "amount": 2090,
+        "account": "10110 - Cash on hand"
+      },
+      {
+        "date": "2025-03-10",
+        "description": "TRF from/to other A/C in ABA. FUNDS RECEIVED FROM GUNASINGHA KASSAPA GAMINI (000 100 117) ORIGINAL AMOUNT 3,700.00 USD REF# 100FT34137771295 ON Mar 10, 2025 05:05 PM REMARK: NONUNICODE-",
+        "amount": 3700,
+        "account": "10110 - Cash on hand"
+      },
+      {
+        "date": "2025-03-01",
+        "description": "Interest PMNT or CAPT(ACCR DE1). Interest PMNT or CAPT(ACCR DE1) Date 28-FEB-25 Time 28-FEB-25 11.18.20.404542 PM Amount .05 USD",
+        "amount": 0.05,
+        "account": "10110 - Cash on hand"
+      },
+      {
+        "date": "2025-02-21",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 2,000.00 USD REF# 100FT34024547421 On Feb 21, 2025 01:30 PM REMARK:",
+        "amount": -2000,
+        "account": "17290 - COST OF AUTOMOBILE"
+      },
+      {
+        "date": "2025-02-18",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 500.00 USD REF# 100FT34009313262 On Feb 18, 2025 09:50 PM REMARK:",
+        "amount": -500,
+        "account": "17250 - COST OF COMPUTER"
+      },
+      {
+        "date": "2025-02-17",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 1,000.00 USD REF# 100FT34000463516 On Feb 17, 2025 03:35 PM REMARK:",
+        "amount": -1000,
+        "account": "17250 - COST OF COMPUTER"
+      },
+      {
+        "date": "2025-02-12",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 008338910 ORIGINAL AMOUNT 1,600.00 USD REF# 100FT33969331850 On Feb 12, 2025 04:50 PM REMARK: GK BACK UP",
+        "amount": -1600,
+        "account": "17290 - COST OF AUTOMOBILE"
+      },
+      {
+        "date": "2025-02-10",
+        "description": "OTT Single. INTERNATIONAL FUNDS TRANSFER TO GGMT PTE LTD 100FT25021009525 SINGAPORE SWIFT OCBCSGSGBRN OUR FEE 60.00 USD ORIGINAL AMOUNT 5,000.00 USD REF# 100FT33957436494 On Feb 10, 2025 07:50 PM REMARK: OTHER: Head office fees.",
+        "amount": -5000,
+        "account": "17290 - COST OF AUTOMOBILE"
+      },
+      {
+        "date": "2025-02-10",
+        "description": "TRF from/to other A/C in ABA. FUNDS RECEIVED FROM GUNASINGHA KASSAPA GAMINI (009 165 879) ORIGINAL AMOUNT 10,700.00 USD REF# 100FT33957222164 ON Feb 10, 2025 07:21 PM REMARK: NONUNICODE-",
+        "amount": 10700,
+        "account": "10110 - Cash on hand"
+      },
+      {
+        "date": "2025-02-10",
+        "description": "OTT Charge Cable. CABLE FEE FOR INTERNATIONAL OUTWARD TRANSFER TO GGMT PTE LTD 100FT25021009525 REF# 100FT33957436496",
+        "amount": -15,
+        "account": "61220 - BANK CHARGE"
+      },
+      {
+        "date": "2025-02-10",
+        "description": "OTT Charge Fee (Commission). INTERNATIONAL OUTWARD TRANSFER FEE TO GGMT PTE LTD 100FT25021009525 REF# 100FT33957436499",
+        "amount": -15,
+        "account": "61220 - BANK CHARGE"
+      },
+      {
+        "date": "2025-02-10",
+        "description": "OTT Charge (Our Fee). INTERNATIONAL OUTWARD TRANSFER FEE TO GGMT PTE LTD ?100FT25021009525 REF# 100FT33957436503",
+        "amount": -30,
+        "account": "61220 - BANK CHARGE"
+      },
+      {
+        "date": "2024-12-19",
+        "description": "OTT Charge (Our Fee). INTERNATIONAL OUTWARD TRANSFER FEE TO DEZIREKONNECTION?100FT24121900492 REF# 100FT33637286423",
+        "amount": -30,
+        "account": "61220 - BANK CHARGE"
+      },
+      {
+        "date": "2024-12-19",
+        "description": "OTT Charge Fee (Commission). INTERNATIONAL OUTWARD TRANSFER FEE TO DEZIREKONNECTION 100FT24121900492 REF# 100FT33637286422",
+        "amount": -15,
+        "account": "61220 - BANK CHARGE"
+      },
+      {
+        "date": "2024-12-19",
+        "description": "OTT Charge Cable. CABLE FEE FOR INTERNATIONAL OUTWARD TRANSFER TO DEZIREKONNECTION 100FT24121900492 REF# 100FT33637286420",
+        "amount": -15,
+        "account": "61220 - BANK CHARGE"
+      },
+      {
+        "date": "2024-12-19",
+        "description": "OTT Single. INTERNATIONAL FUNDS TRANSFER TO DEZIREKONNECTION 100FT24121900492 INDIA SWIFT CNRBINBBBFD OUR FEE 60.00 USD ORIGINAL AMOUNT 810.00 USD REF# 100FT33637286417 On Dec 19, 2024 10:30 AM REMARK: OTHER: Travel",
+        "amount": -810,
+        "account": "17250 - COST OF COMPUTER"
+      },
+      {
+        "date": "2024-12-19",
+        "description": "TRF from/to other A/C in ABA. FUNDS RECEIVED FROM GUNASINGHA KASSAPA GAMINI (008 338 910) ORIGINAL AMOUNT 800.00 USD REF# 100FT33637262471 ON Dec 19, 2024 10:25 AM REMARK: NONUNICODE-",
+        "amount": 800,
+        "account": "10110 - Cash on hand"
+      },
+      {
+        "date": "2024-12-01",
+        "description": "Interest PMNT or CAPT(ACCR DE1). Interest PMNT or CAPT(ACCR DE1) Date 30-NOV-24 Time 30-NOV-24 11.16.09.416219 PM Amount .06 USD",
+        "amount": 0.06,
+        "account": "10110 - Cash on hand"
+      },
+      {
+        "date": "2024-11-21",
+        "description": "OTT Charge (Our Fee). INTERNATIONAL OUTWARD TRANSFER FEE TO DEZIREKONNECTION?100FT24112104257 REF# 100FT33477716380",
+        "amount": -30,
+        "account": "61220 - BANK CHARGE"
+      },
+      {
+        "date": "2024-11-21",
+        "description": "OTT Charge Fee (Commission). INTERNATIONAL OUTWARD TRANSFER FEE TO DEZIREKONNECTION 100FT24112104257 REF# 100FT33477716379",
+        "amount": -15,
+        "account": "61220 - BANK CHARGE"
+      },
+      {
+        "date": "2024-11-21",
+        "description": "OTT Charge Cable. CABLE FEE FOR INTERNATIONAL OUTWARD TRANSFER TO DEZIREKONNECTION 100FT24112104257 REF# 100FT33477716377",
+        "amount": -15,
+        "account": "61220 - BANK CHARGE"
+      },
+      {
+        "date": "2024-11-21",
+        "description": "OTT Single. INTERNATIONAL FUNDS TRANSFER TO DEZIREKONNECTION 100FT24112104257 INDIA SWIFT CNRBINBBBFD OUR FEE 60.00 USD ORIGINAL AMOUNT 800.00 USD REF# 100FT33477716374 On Nov 21, 2024 12:20 PM REMARK: OTHER: Travel",
+        "amount": -800,
+        "account": "17250 - COST OF COMPUTER"
+      },
+      {
+        "date": "2024-11-19",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO ARAKAWA CO., LTD. 000285600 ORIGINAL AMOUNT 305.00 USD REF# 100FT33469525166 On Nov 19, 2024 07:45 PM REMARK: D414 Monthly Nov 24",
+        "amount": -305,
+        "account": "17250 - COST OF COMPUTER"
+      },
+      {
+        "date": "2024-11-01",
+        "description": "Interest PMNT or CAPT(ACCR DE1). Interest PMNT or CAPT(ACCR DE1) Date 31-OCT-24 Time 31-OCT-24 11.00.59.049645 PM Amount .01 USD",
+        "amount": 0.01,
+        "account": "17230 - COST OF FURNITURE"
+      },
+      {
+        "date": "2024-10-28",
+        "description": "TRF from Cambodian bank. FUNDS RECEIVED FROM CEYLEX RENEWABLES CAMBODIA CO LTD 1010125000013094 CIMB Bank Cambodia Plc ORIGINAL AMOUNT 960.00 USD REF# 100FT33346997909 EXT# 586500-0196 ON Oct 28, 2024 04:01 PM REMARK: PAYEE REFERENCE: GKS 2024-10-24",
+        "amount": 960,
+        "account": "10110 - Cash on hand"
+      },
+      {
+        "date": "2024-10-12",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO ARAKAWA CO., LTD. 000285600 ORIGINAL AMOUNT 305.00 USD REF# 100FT33263599177 On Oct 12, 2024 01:40 PM REMARK: D414 Monthly Oct 24",
+        "amount": -305,
+        "account": "40000 - Service Revenues"
+      },
+      {
+        "date": "2024-09-12",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO ARAKAWA CO., LTD. 000285600 ORIGINAL AMOUNT 305.00 USD REF# 100FT33118138831 On Sep 12, 2024 08:50 PM REMARK: D414 Monthly Sept 24",
+        "amount": -305,
+        "account": "17230 - COST OF FURNITURE"
+      },
+      {
+        "date": "2024-08-23",
+        "description": "COMM for TRF from Foreign Bank. INTERNATIONAL INWARD TRANSFER FEE FOR RECEIPT OF FUNDS FROM MS FUSION X GLOBAL FZC 2024082200231772 REF# 100FT33015363028",
+        "amount": -10,
+        "account": "17250 - COST OF COMPUTER"
+      },
+      {
+        "date": "2024-08-23",
+        "description": "TRF from foreign bank. INTERNATIONAL FUNDS RECEIVED FROM MS FUSION X GLOBAL FZC 991100090439001 2024082200231772 SEYLAN BANK PLC SRI LANKA SHA ORIGINAL AMOUNT 785.00 USD REF# 100FT33015363025 ON Aug 23, 2024 01:02 PM REMARK: RFBCONSULTANCY FEE REFERENCE GKSQ47 FUNDS TRANSFER FROM FCBU ACCOUNT",
+        "amount": 785,
+        "account": "10110 - Cash on hand"
+      },
+      {
+        "date": "2024-08-04",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO ARAKAWA CO., LTD. 000285600 ORIGINAL AMOUNT 305.00 USD REF# 100FT32924085322 On Aug 04, 2024 03:20 PM REMARK: D414 Monthly Payment",
+        "amount": -305,
+        "account": "61051 - Meal expense"
+      },
+      {
+        "date": "2024-08-04",
+        "description": "TRF from/to other A/C in ABA. FUNDS RECEIVED FROM GUNASINGHA KASSAPA GAMINI (008 338 910) ORIGINAL AMOUNT 150.00 USD REF# 100FT32924042841 ON Aug 04, 2024 03:10 PM REMARK: D414 Rent",
+        "amount": 150,
+        "account": "61070 - Rental expenses"
+      },
+      {
+        "date": "2024-08-04",
+        "description": "TRF from/to other A/C in ABA. FUNDS RECEIVED FROM GUNASINGHA KASSAPA GAMINI (009 165 879) ORIGINAL AMOUNT 165.00 USD REF# 100FT32924038910 ON Aug 04, 2024 03:10 PM REMARK: D414 Rent",
+        "amount": 165,
+        "account": "61070 - Rental expenses"
+      },
+      {
+        "date": "2024-07-22",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 600.00 USD REF# 100FT32864063491 On Jul 22, 2024 10:20 PM REMARK: Buy machine parts",
+        "amount": -600,
+        "account": "61041 - Office Supply"
+      },
+      {
+        "date": "2024-07-22",
+        "description": "TRF from/to other A/C in ABA. FUNDS RECEIVED FROM GUNASINGHA KASSAPA GAMINI (008 338 910) ORIGINAL AMOUNT 200.00 USD REF# 100FT32864043732 ON Jul 22, 2024 10:09 PM REMARK: Buy Material",
+        "amount": 200,
+        "account": "10110 - Cash on hand"
+      },
+      {
+        "date": "2024-07-22",
+        "description": "TRF from/to other A/C in ABA. FUNDS RECEIVED FROM SYED RAHUL AHAMED (004 686 744) ORIGINAL AMOUNT 400.00 USD REF# 100FT32862121886 ON Jul 22, 2024 03:04 PM REMARK:",
+        "amount": 400,
+        "account": "10110 - Cash on hand"
+      },
+      {
+        "date": "2024-06-27",
+        "description": "Single transfer from/to ABA account. FUNDS TRANSFERRED TO GUNASINGHA KASSAPA GAMINI 000100117 ORIGINAL AMOUNT 1,490.00 USD REF# 100FT32746912762 On Jun 27, 2024 09:15 PM REMARK:",
+        "amount": -1490,
+        "account": "17290 - COST OF AUTOMOBILE"
+      },
+      {
+        "date": "2024-06-26",
+        "description": "Outward Check Release. Release Outward Check Deposit CHQ# 877422 Το Bank of China Limited Drawer Name CEYLEK SOLAR POWER CAMBODIA CO LTD Original Amount 1,490.16 USD Deposit on Jun 25, 2024 11:37 AM REF# 100LH03241770136 REMARK:",
+        "amount": 1490.16,
+        "account": "10110 - Cash on hand"
+      }
+    ],
+    "BankStatements": []
+  }
+}
