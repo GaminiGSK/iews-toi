@@ -55,14 +55,177 @@ const ToiAcar = ({ onBack, packageId, year }) => {
             {/* MAIN CONTENT SPLIT AREA */}
             <div className="flex-1 flex overflow-hidden">
 
-                {/* LEFT SIDE: GPT Result Landing Page (Totally Black, empty) */}
+                {/* NEW LEFT SIDE: WHITE PREVIEW (ONLY PAGE 1) */}
+                {activeWorkspacePage === 1 && (
+                    <div className="w-[650px] shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black">
+                        {/* Content for the white preview */}
+                        <div className="w-full flex flex-col font-sans mb-12">
+                            <div className="flex justify-between items-start pb-4 border-b-[3px] border-black">
+                                <div className="flex flex-col w-full items-center">
+                                    <h1 className="text-[20px] font-bold uppercase tracking-widest text-center" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                        លិខិតប្រកាសពន្ធលើចំណូលប្រចាំឆ្នាំ
+                                    </h1>
+                                    <h2 className="text-[12px] font-black uppercase text-center mt-2 flex items-center justify-center gap-3">
+                                        ANNUAL INCOME TAX RETURN FOR THE YEAR ENDED
+                                        <div className="inline-flex shadow-sm gap-[2px]">
+                                            {[2, 0, 2, 6].map((num, i) => (
+                                                <div key={i} className="w-8 h-10 border-[1.5px] border-black flex items-center justify-center font-bold text-xl">{num}</div>
+                                            ))}
+                                        </div>
+                                    </h2>
+                                </div>
+                            </div>
+
+                            {/* TIN Box */}
+                            <div className="flex w-full mt-2">
+                                <div className="w-10 border-b border-l border-r border-black flex items-center justify-center font-bold text-sm bg-slate-100">1</div>
+                                <div className="w-[35%] border-b border-r border-black p-3 flex flex-col justify-center bg-slate-50">
+                                    <span className="text-[12px] font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :</span>
+                                    <span className="text-[9px] font-bold uppercase text-slate-600">Tax Identification Number (TIN)</span>
+                                </div>
+                                <div className="flex-1 flex gap-1 items-center px-4 border-b border-r border-black">
+                                    <div className="w-7 h-9 border border-black" />
+                                    <div className="w-7 h-9 border border-black" />
+                                    <div className="w-7 h-9 border border-black" />
+                                    <div className="w-7 h-9 border border-black" />
+                                    <span className="mx-1 font-black text-xl">-</span>
+                                    {Array.from({ length: 9 }).map((_, i) => (
+                                        <div key={i} className="w-7 h-9 border border-black" />
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Periods Box */}
+                            <div className="flex w-full items-stretch justify-between mb-4 border-l border-r border-black">
+                                <div className="flex items-center gap-3 border-r border-b border-black bg-slate-50 p-2 w-[45%]">
+                                    <div className="flex flex-col">
+                                        <span className="text-[11px] font-bold leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការិយបរិច្ឆេទជាប់ពន្ធ (ចំនួនខែ)</span>
+                                        <span className="text-[9px] font-bold text-slate-600">Tax Period (Number of Month)</span>
+                                    </div>
+                                    <div className="flex gap-[2px] ml-auto items-center">
+                                        <div className="w-7 h-9 border border-black flex items-center justify-center font-bold bg-white text-lg">1</div>
+                                        <div className="w-7 h-9 border border-black flex items-center justify-center font-bold bg-white text-lg">2</div>
+                                    </div>
+                                </div>
+                                <div className="flex flex-1 items-center justify-around px-4 border-b border-black">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[11px] font-bold text-center leading-tight">ចាប់ពីថ្ងៃទី<br /><span className="text-[9px] font-normal text-slate-600">From</span></span>
+                                        <div className="flex gap-[2px] text-[8px] items-center">
+                                            {Array.from({ length: 8 }).map((_, i) => (
+                                                <div key={i} className="w-5 h-7 border border-black" />
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="w-px h-10 bg-black/20 mx-2" />
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[11px] font-bold text-center leading-tight">ដល់ថ្ងៃទី<br /><span className="text-[9px] font-normal text-slate-600">Until</span></span>
+                                        <div className="flex gap-[2px] text-[8px] items-center">
+                                            {Array.from({ length: 8 }).map((_, i) => (
+                                                <div key={i} className="w-5 h-7 border border-black" />
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Enterprise Details Form */}
+                            <div className="flex flex-col border border-black mb-4">
+                                {[
+                                    { kh: "ឈ្មោះសហគ្រាស", en: "Name of Enterprise:", id: "2" },
+                                    { kh: "ចំនួនសាខាក្នុងស្រុក", en: "Number of Local Branch:", id: "3" },
+                                    { kh: "កាលបរិច្ឆេទចុះបញ្ជីសារពើពន្ធ", en: "Date of Tax Registration:", id: "4" },
+                                    { kh: "ឈ្មោះអភិបាល/អ្នកគ្រប់គ្រង/ម្ចាស់សហគ្រាស", en: "Name of Director/Manager/Owner:", id: "5" },
+                                    { kh: "សកម្មភាពអាជីវកម្មចម្បង", en: "Main Business Activities:", id: "6" },
+                                    { kh: "ឈ្មោះគណនេយ្យករ/ភ្នាក់ងារសេវាកម្មពន្ធដារ", en: "Name of Accountant/Tax Service Agent:", id: "7", numBox: true },
+                                    { kh: "អាសយដ្ឋានបច្ចុប្បន្ននៃការិយាល័យចុះបញ្ជី", en: "Current Registered Office Address:", id: "8", tall: true },
+                                    { kh: "អាសយដ្ឋានបច្ចុប្បន្ននៃកន្លែងប្រកបអាជីវកម្មចម្បង", en: "Current Principal Establishment Address:", id: "9", tall: true },
+                                    { kh: "អាសយដ្ឋានឃ្លាំង", en: "Warehouse Address:", id: "10" }
+                                ].map((row, i) => (
+                                    <div key={i} className={`flex border-b border-black last:border-b-0 ${row.tall ? 'min-h-[50px]' : 'min-h-[40px]'}`}>
+                                        <div className="w-10 border-r border-black flex items-center justify-center font-bold text-sm bg-slate-50">{row.id}</div>
+                                        <div className="w-[45%] border-r border-black p-2 flex flex-col justify-center bg-slate-50">
+                                            <span className="font-bold text-[11px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh} ៖</span>
+                                            <span className="text-[9px] text-slate-500">{row.en}</span>
+                                        </div>
+                                        <div className="flex-1 p-2 flex items-center w-full">
+
+                                        </div>
+                                        {row.numBox && (
+                                            <>
+                                                <div className="w-[22%] border-l border-r border-black p-2 flex flex-col justify-center bg-slate-50">
+                                                    <span className="font-bold text-[9px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអាជ្ញាប័ណ្ណ...</span>
+                                                    <span className="text-[8px] text-slate-500">License Number:</span>
+                                                </div>
+                                                <div className="w-[20%] p-2 bg-white flex items-center"></div>
+                                            </>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Compliance Details */}
+                            <div className="flex flex-col border border-black">
+                                <div className="flex border-b border-black min-h-[50px] bg-white">
+                                    <div className="w-10 border-r border-black flex items-center justify-center font-bold text-sm bg-slate-50">11</div>
+                                    <div className="w-[30%] border-r border-black p-2 flex flex-col justify-center bg-slate-50">
+                                        <span className="font-bold text-[11px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការរក្សាទុកបញ្ជីគណនេយ្យ ៖</span>
+                                        <span className="text-[9px] text-slate-500">Accounting Records:</span>
+                                    </div>
+                                    <div className="flex-1 flex px-3 py-2 items-center text-[10px] gap-6">
+                                        <div className="flex items-center gap-2 border border-black p-1.5 flex-1 h-full shadow-sm">
+                                            <div className="w-5 h-5 border border-black shrink-0 bg-white"></div>
+                                            <div className="flex flex-col leading-tight"><span className="font-bold text-[10px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រើប្រាស់កម្មវិធី (ឈ្មោះ) ៖</span><span className="text-[8px] text-slate-500 mt-0.5">Using Software (Name):</span></div>
+                                            <div className="border-b border-dashed border-slate-400 flex-1 ml-2"></div>
+                                        </div>
+                                        <div className="flex items-center gap-2 border border-black p-1.5 h-full shadow-sm">
+                                            <div className="w-5 h-5 border border-black shrink-0 bg-white"></div>
+                                            <div className="flex flex-col leading-tight"><span className="font-bold text-[10px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>មិនប្រើប្រាស់ទេ</span><span className="text-[8px] text-slate-500 mt-0.5">Not Using Software</span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex border-b border-black min-h-[50px]">
+                                    <div className="w-10 border-r border-black flex items-center justify-center font-bold text-sm bg-slate-50">12</div>
+                                    <div className="w-[30%] border-r border-black p-2 flex flex-col justify-center bg-slate-50">
+                                        <span className="font-bold text-[11px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>អនុលោមភាពសារពើពន្ធ ៖</span>
+                                        <span className="text-[9px] text-slate-500">Tax Compliance Status:</span>
+                                    </div>
+                                    <div className="flex-1 flex px-6 items-center gap-10 text-[11px] font-black uppercase bg-white">
+                                        <div className="flex items-center gap-3 border border-black p-2 shadow-sm"><div className="w-5 h-5 border border-black bg-white"></div> មាស<br /><span className="text-[9px] font-bold text-slate-500">Gold</span></div>
+                                        <div className="flex items-center gap-3 border border-black p-2 shadow-sm"><div className="w-5 h-5 border border-black bg-white"></div> ប្រាក់<br /><span className="text-[9px] font-bold text-slate-500">Silver</span></div>
+                                        <div className="flex items-center gap-3 border border-black p-2 shadow-sm"><div className="w-5 h-5 border border-black bg-white"></div> សំរិទ្ធ<br /><span className="text-[9px] font-bold text-slate-500">Bronze</span></div>
+                                    </div>
+                                </div>
+                                <div className="flex min-h-[50px]">
+                                    <div className="w-10 border-r border-black flex items-center justify-center font-bold text-sm bg-slate-50">13</div>
+                                    <div className="w-[30%] border-r border-black p-2 flex flex-col justify-center bg-slate-50">
+                                        <span className="font-bold text-[11px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>តម្រូវសវនកម្មឯករាជ្យ ៖</span>
+                                        <span className="text-[9px] text-slate-500">Statutory Audit Required:</span>
+                                    </div>
+                                    <div className="flex-1 flex px-6 py-2 items-center gap-10 text-[11px] bg-white">
+                                        <div className="flex items-center gap-3 border border-black p-2 flex-1 shadow-sm"><div className="w-5 h-5 border border-black bg-white shrink-0"></div> <div className="flex flex-col font-bold leading-tight"><span>តម្រូវឱ្យមាន</span><span className="text-[9px] text-slate-500 mt-0.5">Required</span></div></div>
+                                        <div className="flex items-center gap-3 border border-black p-2 flex-1 shadow-sm"><div className="w-5 h-5 border border-black bg-white shrink-0"></div> <div className="flex flex-col font-bold leading-tight"><span>មិនតម្រូវឱ្យមាន</span><span className="text-[9px] text-slate-500 mt-0.5">Not Required</span></div></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="w-full text-center mt-12 mb-8 opacity-20 flex flex-col items-center">
+                                <div className="w-px h-16 bg-black mb-4"></div>
+                                <span className="text-xl font-black tracking-[0.5em] uppercase text-black">Page 1 Virtual Print</span>
+                                <span className="text-xs font-bold tracking-widest text-black mt-2">D N A &bull; P R E V I E W</span>
+                            </div>
+
+                        </div>
+                    </div>
+                )}
+
+                {/* MIDDLE SIDE: GPT Result Landing Page (Totally Black, empty) */}
                 <div className="flex-1 overflow-y-auto relative bg-black custom-scrollbar">
                     {/* Embedded TOI Page 1 Admin Template for GPT Engine to dictate */}
                     <LiveTaxWorkspace embedded={true} forcePage={activeWorkspacePage} />
                 </div>
 
                 {/* RIGHT SIDE: Agent Terminal (Right Top Side) */}
-                <div className="w-[450px] shrink-0 border-l border-white/5 bg-slate-950/30 p-8 overflow-y-auto flex flex-col justify-start items-center custom-scrollbar">
+                <div className="w-[650px] shrink-0 border-l border-white/5 bg-slate-950/30 p-8 overflow-y-auto flex flex-col justify-start items-center custom-scrollbar">
 
                     {/* AI Orb / Avatar */}
                     <div className="relative mb-8 flex items-center justify-center gap-3 mt-8 animate-in fade-in duration-700">
