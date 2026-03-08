@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Transaction = require('./models/Transaction');
-require('dotenv').config({ path: './.env' });
+require('dotenv').config({ path: 'server/.env' });
 
 async function query() {
     await mongoose.connect(process.env.MONGODB_URI);

@@ -740,7 +740,7 @@ const TrialBalance = ({ onBack }) => {
                                                                 if (dr === 0 && cr === 0 && pDr === 0 && pCr === 0) return null;
 
                                                                 // Mocking Quantity logic for Inventory formatting representation
-                                                                const isInventory = row.description.toLowerCase().includes('inventory') || row.code.startsWith('51') || row.description.toLowerCase().includes('materials');
+                                                                const isInventory = (row.description?.toLowerCase() || '').includes('inventory') || row.code.startsWith('51') || (row.description?.toLowerCase() || '').includes('materials');
                                                                 const mockedQuantity = isInventory && (dr || cr) ? Math.floor((dr || cr) / 4000) : '-';
                                                                 const mockedPriorQuantity = isInventory && (pDr || pCr) ? Math.floor((pDr || pCr) / 4000) : '-';
 

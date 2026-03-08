@@ -115,7 +115,7 @@ const FinancialStatements = ({ onBack }) => {
 
     // Helpers to find specific account values for Cash Flow
     const findBalance = (keywords) => {
-        const matches = report.filter(r => keywords.some(k => r.description.toLowerCase().includes(k.toLowerCase())));
+        const matches = report.filter(r => keywords.some(k => (r.description?.toLowerCase() || '').includes(k.toLowerCase())));
         return matches.reduce((sum, r) => sum + (r.drKHR - r.crKHR), 0) / scale;
     };
 
@@ -430,23 +430,23 @@ const FinancialStatements = ({ onBack }) => {
                                     <tr className="h-6"></tr>
 
                                     {renderSectionHeader("CASH FLOWS FROM INVESTING ACTIVITIES")}
-                                    {assets.filter(a => a.description.toLowerCase().includes('fixed') || a.description.toLowerCase().includes('equipment')).map(r =>
+                                    {assets.filter(a => (a.description?.toLowerCase() || '').includes('fixed') || (a.description?.toLowerCase() || '').includes('equipment')).map(r =>
                                         renderRow(`Purchase of ${r.description}`, -(r.drKHR - r.crKHR) / scale, false, true)
                                     )}
                                     {renderRow("Interest Received", intInc, false, true)}
                                     <tr className="border-t border-gray-300"><td colSpan="2"></td></tr>
-                                    {renderRow("Net Cash generated from/(used in) Investing Activities", assets.filter(a => a.description.toLowerCase().includes('fixed') || a.description.toLowerCase().includes('equipment')).reduce((sum, r) => sum - ((r.drKHR - r.crKHR) / scale), 0) + intInc, true)}
+                                    {renderRow("Net Cash generated from/(used in) Investing Activities", assets.filter(a => (a.description?.toLowerCase() || '').includes('fixed') || (a.description?.toLowerCase() || '').includes('equipment')).reduce((sum, r) => sum - ((r.drKHR - r.crKHR) / scale), 0) + intInc, true)}
 
                                     <tr className="h-6"></tr>
 
                                     {renderSectionHeader("CASH FLOWS FROM FINANCING ACTIVITIES")}
-                                    {equity.filter(e => e.description.toLowerCase().includes('capital')).map(r =>
+                                    {equity.filter(e => (e.description?.toLowerCase() || '').includes('capital')).map(r =>
                                         renderRow(`Issuance of ${r.description}`, (r.crKHR - r.drKHR) / scale, false, true)
                                     )}
                                     {renderRow("Dividends Paid", 0, false, true)}
                                     {renderRow("Interest Paid", -intExp, false, true)}
                                     <tr className="border-t border-gray-300"><td colSpan="2"></td></tr>
-                                    {renderRow("Net Cash generated from/(used in) Financing Activities", equity.filter(e => e.description.toLowerCase().includes('capital')).reduce((sum, r) => sum + ((r.crKHR - r.drKHR) / scale), 0) - intExp, true)}
+                                    {renderRow("Net Cash generated from/(used in) Financing Activities", equity.filter(e => (e.description?.toLowerCase() || '').includes('capital')).reduce((sum, r) => sum + ((r.crKHR - r.drKHR) / scale), 0) - intExp, true)}
 
                                     <tr className="h-8"></tr>
                                     <tr className="border-t-2 border-black border-b-2 border-double">
@@ -454,16 +454,16 @@ const FinancialStatements = ({ onBack }) => {
                                         <td className="p-4 text-right font-bold font-mono text-lg">
                                             {(
                                                 netProfit +
-                                                assets.filter(a => a.description.toLowerCase().includes('fixed') || a.description.toLowerCase().includes('equipment')).reduce((sum, r) => sum - ((r.drKHR - r.crKHR) / scale), 0) +
-                                                equity.filter(e => e.description.toLowerCase().includes('capital')).reduce((sum, r) => sum + ((r.crKHR - r.drKHR) / scale), 0)
+                                                assets.filter(a => (a.description?.toLowerCase() || '').includes('fixed') || (a.description?.toLowerCase() || '').includes('equipment')).reduce((sum, r) => sum - ((r.drKHR - r.crKHR) / scale), 0) +
+                                                equity.filter(e => (e.description?.toLowerCase() || '').includes('capital')).reduce((sum, r) => sum + ((r.crKHR - r.drKHR) / scale), 0)
                                             ).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                                         </td>
                                     </tr>
                                     {renderRow("Cash and Cash Equivalents at Beginning of Year", 0, false, true)}
                                     {renderRow("Cash and Cash Equivalents at End of Year", (
                                         netProfit +
-                                        assets.filter(a => a.description.toLowerCase().includes('fixed') || a.description.toLowerCase().includes('equipment')).reduce((sum, r) => sum - ((r.drKHR - r.crKHR) / scale), 0) +
-                                        equity.filter(e => e.description.toLowerCase().includes('capital')).reduce((sum, r) => sum + ((r.crKHR - r.drKHR) / scale), 0)
+                                        assets.filter(a => (a.description?.toLowerCase() || '').includes('fixed') || (a.description?.toLowerCase() || '').includes('equipment')).reduce((sum, r) => sum - ((r.drKHR - r.crKHR) / scale), 0) +
+                                        equity.filter(e => (e.description?.toLowerCase() || '').includes('capital')).reduce((sum, r) => sum + ((r.crKHR - r.drKHR) / scale), 0)
                                     ), true)}
                                 </tbody>
                             )}

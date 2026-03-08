@@ -1798,8 +1798,11 @@ router.get('/trial-balance', auth, async (req, res) => {
         // 3. Aggregate Data
 
         // Determine Report Year for Prior Year Rate Logic
-        // Find max date in transactions, or default to current year
-        const availableYears = [...new Set(transactions.map(t => new Date(t.date).getFullYear()))].sort((a, b) => b - a);
+        // Find max date in transactions and journal entries, or default to current year
+        const availableYears = [...new Set([
+            ...transactions.map(t => new Date(t.date).getFullYear()),
+            ...journalEntries.map(je => new Date(je.date).getFullYear())
+        ])].sort((a, b) => b - a);
 
         const isAllYears = req.query.fiscalYear === 'all';
         let currentYear;
@@ -1809,8 +1812,8 @@ router.get('/trial-balance', auth, async (req, res) => {
         } else {
             currentYear = req.query.fiscalYear
                 ? parseInt(req.query.fiscalYear)
-                : (transactions.length > 0
-                    ? new Date(Math.max(...transactions.map(t => new Date(t.date).getTime()))).getFullYear()
+                : (availableYears.length > 0
+                    ? availableYears[0]
                     : new Date().getFullYear());
         }
 
