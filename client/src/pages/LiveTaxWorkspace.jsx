@@ -506,21 +506,19 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null }) => {
                                     ))}
                                     {/* SPECIAL ROW: ACCOUNTANT / TAX AGENT */}
                                     <div className="flex min-h-[90px]">
-                                        <div className="w-[30%] border-r border-white/5 p-4 flex flex-col justify-center bg-white/[0.04]">
-                                            <div className="w-[35%] border-r border-white/5 p-5 flex flex-col justify-center bg-white/[0.04]">
-                                                <span className="text-white font-bold text-sm tracking-tight leading-snug mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឈ្មោះគណនេយ្យករ / ភ្នាក់ងារសេវាកម្មពន្ធដារ ៖</span>
-                                                <span className="text-slate-500 text-[9px] font-black uppercase tracking-tight leading-none">Name of Accountant/ Tax Agent:</span>
-                                            </div>
-                                            <div className="flex-1 border-r border-white/5 p-4 flex items-center">
-                                                <input type="text" value={formData.accountantName || ""} onChange={(e) => handleFormChange('accountantName', e.target.value)} className="w-full bg-transparent border-none outline-none text-white text-base font-bold" placeholder="..." />
-                                            </div>
-                                            <div className="w-[30%] border-r border-white/5 p-5 flex flex-col justify-center bg-white/[0.04]">
-                                                <span className="text-white font-bold text-sm tracking-tight leading-snug mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអាជ្ញាប័ណ្ណភ្នាក់ងារសេវាកម្មពន្ធដារ ៖</span>
-                                                <span className="text-slate-500 text-[9px] font-black uppercase tracking-tight leading-none">Tax Agent License No:</span>
-                                            </div>
-                                            <div className="w-[15%] p-4 flex items-center">
-                                                <input type="text" value={formData.agentLicenseNo || ""} onChange={(e) => handleFormChange('agentLicenseNo', e.target.value)} className="w-full bg-transparent border-none outline-none text-white text-base font-bold" placeholder="..." />
-                                            </div>
+                                        <div className="w-[35%] border-r border-white/5 p-5 flex flex-col justify-center bg-white/[0.04]">
+                                            <span className="text-white font-bold text-sm tracking-tight leading-snug mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឈ្មោះគណនេយ្យករ / ភ្នាក់ងារសេវាកម្មពន្ធដារ ៖</span>
+                                            <span className="text-slate-500 text-[9px] font-black uppercase tracking-tight leading-none">Name of Accountant/ Tax Agent:</span>
+                                        </div>
+                                        <div className="flex-1 border-r border-white/5 p-4 flex items-center">
+                                            <input type="text" value={formData.accountantName || ""} onChange={(e) => handleFormChange('accountantName', e.target.value)} className="w-full bg-transparent border-none outline-none text-white text-base font-bold" placeholder="..." />
+                                        </div>
+                                        <div className="w-[30%] border-r border-white/5 p-5 flex flex-col justify-center bg-white/[0.04]">
+                                            <span className="text-white font-bold text-sm tracking-tight leading-snug mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអាជ្ញាប័ណ្ណភ្នាក់ងារសេវាកម្មពន្ធដារ ៖</span>
+                                            <span className="text-slate-500 text-[9px] font-black uppercase tracking-tight leading-none">Tax Agent License No:</span>
+                                        </div>
+                                        <div className="w-[15%] p-4 flex items-center">
+                                            <input type="text" value={formData.agentLicenseNo || ""} onChange={(e) => handleFormChange('agentLicenseNo', e.target.value)} className="w-full bg-transparent border-none outline-none text-white text-base font-bold" placeholder="..." />
                                         </div>
                                     </div>
 
