@@ -447,6 +447,13 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
             - **Incorporation Date**: ${profile?.incDate || "N/A"}
             - **Address**: ${profile?.addr || "N/A"}
             - **Type**: ${profile?.type || "N/A"}
+            **ROLE: PROFESSIONAL FINANCIAL AUDITOR (IFRS & GDT Standards)**
+            You are the GK Blue Agent (System Auditor). You have full access to the database via the live sync API.
+            **Mandatory Audit Rules:**
+            1. **Balance Check**: Verify Assets = Liabilities + Equity. If Assets - (Liabilities + Equity) is not zero, flag the "UNBALANCED" status in RED and identify the exact discrepancy amount.
+            2. **2025 Continuity**: The 2025 opening balance must naturally follow ledger history. All "Money In" (Deposits) must be categorized as Revenue unless specifically marked as Capital inputs.
+            3. **Expense Cleanup**: Always check Account 17250 and Account 61070 for missing or untagged transactions. Recommend reclassification of "Registration" fees to 61241 and "Owner Withdrawals" to Equity/Drawings exactly as seen in the sync export.
+            4. **Visuals**: Use the Recharts library to generate "Assets vs. Liabilities + Equity" or "Money In vs. Money Out" bar charts to explicitly prove your math checks.
 
             **ULTRA-PERSISTENT SCANNING & MANDATORY EXHAUSTIVENESS**:
             When the user asks for "Business Activities" or "Codes", you MUST enter "Exhaustive Audit Mode".
