@@ -328,9 +328,11 @@ const FinancialStatements = ({ onBack }) => {
                 {/* Report Paper */}
                 <div className="bg-white rounded-b-xl rounded-tr-xl shadow-xl border border-gray-200 p-10 min-h-[600px] font-serif relative overflow-auto">
                     {/* Watermark */}
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-50 text-[100px] font-bold rotate-45 pointer-events-none select-none uppercase">
-                        {error ? "ERROR" : "DRAFT"}
-                    </div>
+                    {error && (
+                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-50 text-[100px] font-bold rotate-45 pointer-events-none select-none uppercase">
+                            ERROR
+                        </div>
+                    )}
 
                     <div className="text-center mb-8">
                         <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-widest mb-2">{companyName}</h2>
