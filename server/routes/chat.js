@@ -68,16 +68,13 @@ router.post('/message', auth, async (req, res) => {
             // Hence their standard positive value is the inverse of the cash flow.
             if (code.startsWith('1')) {
                 accountBalances[code] += (-amount);
-                totalAssets += (-amount);
             }
             // Liabilities/Equity normal balances align with bank cash inflows (+amount -> liability grows)
             else if (code.startsWith('2')) {
                 accountBalances[code] += amount;
-                totalLiabilities += amount;
             }
             else if (code.startsWith('3')) {
                 accountBalances[code] += amount;
-                totalEquity += amount;
             }
             else {
                 accountBalances[code] += amount;
@@ -93,14 +90,24 @@ router.post('/message', auth, async (req, res) => {
 
         // Add Retained Earnings (Net Income) into Equity to balance the ledger
         const netIncome = totalIncome + totalExpense;
-        totalEquity += netIncome; // P&L rolls into Equity
+        accountBalances['Net Income'] = netIncome;
+
+        let recalcAssets = accountBalances['Implicit_Bank_Cash'];
+        let recalcLiabilities = 0;
+        let recalcEquity = netIncome;
+
+        for (const [code, bal] of Object.entries(accountBalances)) {
+            if (code.startsWith('1')) recalcAssets += bal;
+            if (code.startsWith('2')) recalcLiabilities += bal;
+            if (code.startsWith('3')) recalcEquity += bal;
+        }
 
         const summaryStats = [{
             totalIncome,
             totalExpense,
-            totalAssets,
-            totalLiabilities,
-            totalEquity
+            totalAssets: recalcAssets,
+            totalLiabilities: recalcLiabilities,
+            totalEquity: recalcEquity
         }];
 
         // Calculate Monthly Trends (Last 36 Months)
