@@ -147,13 +147,13 @@ router.post('/message', auth, async (req, res) => {
         const rawCodes = await AccountCode.find({ companyCode }).sort({ code: 1 }).lean();
         const codes = rawCodes.map(c => ({ code: c.code, description: c.description }));
 
-        // Fetch recent harvested Bank Statements
+        // Fetch recent harvested Bank Statements (V2 Model)
         const bankStatements = await BankStatement.find({ companyCode })
             .sort({ createdAt: -1 })
             .limit(2)
             .lean();
 
-        const harvestedBankContext = bankStatements.map(bs => ({
+        let harvestedBankContext = bankStatements.map(bs => ({
             bankName: bs.bankName || 'Unknown Bank',
             accountNumber: bs.accountNumber || '',
             dateRange: `${bs.dateRangeStart || 'Unknown'} to ${bs.dateRangeEnd || 'Unknown'}`,
@@ -164,6 +164,31 @@ router.post('/message', auth, async (req, res) => {
                 out: tx.moneyOut || 0
             }))
         }));
+
+        // Fallback: If no V2 statements, try to pull metadata from old V1 BankFile models to satisfy AI prompts
+        if (harvestedBankContext.length === 0) {
+            const mongoose = require('mongoose');
+            const oldBankFiles = await mongoose.connection.db.collection('bankfiles').find({ companyCode }).sort({ uploadedAt: -1 }).limit(2).toArray();
+
+            if (oldBankFiles.length > 0) {
+                // Fetch the transactions associated with these old files to give context
+                for (const oldFile of oldBankFiles) {
+                    const txs = await mongoose.connection.db.collection('transactions').find({ companyCode, originalData: { $exists: true } }).limit(20).toArray(); // Very rough heuristic for V1
+
+                    harvestedBankContext.push({
+                        bankName: "Harvested Document",
+                        accountNumber: "Original File: " + oldFile.originalName,
+                        dateRange: oldFile.dateRange || 'Unknown',
+                        transactions: txs.map(tx => ({
+                            date: tx.date ? new Date(tx.date).toISOString().split('T')[0] : 'N/A',
+                            desc: tx.description || '',
+                            in: tx.amount > 0 ? tx.amount : 0,
+                            out: tx.amount < 0 ? Math.abs(tx.amount) : 0
+                        }))
+                    });
+                }
+            }
+        }
 
         // 2. Call AI Service (Route based on model selection)
         const context = {
