@@ -1835,6 +1835,10 @@ router.get('/trial-balance', auth, async (req, res) => {
                 drKHR: 0, // Calculated dynamically
                 crKHR: 0,
 
+                // New fields for Accounting Cycle format
+                unadjDrUSD: 0, unadjCrUSD: 0, unadjDrKHR: 0, unadjCrKHR: 0,
+                adjDrUSD: 0, adjCrUSD: 0, adjDrKHR: 0, adjCrKHR: 0,
+
                 // Prior Year Data (Static from Code Definition)
                 priorDrUSD: !isAllYears ? (c.priorYearDr || 0) : 0,
                 priorCrUSD: !isAllYears ? (c.priorYearCr || 0) : 0,
@@ -1896,10 +1900,18 @@ router.get('/trial-balance', auth, async (req, res) => {
                 // Money In -> Tag is Credit
                 reportMap[codeId][targetCr] += Math.abs(amtUSD);
                 reportMap[codeId][targetCrKHR] += Math.abs(amtKHR);
+                if (targetCr === 'crUSD') {
+                    reportMap[codeId].unadjCrUSD += Math.abs(amtUSD);
+                    reportMap[codeId].unadjCrKHR += Math.abs(amtKHR);
+                }
             } else {
                 // Money Out -> Tag is Debit
                 reportMap[codeId][targetDr] += Math.abs(amtUSD);
                 reportMap[codeId][targetDrKHR] += Math.abs(amtKHR);
+                if (targetDr === 'drUSD') {
+                    reportMap[codeId].unadjDrUSD += Math.abs(amtUSD);
+                    reportMap[codeId].unadjDrKHR += Math.abs(amtKHR);
+                }
             }
         });
 
@@ -1932,10 +1944,18 @@ router.get('/trial-balance', auth, async (req, res) => {
                 if (line.debit > 0) {
                     reportMap[codeId][targetDr] += line.debit;
                     reportMap[codeId][targetDrKHR] += (line.debit * rate);
+                    if (targetDr === 'drUSD') {
+                        reportMap[codeId].adjDrUSD += line.debit;
+                        reportMap[codeId].adjDrKHR += (line.debit * rate);
+                    }
                 }
                 if (line.credit > 0) {
                     reportMap[codeId][targetCr] += line.credit;
                     reportMap[codeId][targetCrKHR] += (line.credit * rate);
+                    if (targetCr === 'crUSD') {
+                        reportMap[codeId].adjCrUSD += line.credit;
+                        reportMap[codeId].adjCrKHR += (line.credit * rate);
+                    }
                 }
             });
         });
@@ -1947,9 +1967,13 @@ router.get('/trial-balance', auth, async (req, res) => {
             if (netControlUSD > 0) {
                 reportMap[bankCode._id].drUSD += netControlUSD;
                 reportMap[bankCode._id].drKHR += netControlKHR;
+                reportMap[bankCode._id].unadjDrUSD += netControlUSD;
+                reportMap[bankCode._id].unadjDrKHR += netControlKHR;
             } else {
                 reportMap[bankCode._id].crUSD += Math.abs(netControlUSD);
                 reportMap[bankCode._id].crKHR += Math.abs(netControlKHR);
+                reportMap[bankCode._id].unadjCrUSD += Math.abs(netControlUSD);
+                reportMap[bankCode._id].unadjCrKHR += Math.abs(netControlKHR);
             }
             // Prior Year
             if (!isAllYears) {
