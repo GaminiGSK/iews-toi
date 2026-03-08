@@ -6,6 +6,8 @@ const AccountCode = require('../models/AccountCode');
 const BankStatement = require('../models/BankStatement');
 const TaxTemplate = require('../models/TaxTemplate');
 const TaxPackage = require('../models/TaxPackage');
+const BankFile = require('../models/BankFile');
+const CompanyProfile = require('../models/CompanyProfile');
 
 // POST data to the bridge (External calls this)
 router.post('/send', async (req, res) => {
@@ -21,7 +23,6 @@ router.post('/send', async (req, res) => {
         res.status(500).json({ message: 'Bridge failure' });
     }
 });
-
 // GET unread bridge entries (Antigravity calls this)
 router.get('/unread', async (req, res) => {
     try {
@@ -125,6 +126,16 @@ router.post('/sync', async (req, res) => {
             if (scope && scope.includes('TOI_Feed')) {
                 const packages = await TaxPackage.find({}).lean();
                 responseData.data.ToiPackages = packages;
+            }
+
+            if (scope && scope.includes('BankStatementsV2')) {
+                const bankFiles = await BankFile.find({ companyCode }).lean();
+                responseData.data.BankFiles = bankFiles;
+            }
+
+            if (scope && scope.includes('IEWS_Profile')) {
+                const profiles = await CompanyProfile.find({ companyCode }).lean();
+                responseData.data.IEWS_Profile = profiles;
             }
 
             return res.json(responseData);
