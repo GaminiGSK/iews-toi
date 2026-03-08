@@ -288,31 +288,31 @@ const TrialBalance = ({ onBack }) => {
                                 <div className="px-2">
                                     <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Total Assets</p>
                                     <p className="text-4xl font-bold text-blue-400">
-                                        ${totalAssets.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        KHR {totalAssets.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                     </p>
                                     <p className="text-xs text-gray-500 mt-2">What You Own</p>
                                 </div>
                                 <div className="px-2">
                                     <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Total Liabilities</p>
                                     <p className="text-4xl font-bold text-rose-400">
-                                        ${totalLiabilities.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        KHR {totalLiabilities.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                     </p>
                                     <p className="text-xs text-gray-500 mt-2">What You Owe</p>
                                 </div>
                                 <div className="px-2">
                                     <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Total Equity</p>
                                     <p className={`text-4xl font-bold ${totalEquity >= 0 ? 'text-emerald-400' : 'text-orange-400'}`}>
-                                        ${totalEquity.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        KHR {totalEquity.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                     </p>
-                                    <p className="text-xs text-gray-500 mt-2">Net Worth (Incl. Net Profit: ${netProfit.toLocaleString(undefined, { minimumFractionDigits: 2 })})</p>
+                                    <p className="text-xs text-gray-500 mt-2">Net Worth (Incl. Net Profit: KHR {netProfit.toLocaleString(undefined, { minimumFractionDigits: 2 })})</p>
                                 </div>
                                 <div className="px-2">
                                     <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Ledger Status</p>
                                     <div className={`mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-lg border ${isAccountingBalanced ? 'border-green-500/30 bg-green-900/20 text-green-400' : 'border-red-500/30 bg-red-900/20 text-red-400'}`}>
                                         <span className={`w-2.5 h-2.5 rounded-full ${isAccountingBalanced ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></span>
-                                        <span className="font-bold text-lg">{isAccountingBalanced ? 'BALANCED' : 'UNBALANCED'}</span>
+                                        <span className="font-bold text-lg">{isAccountingBalanced ? 'BANK RECONCILED' : 'UNBALANCED'}</span>
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-2 font-mono">Eq Diff: ${Math.abs(totalAssets - (totalLiabilities + totalEquity)).toFixed(5)}</p>
+                                    <p className="text-xs text-gray-500 mt-2 font-mono">Eq Diff: KHR {Math.abs(totalAssets - (totalLiabilities + totalEquity)).toFixed(5)}</p>
                                 </div>
                             </div>
                         </div>
@@ -323,7 +323,7 @@ const TrialBalance = ({ onBack }) => {
                                 <h3 className="font-bold text-gray-300 mb-6 flex justify-between items-center text-lg">
                                     <span>Assets (Liquidity Mix)</span>
                                     <span className="text-xs text-blue-400 bg-blue-900/20 px-3 py-1 rounded-full border border-blue-900">
-                                        Total: ${totalAssets.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                        Total: KHR {totalAssets.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                     </span>
                                 </h3>
                                 <div className="flex-1 -mt-4">
@@ -349,7 +349,7 @@ const TrialBalance = ({ onBack }) => {
                                                     itemStyle={{ color: '#E5E7EB', fontWeight: 'bold' }}
                                                     formatter={(value, name, props) => {
                                                         const actualSize = props.payload.actualSize;
-                                                        return [`$${actualSize.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, 'Balance'];
+                                                        return [`KHR ${actualSize.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, 'Balance'];
                                                     }}
                                                 />
                                                 <Legend
@@ -373,7 +373,7 @@ const TrialBalance = ({ onBack }) => {
                                 <h3 className="font-bold text-gray-300 mb-6 flex justify-between items-center text-lg">
                                     <span>Liabilities (What You Owe)</span>
                                     <span className="text-xs text-rose-400 bg-rose-900/20 px-3 py-1 rounded-full border border-rose-900">
-                                        Total: ${totalLiabilities.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                        Total: KHR {totalLiabilities.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                     </span>
                                 </h3>
                                 <div className="flex-1">
@@ -384,13 +384,13 @@ const TrialBalance = ({ onBack }) => {
                                                 data={liabilityData.sort((a, b) => b.size - a.size).slice(0, 10)}
                                                 margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                                             >
-                                                <XAxis type="number" stroke="#6B7280" fontSize={12} tickFormatter={(val) => `$${val / 1000}k`} />
+                                                <XAxis type="number" stroke="#6B7280" fontSize={12} tickFormatter={(val) => `KHR ${val / 1000}k`} />
                                                 <YAxis type="category" dataKey="name" width={120} stroke="#9CA3AF" fontSize={11} tick={{ fill: '#E5E7EB' }} />
                                                 <Tooltip
                                                     cursor={{ fill: 'rgba(255,255,255,0.05)' }}
                                                     contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151', color: '#F3F4F6' }}
                                                     itemStyle={{ color: '#FB7185' }}
-                                                    formatter={(value) => [`$${value.toLocaleString()}`, 'Amount']}
+                                                    formatter={(value) => [`KHR ${value.toLocaleString()}`, 'Amount']}
                                                 />
                                                 <Bar dataKey="size" fill="#F43F5E" radius={[0, 4, 4, 0]} barSize={20}>
                                                     {liabilityData.map((entry, index) => (
@@ -412,7 +412,7 @@ const TrialBalance = ({ onBack }) => {
                                 <h3 className="font-bold text-gray-300 mb-6 flex justify-between items-center text-lg">
                                     <span>Equity (Net Worth)</span>
                                     <span className="text-xs text-emerald-400 bg-emerald-900/20 px-3 py-1 rounded-full border border-emerald-900">
-                                        Total: ${totalEquity.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                        Total: KHR {totalEquity.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                     </span>
                                 </h3>
                                 <div className="flex-1">
@@ -424,18 +424,18 @@ const TrialBalance = ({ onBack }) => {
                                                 margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                                             >
                                                 {/* Allow domain to auto-adjust for negative values (losses) */}
-                                                <XAxis type="number" stroke="#6B7280" fontSize={12} tickFormatter={(val) => `$${val / 1000}k`} />
+                                                <XAxis type="number" stroke="#6B7280" fontSize={12} tickFormatter={(val) => `KHR ${val / 1000}k`} />
                                                 <YAxis type="category" dataKey="name" width={120} stroke="#9CA3AF" fontSize={11} tick={{ fill: '#E5E7EB' }} />
                                                 <Tooltip
                                                     cursor={{ fill: 'rgba(255,255,255,0.05)' }}
                                                     contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151', color: '#F3F4F6' }}
                                                     itemStyle={{ color: '#34D399' }}
-                                                    formatter={(value) => [`$${value.toLocaleString()}`, 'Amount']}
+                                                    formatter={(value) => [`KHR ${value.toLocaleString()}`, 'Amount']}
                                                 />
                                                 <Bar dataKey="size" radius={[0, 4, 4, 0]} barSize={20}>
                                                     {
                                                         equityData.sort((a, b) => b.size - a.size).slice(0, 10).map((entry, index) => (
-                                                            <Cell key={`cell-${index}`} fill={entry.size >= 0 ? '#10B981' : '#F97316'} />
+                                                            <Cell key={`cell-${index}`} fill={entry.size >= 0 ? '#10B981' : '#EF4444'} />
                                                         ))
                                                     }
                                                 </Bar>
