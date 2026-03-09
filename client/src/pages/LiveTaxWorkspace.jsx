@@ -1299,60 +1299,56 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null }) => {
                     information.
                   </p>
                 </div>
-                <div className="flex bg-slate-950">
+                <div className="flex flex-col lg:flex-row bg-slate-950 min-h-[320px]">
                   {/* FOR TAX OFFICIAL USE */}
-                  <div className="w-[35%] flex flex-col p-8 border-r border-white/5 opacity-50 bg-[#020617] relative overflow-hidden group hover:opacity-100 transition-all duration-500 min-h-[350px]">
-                    <span className="text-slate-500 font-black text-[11px] uppercase tracking-[0.2em] text-center mb-10 z-10 transition-colors group-hover:text-amber-500">
+                  <div className="lg:w-[35%] w-full flex flex-col p-6 lg:p-8 border-b lg:border-b-0 lg:border-r border-white/5 opacity-50 bg-[#020617] relative overflow-hidden group hover:opacity-100 transition-all duration-500">
+                    <span className="text-slate-500 font-black text-[11px] uppercase tracking-[0.2em] text-center mb-8 lg:mb-10 z-10 transition-colors group-hover:text-amber-500">
                       សម្រាប់មន្ត្រីពន្ធដារ / FOR TAX OFFICIAL USE
                     </span>
-                    <div className="flex flex-col gap-6 z-10">
-                      <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mb-8 z-10">
+                      <span
+                        className="text-white font-bold text-xs shrink-0"
+                        style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
+                      >
+                        កាលបរិច្ឆេទ{" "}
+                        <span className="text-slate-500 ml-1">Date</span>
+                      </span>
+                      <div className="flex-1 ml-4 border-b border-dashed border-white/20 min-w-[50px]"></div>
+                    </div>
+                    <div className="flex items-center justify-between mb-auto z-10">
+                      <span
+                        className="text-white font-bold text-xs shrink-0"
+                        style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
+                      >
+                        លេខចូល{" "}
+                        <span className="text-slate-500 ml-1">(No.)</span>
+                      </span>
+                      <div className="flex-1 ml-4 border-b border-dashed border-white/20 min-w-[50px]"></div>
+                    </div>
+                    <div className="flex items-center gap-4 z-10 mt-6 lg:mt-12">
+                      <div className="flex flex-col shrink-0">
                         <span
-                          className="text-white font-bold text-xs shrink-0"
+                          className="text-white font-bold text-xs"
                           style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
                         >
-                          កាលបរិច្ឆេទ{" "}
-                          <span className="text-slate-500 ml-1">Date</span>
+                          ហត្ថលេខា និងឈ្មោះមន្ត្រី
                         </span>
-                        <div className="flex-1 ml-6 border-b border-dashed border-white/20"></div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span
-                          className="text-white font-bold text-xs shrink-0"
-                          style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
-                        >
-                          លេខចូល{" "}
-                          <span className="text-slate-500 ml-1">(No.)</span>
+                        <span className="text-slate-500 font-black tracking-[0.1em] text-[8px] uppercase mt-1">
+                          Signature & Name
                         </span>
-                        <div className="flex-1 ml-6 border-b border-dashed border-white/20"></div>
                       </div>
-                      <div className="flex items-center gap-4 mt-8">
-                        <div className="flex flex-col shrink-0">
-                          <span
-                            className="text-white font-bold text-xs"
-                            style={{
-                              fontFamily: '"Kantumruy Pro", sans-serif',
-                            }}
-                          >
-                            ហត្ថលេខា និងឈ្មោះមន្ត្រី
-                          </span>
-                          <span className="text-slate-500 font-black tracking-[0.2em] text-[8px] uppercase mt-1">
-                            Signature & Name
-                          </span>
-                        </div>
-                        <div className="flex-1 border-b border-dashed border-white/20 self-end mb-3"></div>
-                      </div>
+                      <div className="flex-1 border-b border-dashed border-white/20 self-end mb-2 min-w-[50px]"></div>
                     </div>
                     {/* Abstract background shape for official vibe */}
                     <div className="absolute -bottom-24 -right-16 w-64 h-64 border border-white/5 rounded-full pointer-events-none group-hover:border-amber-500/20 transition-all duration-700 drop-shadow-[0_0_15px_rgba(245,158,11,0)] group-hover:drop-shadow-[0_0_15px_rgba(245,158,11,0.1)]" />
                   </div>
 
                   {/* SIGNATURE BLOCK */}
-                  <div className="flex-1 flex flex-col p-10 relative bg-black/20 min-h-[350px]">
-                    <div className="flex items-center justify-between w-full mb-10">
-                      <div className="flex items-center gap-4 w-[45%]">
+                  <div className="flex-1 flex flex-col p-6 lg:p-10 relative bg-black/20">
+                    <div className="flex flex-col 2xl:flex-row items-center gap-6 2xl:gap-12 w-full mb-10 overflow-hidden">
+                      <div className="flex items-center gap-4 w-full 2xl:flex-1">
                         <span
-                          className="text-white font-bold text-sm shrink-0 uppercase tracking-widest"
+                          className="text-white font-bold text-sm shrink-0 uppercase tracking-widest whitespace-nowrap"
                           style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
                         >
                           ធ្វើនៅ / Filed in:
@@ -1363,24 +1359,24 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null }) => {
                           onChange={(e) =>
                             handleFormChange("filedIn", e.target.value)
                           }
-                          className="w-full bg-transparent tracking-widest border-b border-white/10 outline-none text-blue-400 text-sm font-bold active:border-blue-500 focus:border-blue-500 py-1 transition-all placeholder:text-blue-900 placeholder:tracking-widest"
+                          className="w-full min-w-0 bg-transparent tracking-widest border-b border-white/10 outline-none text-blue-400 text-sm font-bold active:border-blue-500 focus:border-blue-500 py-1 transition-all placeholder:text-blue-900 placeholder:tracking-widest"
                           placeholder="PHNOM PENH"
                         />
                       </div>
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-4 shrink-0 overflow-x-auto custom-scrollbar pb-1 max-w-full">
                         <span
-                          className="text-slate-400 font-bold text-xs shrink-0 tracking-widest"
+                          className="text-slate-400 font-bold text-xs shrink-0 tracking-widest whitespace-nowrap"
                           style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
                         >
                           ថ្ងៃទី / Date:
                         </span>
-                        <div className="flex gap-[2px]">
+                        <div className="flex gap-[2px] shrink-0">
                           {Array.from({ length: 8 }).map((_, i) => (
                             <input
                               key={i}
                               type="text"
                               maxLength="1"
-                              className="w-8 h-10 text-center bg-slate-900 border border-white/10 rounded font-black text-white outline-none focus:border-blue-500 focus:bg-slate-800 transition-all shadow-inner"
+                              className="w-6 h-8 sm:w-8 sm:h-10 text-center bg-slate-900 border border-white/10 rounded font-black text-white outline-none focus:border-blue-500 focus:bg-slate-800 transition-all shadow-inner shrink-0"
                               value={
                                 (formData.filedDate || "        ")[i] !== " "
                                   ? (formData.filedDate || "        ")[i]
@@ -1399,29 +1395,29 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null }) => {
                       </div>
                     </div>
 
-                    <div className="flex flex-col items-center justify-center flex-1 mt-6 opacity-80 hover:opacity-100 transition-opacity duration-500">
+                    <div className="flex flex-col items-center justify-center flex-1 mt-6 opacity-80 hover:opacity-100 transition-opacity duration-500 w-full px-2">
                       <span
-                        className="text-white font-bold text-base text-center mb-1.5"
+                        className="text-white font-bold text-sm sm:text-base text-center mb-2"
                         style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
                       >
                         អភិបាល/អ្នកគ្រប់គ្រង/ម្ចាស់សហគ្រាស/ភ្នាក់ងារសេវាកម្មពន្ធដារ
                       </span>
-                      <span className="text-blue-400 font-black text-[11px] uppercase tracking-[0.25em] text-center mb-[70px] drop-shadow-[0_0_10px_rgba(59,130,246,0.2)]">
+                      <span className="text-blue-400 font-black text-[9px] sm:text-[11px] leading-relaxed uppercase tracking-[0.1em] sm:tracking-[0.2em] text-center mb-[40px] sm:mb-[70px] drop-shadow-[0_0_10px_rgba(59,130,246,0.2)] break-words w-full">
                         DIRECTOR / MANAGER / OWNER OF ENTERPRISE / TAX SERVICE
                         AGENT
                       </span>
 
-                      <div className="flex items-center gap-6 w-full max-w-lg mt-auto">
-                        <div className="flex-1 border-b border-white/10" />
+                      <div className="flex items-center gap-3 sm:gap-6 w-full max-w-lg mt-auto min-w-[200px]">
+                        <div className="flex-1 border-b border-white/10 min-w-[20px]" />
                         <span
-                          className="text-white font-bold text-sm tracking-widest shrink-0"
+                          className="text-white font-bold text-xs sm:text-sm tracking-widest shrink-0 whitespace-nowrap"
                           style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
                         >
                           ហត្ថលេខា ឈ្មោះ និងត្រា
                         </span>
-                        <div className="flex-1 border-b border-white/10" />
+                        <div className="flex-1 border-b border-white/10 min-w-[20px]" />
                       </div>
-                      <span className="text-slate-500 font-black tracking-[0.25em] text-[9px] uppercase mt-2">
+                      <span className="text-slate-500 font-black tracking-[0.1em] sm:tracking-[0.25em] text-[8px] sm:text-[9px] uppercase mt-2">
                         Signature, Name & Seal
                       </span>
                     </div>
