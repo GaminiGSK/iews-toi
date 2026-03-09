@@ -11,6 +11,12 @@ import LiveTaxWorkspace from "./LiveTaxWorkspace";
 
 const ToiAcar = ({ onBack, packageId, year }) => {
   const [activeWorkspacePage, setActiveWorkspacePage] = useState(1);
+  const [selectedYear, setSelectedYear] = useState(year || new Date().getFullYear().toString());
+
+  // Generate years: 10 years back to 10 years forward
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 21 }, (_, i) => (currentYear - 10 + i).toString());
+
   return (
     <div className="w-full min-h-screen bg-black text-white flex flex-col font-sans relative overflow-hidden">
       {/* HEADER */}
@@ -58,6 +64,24 @@ const ToiAcar = ({ onBack, packageId, year }) => {
             );
           })}
         </div>
+
+        {/* YEAR SELECTOR */}
+        <div className="flex items-center gap-2 pr-6">
+          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            Year
+          </label>
+          <select
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(e.target.value)}
+            className="bg-slate-900 border border-slate-700 text-white text-xs font-bold rounded-lg px-3 py-1.5 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all cursor-pointer shadow-sm hover:bg-slate-800"
+          >
+            {years.map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* MAIN CONTENT SPLIT AREA */}
@@ -78,12 +102,12 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   <h2 className="text-[12px] font-black uppercase text-center mt-2 flex items-center justify-center gap-3">
                     ANNUAL INCOME TAX RETURN FOR THE YEAR ENDED
                     <div className="inline-flex shadow-sm gap-[2px]">
-                      {[2, 0, 2, 6].map((num, i) => (
+                      {selectedYear.split("").map((char, i) => (
                         <div
                           key={i}
                           className="w-8 h-10 border-[1.5px] border-black flex items-center justify-center font-bold text-xl"
                         >
-                          {num}
+                          {char}
                         </div>
                       ))}
                     </div>
@@ -852,7 +876,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
         {/* MIDDLE SIDE: GPT Result Landing Page (Totally Black, empty) */}
         <div className="flex-1 overflow-y-auto relative bg-black custom-scrollbar">
           {/* Embedded TOI Page 1 Admin Template for GPT Engine to dictate */}
-          <LiveTaxWorkspace embedded={true} forcePage={activeWorkspacePage} />
+          <LiveTaxWorkspace embedded={true} forcePage={activeWorkspacePage} activeYear={selectedYear} />
         </div>
 
         {/* RIGHT SIDE: Agent Terminal (Right Top Side) */}

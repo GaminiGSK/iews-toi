@@ -86,7 +86,7 @@ const INITIAL_SCHEMA = {
   ],
 };
 
-const LiveTaxWorkspace = ({ embedded = false, forcePage = null }) => {
+const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear = "2026" }) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const packageId =
@@ -325,11 +325,10 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null }) => {
                 <button
                   key={i}
                   onClick={() => setActivePage(i + 1)}
-                  className={`px-3 py-1.5 rounded-lg text-[13px] font-bold border transition-all shrink-0 active:scale-90 ${
-                    activePage === i + 1
-                      ? "bg-rose-600 border-rose-400 text-white shadow-lg shadow-rose-900/40"
-                      : "bg-slate-800/40 border-white/5 text-slate-400 hover:text-white hover:bg-white/5 hover:border-white/10"
-                  }`}
+                  className={`px-3 py-1.5 rounded-lg text-[13px] font-bold border transition-all shrink-0 active:scale-90 ${activePage === i + 1
+                    ? "bg-rose-600 border-rose-400 text-white shadow-lg shadow-rose-900/40"
+                    : "bg-slate-800/40 border-white/5 text-slate-400 hover:text-white hover:bg-white/5 hover:border-white/10"
+                    }`}
                 >
                   {i + 1}
                 </button>
@@ -407,7 +406,7 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null }) => {
                     </h1>
                   </div>
                   <div className="flex gap-2 bg-black/30 p-2 rounded-xl border border-white/5 shadow-inner">
-                    {(formData.untilDate?.slice(-4) || "2026")
+                    {(formData.untilDate?.slice(-4) || activeYear)
                       .split("")
                       .map((char, i) => (
                         <div
@@ -422,7 +421,7 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null }) => {
                             placeholder="0"
                             onChange={(e) => {
                               const newDate = (
-                                formData.untilDate || "31122026"
+                                formData.untilDate || `3112${activeYear}`
                               ).split("");
                               newDate[4 + i] = e.target.value;
                               handleFormChange("untilDate", newDate.join(""));
@@ -522,8 +521,8 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null }) => {
                               handleFormChange(
                                 "taxMonths",
                                 (formData.taxMonths || "12").substring(0, i) +
-                                  e.target.value +
-                                  (formData.taxMonths || "12").substring(i + 1),
+                                e.target.value +
+                                (formData.taxMonths || "12").substring(i + 1),
                               )
                             }
                           />
@@ -566,7 +565,7 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null }) => {
                                   value={formData.fromDate?.[charIdx] || ""}
                                   onChange={(e) => {
                                     const newDate = (
-                                      formData.fromDate || "01012026"
+                                      formData.fromDate || `0101${activeYear}`
                                     ).split("");
                                     newDate[charIdx] = e.target.value;
                                     handleFormChange(
@@ -620,7 +619,7 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null }) => {
                                 value={formData.untilDate?.[charIdx] || ""}
                                 onChange={(e) => {
                                   const newDate = (
-                                    formData.untilDate || "31122026"
+                                    formData.untilDate || `3112${activeYear}`
                                   ).split("");
                                   newDate[charIdx] = e.target.value;
                                   handleFormChange(
