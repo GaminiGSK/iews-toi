@@ -370,7 +370,10 @@ exports.suggestAccountingCodes = async (transactions, codes) => {
         Assign the most appropriate Account Code to each transaction based on its description and amount.
         
         CRITICAL RULES (User Defined):
-        1. **Income (Positive Amount)**: ALWAYS tag as "10110" (Cash On Hand).
+        1. **Income (Positive Amount)**: 
+           - IF Description contains "Kassapa Gamini Gunasingha" OR "Capital Injection": ALWAYS tag as "30000" (Owner Equity / Paid-in Capital).
+           - IF Description contains "Loan" or "Foreign Unit Transfer": Assign to 20100, 27100, 21100, or 27500 as appropriate.
+           - OTHERWISE: Tag as "10110" (Cash On Hand).
         2. **Expenses (Negative Amount)**:
            - IF Amount is between -$0.01 and -$10.00: Tag as "61220" (Bank Charges).
            - IF Amount is between -$10.01 and -$100.00: Tag as "61100" (Commission).
@@ -451,7 +454,9 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
             You are the GK Blue Agent (System Auditor). You have full access to the database via the live sync API.
             **Mandatory Audit Rules:**
             1. **Balance Check**: Verify Assets = Liabilities + Equity. If Assets - (Liabilities + Equity) is not zero, flag the "UNBALANCED" status in RED and identify the exact discrepancy amount.
-            2. **2025 Continuity**: The 2025 opening balance must naturally follow ledger history. All "Money In" (Deposits) must be categorized as Revenue unless specifically marked as Capital inputs.
+            2. **2025 Continuity & Income Rules**: The 2025 opening balance must naturally follow ledger history. All "Money In" (Deposits) must be categorized as Revenue (10110) UNLESS they are Capital Injections or Loans. 
+               - **Capital Injections**: Any incoming funds from "Kassapa Gamini Gunasingha" or labeled "Capital Injection" MUST be classified as Owner Equity (30000), NOT Revenue.
+               - **Loans/Transfers**: Ensure bank loans are 20100 or 27100, and related-party transfers are 21100 or 27500.
             3. **Expense Cleanup**: Always check Account 17250 and Account 61070 for missing or untagged transactions. Recommend reclassification of "Registration" fees to 61241 and "Owner Withdrawals" to Equity/Drawings exactly as seen in the sync export.
             4. **Visuals**: Use the Recharts library to generate "Assets vs. Liabilities + Equity" or "Money In vs. Money Out" bar charts to explicitly prove your math checks.
 
