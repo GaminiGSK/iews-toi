@@ -88,7 +88,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
       <div className="flex-1 flex overflow-hidden">
         {/* NEW LEFT SIDE: WHITE PREVIEW (ONLY PAGE 1) */}
         {activeWorkspacePage === 1 && (
-          <div className="w-[644px] shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black">
+          <div className="w-[45%] shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black">
             {/* Content for the white preview */}
             <div className="w-full flex flex-col font-sans mb-12 text-black">
               {/* OFFICIAL GDT HEADER */}
@@ -910,13 +910,13 @@ const ToiAcar = ({ onBack, packageId, year }) => {
         )}
 
         {/* MIDDLE SIDE: GPT Result Landing Page (Totally Black, empty) */}
-        <div className="flex-1 overflow-y-auto relative bg-black custom-scrollbar">
+        <div className="w-[30%] overflow-y-auto relative bg-black custom-scrollbar">
           {/* Embedded TOI Page 1 Admin Template for GPT Engine to dictate */}
           <LiveTaxWorkspace embedded={true} forcePage={activeWorkspacePage} activeYear={selectedYear} />
         </div>
 
         {/* RIGHT SIDE: Agent Terminal (Right Top Side) */}
-        <div className="w-[442px] shrink-0 border-l border-white/5 bg-slate-950/30 p-8 overflow-y-auto flex flex-col justify-start items-center custom-scrollbar">
+        <div className="w-[25%] shrink-0 border-l border-white/5 bg-slate-950/30 p-8 overflow-y-auto flex flex-col justify-start items-center custom-scrollbar">
           {/* AI Orb / Avatar */}
           <div className="relative mb-8 flex items-center justify-center gap-3 mt-8 animate-in fade-in duration-700">
             <span className="text-3xl font-medium tracking-tight text-white/90 drop-shadow-md pb-1">

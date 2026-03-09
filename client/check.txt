@@ -1,0 +1,35 @@
+721 2 </div>
+722 2 
+723 2 {/* TAX DUE & BOX 18 */}
+724 3 <div className="flex min-h-[90px]">
+725 4 <div className="w-[40%] border-r border-white/5 p-5 flex flex-col justify-center bg-white/[0.04]">
+726 4 <span className="text-white font-bold text-base tracking-tight leading-tight mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ទឹកប្រាក់ពន្ធត្រូវបង់</span>
+727 4 <span className="text-slate-500 text-[10px] font-black uppercase tracking-wider">Income Tax Due:</span>
+728 3 </div>
+729 4 <div className="w-[16%] border-r border-white/5 p-5 flex items-center">
+730 4 <input type="text" value={formData.incomeTaxDue || ""} onChange={(e) => handleFormChange('incomeTaxDue', e.target.value)} className="w-full bg-transparent border-none outline-none text-emerald-400 text-xl font-black placeholder:text-emerald-500/20" placeholder="0.00" />
+731 3 </div>
+732 4 <div className="w-[10%] border-r border-white/5 flex flex-col items-center justify-center bg-rose-500/5 transition-colors hover:bg-rose-500/10">
+733 4 <span className="text-rose-400 text-[9px] font-black uppercase tracking-tighter">Box</span>
+734 4 <span className="text-rose-400 text-2xl font-black">18</span>
+735 3 </div>
+736 4 <div className="w-[18%] border-r border-white/5 p-4 flex flex-col justify-center bg-white/[0.02]">
+737 4 <span className="text-slate-400 font-bold text-[10px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឥណទានពន្ធ</span>
+738 4 <span className="text-slate-500 text-[8px] font-black uppercase mt-0.5">Tax Credit CF:</span>
+739 3 </div>
+740 4 <div className="flex-1 p-5 flex items-center">
+741 4 <input type="text" value={formData.taxCreditCarriedForward || ""} onChange={(e) => handleFormChange('taxCreditCarriedForward', e.target.value)} className="w-full bg-transparent border-none outline-none text-white text-base font-black placeholder:text-white/10" placeholder="0.00" />
+742 3 </div>
+743 2 </div>
+744 1 </div>
+745 1 
+746 2 <div className="mt-16 flex flex-col items-center group cursor-default">
+747 3 <div className="w-px bg-slate-700 h-12 group-hover:h-20 transition-all duration-700" />
+748 3 <p className="text-slate-500 font-black text-[10px] uppercase tracking-[0.8em] mt-4 group-hover:tracking-[1.2em] transition-all duration-700">Page 1 Version 1.0.1 - Blue Print</p>
+749 2 </div>
+750 1 </div>
+751 1 
+752 1 {/* SECTION: DECLARATION AND SIGNATURE */}
+753 2 <div className="col-span-2 mt-12 mx-auto mb-16 border border-white/10 overflow-hidden bg-[#020617] rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col max-w-[1250px] w-full">
+754 3 <div className="bg-slate-900 border-b border-white/5 p-4 flex items-center justify-center">
+755 3 <span className="text-slate-400 font-black text-xs tracking-[0.3em] uppercase">សេចក្តីប្រកាស / DECLARATION</span>

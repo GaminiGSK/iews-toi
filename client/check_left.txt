@@ -1,0 +1,33 @@
+520 3 <input type="text" value={formData.agentLicenseNo || ""} onChange={(e) => handleFormChange('agentLicenseNo', e.target.value)} className="w-full bg-transparent border-none outline-none text-white text-base font-bold" placeholder="..." />
+521 2 </div>
+522 1 </div>
+523 1 
+524 1 {/* ADDRESS DETAILS TABLE */}
+525 2 <div className="mt-8 border border-white/10 overflow-hidden bg-slate-900/40 rounded-2xl shadow-xl backdrop-blur-sm">
+526 2 {[
+527 2 { kh: "អាសយដ្ឋានបច្ចុប្បន្នរបស់ការិយាល័យចុះបញ្ជី ៖", en: "Current Registered Office Address:", key: "registeredAddress" },
+528 2 { kh: "ផ្ទះលេខ/ផ្លូវ ៖", en: "House No / Street:", key: "houseStreet" },
+529 2 { kh: "ភូមិ ៖", en: "Village:", key: "village" },
+530 2 { kh: "ឃុំ/សង្កាត់ ៖", en: "Commune / Sangkat:", key: "commune" },
+531 2 { kh: "ក្រុង/ស្រុក/ខណ្ឌ ៖", en: "District / Khan:", key: "district" },
+532 2 { kh: "រាជធានី/ខេត្ត ៖", en: "Province / City:", key: "province" },
+533 2 { kh: "អាសយដ្ឋានបច្ចុប្បន្នរបស់កន្លែងប្រកបអាជីវកម្មចម្បង ៖", en: "Current Principal Establishment Address:", key: "principalAddress" },
+534 2 { kh: "អាសយដ្ឋានឃ្លាំង ៖", en: "Warehouse Address:", key: "warehouseAddress" }
+535 2 ].map((row, idx) => (
+536 3 <div key={idx} className="flex border-b border-white/5 last:border-0 min-h-[70px]">
+537 4 <div className="w-[40%] border-r border-white/5 p-5 flex flex-col justify-center bg-white/[0.02]">
+538 4 <span className="text-white font-bold text-base tracking-tight leading-tight mb-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.kh}</span>
+539 4 <span className="text-slate-500 text-[10px] font-black uppercase tracking-wider leading-none">{row.en}</span>
+540 3 </div>
+541 4 <div className="flex-1 p-5 flex items-center">
+542 4 <input type="text" value={formData[row.key] || ""} onChange={(e) => handleFormChange(row.key, e.target.value)} className="w-full bg-transparent border-none outline-none text-white text-base font-bold" placeholder="..." />
+543 3 </div>
+544 2 </div>
+545 2 ))}
+546 1 </div>
+547 0 </div>
+548 -1 </div>
+549 -1 
+550 -1 {/* RIGHT COLUMN */}
+551 0 <div className="flex flex-col border-l border-white/10 pl-12">
+552 0 {/* REMOVED FOR P.1 AS IT MOVED TO TOP-LEFT */}

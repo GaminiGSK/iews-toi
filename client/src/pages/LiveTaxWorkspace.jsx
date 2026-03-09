@@ -632,7 +632,7 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear = "20
 
               {/* ENTERPRISE DETAILS TABLE - REFINED STYLING */}
               <div className="mt-12 border border-white/10 overflow-hidden bg-slate-900/40 rounded-2xl shadow-2xl backdrop-blur-sm">
-                <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className={`p-4 grid grid-cols-1 ${!embedded ? 'xl:grid-cols-2 2xl:grid-cols-3' : 'xl:grid-cols-1 2xl:grid-cols-2'} gap-4`}>
                   {[
                     {
                       kh: "ឈ្មោះសហគ្រាស ៖",
@@ -674,7 +674,7 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear = "20
                   ].map((row, idx) => (
                     <div
                       key={idx}
-                      className="flex flex-col bg-white/[0.02] border border-white/5 rounded-xl p-5 hover:bg-white/[0.04] transition-colors"
+                      className="flex flex-col bg-white/[0.02] border border-white/5 rounded-xl p-3 hover:bg-white/[0.04] transition-colors"
                     >
                       <span
                         className="text-white font-bold text-[13px] tracking-tight leading-snug mb-0.5"
@@ -700,7 +700,7 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear = "20
 
 
                 {/* ADDRESS DETAILS TABLE */}
-                <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className={`p-4 grid grid-cols-1 ${!embedded ? 'xl:grid-cols-2 2xl:grid-cols-3' : 'xl:grid-cols-1 2xl:grid-cols-2'} gap-4`}>
                   {[
                     {
                       kh: "អាសយដ្ឋានបច្ចុប្បន្នរបស់ការិយាល័យចុះបញ្ជី ៖",
@@ -741,7 +741,7 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear = "20
                   ].map((row, idx) => (
                     <div
                       key={idx}
-                      className="flex flex-col bg-white/[0.02] border border-white/5 rounded-xl p-5 hover:bg-white/[0.04] transition-colors"
+                      className="flex flex-col bg-white/[0.02] border border-white/5 rounded-xl p-3 hover:bg-white/[0.04] transition-colors"
                     >
                       <span
                         className="text-white font-bold text-[13px] tracking-tight leading-tight mb-0.5"

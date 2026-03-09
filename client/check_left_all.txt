@@ -1,0 +1,86 @@
+333 1 <div className="flex flex-col border-b border-white/10 pb-8 gap-8">
+334 2 <div className="flex justify-between items-start">
+335 3 <div className="flex flex-col gap-3">
+342 2 </div>
+343 3 <div className="flex gap-2 bg-black/30 p-2 rounded-xl border border-white/5 shadow-inner">
+345 4 <div key={i} className="w-10 h-14 border border-white/10 flex items-center justify-center bg-slate-800/50 rounded-lg shadow-sm">
+358 3 </div>
+360 2 </div>
+361 1 </div>
+363 2 <div className="flex items-center gap-4 bg-black/40 p-3 rounded-xl border border-white/5 w-max">
+364 3 <div className="flex flex-col pr-4 border-r border-white/10">
+367 2 </div>
+368 3 <div className="flex gap-1 p-1 bg-black/40 rounded-lg border border-white/10 shadow-inner scale-90 origin-left">
+370 4 <div key={i} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)] overflow-hidden">
+382 3 </div>
+386 4 <div key={i + 4} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/90 rounded shadow-[0_2px_5px_rgba(0,0,0,0.3)] overflow-hidden">
+398 3 </div>
+400 2 </div>
+401 1 </div>
+402 0 </div>
+404 0 {/* TAX PERIOD & DATE RANGE - REFINED DENSITY */}
+405 1 <div className="mt-10 flex flex-col gap-10 border-b border-white/5 pb-10">
+406 2 <div className="flex items-center gap-12">
+407 2 {/* TAX PERIOD */}
+408 3 <div className="flex items-center gap-6">
+409 4 <div className="flex flex-col">
+412 3 </div>
+413 4 <div className="flex gap-1.5 p-1.5 bg-black/20 rounded-lg border border-white/5">
+415 5 <div key={i} className="w-10 h-12 border border-white/10 flex items-center justify-center bg-slate-800/80 rounded-md shadow-sm">
+417 4 </div>
+419 3 </div>
+420 2 </div>
+422 2 {/* START DATE */}
+423 3 <div className="flex items-center gap-6">
+424 4 <div className="flex flex-col min-w-[60px]">
+427 3 </div>
+428 4 <div className="flex gap-2 p-1 bg-black/20 rounded-lg border border-white/5">
+434 5 <div key={sIdx} className="flex gap-0.5 items-center">
+438 6 <div key={i} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/80 rounded shadow-sm">
+444 5 </div>
+448 4 </div>
+450 3 </div>
+451 2 </div>
+452 1 </div>
+453 1 {/* END DATE ROW */}
+454 2 <div className="flex items-center gap-6">
+455 3 <div className="flex flex-col min-w-[60px]">
+458 2 </div>
+459 3 <div className="flex gap-2 p-1 bg-black/20 rounded-lg border border-white/5">
+465 4 <div key={sIdx} className="flex gap-0.5 items-center">
+469 5 <div key={i} className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/80 rounded shadow-sm">
+475 4 </div>
+479 3 </div>
+481 2 </div>
+482 1 </div>
+483 0 </div>
+485 0 {/* ENTERPRISE DETAILS TABLE - REFINED STYLING */}
+486 1 <div className="mt-12 border border-white/10 overflow-hidden bg-slate-900/40 rounded-2xl shadow-2xl backdrop-blur-sm">
+496 2 <div key={idx} className="flex border-b border-white/5 last:border-0 min-h-[70px]">
+497 3 <div className="w-[40%] border-r border-white/5 p-5 flex flex-col justify-center bg-white/[0.02]">
+500 2 </div>
+501 3 <div className="flex-1 p-5 flex items-center bg-transparent">
+503 2 </div>
+504 1 </div>
+506 1 {/* SPECIAL ROW: ACCOUNTANT / TAX AGENT */}
+507 2 <div className="flex min-h-[90px]">
+508 3 <div className="w-[35%] border-r border-white/5 p-5 flex flex-col justify-center bg-white/[0.04]">
+511 2 </div>
+512 3 <div className="flex-1 border-r border-white/5 p-4 flex items-center">
+514 2 </div>
+515 3 <div className="w-[30%] border-r border-white/5 p-5 flex flex-col justify-center bg-white/[0.04]">
+518 2 </div>
+519 3 <div className="w-[15%] p-4 flex items-center">
+521 2 </div>
+522 1 </div>
+524 1 {/* ADDRESS DETAILS TABLE */}
+525 2 <div className="mt-8 border border-white/10 overflow-hidden bg-slate-900/40 rounded-2xl shadow-xl backdrop-blur-sm">
+536 3 <div key={idx} className="flex border-b border-white/5 last:border-0 min-h-[70px]">
+537 4 <div className="w-[40%] border-r border-white/5 p-5 flex flex-col justify-center bg-white/[0.02]">
+540 3 </div>
+541 4 <div className="flex-1 p-5 flex items-center">
+543 3 </div>
+544 2 </div>
+546 1 </div>
+547 0 </div>
+548 -1 </div>
