@@ -95,157 +95,182 @@ const ToiAcar = ({ onBack, packageId, year }) => {
               <div className="w-full relative mb-12 text-[10px] sm:text-[11px] leading-tight pt-4 font-bold flex justify-between items-start">
 
                 {/* LEFT: TOI 01 / I and MINISTRY */}
-                <div className="flex flex-col items-start gap-6 w-1/3">
-                  <span className="font-extrabold text-[15px] tracking-wide pl-1 font-serif">TOI 01 / I</span>
+                <div className="flex flex-col items-start gap-12 w-[45%]">
+                  <span className="font-extrabold text-[16px] tracking-wide pl-2 font-serif">TOI 01 / I</span>
 
-                  <div className="flex flex-col items-center ml-8">
-                    <span className="font-bold text-[12px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ក្រសួងសេដ្ឋកិច្ចនិងហិរញ្ញវត្ថុ</span>
-                    <span className="font-semibold text-[11.5px] tracking-wide">MINISTRY OF ECONOMY AND FINANCE</span>
-                    <div className="w-full h-[2px] bg-black my-0.5"></div>
-                    <span className="font-bold text-[12px] mt-0.5" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>អគ្គនាយកដ្ឋានពន្ធដារ</span>
-                    <span className="font-semibold text-[11.5px] mb-1">GENERAL DEPARTMENT OF TAXATION</span>
-                    <div className="bg-[#eef2f5] border-[1.5px] border-black font-extrabold px-6 py-1.5 mt-1 text-[13px] w-[280px] text-center shadow-[inset_0_-1px_3px_rgba(0,0,0,0.1)]">
-                      ទម្រង់ ពបច ០១ / FORM TOI 01
+                  <div className="flex flex-col items-center ml-16">
+                    <span className="font-bold text-[14px] tracking-wide" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ក្រសួងសេដ្ឋកិច្ចនិងហិរញ្ញវត្ថុ</span>
+                    <span className="font-semibold text-[13px] tracking-wide mb-0.5">MINISTRY OF ECONOMY AND FINANCE</span>
+                    <div className="w-[105%] h-[2.5px] bg-black my-0.5"></div>
+                    <span className="font-bold text-[14px] mt-1 tracking-wide" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>អគ្គនាយកដ្ឋានពន្ធដារ</span>
+                    <span className="font-semibold text-[13px] mb-2 tracking-wide">GENERAL DEPARTMENT OF TAXATION</span>
+
+                    <div className="relative">
+                      {/* Drop shadow box */}
+                      <div className="absolute top-[3px] left-[3px] w-full h-full bg-black"></div>
+                      {/* Main block */}
+                      <div className="bg-[#f2f2f2] border-[2px] border-black border-b-0 border-r-0 font-extrabold px-8 py-2 text-[15px] text-center relative z-10 w-[300px]">
+                        ទម្រង់ ពបច ០១ / FORM TOI 01
+                      </div>
                     </div>
-                    <div className="bg-black h-[4px] w-[280px] -mt-[4px] relative -z-10 translate-y-[4px]"></div>
-                    <span className="text-[10px] mt-4 font-normal text-slate-800" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>( មាត្រា ២៩ ថ្មី នៃច្បាប់ស្តីពីសារពើពន្ធ )</span>
-                    <span className="text-[9px] font-normal text-slate-800 tracking-tight mt-0.5">(Article 29 New of the Law on Taxation)</span>
+
+                    <span className="text-[11px] mt-4 font-normal text-slate-800 tracking-wide" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>( មាត្រា ២៩ ថ្មី នៃច្បាប់ស្តីពីសារពើពន្ធ )</span>
+                    <span className="text-[10px] font-normal text-slate-800 tracking-tight mt-0.5">(Article 29 New of the Law on Taxation)</span>
                   </div>
                 </div>
 
-                {/* CENTER: GDT LOGO PLACEHOLDER */}
-                <div className="w-1/3 flex justify-center pt-8">
-                  <div className="w-[110px] h-[110px] rounded-full border border-blue-200/50 flex items-center justify-center relative overflow-hidden bg-white shadow-[0_0_10px_rgba(59,130,246,0.05)]">
-                    {/* Outer decorative rings */}
-                    <div className="absolute inset-1 rounded-full border border-blue-300/60" />
-                    <div className="absolute inset-2 rounded-full border border-blue-400/40" />
-                    <div className="absolute inset-0 flex items-center justify-center flex-col text-blue-800/60 font-black">
-                      <span className="text-[7.5px] font-bold tracking-[0.2em] text-blue-900/40 mt-1 mb-1">GDT</span>
-                      <span className="text-[7.5px] font-bold tracking-[0.2em] text-blue-900/40">LOGO</span>
-                    </div>
-                  </div>
-                </div>
+                {/* CENTER: NO LOGO */}
+                <div className="w-[10%]"></div>
 
                 {/* RIGHT: KINGDOM */}
-                <div className="flex flex-col items-center pt-8 w-1/3">
-                  <span className="font-bold text-[15px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ព្រះរាជាណាចក្រកម្ពុជា</span>
-                  <span className="font-medium text-[13px] tracking-widest pl-1 mb-1.5">KINGDOM OF CAMBODIA</span>
-                  <span className="font-bold text-[14px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ជាតិ សាសនា ព្រះមហាក្សត្រ</span>
-                  <span className="font-medium text-[12.5px] tracking-[0.08em] mt-0.5">NATION <span className="mx-2 text-[10px] font-normal">&bull;</span> RELIGION <span className="mx-2 text-[10px] font-normal">&bull;</span> KING</span>
-                  <div className="flex items-center justify-center w-[160px] gap-1 mt-1">
-                    <div className="h-px bg-slate-400 flex-1"></div>
-                    <span className="text-[6px] text-slate-500 pb-0.5 inline-block -translate-y-px">&#10045;</span>
-                    <div className="border border-slate-500 w-2 h-0 rounded-full scale-y-50"></div>
-                    <span className="text-[6px] text-slate-500 pb-0.5 inline-block -translate-y-px">&#10045;</span>
-                    <div className="h-px bg-slate-400 flex-1"></div>
+                <div className="flex flex-col items-center pt-24 w-[45%] pr-12">
+                  <span className="font-bold text-[16px] tracking-wider" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ព្រះរាជាណាចក្រកម្ពុជា</span>
+                  <span className="font-medium text-[15px] tracking-[0.15em] pl-1 mb-1">KINGDOM OF CAMBODIA</span>
+                  <span className="font-bold text-[15px] tracking-wide" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ជាតិ សាសនា ព្រះមហាក្សត្រ</span>
+                  <span className="font-medium text-[13px] tracking-[0.1em] mt-1">NATION &#160; RELIGION &#160; KING</span>
+                  <div className="flex items-center justify-center w-[180px] gap-1 mt-1.5 opacity-80">
+                    <div className="h-px bg-black flex-1"></div>
+                    <span className="text-[8px] text-black pb-0.5 inline-block -translate-y-px">&#10045;</span>
+                    <div className="border border-black w-2.5 h-0 rounded-full scale-y-[0.3]"></div>
+                    <span className="text-[8px] text-black pb-0.5 inline-block -translate-y-px">&#10045;</span>
+                    <div className="h-px bg-black flex-1"></div>
                   </div>
                 </div>
               </div>
 
               {/* FORM TITLE */}
-              <div className="flex flex-col items-center pb-8 mt-12 relative w-full">
-                <h1
-                  className="text-[20px] font-bold tracking-normal text-center w-full mb-3"
-                  style={{ fontFamily: '"Kantumruy Pro", sans-serif', letterSpacing: '0.02em' }}
-                >
-                  លិខិតប្រកាសពន្ធលើប្រាក់ចំណូលប្រចាំឆ្នាំ
-                </h1>
-                <h2 className="text-[13px] font-black uppercase text-center mt-1 flex items-center justify-center gap-1.5 w-full">
-                  <span style={{ transform: 'scaleY(1.1)' }} className="tracking-[0.03em] pr-1">ANNUAL INCOME TAX RETURN FOR THE YEAR ENDED</span>
-                  <div className="inline-flex gap-[3px]">
+              <div className="flex flex-col items-center pb-8 mt-12 relative w-full mb-2">
+                {/* Top row: Khmer Title + Boxes */}
+                <div className="flex items-center justify-center gap-10 w-full mb-1">
+                  <h1
+                    className="text-[22px] font-bold tracking-normal"
+                    style={{ fontFamily: '"Kantumruy Pro", sans-serif', letterSpacing: '0.01em' }}
+                  >
+                    លិខិតប្រកាសពន្ធលើប្រាក់ចំណូលប្រចាំឆ្នាំ
+                  </h1>
+                  <div className="flex gap-1.5 translate-x-12">
                     {selectedYear.split("").map((char, i) => (
                       <div
                         key={i}
-                        className="w-[28px] h-[36px] border-[1.5px] border-black flex items-center justify-center font-bold text-[19px] bg-white pt-0.5"
+                        className="w-[32px] h-[36px] border-[1px] border-black flex items-center justify-center font-normal text-[22px] bg-white pt-1"
                         style={{ fontFamily: '"Arial", sans-serif' }}
                       >
                         {char}
                       </div>
                     ))}
                   </div>
+                </div>
+
+                {/* Bottom row: English Title */}
+                <h2 className="text-[14px] font-black uppercase text-center w-full">
+                  <span style={{ transform: 'scaleY(1.05)', display: 'inline-block' }} className="tracking-[0.05em]">ANNUAL INCOME TAX RETURN FOR THE YEAR ENDED</span>
                 </h2>
               </div>
 
-              {/* TIN Box */}
-              <div className="flex w-full mt-2">
-                <div className="w-10 border-b border-l border-r border-black flex items-center justify-center font-bold text-sm bg-slate-100">
-                  1
-                </div>
-                <div className="w-[35%] border-b border-r border-black p-3 flex flex-col justify-center bg-slate-50">
-                  <span
-                    className="text-[12px] font-bold"
-                    style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
-                  >
-                    លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN) :
-                  </span>
-                  <span className="text-[9px] font-bold uppercase text-slate-600">
-                    Tax Identification Number (TIN)
-                  </span>
-                </div>
-                <div className="flex-1 flex gap-1 items-center px-4 border-b border-r border-black">
-                  <div className="w-7 h-9 border border-black" />
-                  <div className="w-7 h-9 border border-black" />
-                  <div className="w-7 h-9 border border-black" />
-                  <div className="w-7 h-9 border border-black" />
-                  <span className="mx-1 font-black text-xl">-</span>
-                  {Array.from({ length: 9 }).map((_, i) => (
-                    <div key={i} className="w-7 h-9 border border-black" />
-                  ))}
-                </div>
-              </div>
+              <div className="w-full h-1.5 bg-black rounded-b-sm mb-1 z-20 relative"></div>
 
-              {/* Periods Box */}
-              <div className="flex w-full items-stretch justify-between mb-4 border-l border-r border-black">
-                <div className="flex items-center gap-3 border-r border-b border-black bg-slate-50 p-2 w-[45%]">
-                  <div className="flex flex-col">
-                    <span
-                      className="text-[11px] font-bold leading-tight"
-                      style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
-                    >
-                      ការិយបរិច្ឆេទជាប់ពន្ធ (ចំនួនខែ)
+              <div className="flex w-full mt-1 border-b-[2px] border-l-[2px] border-r-[2px] border-black">
+
+                {/* Left section: Text and 2 boxes */}
+                <div className="flex items-center py-2 px-3 border-r-[2px] border-black justify-between min-w-[340px]">
+                  <div className="flex flex-col justify-center">
+                    <span className="text-[14px] font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                      ការិយបរិច្ឆេទសារពើពន្ធ (ចំនួនខែ) ៖
                     </span>
-                    <span className="text-[9px] font-bold text-slate-600">
+                    <span className="text-[11px] font-normal mt-0.5">
                       Tax Period (Number of Month)
                     </span>
                   </div>
-                  <div className="flex gap-[2px] ml-auto items-center">
-                    <div className="w-7 h-9 border border-black flex items-center justify-center font-bold bg-white text-lg">
-                      1
+                  <div className="flex gap-1 ml-4 mt-1">
+                    <div className="w-[30px] h-[36px] border-[1.5px] border-black flex items-center justify-center font-bold text-xl">1</div>
+                    <div className="w-[30px] h-[36px] border-[1.5px] border-black flex items-center justify-center font-bold text-xl">2</div>
+                  </div>
+                </div>
+
+                {/* Right section: From / Until */}
+                <div className="flex-1 flex items-center px-6 relative">
+                  {/* Big Black Triangle pointer */}
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0 h-0 border-t-[12px] border-t-transparent border-l-[16px] border-l-black border-b-[12px] border-b-transparent"></div>
+
+                  <div className="w-full flex justify-between ml-3 gap-8">
+                    {/* From Date */}
+                    <div className="flex items-center gap-3">
+                      <div className="flex flex-col justify-center text-right mt-1">
+                        <span className="text-[12px] font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចាប់ពីថ្ងៃទី</span>
+                        <span className="text-[10px] font-normal leading-tight">From</span>
+                      </div>
+                      <div className="flex gap-3">
+                        <div className="flex gap-1">
+                          <div className="w-[26px] h-[34px] border-[1.5px] border-slate-400"></div>
+                          <div className="w-[26px] h-[34px] border-[1.5px] border-slate-400"></div>
+                        </div>
+                        <div className="flex gap-1">
+                          <div className="w-[26px] h-[34px] border-[1.5px] border-slate-400"></div>
+                          <div className="w-[26px] h-[34px] border-[1.5px] border-slate-400"></div>
+                        </div>
+                        <div className="flex gap-1">
+                          <div className="w-[26px] h-[34px] border-[1.5px] border-slate-400"></div>
+                          <div className="w-[26px] h-[34px] border-[1.5px] border-slate-400"></div>
+                          <div className="w-[26px] h-[34px] border-[1.5px] border-slate-400"></div>
+                          <div className="w-[26px] h-[34px] border-[1.5px] border-slate-400"></div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="w-7 h-9 border border-black flex items-center justify-center font-bold bg-white text-lg">
-                      2
+
+                    {/* Until Date */}
+                    <div className="flex items-center gap-3 pr-2">
+                      <div className="flex flex-col justify-center text-right mt-1">
+                        <span className="text-[12px] font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ដល់ថ្ងៃទី</span>
+                        <span className="text-[10px] font-normal leading-tight">Until</span>
+                      </div>
+                      <div className="flex gap-3">
+                        <div className="flex gap-1">
+                          <div className="w-[26px] h-[34px] border-[1.5px] border-slate-400"></div>
+                          <div className="w-[26px] h-[34px] border-[1.5px] border-slate-400"></div>
+                        </div>
+                        <div className="flex gap-1">
+                          <div className="w-[26px] h-[34px] border-[1.5px] border-slate-400"></div>
+                          <div className="w-[26px] h-[34px] border-[1.5px] border-slate-400"></div>
+                        </div>
+                        <div className="flex gap-1">
+                          <div className="w-[26px] h-[34px] border-[1.5px] border-slate-400"></div>
+                          <div className="w-[26px] h-[34px] border-[1.5px] border-slate-400"></div>
+                          <div className="w-[26px] h-[34px] border-[1.5px] border-slate-400"></div>
+                          <div className="w-[26px] h-[34px] border-[1.5px] border-slate-400"></div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-1 items-center justify-around px-4 border-b border-black">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-bold text-center leading-tight">
-                      ចាប់ពីថ្ងៃទី
-                      <br />
-                      <span className="text-[9px] font-normal text-slate-600">
-                        From
-                      </span>
-                    </span>
-                    <div className="flex gap-[2px] text-[8px] items-center">
-                      {Array.from({ length: 8 }).map((_, i) => (
-                        <div key={i} className="w-5 h-7 border border-black" />
-                      ))}
-                    </div>
+              </div>
+
+              {/* ROW 2: TIN Box */}
+              <div className="flex w-full border-b-[2px] border-l-[2px] border-r-[2px] border-black bg-[#e6e6e6]">
+                <div className="w-12 border-r-[2px] border-black flex items-center justify-center font-extrabold text-[20px] shadow-[inset_-2px_0px_2px_rgba(0,0,0,0.05)]">
+                  1
+                </div>
+                <div className="w-[340px] px-3 py-1 flex flex-col justify-center border-r-[2px] border-black bg-white">
+                  <span
+                    className="text-[14px] font-bold"
+                    style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
+                  >
+                    លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖
+                  </span>
+                  <span className="text-[11px] font-normal mt-0.5">
+                    Tax Identification Number (TIN):
+                  </span>
+                </div>
+                <div className="flex-1 flex gap-1 items-center justify-start pl-6 bg-white overflow-hidden py-1">
+                  <div className="flex gap-[2px]">
+                    {Array.from({ length: 9 }).map((_, i) => (
+                      <div key={i} className="w-[26px] h-[34px] border-[1.5px] border-slate-400 bg-white" />
+                    ))}
                   </div>
-                  <div className="w-px h-10 bg-black/20 mx-2" />
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-bold text-center leading-tight">
-                      ដល់ថ្ងៃទី
-                      <br />
-                      <span className="text-[9px] font-normal text-slate-600">
-                        Until
-                      </span>
-                    </span>
-                    <div className="flex gap-[2px] text-[8px] items-center">
-                      {Array.from({ length: 8 }).map((_, i) => (
-                        <div key={i} className="w-5 h-7 border border-black" />
-                      ))}
-                    </div>
+                  <span className="mx-2 font-black text-2xl -translate-y-1">-</span>
+                  <div className="flex gap-[2px]">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <div key={'t' + i} className="w-[26px] h-[34px] border-[1.5px] border-slate-400 bg-white" />
+                    ))}
                   </div>
                 </div>
               </div>
