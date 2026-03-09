@@ -43,7 +43,7 @@ export default function Login() {
                     </div>
                     <h1 className="text-3xl font-black text-white mb-2 tracking-tight uppercase">GK SMART <span className="text-blue-400">&</span> Ai</h1>
                     <div className="h-1 w-12 bg-blue-500/50 mx-auto mb-4 rounded-full"></div>
-                    <p className="text-slate-400 font-medium uppercase tracking-[0.2em] text-[10px]">Neural Node Secure Login</p>
+                    <p className="text-slate-400 font-medium uppercase tracking-[0.2em] text-[10px]">Secure System Login</p>
                 </div>
 
                 {error && (
@@ -54,13 +54,13 @@ export default function Login() {
 
                 <form onSubmit={handleLogin} className="space-y-6 relative z-10">
                     <div className="group/input">
-                        <label className="block text-[10px] font-black text-slate-500 mb-2 uppercase tracking-widest pl-1">Target Account</label>
+                        <label className="block text-[10px] font-black text-slate-500 mb-2 uppercase tracking-widest pl-1">Username</label>
                         <div className="relative">
                             <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within/input:text-blue-400 transition-colors" />
                             <input
                                 type="text"
                                 className="w-full pl-14 pr-6 py-4 bg-slate-900/50 border border-white/5 rounded-2xl text-white placeholder:text-slate-600 focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 outline-none transition-all font-medium"
-                                placeholder="Username (e.g. Admin)"
+                                placeholder="Enter Username"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                                 required
@@ -69,7 +69,7 @@ export default function Login() {
                     </div>
 
                     <div className="group/input">
-                        <label className="block text-[10px] font-black text-slate-500 mb-2 uppercase tracking-widest pl-1">Authorization Code</label>
+                        <label className="block text-[10px] font-black text-slate-500 mb-2 uppercase tracking-widest pl-1">Password</label>
                         <div className="relative">
                             <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within/input:text-blue-400 transition-colors" />
                             <input
@@ -88,11 +88,11 @@ export default function Login() {
                         disabled={loading}
                         className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-blue-600/10 active:scale-[0.98] uppercase tracking-[0.3em] text-[11px] flex items-center justify-center gap-3 border border-white/5 disabled:opacity-50"
                     >
-                        {loading ? 'Processing...' : 'Initialize Session'}
+                        {loading ? 'Processing...' : 'Login'}
                     </button>
 
                     <div className="text-center mt-6">
-                        <p className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em]">Secure Entry Protocol Alpha-10</p>
+                        <p className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em]">Authorized Access Only</p>
                     </div>
                 </form>
 

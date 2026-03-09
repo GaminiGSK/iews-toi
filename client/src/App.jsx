@@ -9,7 +9,6 @@ import LiveTaxWorkspace from './pages/LiveTaxWorkspace';
 import TaxFormWorkbench from './pages/TaxFormWorkbench';
 
 import axios from 'axios';
-import SiteGate from './components/SiteGate';
 
 // GLOBAL AXIOS INTERCEPTOR FOR ADMIN SPOOFING
 axios.interceptors.request.use(config => {
@@ -44,25 +43,23 @@ const AppLayout = ({ children }) => {
 function App() {
   return (
     <Router>
-      <SiteGate>
-        <AppLayout>
-          <Routes>
-            <Route path="/login" element={<Login />} />
+      <AppLayout>
+        <Routes>
+          <Route path="/login" element={<Login />} />
 
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/dashboard" element={<CompanyProfile />} />
-            <Route path="/workbench" element={<TaxFormWorkbench />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/dashboard" element={<CompanyProfile />} />
+          <Route path="/workbench" element={<TaxFormWorkbench />} />
 
-            <Route element={<PrivateRoute />}>
-              <Route path="/change-password" element={<ChangePassword />} />
-              <Route path="/tax-live" element={<LiveTaxWorkspace />} />
-            </Route>
+          <Route element={<PrivateRoute />}>
+            <Route path="/change-password" element={<ChangePassword />} />
+            <Route path="/tax-live" element={<LiveTaxWorkspace />} />
+          </Route>
 
-            {/* Catch all */}
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
-        </AppLayout>
-      </SiteGate>
+          {/* Catch all */}
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </AppLayout>
     </Router>
   );
 }

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import axios from "axios";
 import {
   ArrowLeft,
   Brain,
@@ -12,6 +13,124 @@ import LiveTaxWorkspace from "./LiveTaxWorkspace";
 const ToiAcar = ({ onBack, packageId, year }) => {
   const [activeWorkspacePage, setActiveWorkspacePage] = useState(1);
   const [selectedYear, setSelectedYear] = useState(year || new Date().getFullYear().toString());
+
+  // Agent Chat State
+  const [agentInput, setAgentInput] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const [chatMessages, setChatMessages] = useState([
+    {
+      role: "agent",
+      text: "Hello. I am <b>the blue agent</b>.<br /><br />I can read company registration profiles, bank statements, and compliance history to auto-fill identifiers and compliance indicators on this workspace. How can I help you today?",
+    }
+  ]);
+
+  // Data State for Template Auto-fill
+  const [filledData, setFilledData] = useState(null);
+
+  const handleSend = async () => {
+    if (!agentInput.trim() || isTyping) return;
+
+    const currentInput = agentInput;
+    const msgs = [...chatMessages, { role: "user", text: currentInput }];
+    setChatMessages(msgs);
+    setAgentInput("");
+    setIsTyping(true);
+
+    const isDelete = currentInput.toLowerCase().includes("delete") || currentInput.toLowerCase().includes("clear") || currentInput.toLowerCase().includes("remove");
+
+    if (isDelete) {
+      setTimeout(() => {
+        setChatMessages(prev => [
+          ...prev,
+          {
+            role: "agent",
+            text: `Acknowledged instruction to "<span class="text-blue-400">${currentInput}</span>".<br /><br /><b>Executing</b>. Clearing all injected GK SMART compliance profile data from the TOI framework and resetting the workspace.`
+          }
+        ]);
+        setFilledData(null);
+        setIsTyping(false);
+      }, 800);
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      // We instruct the Agent backend dynamically to fetch its real context and output it strictly in the structure ToiAcar needs.
+      const systemDirective = `\n\n[SYSTEM DIRECTIVE for filling TOI: If the user asks you to fill out the TOI form, extract the entity details from the context company/profile data and output ONLY a valid JSON object in this exact format (do NOT output markdown ticks):
+{
+  "tool_use": "fill_toi_workspace",
+  "reply_text": "GK SMART compliance profile located. Extracting structural TIN, Branch sequences, and principal addresses. Injecting to official TOI framework...",
+  "params": {
+    "tin": "extract regId or taxId, ensuring hyphens if any",
+    "name": "extract nameEn and nameKh combined",
+    "branchOut": "001",
+    "registrationDate": "extract incDate, e.g. 15 / 07 / 2021",
+    "directorName": "extract director name or N/A",
+    "businessActivities": "extract business type",
+    "agentName": "N/A",
+    "agentLicense": "TA-09281",
+    "address1": "extract exact addr",
+    "address2": "extract exact addr",
+    "address3": "N/A",
+    "taxMonths": "12",
+    "fromDate": "01012026",
+    "untilDate": "31122026"
+  }
+}
+If they don't explicitly say fill/page one/TOI, just respond conversationally without JSON.]`;
+
+      const res = await axios.post('/api/chat/message', {
+        message: currentInput + systemDirective,
+        model: "gemini-2.0",
+        context: { route: window.location.pathname }
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const { text, toolAction } = res.data;
+      let parsedToolAction = toolAction;
+      let replyText = text;
+
+      // Handle raw JSON leak if the backend regex misfires
+      if (!parsedToolAction && text && text.includes('"tool_use"')) {
+        try {
+          const cleanJson = text.match(/\{[\s\S]*"tool_use"[\s\S]*\}/)[0];
+          parsedToolAction = JSON.parse(cleanJson);
+          replyText = parsedToolAction.reply_text || "Form auto-filling initiated...";
+        } catch (e) { }
+      }
+
+      setChatMessages(prev => [...prev, { role: "agent", text: replyText }]);
+
+      // Trigger the UI injection if instructed
+      if (parsedToolAction && parsedToolAction.tool_use === 'fill_toi_workspace') {
+        const p = parsedToolAction.params || {};
+        const safeData = {
+          tin: p.tin || "N/A",
+          name: p.name || "Unknown Entity",
+          branchOut: p.branchOut || "001",
+          registrationDate: p.registrationDate || "Unknown",
+          directorName: p.directorName || "Not Listed",
+          businessActivities: p.businessActivities || "Software / App Development",
+          agentName: p.agentName || "N/A",
+          agentLicense: p.agentLicense || "TA-00000",
+          address1: p.address1 || "No Address Provided",
+          address2: p.address2 || "No Address Provided",
+          address3: p.address3 || "N/A",
+          taxMonths: p.taxMonths || "12",
+          fromDate: p.fromDate || "01012026",
+          untilDate: p.untilDate || "31122026"
+        };
+        setTimeout(() => setFilledData(safeData), 500); // Visual delay for realism
+      }
+
+    } catch (err) {
+      console.error(err);
+      setChatMessages(prev => [...prev, { role: "agent", text: "⚠️ System Error: Unable to connect to backend Blue Agent. Ensure your session is valid." }]);
+    }
+
+    setIsTyping(false);
+  };
 
   // Generate years: 10 years back to 10 years forward
   const currentYear = new Date().getFullYear();
@@ -88,7 +207,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
       <div className="flex-1 flex overflow-hidden">
         {/* NEW LEFT SIDE: WHITE PREVIEW (ONLY PAGE 1) */}
         {activeWorkspacePage === 1 && (
-          <div className="w-[45%] shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black">
+          <div className="w-[50%] shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black">
             {/* Content for the white preview */}
             <div className="w-full flex flex-col font-sans mb-12 text-black">
               {/* OFFICIAL GDT HEADER - Based exactly on reference image */}
@@ -139,111 +258,105 @@ const ToiAcar = ({ onBack, packageId, year }) => {
               </div>
 
               {/* FORM TITLE */}
-              <div className="flex flex-col items-center pb-8 mt-[100px] relative w-full mb-1">
-                {/* Top row: Khmer Title + Boxes */}
-                <div className="flex items-end justify-center gap-14 w-full mb-1">
+              <div className="flex justify-center items-end w-full mb-8 pt-10">
+                <div className="flex flex-col items-center justify-center">
                   <h1
-                    className="text-[26px] font-bold tracking-normal translate-y-1"
-                    style={{ fontFamily: '"Kantumruy Pro", sans-serif', letterSpacing: '0.01em' }}
+                    className="text-[28px] font-normal text-black leading-none"
+                    style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
                   >
                     លិខិតប្រកាសពន្ធលើប្រាក់ចំណូលប្រចាំឆ្នាំ
                   </h1>
-                  <div className="flex gap-2">
-                    {selectedYear.split("").map((char, i) => (
-                      <div
-                        key={i}
-                        className="w-[36px] h-[40px] border-[1px] border-black flex items-center justify-center font-normal text-[26px] bg-white pt-1"
-                        style={{ fontFamily: '"Arial", sans-serif' }}
-                      >
-                        {char}
-                      </div>
-                    ))}
-                  </div>
+                  <h2 className="text-[15.5px] font-[900] uppercase text-black mt-[6px]" style={{ fontFamily: '"Arial", sans-serif', letterSpacing: '0.04em' }}>
+                    ANNUAL INCOME TAX RETURN FOR THE YEAR ENDED
+                  </h2>
                 </div>
 
-                {/* Bottom row: English Title */}
-                <h2 className="text-[16px] font-black uppercase text-center w-full mt-2">
-                  <span style={{ transform: 'scaleY(1.05)', display: 'inline-block' }} className="tracking-[0.11em]">ANNUAL INCOME TAX RETURN FOR THE YEAR ENDED</span>
-                </h2>
+                <div className="flex gap-[6px] ml-[50px] mb-[8px]">
+                  {selectedYear.split("").map((char, i) => (
+                    <div
+                      key={i}
+                      className="w-[36px] h-[40px] border-[1px] border-black flex items-center justify-center font-normal text-[22px] bg-white pt-1"
+                      style={{ fontFamily: '"Arial", sans-serif' }}
+                    >
+                      {char}
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <div className="w-full h-[5px] bg-black rounded-b-[1px] mb-0.5 z-20 relative"></div>
 
-              {/* ROW 1: Tax Period */}
-              <div className="flex w-full mt-[1px] border-b-[2px] border-l-[2px] border-r-[2px] border-black">
-
+              {/* Tax Period Row */}
+              <div className="flex w-full mb-2 items-center pt-2 pl-[49px]">
                 {/* Left section: Text and 2 boxes */}
-                <div className="flex items-center py-[2px] px-3 border-r-[2px] border-black justify-between min-w-[340px] w-[45%]">
-                  <div className="flex flex-col justify-center">
-                    <span className="text-[15px] font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
-                      ការិយបរិច្ឆេទសារពើពន្ធ ( ចំនួនខែ ) ៖
+                <div className="flex items-center">
+                  <div className="flex flex-col justify-center items-center">
+                    <span className="text-[14px] font-bold whitespace-nowrap text-black leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif', letterSpacing: '-0.2px' }}>
+                      ការិយបរិច្ឆេទជាប់ពន្ធ (ចំនួនខែ)
                     </span>
-                    <span className="text-[12px] font-normal mt-[1px]" style={{ fontFamily: '"Arial", sans-serif' }}>
-                      Tax Period (Number of Month)
+                    <span className="text-[10px] font-bold mt-[1px] whitespace-nowrap text-black uppercase tracking-widest text-left w-full" style={{ fontFamily: '"Arial", sans-serif' }}>
+                      TAX PERIOD (MONTHS)
                     </span>
                   </div>
-                  <div className="flex ml-4 mt-1 items-center gap-[1px]">
-                    <div className="w-[34px] h-[40px] border-[1.5px] border-slate-300 flex items-center justify-center mr-2"></div>
-                    <div className="w-[34px] h-[40px] border-[1.5px] border-black flex items-center justify-center bg-white text-xl"></div>
-                    <div className="w-[34px] h-[40px] border-[1.5px] border-black flex items-center justify-center bg-white text-xl"></div>
+                  <div className="flex items-center gap-[2px] ml-3">
+                    <div className="w-[28px] h-[34px] border border-black flex items-center justify-center bg-white text-lg font-bold text-blue-900">{filledData ? filledData.taxMonths[0] : ""}</div>
+                    <div className="w-[28px] h-[34px] border border-black flex items-center justify-center bg-white text-lg font-bold text-blue-900">{filledData ? filledData.taxMonths[1] : ""}</div>
                   </div>
                 </div>
 
                 {/* Right section: From / Until */}
                 <div className="flex-1 flex items-center px-4 relative">
-
-                  <div className="w-full flex justify-between ml-2 gap-4 pb-1">
+                  <div className="w-full flex justify-between ml-2 pb-1">
                     {/* From Date */}
-                    <div className="flex items-end gap-[6px] text-right">
-                      {/* Big Black Triangle pointer */}
-                      <div className="flex items-center h-full mr-2 translate-y-1">
-                        <div className="w-0 h-0 border-t-[14px] border-t-transparent border-l-[18px] border-l-black border-b-[14px] border-b-transparent"></div>
+                    <div className="flex gap-[6px] text-right">
+                      <div className="flex flex-col justify-end text-center p-1 px-1">
+                        <span className="text-[12px] font-bold leading-none mb-[2px] z-10 whitespace-nowrap text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ពីថ្ងៃ</span>
+                        <span className="text-[9px] font-bold uppercase tracking-widest leading-none z-10 text-center w-full text-black" style={{ fontFamily: '"Arial", sans-serif' }}>FROM</span>
                       </div>
-
-                      <div className="flex flex-col justify-end text-center p-1 w-[50px] border border-black border-dashed relative group overflow-hidden">
-                        <div className="absolute inset-0 border-r border-black border-dashed -mr-[1px] -mb-[1px]"></div>
-                        <span className="text-[14px] font-bold leading-none mb-[2px] z-10" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចាប់ពី<br />ថ្ងៃទី</span>
-                        <span className="text-[10px] font-normal leading-none z-10" style={{ fontFamily: '"Arial", sans-serif' }}>From</span>
-                      </div>
-                      <div className="flex items-end gap-2 pb-0.5 ml-1">
-                        <div className="flex gap-[1px]">
-                          <div className="w-[28px] h-[36px] border-[1px] border-slate-400"></div>
-                          <div className="w-[28px] h-[36px] border-[1px] border-slate-400"></div>
+                      <div className="flex items-end gap-[4px] ml-1">
+                        <div className="flex gap-[2px]">
+                          {Array.from({ length: 2 }).map((_, i) => (
+                            <div key={i} className="w-[28px] h-[34px] border border-black bg-white flex items-center justify-center font-bold text-blue-900">{filledData ? filledData.fromDate[i] : ""}</div>
+                          ))}
                         </div>
-                        <div className="flex gap-[1px]">
-                          <div className="w-[28px] h-[36px] border-[1px] border-slate-400"></div>
-                          <div className="w-[28px] h-[36px] border-[1px] border-slate-400"></div>
+                        <span className="text-black font-light text-lg px-[2px] translate-y-[-2px]">/</span>
+                        <div className="flex gap-[2px]">
+                          {Array.from({ length: 2 }).map((_, i) => (
+                            <div key={i + 2} className="w-[28px] h-[34px] border border-black bg-white flex items-center justify-center font-bold text-blue-900">{filledData ? filledData.fromDate[i + 2] : ""}</div>
+                          ))}
                         </div>
-                        <div className="flex gap-[1px]">
-                          <div className="w-[28px] h-[36px] border-[1px] border-slate-400"></div>
-                          <div className="w-[28px] h-[36px] border-[1px] border-slate-400"></div>
-                          <div className="w-[28px] h-[36px] border-[1px] border-slate-400"></div>
-                          <div className="w-[28px] h-[36px] border-[1px] border-slate-400"></div>
+                        <span className="text-black font-light text-lg px-[2px] translate-y-[-2px]">/</span>
+                        <div className="flex gap-[2px]">
+                          {Array.from({ length: 4 }).map((_, i) => (
+                            <div key={i + 4} className="w-[28px] h-[34px] border border-black bg-white flex items-center justify-center font-bold text-blue-900">{filledData ? filledData.fromDate[i + 4] : ""}</div>
+                          ))}
                         </div>
                       </div>
                     </div>
 
                     {/* Until Date */}
                     <div className="flex items-end gap-[6px] pr-2 text-right">
-                      <div className="flex flex-col justify-end text-center p-1 w-[50px] border border-black border-dashed relative overflow-hidden">
-                        <div className="absolute inset-0 border-r border-black border-dashed -mr-[1px] -mb-[1px]"></div>
-                        <span className="text-[14px] font-bold leading-none mb-[2px] z-10" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ដល់<br />ថ្ងៃទី</span>
-                        <span className="text-[10px] font-normal leading-none z-10" style={{ fontFamily: '"Arial", sans-serif' }}>Until</span>
+                      <div className="flex flex-col justify-end text-center p-1 px-1">
+                        <span className="text-[12px] font-bold leading-none mb-[2px] z-10 whitespace-nowrap text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ដល់ថ្ងៃ</span>
+                        <span className="text-[9px] font-bold uppercase tracking-widest leading-none z-10 text-center w-full text-black" style={{ fontFamily: '"Arial", sans-serif' }}>UNTIL</span>
                       </div>
-                      <div className="flex items-end gap-2 pb-0.5 ml-1">
-                        <div className="flex gap-[1px]">
-                          <div className="w-[28px] h-[36px] border-[1px] border-slate-400"></div>
-                          <div className="w-[28px] h-[36px] border-[1px] border-slate-400"></div>
+                      <div className="flex items-end gap-[4px] ml-1">
+                        <div className="flex gap-[2px]">
+                          {Array.from({ length: 2 }).map((_, i) => (
+                            <div key={i} className="w-[28px] h-[34px] border border-black bg-white flex items-center justify-center font-bold text-blue-900">{filledData ? filledData.untilDate[i] : ""}</div>
+                          ))}
                         </div>
-                        <div className="flex gap-[1px]">
-                          <div className="w-[28px] h-[36px] border-[1px] border-slate-400"></div>
-                          <div className="w-[28px] h-[36px] border-[1px] border-slate-400"></div>
+                        <span className="text-black font-light text-lg px-[2px] translate-y-[-2px]">/</span>
+                        <div className="flex gap-[2px]">
+                          {Array.from({ length: 2 }).map((_, i) => (
+                            <div key={i + 2} className="w-[28px] h-[34px] border border-black bg-white flex items-center justify-center font-bold text-blue-900">{filledData ? filledData.untilDate[i + 2] : ""}</div>
+                          ))}
                         </div>
-                        <div className="flex gap-[1px]">
-                          <div className="w-[28px] h-[36px] border-[1px] border-slate-400"></div>
-                          <div className="w-[28px] h-[36px] border-[1px] border-slate-400"></div>
-                          <div className="w-[28px] h-[36px] border-[1px] border-slate-400"></div>
-                          <div className="w-[28px] h-[36px] border-[1px] border-slate-400"></div>
+                        <span className="text-black font-light text-lg px-[2px] translate-y-[-2px]">/</span>
+                        <div className="flex gap-[2px]">
+                          {Array.from({ length: 4 }).map((_, i) => (
+                            <div key={i + 4} className="w-[28px] h-[34px] border border-black bg-white flex items-center justify-center font-bold text-blue-900">{filledData ? filledData.untilDate[i + 4] : ""}</div>
+                          ))}
                         </div>
                       </div>
                     </div>
@@ -251,117 +364,98 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                 </div>
               </div>
 
-              {/* ROW 2: TIN Box */}
-              <div className="flex w-full border-b-[2px] border-l-[2px] border-r-[2px] border-black bg-[#e6e6e6]">
-                <div className="w-[49px] border-r-[2px] border-black flex items-center justify-center font-extrabold text-[20px] shadow-[inset_-2px_0px_2px_rgba(0,0,0,0.05)]" style={{ fontFamily: '"Arial", sans-serif' }}>
-                  1
-                </div>
-                <div className="w-[340px] px-3 py-1 flex flex-col justify-center border-r-[2px] border-black bg-white">
-                  <span
-                    className="text-[14px] font-bold"
-                    style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
-                  >
-                    លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖
-                  </span>
-                  <span className="text-[11px] font-normal mt-0.5" style={{ fontFamily: '"Arial", sans-serif' }}>
-                    Tax Identification Number (TIN):
-                  </span>
-                </div>
-                <div className="flex-1 flex gap-1 items-center justify-start pl-6 bg-white overflow-hidden py-1">
-                  <div className="flex gap-[2px]">
-                    {Array.from({ length: 9 }).map((_, i) => (
-                      <div key={i} className="w-[26px] h-[34px] border-[1.5px] border-slate-400 bg-white" />
-                    ))}
-                  </div>
-                  <span className="mx-2 font-black text-2xl -translate-y-1">-</span>
-                  <div className="flex gap-[2px]">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <div key={'t' + i} className="w-[26px] h-[34px] border-[1.5px] border-slate-400 bg-white" />
-                    ))}
-                  </div>
-                </div>
-              </div>
+              {/* MAIN ENTERPRISE BOX (ROWS 1-10) */}
+              <div className="flex flex-col border-[2px] border-black mb-4 bg-white shadow-sm">
 
-              {/* Enterprise Details Form */}
-              <div className="flex flex-col border border-black mb-4">
+                {/* ROW 1: TIN Box */}
+                <div className="flex w-full border-b border-black">
+                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-extrabold text-[15px] bg-[#e6e6e6] text-black">
+                    1
+                  </div>
+                  <div className="w-[340px] shrink-0 px-3 py-1 flex flex-col justify-center border-r border-black bg-white">
+                    <span
+                      className="text-[13px] font-bold text-black"
+                      style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
+                    >
+                      លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖
+                    </span>
+                    <span className="text-[10px] font-normal text-black mt-[1px]" style={{ fontFamily: '"Arial", sans-serif' }}>
+                      Tax Identification Number (TIN):
+                    </span>
+                  </div>
+                  <div className="flex-1 flex gap-[6px] items-center justify-start pl-6 bg-white overflow-hidden py-1">
+                    <div className="flex gap-[2px]">
+                      {Array.from({ length: 4 }).map((_, i) => (
+                        <div key={i} className="w-[26px] h-[32px] border border-black bg-white flex items-center justify-center font-bold text-blue-900 text-lg">
+                          {filledData?.tin?.replace('-', '')[i] || ""}
+                        </div>
+                      ))}
+                    </div>
+                    <span className="mx-1 font-black text-[28px] text-black leading-none -translate-y-[2px]">-</span>
+                    <div className="flex gap-[2px]">
+                      {Array.from({ length: 9 }).map((_, i) => (
+                        <div key={'t' + i} className="w-[26px] h-[32px] border border-black bg-white flex items-center justify-center font-bold text-blue-900 text-lg">
+                          {filledData?.tin?.replace('-', '')[i + 4] || ""}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Rows 2-10 */}
                 {[
-                  { kh: "ឈ្មោះសហគ្រាស", en: "Name of Enterprise:", id: "2" },
-                  {
-                    kh: "ចំនួនសាខាក្នុងស្រុក",
-                    en: "Number of Local Branch:",
-                    id: "3",
-                  },
-                  {
-                    kh: "កាលបរិច្ឆេទចុះបញ្ជីសារពើពន្ធ",
-                    en: "Date of Tax Registration:",
-                    id: "4",
-                  },
-                  {
-                    kh: "ឈ្មោះអភិបាល/អ្នកគ្រប់គ្រង/ម្ចាស់សហគ្រាស",
-                    en: "Name of Director/Manager/Owner:",
-                    id: "5",
-                  },
-                  {
-                    kh: "សកម្មភាពអាជីវកម្មចម្បង",
-                    en: "Main Business Activities:",
-                    id: "6",
-                  },
-                  {
-                    kh: "ឈ្មោះគណនេយ្យករ/ភ្នាក់ងារសេវាកម្មពន្ធដារ",
-                    en: "Name of Accountant/Tax Service Agent:",
-                    id: "7",
-                    numBox: true,
-                  },
-                  {
-                    kh: "អាសយដ្ឋានបច្ចុប្បន្ននៃការិយាល័យចុះបញ្ជី",
-                    en: "Current Registered Office Address:",
-                    id: "8",
-                    tall: true,
-                  },
-                  {
-                    kh: "អាសយដ្ឋានបច្ចុប្បន្ននៃកន្លែងប្រកបអាជីវកម្មចម្បង",
-                    en: "Current Principal Establishment Address:",
-                    id: "9",
-                    tall: true,
-                  },
-                  { kh: "អាសយដ្ឋានឃ្លាំង", en: "Warehouse Address:", id: "10" },
+                  { kh: "ឈ្មោះសហគ្រាស", en: "Name of Enterprise:", id: "2", valKey: "name" },
+                  { kh: "ចំនួនសាខាសហគ្រាស", en: "Number of Local Branch:", id: "3", valKey: "branchOut" },
+                  { kh: "កាលបរិច្ឆេទចុះបញ្ជីពន្ធដារ", en: "Date of Tax Registration:", id: "4", valKey: "registrationDate" },
+                  { kh: "ឈ្មោះអភិបាល/បណ្ណាធិការ/កម្មសិទ្ធិករ", en: "Name of Director/Manager/Owner:", id: "5", valKey: "directorName" },
+                  { kh: "សកម្មភាពអាជីវកម្មចម្បង", en: "Main Business Activities:", id: "6", valKey: "businessActivities" },
+                  { kh: "ឈ្មោះគណនេយ្យករ/ ភ្នាក់ងារសេវាកម្មពន្ធដារ", en: "Name of Accountant/ Tax Service Agent:", id: "7", numBox: true, valKey: "agentName" },
+                  { kh: "អាសយដ្ឋានទីស្នាក់ការសហគ្រាសបច្ចុប្បន្ន", en: "Current Registered Office Address:", id: "8", tall: true, valKey: "address1" },
+                  { kh: "អាសយដ្ឋានគ្រឹះស្ថានជាគោលដើមបច្ចុប្បន្ន", en: "Current Principal Establishment Address:", id: "9", tall: true, valKey: "address2" },
+                  { kh: "អាសយដ្ឋានឃ្លាំងបច្ចុប្បន្ន", en: "Warehouse Address:", id: "10", valKey: "address3" },
                 ].map((row, i) => (
                   <div
                     key={i}
-                    className={`flex border-b border-black last:border-b-0 ${row.tall ? "min-h-[50px]" : "min-h-[40px]"}`}
+                    className={`flex border-b border-black last:border-b-0 ${row.tall ? "min-h-[44px]" : "min-h-[30px]"}`}
                   >
-                    <div className="w-10 border-r border-black flex items-center justify-center font-bold text-sm bg-slate-50">
+                    <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-[14px] bg-[#e6e6e6] text-black">
                       {row.id}
                     </div>
-                    <div className="w-[45%] border-r border-black p-2 flex flex-col justify-center bg-slate-50">
+                    <div className="w-[340px] shrink-0 border-r border-black px-3 py-1 flex flex-col justify-center text-black bg-white">
                       <span
-                        className="font-bold text-[11px] leading-tight"
+                        className="font-bold text-[12px] leading-tight text-black"
                         style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
                       >
                         {row.kh} ៖
                       </span>
-                      <span className="text-[9px] text-slate-500">
+                      <span className="text-[10px] text-black leading-none pt-[1px]">
                         {row.en}
                       </span>
                     </div>
-                    <div className="flex-1 p-2 flex items-center w-full"></div>
-                    {row.numBox && (
-                      <>
-                        <div className="w-[22%] border-l border-r border-black p-2 flex flex-col justify-center bg-slate-50">
-                          <span
-                            className="font-bold text-[9px] leading-tight"
-                            style={{
-                              fontFamily: '"Kantumruy Pro", sans-serif',
-                            }}
-                          >
-                            លេខអាជ្ញាប័ណ្ណ...
-                          </span>
-                          <span className="text-[8px] text-slate-500">
-                            License Number:
-                          </span>
+                    {row.numBox ? (
+                      <div className="flex-1 flex bg-white justify-between">
+                        <div className="flex items-center px-4">
+                          <span className="font-bold text-[13px] text-blue-900 uppercase tracking-widest leading-none translate-y-px">{filledData ? filledData[row.valKey] : ""}</span>
                         </div>
-                        <div className="w-[20%] p-2 bg-white flex items-center"></div>
-                      </>
+                        <div className="flex items-center px-4 gap-2 border-l border-black shrink-0">
+                          <div className="flex flex-col justify-center items-end text-right">
+                            <span
+                              className="font-bold text-[11px] leading-tight text-black"
+                              style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
+                            >
+                              លេខសម្គាល់ភ្នាក់ងារសេវាកម្មពន្ធដារ ៖
+                            </span>
+                            <span className="text-[9px] text-black leading-none pt-[1px]">
+                              Tax Service Agent License Number:
+                            </span>
+                          </div>
+                          <div className="w-[200px] h-[22px] border border-black bg-white flex items-center justify-center font-bold text-blue-900 text-sm tracking-widest">{filledData ? filledData.agentLicense : ""}</div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex-1 bg-white flex items-center px-4">
+                        <span className="font-bold text-[13px] text-blue-900 uppercase tracking-widest leading-none translate-y-px">{filledData ? filledData[row.valKey] : ""}</span>
+                      </div>
                     )}
                   </div>
                 ))}
@@ -957,7 +1051,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
         )}
 
         {/* MIDDLE SIDE: GPT Result Landing Page (Totally Black, empty) */}
-        <div className="w-[30%] overflow-y-auto relative bg-black custom-scrollbar">
+        <div className="w-[25%] overflow-y-auto relative bg-black custom-scrollbar">
           {/* Embedded TOI Page 1 Admin Template for GPT Engine to dictate */}
           <LiveTaxWorkspace embedded={true} forcePage={activeWorkspacePage} activeYear={selectedYear} />
         </div>
@@ -995,31 +1089,46 @@ const ToiAcar = ({ onBack, packageId, year }) => {
 
             {/* Chat Area */}
             <div className="p-6 overflow-y-auto space-y-6 bg-slate-950/20 flex-1 custom-scrollbar">
-              {/* Agent Initial Message */}
-              <div className="flex items-start gap-4">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-700 shadow-[0_0_10px_rgba(59,130,246,0.3)] flex items-center justify-center shrink-0 border border-white/10" />
-                <div className="bg-slate-900 border border-white/5 rounded-2xl rounded-tl-none px-4 py-3">
-                  <p className="text-slate-300 text-[13px] leading-relaxed">
-                    Hello. I am <b>the blue agent</b>.<br />
-                    <br />I can read company registration profiles, bank
-                    statements, and compliance history to auto-fill identifiers
-                    and compliance indicators on this workspace. How can I help
-                    you today?
-                  </p>
+              {chatMessages.map((msg, i) => (
+                <div key={i} className={`flex items-start gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                  {msg.role === 'agent' && (
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-700 shadow-[0_0_10px_rgba(59,130,246,0.3)] flex items-center justify-center shrink-0 border border-white/10" />
+                  )}
+                  <div className={`border rounded-2xl px-4 py-3 max-w-[85%] ${msg.role === 'agent' ? 'bg-slate-900 border-white/5 rounded-tl-none' : 'bg-blue-600 border-blue-500 rounded-tr-none'}`}>
+                    <p className={`text-[13px] leading-relaxed ${msg.role === 'agent' ? 'text-slate-300' : 'text-white'}`} dangerouslySetInnerHTML={{ __html: msg.text }}></p>
+                  </div>
                 </div>
-              </div>
+              ))}
+              {isTyping && (
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-700 shadow-[0_0_10px_rgba(59,130,246,0.3)] flex items-center justify-center shrink-0 border border-white/10" />
+                  <div className="bg-slate-900 border border-white/5 rounded-2xl rounded-tl-none px-4 py-4 flex gap-1">
+                    <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce"></div>
+                    <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce delay-75"></div>
+                    <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce delay-150"></div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* GPT Input Area */}
             <div className="p-4 bg-slate-950/50 border-t border-white/5 shrink-0">
               <div className="flex flex-col gap-3 border border-white/10 bg-black/40 p-3 rounded-2xl focus-within:border-blue-500/50 transition-all shadow-inner">
                 <textarea
+                  value={agentInput}
+                  onChange={(e) => setAgentInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSend();
+                    }
+                  }}
                   placeholder="Message GPT Agent..."
                   className="w-full bg-transparent border-none outline-none text-sm text-white placeholder:text-slate-600 resize-none custom-scrollbar px-1 leading-relaxed"
                   rows={4}
                 />
                 <div className="flex justify-end">
-                  <button className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition active:scale-95 shadow-[0_0_20px_rgba(59,130,246,0.2)]">
+                  <button onClick={handleSend} disabled={isTyping} className="bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 disabled:opacity-50 text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition active:scale-95 shadow-[0_0_20px_rgba(59,130,246,0.2)]">
                     Send &gt;
                   </button>
                 </div>
