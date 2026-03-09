@@ -632,113 +632,75 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear = "20
 
               {/* ENTERPRISE DETAILS TABLE - REFINED STYLING */}
               <div className="mt-12 border border-white/10 overflow-hidden bg-slate-900/40 rounded-2xl shadow-2xl backdrop-blur-sm">
-                {[
-                  {
-                    kh: "ឈ្មោះសហគ្រាស ៖",
-                    en: "Name of Enterprise:",
-                    key: "enterpriseName",
-                  },
-                  {
-                    kh: "ចំនួនសាខាក្នុងស្រុក ៖",
-                    en: "Number of Local Branch:",
-                    key: "branchCount",
-                  },
-                  {
-                    kh: "កាលបរិច្ឆេទចុះបញ្ជីសារពើពន្ធ ៖",
-                    en: "Date of Tax Registration:",
-                    key: "registrationDate",
-                  },
-                  {
-                    kh: "ឈ្មោះអភិបាល/អ្នកគ្រប់គ្រង/ម្ចាស់សហគ្រាស ៖",
-                    en: "Name of Director/Manager/Owner:",
-                    key: "directorName",
-                  },
-                  {
-                    kh: "សកម្មភាពអាជីវកម្មចម្បង ៖",
-                    en: "Main Business Activities:",
-                    key: "mainActivity",
-                  },
-                  { kh: "លេខទូរស័ព្ទ ៖", en: "Telephone:", key: "telephone" },
-                  { kh: "សារអេឡិចត្រូនិច ៖", en: "Email:", key: "email" },
-                ].map((row, idx) => (
-                  <div
-                    key={idx}
-                    className="flex border-b border-white/5 last:border-0 min-h-[70px]"
-                  >
-                    <div className="w-[40%] border-r border-white/5 p-5 flex flex-col justify-center bg-white/[0.02]">
+                <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {[
+                    {
+                      kh: "ឈ្មោះសហគ្រាស ៖",
+                      en: "Name of Enterprise:",
+                      key: "enterpriseName",
+                    },
+                    {
+                      kh: "ចំនួនសាខាក្នុងស្រុក ៖",
+                      en: "Number of Local Branch:",
+                      key: "branchCount",
+                    },
+                    {
+                      kh: "កាលបរិច្ឆេទចុះបញ្ជីសារពើពន្ធ ៖",
+                      en: "Date of Tax Registration:",
+                      key: "registrationDate",
+                    },
+                    {
+                      kh: "ឈ្មោះអភិបាល/អ្នកគ្រប់គ្រង/ម្ចាស់សហគ្រាស ៖",
+                      en: "Name of Director/Manager/Owner:",
+                      key: "directorName",
+                    },
+                    {
+                      kh: "សកម្មភាពអាជីវកម្មចម្បង ៖",
+                      en: "Main Business Activities:",
+                      key: "mainActivity",
+                    },
+                    { kh: "លេខទូរស័ព្ទ ៖", en: "Telephone:", key: "telephone" },
+                    { kh: "សារអេឡិចត្រូនិច ៖", en: "Email:", key: "email" },
+                    {
+                      kh: "ឈ្មោះគណនេយ្យករ / ភ្នាក់ងារសេវាកម្មពន្ធដារ ៖",
+                      en: "Name of Accountant/ Tax Agent:",
+                      key: "accountantName",
+                    },
+                    {
+                      kh: "លេខអាជ្ញាប័ណ្ណភ្នាក់ងារសេវាកម្មពន្ធដារ ៖",
+                      en: "Tax Agent License No:",
+                      key: "agentLicenseNo",
+                    },
+                  ].map((row, idx) => (
+                    <div
+                      key={idx}
+                      className="flex flex-col bg-white/[0.02] border border-white/5 rounded-xl p-5 hover:bg-white/[0.04] transition-colors"
+                    >
                       <span
-                        className="text-white font-bold text-base tracking-tight leading-snug mb-0.5"
+                        className="text-white font-bold text-[13px] tracking-tight leading-snug mb-0.5"
                         style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
                       >
                         {row.kh}
                       </span>
-                      <span className="text-slate-500 text-[10px] font-black uppercase tracking-wider leading-none">
+                      <span className="text-slate-500 text-[9px] font-black uppercase tracking-wider mb-3 leading-none">
                         {row.en}
                       </span>
-                    </div>
-                    <div className="flex-1 p-5 flex items-center bg-transparent">
                       <input
                         type="text"
                         value={formData[row.key] || ""}
                         onChange={(e) =>
                           handleFormChange(row.key, e.target.value)
                         }
-                        className="w-full bg-transparent border-none outline-none text-white text-lg font-bold px-2 placeholder:text-white/10"
+                        className="w-full bg-transparent border-b border-white/10 outline-none text-white text-base font-bold pb-1 placeholder:text-white/10 focus:border-indigo-500 transition-colors"
                         placeholder="..."
                       />
                     </div>
-                  </div>
-                ))}
-                {/* SPECIAL ROW: ACCOUNTANT / TAX AGENT */}
-                <div className="flex min-h-[90px]">
-                  <div className="w-[35%] border-r border-white/5 p-5 flex flex-col justify-center bg-white/[0.04]">
-                    <span
-                      className="text-white font-bold text-sm tracking-tight leading-snug mb-0.5"
-                      style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
-                    >
-                      ឈ្មោះគណនេយ្យករ / ភ្នាក់ងារសេវាកម្មពន្ធដារ ៖
-                    </span>
-                    <span className="text-slate-500 text-[9px] font-black uppercase tracking-tight leading-none">
-                      Name of Accountant/ Tax Agent:
-                    </span>
-                  </div>
-                  <div className="flex-1 border-r border-white/5 p-4 flex items-center">
-                    <input
-                      type="text"
-                      value={formData.accountantName || ""}
-                      onChange={(e) =>
-                        handleFormChange("accountantName", e.target.value)
-                      }
-                      className="w-full bg-transparent border-none outline-none text-white text-base font-bold"
-                      placeholder="..."
-                    />
-                  </div>
-                  <div className="w-[30%] border-r border-white/5 p-5 flex flex-col justify-center bg-white/[0.04]">
-                    <span
-                      className="text-white font-bold text-sm tracking-tight leading-snug mb-0.5"
-                      style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
-                    >
-                      លេខអាជ្ញាប័ណ្ណភ្នាក់ងារសេវាកម្មពន្ធដារ ៖
-                    </span>
-                    <span className="text-slate-500 text-[9px] font-black uppercase tracking-tight leading-none">
-                      Tax Agent License No:
-                    </span>
-                  </div>
-                  <div className="w-[15%] p-4 flex items-center">
-                    <input
-                      type="text"
-                      value={formData.agentLicenseNo || ""}
-                      onChange={(e) =>
-                        handleFormChange("agentLicenseNo", e.target.value)
-                      }
-                      className="w-full bg-transparent border-none outline-none text-white text-base font-bold"
-                      placeholder="..."
-                    />
-                  </div>
+                  ))}
                 </div>
 
+
                 {/* ADDRESS DETAILS TABLE */}
-                <div className="mt-8 border border-white/10 overflow-hidden bg-slate-900/40 rounded-2xl shadow-xl backdrop-blur-sm">
+                <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {[
                     {
                       kh: "អាសយដ្ឋានបច្ចុប្បន្នរបស់ការិយាល័យចុះបញ្ជី ៖",
@@ -779,30 +741,26 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear = "20
                   ].map((row, idx) => (
                     <div
                       key={idx}
-                      className="flex border-b border-white/5 last:border-0 min-h-[70px]"
+                      className="flex flex-col bg-white/[0.02] border border-white/5 rounded-xl p-5 hover:bg-white/[0.04] transition-colors"
                     >
-                      <div className="w-[40%] border-r border-white/5 p-5 flex flex-col justify-center bg-white/[0.02]">
-                        <span
-                          className="text-white font-bold text-base tracking-tight leading-tight mb-0.5"
-                          style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
-                        >
-                          {row.kh}
-                        </span>
-                        <span className="text-slate-500 text-[10px] font-black uppercase tracking-wider leading-none">
-                          {row.en}
-                        </span>
-                      </div>
-                      <div className="flex-1 p-5 flex items-center">
-                        <input
-                          type="text"
-                          value={formData[row.key] || ""}
-                          onChange={(e) =>
-                            handleFormChange(row.key, e.target.value)
-                          }
-                          className="w-full bg-transparent border-none outline-none text-white text-base font-bold"
-                          placeholder="..."
-                        />
-                      </div>
+                      <span
+                        className="text-white font-bold text-[13px] tracking-tight leading-tight mb-0.5"
+                        style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
+                      >
+                        {row.kh}
+                      </span>
+                      <span className="text-slate-500 text-[9px] font-black uppercase tracking-wider mb-3 leading-none">
+                        {row.en}
+                      </span>
+                      <input
+                        type="text"
+                        value={formData[row.key] || ""}
+                        onChange={(e) =>
+                          handleFormChange(row.key, e.target.value)
+                        }
+                        className="w-full bg-transparent border-b border-white/10 outline-none text-white text-base font-bold pb-1 placeholder:text-white/10 focus:border-indigo-500 transition-colors"
+                        placeholder="..."
+                      />
                     </div>
                   ))}
                 </div>
