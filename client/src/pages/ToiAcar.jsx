@@ -90,22 +90,58 @@ const ToiAcar = ({ onBack, packageId, year }) => {
         {activeWorkspacePage === 1 && (
           <div className="w-[644px] shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black">
             {/* Content for the white preview */}
-            <div className="w-full flex flex-col font-sans mb-12">
-              <div className="flex justify-between items-start pb-4 border-b-[3px] border-black">
+            <div className="w-full flex flex-col font-sans mb-12 text-black">
+              {/* OFFICIAL GDT HEADER */}
+              <div className="w-full flex justify-between items-start mb-6 text-[10px] sm:text-[11px] leading-tight pt-4">
+                {/* LEFT: MINISTRY */}
+                <div className="flex flex-col items-center">
+                  <span className="font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ក្រសួងសេដ្ឋកិច្ចនិងហិរញ្ញវត្ថុ</span>
+                  <span className="font-medium">MINISTRY OF ECONOMY AND FINANCE</span>
+                  <div className="w-full h-px bg-black my-0.5"></div>
+                  <span className="font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>អគ្គនាយកដ្ឋានពន្ធដារ</span>
+                  <span className="font-medium">GENERAL DEPARTMENT OF TAXATION</span>
+                  <div className="bg-slate-200 border-[1.5px] border-black font-bold px-4 py-1 mt-2 text-xs">
+                    ទម្រង់ ពបច ០១ / FORM TOI 01
+                  </div>
+                  <span className="text-[9px] mt-1" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>(មាត្រា ២៩ ថ្មី នៃច្បាប់ស្តីពីសារពើពន្ធ)</span>
+                  <span className="text-[9px]">(Article 29 New of the Law on Taxation)</span>
+                </div>
+
+                {/* CENTER: GDT LOGO PLACEHOLDER */}
+                <div className="flex flex-col items-center justify-center pt-2">
+                  <div className="w-[80px] h-[80px] rounded-full border-[1px] border-slate-300 flex items-center justify-center flex-col text-[8px] text-slate-400">
+                    <div className="w-[70px] h-[70px] rounded-full border-[1px] border-slate-300 flex items-center justify-center flex-col bg-slate-50">
+                      <span>GDT</span>
+                      <span>LOGO</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* RIGHT: KINGDOM */}
+                <div className="flex flex-col items-center pt-2">
+                  <span className="font-bold text-[12px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ព្រះរាជាណាចក្រកម្ពុជា</span>
+                  <span className="font-bold">KINGDOM OF CAMBODIA</span>
+                  <span className="font-bold text-[12px] mt-1" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ជាតិ សាសនា ព្រះមហាក្សត្រ</span>
+                  <span className="font-bold">NATION RELIGION KING</span>
+                </div>
+              </div>
+
+              {/* FORM TITLE */}
+              <div className="flex justify-center items-center pb-2 border-b-[3px] border-black mb-4">
                 <div className="flex flex-col w-full items-center">
                   <h1
-                    className="text-[20px] font-bold uppercase tracking-widest text-center"
+                    className="text-[16px] font-bold tracking-tight text-center"
                     style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
                   >
-                    លិខិតប្រកាសពន្ធលើចំណូលប្រចាំឆ្នាំ
+                    លិខិតប្រកាសពន្ធលើប្រាក់ចំណូលប្រចាំឆ្នាំ
                   </h1>
-                  <h2 className="text-[12px] font-black uppercase text-center mt-2 flex items-center justify-center gap-3">
+                  <h2 className="text-[11px] font-black uppercase text-center mt-1 flex items-center justify-center gap-3">
                     ANNUAL INCOME TAX RETURN FOR THE YEAR ENDED
                     <div className="inline-flex shadow-sm gap-[2px]">
                       {selectedYear.split("").map((char, i) => (
                         <div
                           key={i}
-                          className="w-8 h-10 border-[1.5px] border-black flex items-center justify-center font-bold text-xl"
+                          className="w-7 h-9 border-[1.5px] border-black flex items-center justify-center font-bold text-lg"
                         >
                           {char}
                         </div>

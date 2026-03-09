@@ -406,27 +406,14 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear = "20
                     </h1>
                   </div>
                   <div className="flex gap-2 bg-black/30 p-2 rounded-xl border border-white/5 shadow-inner">
-                    {(formData.untilDate?.slice(-4) || activeYear)
+                    {(activeYear || "2026")
                       .split("")
                       .map((char, i) => (
                         <div
                           key={i}
                           className="w-10 h-14 border border-white/10 flex items-center justify-center bg-slate-800/50 rounded-lg shadow-sm"
                         >
-                          <input
-                            type="text"
-                            maxLength="1"
-                            className="w-full h-full text-center text-xl font-black outline-none bg-transparent text-white placeholder:text-white/10"
-                            value={char}
-                            placeholder="0"
-                            onChange={(e) => {
-                              const newDate = (
-                                formData.untilDate || `3112${activeYear}`
-                              ).split("");
-                              newDate[4 + i] = e.target.value;
-                              handleFormChange("untilDate", newDate.join(""));
-                            }}
-                          />
+                          <span className="text-xl font-black text-white">{char}</span>
                         </div>
                       ))}
                   </div>
@@ -491,110 +478,113 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear = "20
               </div>
 
               {/* TAX PERIOD & DATE RANGE - REFINED DENSITY */}
-              <div className="mt-10 flex flex-col gap-10 border-b border-white/5 pb-10">
-                <div className="flex items-center gap-12">
-                  {/* TAX PERIOD */}
-                  <div className="flex items-center gap-6">
-                    <div className="flex flex-col">
-                      <span
-                        className="text-white font-bold text-lg tracking-tight"
-                        style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
-                      >
-                        ការិយបរិច្ឆេទជាប់ពន្ធ (ចំនួនខែ)
-                      </span>
-                      <span className="text-slate-500 text-[11px] font-black uppercase tracking-wider">
-                        Tax Period (Months)
-                      </span>
-                    </div>
-                    <div className="flex gap-1.5 p-1.5 bg-black/20 rounded-lg border border-white/5">
-                      {(formData.taxMonths || "12").split("").map((char, i) => (
-                        <div
-                          key={i}
-                          className="w-10 h-12 border border-white/10 flex items-center justify-center bg-slate-800/80 rounded-md shadow-sm"
-                        >
-                          <input
-                            type="text"
-                            maxLength="1"
-                            className="w-full h-full text-center text-white bg-transparent outline-none font-black text-xl"
-                            value={char}
-                            onChange={(e) =>
-                              handleFormChange(
-                                "taxMonths",
-                                (formData.taxMonths || "12").substring(0, i) +
-                                e.target.value +
-                                (formData.taxMonths || "12").substring(i + 1),
-                              )
-                            }
-                          />
-                        </div>
-                      ))}
-                    </div>
+              <div className="mt-10 flex flex-wrap lg:flex-nowrap items-center gap-8 border-b border-white/5 pb-10">
+                {/* TAX PERIOD */}
+                <div className="flex items-center gap-4 shrink-0">
+                  <div className="flex flex-col">
+                    <span
+                      className="text-white font-bold text-base tracking-tight"
+                      style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
+                    >
+                      ការិយបរិច្ឆេទជាប់ពន្ធ (ចំនួនខែ)
+                    </span>
+                    <span className="text-slate-500 text-[10px] font-black uppercase tracking-wider">
+                      Tax Period (Months)
+                    </span>
                   </div>
-                  <div className="text-slate-700 text-sm">&#9654;</div>
-                  {/* START DATE */}
-                  <div className="flex items-center gap-6">
-                    <div className="flex flex-col min-w-[60px]">
-                      <span
-                        className="text-white font-bold text-lg tracking-tight"
-                        style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
+                  <div className="flex gap-1.5 p-1 bg-black/20 rounded-lg border border-white/5">
+                    {(formData.taxMonths || "12").split("").map((char, i) => (
+                      <div
+                        key={i}
+                        className="w-10 h-10 border border-white/10 flex items-center justify-center bg-slate-800/80 rounded shadow-sm"
                       >
-                        ពីថ្ងៃ
-                      </span>
-                      <span className="text-slate-500 text-[11px] font-black uppercase tracking-wider">
-                        From
-                      </span>
-                    </div>
-                    <div className="flex gap-2 p-1 bg-black/20 rounded-lg border border-white/5">
-                      {[
-                        { start: 0, len: 2, label: "Day" },
-                        { start: 2, len: 2, label: "Month" },
-                        { start: 4, len: 4, label: "Year" },
-                      ].map((section, sIdx) => (
-                        <div key={sIdx} className="flex gap-0.5 items-center">
-                          {Array.from({ length: section.len }).map((_, i) => {
-                            const charIdx = section.start + i;
-                            return (
-                              <div
-                                key={i}
-                                className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/80 rounded shadow-sm"
-                              >
-                                <input
-                                  type="text"
-                                  maxLength="1"
-                                  className="w-full h-full text-center text-white bg-transparent outline-none font-black text-lg"
-                                  value={formData.fromDate?.[charIdx] || ""}
-                                  onChange={(e) => {
-                                    const newDate = (
-                                      formData.fromDate || `0101${activeYear}`
-                                    ).split("");
-                                    newDate[charIdx] = e.target.value;
-                                    handleFormChange(
-                                      "fromDate",
-                                      newDate.join(""),
-                                    );
-                                  }}
-                                />
-                              </div>
-                            );
-                          })}
-                          {sIdx < 2 && (
-                            <span className="mx-1 text-white/20">/</span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                        <input
+                          type="text"
+                          maxLength="1"
+                          className="w-full h-full text-center text-white bg-transparent outline-none font-black text-lg"
+                          value={char}
+                          onChange={(e) =>
+                            handleFormChange(
+                              "taxMonths",
+                              (formData.taxMonths || "12").substring(0, i) +
+                              e.target.value +
+                              (formData.taxMonths || "12").substring(i + 1),
+                            )
+                          }
+                        />
+                      </div>
+                    ))}
                   </div>
                 </div>
-                {/* END DATE ROW */}
-                <div className="flex items-center gap-6">
-                  <div className="flex flex-col min-w-[60px]">
+
+                <div className="w-px h-10 bg-white/10 hidden lg:block" />
+
+                {/* START DATE */}
+                <div className="flex items-center gap-4 shrink-0">
+                  <div className="flex flex-col min-w-[50px]">
                     <span
-                      className="text-white font-bold text-lg tracking-tight"
+                      className="text-white font-bold text-base tracking-tight"
+                      style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
+                    >
+                      ពីថ្ងៃ
+                    </span>
+                    <span className="text-slate-500 text-[10px] font-black uppercase tracking-wider">
+                      From
+                    </span>
+                  </div>
+                  <div className="flex gap-2 p-1 bg-black/20 rounded-lg border border-white/5">
+                    {[
+                      { start: 0, len: 2, label: "Day" },
+                      { start: 2, len: 2, label: "Month" },
+                      { start: 4, len: 4, label: "Year" },
+                    ].map((section, sIdx) => (
+                      <div key={sIdx} className="flex gap-0.5 items-center">
+                        {Array.from({ length: section.len }).map((_, i) => {
+                          const charIdx = section.start + i;
+                          return (
+                            <div
+                              key={i}
+                              className="w-7 h-9 border border-white/10 flex items-center justify-center bg-slate-800/80 rounded shadow-sm"
+                            >
+                              <input
+                                type="text"
+                                maxLength="1"
+                                className="w-full h-full text-center text-white bg-transparent outline-none font-black text-base"
+                                value={formData.fromDate?.[charIdx] || ""}
+                                onChange={(e) => {
+                                  const newDate = (
+                                    formData.fromDate || `0101${activeYear}`
+                                  ).split("");
+                                  newDate[charIdx] = e.target.value;
+                                  handleFormChange(
+                                    "fromDate",
+                                    newDate.join(""),
+                                  );
+                                }}
+                              />
+                            </div>
+                          );
+                        })}
+                        {sIdx < 2 && (
+                          <span className="mx-0.5 text-white/20">/</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="text-slate-700 text-sm hidden lg:block">&#9654;</div>
+
+                {/* END DATE ROW */}
+                <div className="flex items-center gap-4 shrink-0">
+                  <div className="flex flex-col min-w-[50px]">
+                    <span
+                      className="text-white font-bold text-base tracking-tight"
                       style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
                     >
                       ដល់ថ្ងៃ
                     </span>
-                    <span className="text-slate-500 text-[11px] font-black uppercase tracking-wider">
+                    <span className="text-slate-500 text-[10px] font-black uppercase tracking-wider">
                       Until
                     </span>
                   </div>
@@ -610,12 +600,12 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear = "20
                           return (
                             <div
                               key={i}
-                              className="w-8 h-10 border border-white/10 flex items-center justify-center bg-slate-800/80 rounded shadow-sm"
+                              className="w-7 h-9 border border-white/10 flex items-center justify-center bg-slate-800/80 rounded shadow-sm"
                             >
                               <input
                                 type="text"
                                 maxLength="1"
-                                className="w-full h-full text-center text-white bg-transparent outline-none font-black text-lg"
+                                className="w-full h-full text-center text-white bg-transparent outline-none font-black text-base"
                                 value={formData.untilDate?.[charIdx] || ""}
                                 onChange={(e) => {
                                   const newDate = (
@@ -632,7 +622,7 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear = "20
                           );
                         })}
                         {sIdx < 2 && (
-                          <span className="mx-1 text-white/20">/</span>
+                          <span className="mx-0.5 text-white/20">/</span>
                         )}
                       </div>
                     ))}
