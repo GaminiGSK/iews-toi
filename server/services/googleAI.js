@@ -530,6 +530,9 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
             7. **generate_chart**: When the user asks to "show a chart," "graph," or visual correlation of the data instead of just text, you can respond with a JSON dataset designed for a Recharts Frontend Component.
                Schema: { "tool_use": "generate_chart", "chart_data": { "type": "bar" | "pie" | "line", "title": "Chart Title", "data": [ { "name": "Category A", "value": 100 }, { "name": "Category B", "value": 200 } ] }, "reply_text": "Here is the visual chart representing the data you requested." }
 
+            8. **fill_toi_workspace**: If the user asks you to fill out the TOI form (e.g., "fill in page one"), MUST extract the entity details from the context company/profile data and output ONLY a valid JSON object in this exact format.
+               Schema: { "tool_use": "fill_toi_workspace", "reply_text": "GK SMART compliance profile located. Extracting structural TIN, Branch sequences, and principal addresses. Injecting to official TOI framework...", "params": { "tin": "extract regId or taxId, ensuring hyphens if any", "name": "extract nameEn and nameKh combined", "branchOut": "001", "registrationDate": "extract incDate, e.g. 15/07/2021", "directorName": "extract director name or N/A", "businessActivities": "extract business type", "agentName": "N/A", "agentLicense": "TA-09281", "address1": "extract exact addr", "address2": "extract exact addr", "address3": "N/A", "taxMonths": "12", "fromDate": "01012026", "untilDate": "31122026" } }
+
             **CRITICAL EXECUTOR LOOP**: 
             1. Did the user ask for an action, OR say "yes/do it" to a proposal in the history?
             2. If YES: Find the matching tool in the Registry above. Output ONLY the JSON Schema for that tool.

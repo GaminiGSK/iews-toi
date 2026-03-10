@@ -55,32 +55,8 @@ const ToiAcar = ({ onBack, packageId, year }) => {
 
     try {
       const token = localStorage.getItem('token');
-      // We instruct the Agent backend dynamically to fetch its real context and output it strictly in the structure ToiAcar needs.
-      const systemDirective = `\n\n[SYSTEM DIRECTIVE for filling TOI: If the user asks you to fill out the TOI form, extract the entity details from the context company/profile data and output ONLY a valid JSON object in this exact format (do NOT output markdown ticks):
-{
-  "tool_use": "fill_toi_workspace",
-  "reply_text": "GK SMART compliance profile located. Extracting structural TIN, Branch sequences, and principal addresses. Injecting to official TOI framework...",
-  "params": {
-    "tin": "extract regId or taxId, ensuring hyphens if any",
-    "name": "extract nameEn and nameKh combined",
-    "branchOut": "001",
-    "registrationDate": "extract incDate, e.g. 15 / 07 / 2021",
-    "directorName": "extract director name or N/A",
-    "businessActivities": "extract business type",
-    "agentName": "N/A",
-    "agentLicense": "TA-09281",
-    "address1": "extract exact addr",
-    "address2": "extract exact addr",
-    "address3": "N/A",
-    "taxMonths": "12",
-    "fromDate": "01012026",
-    "untilDate": "31122026"
-  }
-}
-If they don't explicitly say fill/page one/TOI, just respond conversationally without JSON.]`;
-
       const res = await axios.post('/api/chat/message', {
-        message: currentInput + systemDirective,
+        message: currentInput,
         model: "gemini-2.0",
         context: { route: window.location.pathname }
       }, {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Wand2, Calendar, Tag, Layers, ArrowLeft } from 'lucide-react';
+import { Wand2, Calendar, Tag, Layers, ArrowLeft, Sparkles } from 'lucide-react';
 
 const GeneralLedger = ({ onBack }) => {
     const [transactions, setTransactions] = useState([]);

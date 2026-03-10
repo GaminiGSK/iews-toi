@@ -2082,17 +2082,23 @@ router.get('/financials-monthly', auth, async (req, res) => {
             const code = acObj.code;
             const amount = parseFloat(tx.amount || 0);
 
+            let signedAmount = amount;
+            // Assets (Code 1) increase with Bank Money Out (negative tx amount) -> positive asset balance
+            if (code.startsWith('1')) {
+                signedAmount = -amount;
+            }
+
             if (year < currentYear) {
                 if (bsData[code]) {
-                    openingBalances[code] += amount;
+                    openingBalances[code] += signedAmount;
                 }
                 netControlBS[0] += amount;
             } else if (year === currentYear) {
                 if (plData[code]) {
-                    plData[code].months[month] += amount;
-                    plData[code].months[0] += amount; // Total
+                    plData[code].months[month] += signedAmount;
+                    plData[code].months[0] += signedAmount; // Total
                 } else if (bsData[code]) {
-                    bsData[code].months[month] += amount;
+                    bsData[code].months[month] += signedAmount;
                 }
                 netControlBS[month] += amount;
             }
