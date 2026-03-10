@@ -932,28 +932,32 @@ router.post('/save-bank-basket', auth, async (req, res) => {
 
         const newFolderName = `${bankName} - ${accountNumber}`;
 
-        // 2. Locate / Create User's main bank statements folder
-        let driveRoot = req.user.driveFolderId;
-        if (!driveRoot && process.env.GOOGLE_DRIVE_FOLDER_ID) {
-            driveRoot = await findFolder(req.user.username, process.env.GOOGLE_DRIVE_FOLDER_ID).then(f => f?.id);
-        }
-
-        let mainBankFolderId = req.user.bankStatementsFolderId;
-        if (!mainBankFolderId && driveRoot) {
-            let bankSub = await findFolder('bank statements', driveRoot);
-            if (!bankSub) bankSub = await createFolder('bank statements', driveRoot);
-            mainBankFolderId = bankSub.id;
-            // Update User Profile with the ID
-            const User = require('../models/User');
-            await User.findByIdAndUpdate(req.user._id, { bankStatementsFolderId: mainBankFolderId });
-        }
-
-        // 3. Create Specific Basket Sub-folder
+        // 2. Locate / Create User's main bank statements folder (Graceful Fallback)
         let basketFolderId = null;
-        if (mainBankFolderId) {
-            let basketFolder = await findFolder(newFolderName, mainBankFolderId);
-            if (!basketFolder) basketFolder = await createFolder(newFolderName, mainBankFolderId);
-            basketFolderId = basketFolder.id;
+        try {
+            let driveRoot = req.user.driveFolderId;
+            if (!driveRoot && process.env.GOOGLE_DRIVE_FOLDER_ID) {
+                driveRoot = await findFolder(req.user.username, process.env.GOOGLE_DRIVE_FOLDER_ID).then(f => f?.id);
+            }
+
+            let mainBankFolderId = req.user.bankStatementsFolderId;
+            if (!mainBankFolderId && driveRoot) {
+                let bankSub = await findFolder('bank statements', driveRoot);
+                if (!bankSub) bankSub = await createFolder('bank statements', driveRoot);
+                mainBankFolderId = bankSub.id;
+                // Update User Profile with the ID
+                const User = require('../models/User');
+                await User.findByIdAndUpdate(req.user._id, { bankStatementsFolderId: mainBankFolderId });
+            }
+
+            // 3. Create Specific Basket Sub-folder
+            if (mainBankFolderId) {
+                let basketFolder = await findFolder(newFolderName, mainBankFolderId);
+                if (!basketFolder) basketFolder = await createFolder(newFolderName, mainBankFolderId);
+                basketFolderId = basketFolder.id;
+            }
+        } catch (driveErr) {
+            console.error("[Drive API Error] Proceeding to save DB without full Drive sync:", driveErr);
         }
 
         const savedFileRecords = [];
@@ -976,10 +980,20 @@ router.post('/save-bank-basket', auth, async (req, res) => {
                 const minDate = dates.length > 0 ? new Date(Math.min(...dates)) : new Date();
                 const maxDate = dates.length > 0 ? new Date(Math.max(...dates)) : new Date();
 
-                // Add transactions
+                // Add and Sanitize transactions
                 for (const tx of file.transactions) {
                     tx.accountCode = tx.accountCode || null;
-                    if (tx.moneyIn && parseFloat(tx.moneyIn) > 0 && !tx.accountCode) tx.accountCode = "10110";
+                    
+                    // Safely strip currencies and commas
+                    const rawIn = String(tx.moneyIn || "").replace(/[^0-9.-]+/g, "");
+                    const rawOut = String(tx.moneyOut || "").replace(/[^0-9.-]+/g, "");
+                    const rawBal = String(tx.balance || "").replace(/[^0-9.-]+/g, "");
+                    
+                    tx.moneyIn = Number(rawIn) || 0;
+                    tx.moneyOut = Number(rawOut) || 0;
+                    tx.balance = Number(rawBal) || null;
+
+                    if (tx.moneyIn > 0 && !tx.accountCode) tx.accountCode = "10110";
                 }
 
                 const bankStmtRecord = await BankStatement.create({

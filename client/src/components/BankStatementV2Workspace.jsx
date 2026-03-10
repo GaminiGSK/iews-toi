@@ -515,13 +515,13 @@ export default function BankStatementV2Workspace({ onBack }) {
                                                     </div>
                                                 </td>
                                                 <td className="px-4 py-3 text-[11px] text-right font-medium text-green-600 align-top whitespace-nowrap">
-                                                    {tx?.moneyIn && parseFloat(tx.moneyIn) > 0 ? parseFloat(tx.moneyIn).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''}
+                                                    {tx?.moneyIn && Number(String(tx.moneyIn).replace(/[^0-9.-]+/g, "")) > 0 ? Number(String(tx.moneyIn).replace(/[^0-9.-]+/g, "")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''}
                                                 </td>
                                                 <td className="px-4 py-3 text-[11px] text-right font-medium text-red-600 align-top whitespace-nowrap">
-                                                    {tx?.moneyOut && parseFloat(tx.moneyOut) > 0 ? parseFloat(tx.moneyOut).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''}
+                                                    {tx?.moneyOut && Number(String(tx.moneyOut).replace(/[^0-9.-]+/g, "")) > 0 ? Number(String(tx.moneyOut).replace(/[^0-9.-]+/g, "")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''}
                                                 </td>
                                                 <td className="px-4 py-3 text-[11px] text-right text-gray-800 font-bold align-top whitespace-nowrap">
-                                                    {tx?.balance ? parseFloat(String(tx.balance).replace(/[^0-9.-]+/g, "")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}
+                                                    {tx?.balance ? Number(String(tx.balance).replace(/[^0-9.-]+/g, "")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}
                                                 </td>
                                                 <td className="px-4 py-3 text-xs align-top">
                                                 </td>
