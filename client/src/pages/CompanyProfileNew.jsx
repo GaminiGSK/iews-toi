@@ -10,6 +10,7 @@ import FinancialStatements from './FinancialStatements';
 import ToiAcar from './ToiAcar';
 import BankStatementV2Workspace from '../components/BankStatementV2Workspace';
 import MOCCertificate from '../components/MOCCertificate';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 export default function CompanyProfile() {
     const navigate = useNavigate();
@@ -1841,10 +1842,10 @@ export default function CompanyProfile() {
                 {view === 'bank' && renderBank()}
                 {view === 'bank_v2' && <BankStatementV2Workspace onBack={() => setView('home')} />}
                 {view === 'iews' && renderIEWS()}
-                {view === 'ledger' && <GeneralLedger onBack={() => setView('home')} />}
-                {view === 'tb' && <TrialBalance onBack={() => setView('home')} />}
+                {view === 'ledger' && <ErrorBoundary><GeneralLedger onBack={() => setView('home')} /></ErrorBoundary>}
+                {view === 'tb' && <ErrorBoundary><TrialBalance onBack={() => setView('home')} /></ErrorBoundary>}
                 {view === 'codes' && <AccountingCodes onBack={() => setView('home')} />}
-                {view === 'financials' && <FinancialStatements onBack={() => setView('home')} />}
+                {view === 'financials' && <ErrorBoundary><FinancialStatements onBack={() => setView('home')} /></ErrorBoundary>}
                 {view === 'currency' && <CurrencyExchange onBack={() => setView('home')} />}
                 {view === 'toi_acar' && <ToiAcar onBack={() => setView('home')} />}
             </main>
