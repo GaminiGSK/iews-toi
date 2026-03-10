@@ -268,22 +268,22 @@ const GeneralLedger = ({ onBack }) => {
                                 {tx.description}
                             </td>
                             <td className="px-4 py-4 text-xs text-right font-bold text-green-600 align-top whitespace-nowrap border-l border-gray-100">
-                                {tx.amount > 0 ? tx.amount.toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
+                                {Number(tx.amount) > 0 ? Number(tx.amount).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
                             </td>
                             <td className="px-4 py-4 text-xs text-right font-bold text-red-600 align-top whitespace-nowrap">
-                                {tx.amount < 0 ? Math.abs(tx.amount).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
+                                {Number(tx.amount) < 0 ? Math.abs(Number(tx.amount)).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
                             </td>
                             <td className="px-4 py-4 text-xs text-right text-gray-900 font-bold align-top whitespace-nowrap">
-                                {tx.balance ? tx.balance.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '-'}
+                                {tx.balance ? Number(String(tx.balance).replace(/[^0-9.-]+/g,"")).toLocaleString('en-US', { minimumFractionDigits: 2 }) : '-'}
                             </td>
                             <td className="px-4 py-4 text-xs text-right font-bold text-teal-600 align-top whitespace-nowrap border-l border-gray-100 bg-gray-50/50">
-                                {tx.amountKHR > 0 ? tx.amountKHR.toLocaleString('en-US', { maximumFractionDigits: 0 }) : ''}
+                                {Number(tx.amountKHR) > 0 ? Number(tx.amountKHR).toLocaleString('en-US', { maximumFractionDigits: 0 }) : ''}
                             </td>
                             <td className="px-4 py-4 text-xs text-right font-bold text-red-400 align-top whitespace-nowrap bg-gray-50/50">
-                                {tx.amountKHR < 0 ? Math.abs(tx.amountKHR).toLocaleString('en-US', { maximumFractionDigits: 0 }) : ''}
+                                {Number(tx.amountKHR) < 0 ? Math.abs(Number(tx.amountKHR)).toLocaleString('en-US', { maximumFractionDigits: 0 }) : ''}
                             </td>
                             <td className="px-4 py-4 text-xs text-right text-gray-600 font-bold align-top whitespace-nowrap bg-gray-50/50">
-                                {tx.balanceKHR ? tx.balanceKHR.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '-'}
+                                {tx.balanceKHR ? Number(String(tx.balanceKHR).replace(/[^0-9.-]+/g,"")).toLocaleString('en-US', { maximumFractionDigits: 0 }) : '-'}
                             </td>
                         </tr>
                     ))}
@@ -374,7 +374,7 @@ const GeneralLedger = ({ onBack }) => {
                             </p>
                             <p className="text-2xl font-bold text-green-600 mt-1">
                                 ${filteredTransactions
-                                    .reduce((acc, tx) => acc + (tx.amount > 0 ? tx.amount : 0), 0)
+                                    .reduce((acc, tx) => acc + (Number(tx.amount) > 0 ? Number(tx.amount) : 0), 0)
                                     .toLocaleString('en-US', { minimumFractionDigits: 2 })}
                             </p>
                         </div>
@@ -384,7 +384,7 @@ const GeneralLedger = ({ onBack }) => {
                             </p>
                             <p className="text-2xl font-bold text-red-600 mt-1">
                                 ${Math.abs(filteredTransactions
-                                    .reduce((acc, tx) => acc + (tx.amount < 0 ? tx.amount : 0), 0)
+                                    .reduce((acc, tx) => acc + (Number(tx.amount) < 0 ? Number(tx.amount) : 0), 0)
                                 ).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                             </p>
                         </div>
@@ -394,10 +394,10 @@ const GeneralLedger = ({ onBack }) => {
                                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
                                         {filterCode === 'uncategorized' ? 'Unassigned Balance' : 'Net Balance'}
                                     </p>
-                                    <p className={`text-2xl font-bold mt-1 ${filteredTransactions.reduce((acc, tx) => acc + (tx.amount || 0), 0) === 0 ? 'text-green-600' : 'text-blue-900'
+                                    <p className={`text-2xl font-bold mt-1 ${filteredTransactions.reduce((acc, tx) => acc + (Number(tx.amount) || 0), 0) >= 0 ? 'text-green-600' : 'text-blue-900'
                                         }`}>
                                         ${filteredTransactions
-                                            .reduce((acc, tx) => acc + (tx.amount || 0), 0)
+                                            .reduce((acc, tx) => acc + (Number(tx.amount) || 0), 0)
                                             .toLocaleString('en-US', { minimumFractionDigits: 2 })}
                                     </p>
 
@@ -477,9 +477,9 @@ const GeneralLedger = ({ onBack }) => {
                                     </div>
                                     <div className="text-right">
                                         <p className="text-xs font-bold text-gray-400 uppercase">Group Total</p>
-                                        <p className={`font-bold font-mono text-lg ${group.items.reduce((sum, t) => sum + t.amount, 0) >= 0 ? 'text-green-600' : 'text-red-500'
+                                        <p className={`font-bold font-mono text-lg ${group.items.reduce((sum, t) => sum + (Number(t.amount) || 0), 0) >= 0 ? 'text-green-600' : 'text-red-500'
                                             }`}>
-                                            ${group.items.reduce((sum, t) => sum + t.amount, 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                            ${group.items.reduce((sum, t) => sum + (Number(t.amount) || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                                         </p>
                                     </div>
                                 </div>
