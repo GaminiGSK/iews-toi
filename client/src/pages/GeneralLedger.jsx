@@ -342,11 +342,14 @@ const GeneralLedger = ({ onBack }) => {
                                 <option value="">All Transactions</option>
                                 <option value="uncategorized">Uncategorized Only</option>
                                 <hr />
-                                {codes.map(c => (
-                                    <option key={c._id} value={c._id}>
-                                        {c.code} - {c.description ? String(c.description).substring(0, 20) : 'No Description'}...
-                                    </option>
-                                ))}
+                                {codes.map(c => {
+                                    const descStr = typeof c.description === 'object' ? JSON.stringify(c.description) : String(c.description || '');
+                                    return (
+                                        <option key={c._id} value={c._id}>
+                                            {c.code} - {descStr ? descStr.substring(0, 40) : 'No Description'}...
+                                        </option>
+                                    );
+                                })}
                             </select>
                             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
                                 <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
@@ -472,7 +475,7 @@ const GeneralLedger = ({ onBack }) => {
                                             <div>
                                                 <h3 className="font-bold text-gray-800 text-lg flex items-center gap-2">
                                                     <span className="font-mono text-blue-600">{group.codeInfo.code}</span>
-                                                    <span>{group.codeInfo.description}</span>
+                                                    <span>{typeof group.codeInfo.description === 'object' ? JSON.stringify(group.codeInfo.description) : String(group.codeInfo.description || '')}</span>
                                                 </h3>
                                                 <p className="text-xs text-gray-500">{group.items.length} transactions</p>
                                             </div>
