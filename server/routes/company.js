@@ -1313,6 +1313,7 @@ router.post('/save-transactions', auth, async (req, res) => {
         }
 
         const Transaction = require('../models/Transaction');
+        const BankFile = require('../models/BankFile');
 
         const savedDocs = [];
         for (const tx of transactions) {
