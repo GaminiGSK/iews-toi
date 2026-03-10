@@ -71,7 +71,7 @@ const GeneralLedger = ({ onBack }) => {
 
     // Unassign all ABA (10130) transactions (Undo/Reset)
     const handleUnassignABA = async () => {
-        const abaCode = codes.find(c => c.code === '10130' || (c.description && c.description.toUpperCase().includes('ABA')));
+        const abaCode = codes.find(c => c.code === '10130' || (c.description && String(c.description).toUpperCase().includes('ABA')));
         if (!abaCode) return;
 
         const candidates = transactions.filter(t => t.accountCode === abaCode._id);
@@ -198,11 +198,11 @@ const GeneralLedger = ({ onBack }) => {
             groups[codeId].items.push(tx);
         });
 
-        // Convert to array and sort by Code
+        // Convert to array and sort by Code safely
         return Object.values(groups).sort((a, b) => {
-            if (a.codeInfo._id === 'uncategorized') return -1; // Put uncategorized first or last? Let's put first for visibility.
+            if (a.codeInfo._id === 'uncategorized') return -1;
             if (b.codeInfo._id === 'uncategorized') return 1;
-            return (a.codeInfo.code || '').localeCompare(b.codeInfo.code || '');
+            return String(a.codeInfo.code || '').localeCompare(String(b.codeInfo.code || ''));
         });
     };
 
@@ -249,7 +249,7 @@ const GeneralLedger = ({ onBack }) => {
                                         <option value="">-- Select Code --</option>
                                         {codes.map(c => (
                                             <option key={c._id} value={c._id}>
-                                                {c.code} - {c.description}
+                                                {c.code} - {typeof c.description === 'object' ? JSON.stringify(c.description) : String(c.description || '')}
                                             </option>
                                         ))}
                                     </select>
@@ -266,7 +266,7 @@ const GeneralLedger = ({ onBack }) => {
                                 </div>
                             </td>
                             <td className="px-6 py-4 text-xs text-gray-700 font-medium align-top leading-relaxed whitespace-pre-wrap">
-                                {tx.description}
+                                {typeof tx.description === 'object' ? JSON.stringify(tx.description) : String(tx.description || '')}
                             </td>
                             <td className="px-4 py-4 text-xs text-right font-bold text-green-600 align-top whitespace-nowrap border-l border-gray-100">
                                 {Number(String(tx.amount).replace(/[^0-9.-]+/g,"")) > 0 ? Number(String(tx.amount).replace(/[^0-9.-]+/g,"")).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
@@ -344,7 +344,7 @@ const GeneralLedger = ({ onBack }) => {
                                 <hr />
                                 {codes.map(c => (
                                     <option key={c._id} value={c._id}>
-                                        {c.code} - {c.description ? c.description.substring(0, 20) : 'No Description'}...
+                                        {c.code} - {c.description ? String(c.description).substring(0, 20) : 'No Description'}...
                                     </option>
                                 ))}
                             </select>
@@ -430,7 +430,7 @@ const GeneralLedger = ({ onBack }) => {
                                                         <option value="">Assign as Bank Balance...</option>
                                                         {codes.map(c => (
                                                             <option key={c._id} value={c._id}>
-                                                                {c.code} - {c.description}
+                                                                {c.code} - {typeof c.description === 'object' ? JSON.stringify(c.description) : String(c.description || '')}
                                                             </option>
                                                         ))}
                                                     </select>
