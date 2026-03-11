@@ -1791,7 +1791,7 @@ export default function CompanyProfile() {
     return (
         <div className="min-h-screen bg-slate-900 flex flex-col font-sans text-white">
             {/* Header */}
-            <header className="bg-slate-900/80 backdrop-blur-md border-b border-white/10 sticky top-0 z-30 shadow-lg h-16 flex items-center px-6 justify-between">
+            <header className="bg-slate-900/80 backdrop-blur-md border-b border-white/10 sticky top-0 z-30 shadow-lg h-16 flex items-center px-6 justify-between print:hidden">
                 <div className="flex items-center gap-6">
                     <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setView('home')} title="Home / Dashboard">
                         <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/20 text-sm tracking-tighter group-hover:scale-105 transition-transform">
@@ -1836,7 +1836,7 @@ export default function CompanyProfile() {
             </header>
 
             {/* Main Content */}
-            <main className="flex-1 overflow-hidden relative">
+            <main className="flex-1 overflow-hidden relative print:overflow-visible">
                 {view === 'home' && renderHome()}
                 {view === 'profile' && renderProfile()}
                 {view === 'bank' && renderBank()}

@@ -229,9 +229,9 @@ const ToiAcar = ({ onBack, packageId, year }) => {
       <div className="flex-1 flex overflow-hidden print:overflow-visible">
         {/* NEW LEFT SIDE: WHITE PREVIEW (ONLY PAGE 1) */}
         {activeWorkspacePage === 1 && (
-          <div className="w-[50%] shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0">
+          <div className="w-[50%] shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible">
             {/* Content for the white preview */}
-            <div className="w-full flex flex-col font-sans mb-12 text-black">
+            <div className="w-full flex flex-col font-sans mb-12 text-black print:w-[210mm] print:mx-auto print:mb-0">
               {/* OFFICIAL GDT HEADER - Based exactly on reference image */}
               <div className="w-full relative mb-12 text-[10px] sm:text-[11px] leading-tight pt-4 font-bold flex justify-between items-start">
 
@@ -1035,7 +1035,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                 </div>
               </div>
 
-              <div className="w-full text-center mt-12 mb-8 opacity-20 flex flex-col items-center">
+              <div className="w-full text-center mt-12 mb-8 opacity-20 flex flex-col items-center print:hidden">
                 <div className="w-px h-16 bg-black mb-4"></div>
                 <span className="text-xl font-black tracking-[0.5em] uppercase text-black">
                   Page 1 Virtual Print
