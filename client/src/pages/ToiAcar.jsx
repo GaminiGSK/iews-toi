@@ -601,21 +601,28 @@ const ToiAcar = ({ onBack, packageId, year }) => {
 
               {/* Section 14: Legal Form */}
               <div className="flex border-b border-black border-t-0 bg-white min-h-[50px]">
-                <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-[#e6e6e6]">
-                  14
+                <div className="w-[49px] shrink-0 border-r border-black flex flex-col items-center justify-center bg-[#e6e6e6]">
+                  {/* Container to center 14 properly */}
+                  <div className="h-full flex flex-col justify-center font-bold text-sm">
+                    14
+                  </div>
                 </div>
-                <div className="flex-1 flex flex-col bg-white">
-                  {/* Top Header Row of 14 */}
-                  <div className="flex min-h-[38px]">
-                    <div className="w-[340px] shrink-0 border-r border-black pl-3 pr-2 py-1 flex flex-col justify-center">
-                      <span className="font-bold text-[12px] leading-tight text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
-                        ទម្រង់សិទ្ធិគតិយុត្ត /ទម្រង់នៃប្រតិបត្តិការអាជីវកម្ម ៖
-                      </span>
-                      <span className="text-[9px] text-black pt-[1px] font-normal" style={{ fontFamily: '"Arial", sans-serif' }}>
-                        Legal Form or Form of Business Operations:
-                      </span>
-                    </div>
-                    <div className="flex-1 flex gap-2">
+                <div className="flex-1 flex bg-white">
+                  
+                  {/* Left Column Label Block spanning full height */}
+                  <div className="w-[330px] shrink-0 border-r-[1.5px] border-black pl-3 pr-2 py-1 flex flex-col justify-start pt-2 bg-[#f0f0f0]">
+                    <span className="font-bold text-[12px] leading-tight text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                      ទម្រង់សិទ្ធិគតិយុត្ត /ទម្រង់នៃប្រតិបត្តិការអាជីវកម្ម ៖
+                    </span>
+                    <span className="text-[9px] text-black pt-[1px] font-normal" style={{ fontFamily: '"Arial", sans-serif' }}>
+                      Legal Form or Form of Business Operations:
+                    </span>
+                  </div>
+                  
+                  {/* Right Blocks */}
+                  <div className="flex-1 flex flex-col">
+                    {/* Top Header Row of checkboxes */}
+                    <div className="flex min-h-[38px] border-b-[1.5px] border-black">
                       <div className="flex-1 flex items-center gap-2 pl-3">
                         <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center">
                           {filledData?.legalForm === "Private Limited Company" && <div className="w-3 h-3 bg-black border border-transparent"></div>}
@@ -625,7 +632,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                           <span className="text-[10px] text-black font-normal mt-[1px]" style={{ fontFamily: '"Arial", sans-serif', letterSpacing: '-0.2px' }}>Private Limited Company</span>
                         </div>
                       </div>
-                      <div className="flex-[0.8] flex items-center gap-2">
+                      <div className="flex-[0.8] flex items-center gap-2 relative left-[-24px]">
                         <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center">
                           {filledData?.legalForm === "State Joint Venture" && <div className="w-3 h-3 bg-black border border-transparent"></div>}
                         </div>
@@ -635,15 +642,11 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         </div>
                       </div>
                     </div>
-                  </div>
-                  
-                  {/* Divider Line */}
-                  <div className="border-b-[1.5px] border-black w-full"></div>
                   
                   {/* Bottom Grid Rows */}
-                  <div className="flex flex-1 py-1.5 min-h-[140px]">
+                  <div className="flex flex-1 py-[6px] min-h-[140px]">
                     {/* Column 1 */}
-                    <div className="w-[340px] shrink-0 pl-16 pr-2 flex flex-col gap-[7px]">
+                    <div className="w-[280px] shrink-0 pl-[56px] pr-2 flex flex-col gap-[7px]">
                       {[
                         { kh: "សហគ្រាសឯកបុគ្គល/រូបវន្តបុគ្គល", en: "Sole Proprietorship / Physical Person" },
                         { kh: "ក្រុមហ៊ុនសហកម្មសិទ្ធិទូទៅ", en: "General Partnership" },
@@ -662,8 +665,8 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       ))}
                     </div>
                     {/* Columns 2 and 3 container */}
-                    <div className="flex-1 flex gap-2">
-                      <div className="flex-1 flex flex-col gap-[7px] pl-3">
+                    <div className="flex-1 flex gap-2 w-full pr-2">
+                      <div className="w-[210px] flex flex-col gap-[7px] pl-2 shrink-0">
                         {[
                           { kh: "ក្រុមហ៊ុនមហាជនទទួលខុសត្រូវមានកម្រិត", en: "Public Limited Company" },
                           { kh: "ចំណែកក្នុងសហគ្រាសចម្រុះ", en: "Interest in Joint Venture" },
@@ -681,7 +684,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                           </div>
                         ))}
                       </div>
-                      <div className="flex-[0.8] flex flex-col gap-[7px]">
+                      <div className="flex-1 flex flex-col gap-[7px]">
                         {[
                           { kh: "សាខាក្រុមហ៊ុនបរទេស", en: "Foreign Company's Branch" },
                           { kh: "ការិយាល័យតំណាង", en: "Representative Office" },
@@ -717,13 +720,13 @@ const ToiAcar = ({ onBack, packageId, year }) => {
               </div>
 
               {/* Sections 15, 16, 17 */}
-              <div className="flex flex-col border border-black border-t-0 bg-white">
+              <div className="flex flex-col border-[1.5px] border-black border-t-0 border-l-0 border-r-0 bg-white">
                 {/* Row 15 */}
-                <div className="flex border-b border-black min-h-[36px]">
-                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-[#e6e6e6]">
+                <div className="flex border-b-[1.5px] border-black min-h-[36px]">
+                  <div className="w-[49px] shrink-0 border-r-[1.5px] border-black flex items-center justify-center font-bold text-sm bg-[#e6e6e6]">
                     15
                   </div>
-                  <div className="w-[340px] shrink-0 border-r border-black px-3 py-1 flex flex-col justify-center bg-white">
+                  <div className="w-[330px] shrink-0 border-r-[1.5px] border-black px-3 py-[6px] flex flex-col justify-center bg-[#f0f0f0]">
                     <span
                       className="font-bold text-[12px] leading-tight text-black"
                       style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
@@ -734,7 +737,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       Income Tax Exemption:
                     </span>
                   </div>
-                  <div className="flex-1 flex divide-x divide-black bg-white">
+                  <div className="flex-1 flex divide-x-[1.5px] divide-black bg-white">
                     <div className="flex-1 px-3 py-1 flex flex-col justify-center">
                       <span
                         className="text-[11px] font-bold text-black"
@@ -759,7 +762,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       </span>
                     </div>
                     <div className="w-[60px] p-2 flex items-center justify-center border-b-0 border-r-0 text-black font-bold text-[12px]">{filledData?.yearFirstProfit || ""}</div>
-                    <div className="flex-1 px-3 py-1 flex flex-col justify-center border-l border-black">
+                    <div className="flex-1 px-3 py-[6px] flex flex-col justify-center border-l-[1.5px] border-black">
                       <span
                         className="text-[11px] font-bold text-black"
                         style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
@@ -785,11 +788,11 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   </div>
                 </div>
                 {/* Row 16 */}
-                <div className="flex border-b border-black min-h-[36px]">
-                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-[#e6e6e6]">
+                <div className="flex border-b-[1.5px] border-black min-h-[36px]">
+                  <div className="w-[49px] shrink-0 border-r-[1.5px] border-black flex items-center justify-center font-bold text-sm bg-[#e6e6e6]">
                     16
                   </div>
-                  <div className="w-[340px] shrink-0 border-r border-black px-3 py-1 flex flex-col justify-center bg-white">
+                  <div className="w-[330px] shrink-0 border-r-[1.5px] border-black px-3 py-[6px] flex flex-col justify-center bg-[#f0f0f0]">
                     <span
                       className="font-bold text-[12px] leading-tight text-black"
                       style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
@@ -851,10 +854,10 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                 </div>
                 {/* Row 17 & 18 */}
                 <div className="flex min-h-[36px]">
-                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-[#e6e6e6]">
+                  <div className="w-[49px] shrink-0 border-r-[1.5px] border-black flex items-center justify-center font-bold text-sm bg-[#e6e6e6]">
                     17
                   </div>
-                  <div className="w-[340px] shrink-0 border-r border-black px-3 py-1 flex flex-col justify-center bg-white">
+                  <div className="w-[330px] shrink-0 border-r-[1.5px] border-black px-3 py-[6px] flex flex-col justify-center bg-[#f0f0f0]">
                     <span
                       className="font-bold text-[12px] leading-tight text-black"
                       style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
@@ -865,11 +868,11 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       Income Tax Due:
                     </span>
                   </div>
-                  <div className="flex-[0.6] border-r border-black bg-white flex items-center font-bold text-black uppercase tracking-widest px-4">{filledData?.incomeTaxDue || ""}</div>
-                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-[#e6e6e6]">
+                  <div className="flex-[0.6] border-r-[1.5px] border-black bg-white flex items-center font-bold text-black uppercase tracking-widest px-4">{filledData?.incomeTaxDue || ""}</div>
+                  <div className="w-[49px] shrink-0 border-r-[1.5px] border-black flex items-center justify-center font-bold text-sm bg-[#e6e6e6]">
                     18
                   </div>
-                  <div className="w-[200px] shrink-0 border-r border-black px-3 py-1 flex flex-col justify-center bg-white">
+                  <div className="w-[180px] shrink-0 border-r-[1.5px] border-black px-3 py-[6px] flex flex-col justify-center bg-[#f0f0f0]">
                     <span
                       className="font-bold text-[12px] leading-tight text-black"
                       style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
