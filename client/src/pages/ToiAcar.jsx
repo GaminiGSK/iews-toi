@@ -105,7 +105,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
           directorName: p.directorName || "Not Listed",
           businessActivities: p.businessActivities || "Software / App Development",
           agentName: p.agentName || "N/A",
-          agentLicense: p.agentLicense || "TA-00000",
+          agentLicense: p.agentLicense || "N/A",
           address1: p.address1 || "No Address Provided",
           address2: p.address2 || "No Address Provided",
           address3: p.address3 || "N/A",
@@ -311,8 +311,8 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     </span>
                   </div>
                   <div className="flex items-center gap-[2px] ml-3">
-                    <div className="w-[28px] h-[34px] border border-black flex items-center justify-center bg-white text-lg font-bold text-blue-900">{filledData ? filledData.taxMonths[0] : ""}</div>
-                    <div className="w-[28px] h-[34px] border border-black flex items-center justify-center bg-white text-lg font-bold text-blue-900">{filledData ? filledData.taxMonths[1] : ""}</div>
+                    <div className="w-[28px] h-[34px] border border-black flex items-center justify-center bg-white text-lg font-bold text-black">{filledData ? filledData.taxMonths[0] : ""}</div>
+                    <div className="w-[28px] h-[34px] border border-black flex items-center justify-center bg-white text-lg font-bold text-black">{filledData ? filledData.taxMonths[1] : ""}</div>
                   </div>
                 </div>
 
@@ -328,19 +328,19 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       <div className="flex items-end gap-[4px] ml-1">
                         <div className="flex gap-[2px]">
                           {Array.from({ length: 2 }).map((_, i) => (
-                            <div key={i} className="w-[28px] h-[34px] border border-black bg-white flex items-center justify-center font-bold text-blue-900">{filledData ? filledData.fromDate[i] : ""}</div>
+                            <div key={i} className="w-[28px] h-[34px] border border-black bg-white flex items-center justify-center font-bold text-black">{filledData ? filledData.fromDate[i] : ""}</div>
                           ))}
                         </div>
                         <span className="text-black font-light text-lg px-[2px] translate-y-[-2px]">/</span>
                         <div className="flex gap-[2px]">
                           {Array.from({ length: 2 }).map((_, i) => (
-                            <div key={i + 2} className="w-[28px] h-[34px] border border-black bg-white flex items-center justify-center font-bold text-blue-900">{filledData ? filledData.fromDate[i + 2] : ""}</div>
+                            <div key={i + 2} className="w-[28px] h-[34px] border border-black bg-white flex items-center justify-center font-bold text-black">{filledData ? filledData.fromDate[i + 2] : ""}</div>
                           ))}
                         </div>
                         <span className="text-black font-light text-lg px-[2px] translate-y-[-2px]">/</span>
                         <div className="flex gap-[2px]">
                           {Array.from({ length: 4 }).map((_, i) => (
-                            <div key={i + 4} className="w-[28px] h-[34px] border border-black bg-white flex items-center justify-center font-bold text-blue-900">{filledData ? filledData.fromDate[i + 4] : ""}</div>
+                            <div key={i + 4} className="w-[28px] h-[34px] border border-black bg-white flex items-center justify-center font-bold text-black">{filledData ? filledData.fromDate[i + 4] : ""}</div>
                           ))}
                         </div>
                       </div>
@@ -355,19 +355,19 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       <div className="flex items-end gap-[4px] ml-1">
                         <div className="flex gap-[2px]">
                           {Array.from({ length: 2 }).map((_, i) => (
-                            <div key={i} className="w-[28px] h-[34px] border border-black bg-white flex items-center justify-center font-bold text-blue-900">{filledData ? filledData.untilDate[i] : ""}</div>
+                            <div key={i} className="w-[28px] h-[34px] border border-black bg-white flex items-center justify-center font-bold text-black">{filledData ? filledData.untilDate[i] : ""}</div>
                           ))}
                         </div>
                         <span className="text-black font-light text-lg px-[2px] translate-y-[-2px]">/</span>
                         <div className="flex gap-[2px]">
                           {Array.from({ length: 2 }).map((_, i) => (
-                            <div key={i + 2} className="w-[28px] h-[34px] border border-black bg-white flex items-center justify-center font-bold text-blue-900">{filledData ? filledData.untilDate[i + 2] : ""}</div>
+                            <div key={i + 2} className="w-[28px] h-[34px] border border-black bg-white flex items-center justify-center font-bold text-black">{filledData ? filledData.untilDate[i + 2] : ""}</div>
                           ))}
                         </div>
                         <span className="text-black font-light text-lg px-[2px] translate-y-[-2px]">/</span>
                         <div className="flex gap-[2px]">
                           {Array.from({ length: 4 }).map((_, i) => (
-                            <div key={i + 4} className="w-[28px] h-[34px] border border-black bg-white flex items-center justify-center font-bold text-blue-900">{filledData ? filledData.untilDate[i + 4] : ""}</div>
+                            <div key={i + 4} className="w-[28px] h-[34px] border border-black bg-white flex items-center justify-center font-bold text-black">{filledData ? filledData.untilDate[i + 4] : ""}</div>
                           ))}
                         </div>
                       </div>
@@ -398,7 +398,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   <div className="flex-1 flex gap-[6px] items-center justify-start pl-6 bg-white overflow-hidden py-1">
                     <div className="flex gap-[2px]">
                       {Array.from({ length: 4 }).map((_, i) => (
-                        <div key={i} className="w-[26px] h-[32px] border border-black bg-white flex items-center justify-center font-bold text-blue-900 text-lg">
+                        <div key={i} className="w-[26px] h-[32px] border border-black bg-white flex items-center justify-center font-bold text-black text-lg">
                           {filledData?.tin?.replace('-', '')[i] || ""}
                         </div>
                       ))}
@@ -406,7 +406,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     <span className="mx-1 font-black text-[28px] text-black leading-none -translate-y-[2px]">-</span>
                     <div className="flex gap-[2px]">
                       {Array.from({ length: 9 }).map((_, i) => (
-                        <div key={'t' + i} className="w-[26px] h-[32px] border border-black bg-white flex items-center justify-center font-bold text-blue-900 text-lg">
+                        <div key={'t' + i} className="w-[26px] h-[32px] border border-black bg-white flex items-center justify-center font-bold text-black text-lg">
                           {filledData?.tin?.replace('-', '')[i + 4] || ""}
                         </div>
                       ))}
@@ -447,7 +447,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     {row.numBox ? (
                       <div className="flex-1 flex bg-white justify-between">
                         <div className="flex items-center px-4">
-                          <span className="font-bold text-[13px] text-blue-900 uppercase tracking-widest leading-none translate-y-px whitespace-pre-wrap py-2">{filledData ? filledData[row.valKey] : ""}</span>
+                          <span className="font-bold text-[13px] text-black uppercase tracking-widest leading-none translate-y-px whitespace-pre-wrap py-2">{filledData ? filledData[row.valKey] : ""}</span>
                         </div>
                         <div className="flex items-center px-4 gap-2 border-l border-black shrink-0">
                           <div className="flex flex-col justify-center items-start text-left w-[220px]">
@@ -461,12 +461,12 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                               Tax Service Agent License Number:
                             </span>
                           </div>
-                          <div className="w-[200px] h-[22px] border border-black bg-white flex items-center justify-center font-bold text-blue-900 text-sm tracking-widest">{filledData ? filledData.agentLicense : ""}</div>
+                          <div className="w-[200px] h-[22px] border border-black bg-white flex items-center justify-center font-bold text-black text-sm tracking-widest">{filledData ? filledData.agentLicense : ""}</div>
                         </div>
                       </div>
                     ) : (
                       <div className="flex-1 bg-white flex items-center px-4">
-                        <span className="font-bold text-[13px] text-blue-900 uppercase tracking-widest leading-none translate-y-px whitespace-pre-wrap py-2">{filledData ? filledData[row.valKey] : ""}</span>
+                        <span className="font-bold text-[13px] text-black uppercase tracking-widest leading-none translate-y-px whitespace-pre-wrap py-2">{filledData ? filledData[row.valKey] : ""}</span>
                       </div>
                     )}
                   </div>
@@ -493,7 +493,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   <div className="flex-1 flex px-3 py-1 items-center bg-white">
                     <div className="flex items-center gap-[6px]">
                       <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center">
-                        {filledData?.accountingRecord === 'Using Software' && <div className="w-3 h-3 bg-blue-900 border border-transparent"></div>}
+                        {filledData?.accountingRecord === 'Using Software' && <div className="w-3 h-3 bg-black border border-transparent"></div>}
                       </div>
                       <div className="flex flex-col leading-tight pt-[1px]">
                         <span className="font-bold text-[11px] text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រើប្រាស់កម្មវិធីគណនេយ្យកុំព្យូទ័រ (ឈ្មោះកម្មវិធី) ៖</span>
@@ -501,13 +501,13 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       </div>
                     </div>
                     
-                    <div className="border-[1.5px] border-black h-[26px] w-[120px] flex items-center px-1 text-[11px] font-bold text-blue-900 mx-2 bg-white">
+                    <div className="border-[1.5px] border-black h-[26px] w-[120px] flex items-center px-1 text-[11px] font-bold text-black mx-2 bg-white">
                        {filledData?.accountingRecord === 'Using Software' && filledData?.softwareName}
                     </div>
 
                     <div className="flex items-center gap-[6px] ml-1">
                       <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center">
-                        {filledData?.accountingRecord === 'Not Using Software' && <div className="w-3 h-3 bg-blue-900 border border-transparent"></div>}
+                        {filledData?.accountingRecord === 'Not Using Software' && <div className="w-3 h-3 bg-black border border-transparent"></div>}
                       </div>
                       <div className="flex flex-col leading-tight pt-[1px]">
                         <span className="font-bold text-[11px] text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>មិនប្រើប្រាស់កម្មវិធីគណនេយ្យកុំព្យូទ័រ</span>
@@ -534,7 +534,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   <div className="flex-1 flex px-3 py-1 items-center gap-14 bg-white">
                     <div className="flex items-center gap-[6px]">
                       <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center">
-                        {filledData?.taxComplianceStatus === 'Gold' && <div className="w-3 h-3 bg-blue-900 border border-transparent"></div>}
+                        {filledData?.taxComplianceStatus === 'Gold' && <div className="w-3 h-3 bg-black border border-transparent"></div>}
                       </div>
                       <div className="flex flex-col pt-[1px]">
                         <span className="font-bold text-[11px] text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>មាស</span>
@@ -543,7 +543,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     </div>
                     <div className="flex items-center gap-[6px]">
                       <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center">
-                        {filledData?.taxComplianceStatus === 'Silver' && <div className="w-3 h-3 bg-blue-900 border border-transparent"></div>}
+                        {filledData?.taxComplianceStatus === 'Silver' && <div className="w-3 h-3 bg-black border border-transparent"></div>}
                       </div>
                       <div className="flex flex-col pt-[1px]">
                         <span className="font-bold text-[11px] text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រាក់</span>
@@ -552,7 +552,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     </div>
                     <div className="flex items-center gap-[6px]">
                       <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center">
-                        {filledData?.taxComplianceStatus === 'Bronze' && <div className="w-3 h-3 bg-blue-900 border border-transparent"></div>}
+                        {filledData?.taxComplianceStatus === 'Bronze' && <div className="w-3 h-3 bg-black border border-transparent"></div>}
                       </div>
                       <div className="flex flex-col pt-[1px]">
                         <span className="font-bold text-[11px] text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សំរឹទ្ធ</span>
@@ -579,7 +579,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   <div className="flex-1 flex px-3 py-1 items-center gap-16 bg-white">
                     <div className="flex items-center gap-[6px]">
                       <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center">
-                        {filledData?.statutoryAudit === 'Required' && <div className="w-3 h-3 bg-blue-900 border border-transparent"></div>}
+                        {filledData?.statutoryAudit === 'Required' && <div className="w-3 h-3 bg-black border border-transparent"></div>}
                       </div>
                       <div className="flex flex-col leading-tight pt-[1px]">
                         <span className="font-bold text-[11px] text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>មានកាតព្វកិច្ច <span className="font-normal">(តម្រូវឱ្យដាក់របាយការណ៍សវនកម្ម)</span></span>
@@ -588,7 +588,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     </div>
                     <div className="flex items-center gap-[6px]">
                       <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center">
-                        {filledData?.statutoryAudit === 'Not Required' && <div className="w-3 h-3 bg-blue-900 border border-transparent"></div>}
+                        {filledData?.statutoryAudit === 'Not Required' && <div className="w-3 h-3 bg-black border border-transparent"></div>}
                       </div>
                       <div className="flex flex-col leading-tight pt-[1px]">
                         <span className="font-bold text-[11px] text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>គ្មានកាតព្វកិច្ច</span>
@@ -618,7 +618,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     <div className="flex-1 flex gap-2">
                       <div className="flex-1 flex items-center gap-2 pl-3">
                         <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center">
-                          {filledData?.legalForm === "Private Limited Company" && <div className="w-3 h-3 bg-blue-900 border border-transparent"></div>}
+                          {filledData?.legalForm === "Private Limited Company" && <div className="w-3 h-3 bg-black border border-transparent"></div>}
                         </div>
                         <div className="flex flex-col leading-tight pt-[1px] w-full">
                           <span className="text-[11px] text-black tracking-tighter" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ក្រុមហ៊ុនឯកជនទទួលខុសត្រូវមានកម្រិត</span>
@@ -627,7 +627,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       </div>
                       <div className="flex-[0.8] flex items-center gap-2">
                         <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center">
-                          {filledData?.legalForm === "State Joint Venture" && <div className="w-3 h-3 bg-blue-900 border border-transparent"></div>}
+                          {filledData?.legalForm === "State Joint Venture" && <div className="w-3 h-3 bg-black border border-transparent"></div>}
                         </div>
                         <div className="flex flex-col leading-tight pt-[1px] w-full pr-2">
                           <span className="text-[11px] text-black tracking-tighter" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សហគ្រាសចម្រុះរដ្ឋ</span>
@@ -652,7 +652,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       ].map((item, idx) => (
                         <div key={'c1'+idx} className="flex gap-2 items-start mt-0.5">
                           <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center mt-[2px]">
-                            {filledData?.legalForm === item.en && <div className="w-3 h-3 bg-blue-900 border border-transparent"></div>}
+                            {filledData?.legalForm === item.en && <div className="w-3 h-3 bg-black border border-transparent"></div>}
                           </div>
                           <div className="flex flex-col leading-tight w-full">
                             <span className="text-[11px] text-black tracking-tighter" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{item.kh}</span>
@@ -672,7 +672,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         ].map((item, idx) => (
                           <div key={'c2'+idx} className="flex gap-2 items-start mt-0.5">
                             <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center mt-[2px]">
-                              {filledData?.legalForm === item.en && <div className="w-3 h-3 bg-blue-900 border border-transparent"></div>}
+                              {filledData?.legalForm === item.en && <div className="w-3 h-3 bg-black border border-transparent"></div>}
                             </div>
                             <div className="flex flex-col leading-tight w-full">
                               <span className="text-[11px] text-black tracking-tighter" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{item.kh}</span>
@@ -690,7 +690,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         ].map((item, idx) => (
                           <div key={'c3'+idx} className="flex gap-2 items-start mt-0.5">
                             <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center mt-[2px]">
-                              {filledData?.legalForm === item.en && <div className="w-3 h-3 bg-blue-900 border border-transparent"></div>}
+                              {filledData?.legalForm === item.en && <div className="w-3 h-3 bg-black border border-transparent"></div>}
                             </div>
                             <div className={`flex ${item.en === "Others" ? "flex-row gap-2 flex-1 items-end" : "flex-col w-full pr-2"} leading-tight`}>
                               {item.en === "Others" ? (
@@ -746,7 +746,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         Year of First Revenue:
                       </span>
                     </div>
-                    <div className="w-[60px] p-2 flex items-center justify-center border-b-0 border-r-0 text-blue-900 font-bold text-[12px]">{filledData?.yearFirstRevenue || ""}</div>
+                    <div className="w-[60px] p-2 flex items-center justify-center border-b-0 border-r-0 text-black font-bold text-[12px]">{filledData?.yearFirstRevenue || ""}</div>
                     <div className="flex-1 px-3 py-1 flex flex-col justify-center">
                       <span
                         className="text-[11px] font-bold text-black"
@@ -758,7 +758,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         Year of First Profit:
                       </span>
                     </div>
-                    <div className="w-[60px] p-2 flex items-center justify-center border-b-0 border-r-0 text-blue-900 font-bold text-[12px]">{filledData?.yearFirstProfit || ""}</div>
+                    <div className="w-[60px] p-2 flex items-center justify-center border-b-0 border-r-0 text-black font-bold text-[12px]">{filledData?.yearFirstProfit || ""}</div>
                     <div className="flex-1 px-3 py-1 flex flex-col justify-center border-l border-black">
                       <span
                         className="text-[11px] font-bold text-black"
@@ -778,7 +778,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         >
                           ឆ្នាំ
                         </span>
-                        <div className="absolute inset-0 flex items-center justify-center pt-2 text-blue-900 font-bold text-[12px] bg-white z-0 mt-3 mb-3 mx-1">{filledData?.priorityPeriodYear || ""}</div>
+                        <div className="absolute inset-0 flex items-center justify-center pt-2 text-black font-bold text-[12px] bg-white z-0 mt-3 mb-3 mx-1">{filledData?.priorityPeriodYear || ""}</div>
                         <span className="text-[9px] z-10 text-black leading-none mb-[2px] font-normal" style={{ fontFamily: '"Arial", sans-serif' }}>Year</span>
                       </div>
                     </div>
@@ -803,31 +803,31 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   <div className="flex-1 flex px-3 py-1 items-center justify-between text-[11px] font-bold text-black tracking-tighter bg-white">
                     <div className="flex items-center gap-[6px]">
                       <div className="w-[16px] h-[16px] border border-black bg-white flex items-center justify-center">
-                        {filledData?.incomeTaxRate === '30%' && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
+                        {filledData?.incomeTaxRate === '30%' && <div className="w-2.5 h-2.5 bg-black border border-transparent"></div>}
                       </div> 
                       <span className="font-bold -translate-y-[1px]">30%</span>
                     </div>
                     <div className="flex items-center gap-[4px]">
                       <div className="w-[16px] h-[16px] border border-black bg-white flex items-center justify-center">
-                        {filledData?.incomeTaxRate === '20%' && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
+                        {filledData?.incomeTaxRate === '20%' && <div className="w-2.5 h-2.5 bg-black border border-transparent"></div>}
                       </div> 
                       <span className="font-bold -translate-y-[1px]">20%</span>
                     </div>
                     <div className="flex items-center gap-[4px]">
                       <div className="w-[16px] h-[16px] border border-black bg-white flex items-center justify-center">
-                        {filledData?.incomeTaxRate === '5%' && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
+                        {filledData?.incomeTaxRate === '5%' && <div className="w-2.5 h-2.5 bg-black border border-transparent"></div>}
                       </div> 
                       <span className="font-bold -translate-y-[1px]">5%</span>
                     </div>
                     <div className="flex items-center gap-[4px]">
                       <div className="w-[16px] h-[16px] border border-black bg-white flex items-center justify-center">
-                        {filledData?.incomeTaxRate === '0%' && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
+                        {filledData?.incomeTaxRate === '0%' && <div className="w-2.5 h-2.5 bg-black border border-transparent"></div>}
                       </div> 
                       <span className="font-bold -translate-y-[1px]">0%</span>
                     </div>
                     <div className="flex items-center gap-[4px]">
                       <div className="w-[16px] h-[16px] border border-black bg-white flex items-center justify-center">
-                        {filledData?.incomeTaxRate === '0-20%' && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
+                        {filledData?.incomeTaxRate === '0-20%' && <div className="w-2.5 h-2.5 bg-black border border-transparent"></div>}
                       </div> 
                       <span className="font-bold -translate-y-[1px]">0-20%</span>
                     </div>
@@ -844,7 +844,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         </span>
                       </div>
                       <div className="w-[16px] h-[16px] border border-black bg-white flex items-center justify-center">
-                        {filledData?.incomeTaxRate === 'Progressive Rate' && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
+                        {filledData?.incomeTaxRate === 'Progressive Rate' && <div className="w-2.5 h-2.5 bg-black border border-transparent"></div>}
                       </div>
                     </div>
                   </div>
@@ -865,7 +865,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       Income Tax Due:
                     </span>
                   </div>
-                  <div className="flex-[0.6] border-r border-black bg-white flex items-center font-bold text-blue-900 uppercase tracking-widest px-4">{filledData?.incomeTaxDue || ""}</div>
+                  <div className="flex-[0.6] border-r border-black bg-white flex items-center font-bold text-black uppercase tracking-widest px-4">{filledData?.incomeTaxDue || ""}</div>
                   <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-[#e6e6e6]">
                     18
                   </div>
@@ -880,7 +880,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       Tax Credit Carried Forward:
                     </span>
                   </div>
-                  <div className="flex-1 bg-white flex items-center font-bold text-blue-900 uppercase tracking-widest px-4">{filledData?.taxCreditCarriedForward || ""}</div>
+                  <div className="flex-1 bg-white flex items-center font-bold text-black uppercase tracking-widest px-4">{filledData?.taxCreditCarriedForward || ""}</div>
                 </div>
               </div>
 
