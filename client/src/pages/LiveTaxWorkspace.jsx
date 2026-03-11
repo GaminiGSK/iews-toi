@@ -7,6 +7,7 @@ import {
   Radio,
   AlertTriangle,
   CheckCircle2,
+  Printer
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -352,6 +353,14 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear = "20
                 className={isSyncing ? "animate-spin" : ""}
               />
               <span className="hidden sm:inline">Sync AI</span>
+            </button>
+            <button
+              onClick={() => window.print()}
+              title="Print Preview"
+              className="flex items-center gap-2 px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-black uppercase tracking-wider transition-all border border-slate-600 shadow-md hover:shadow-lg active:scale-95"
+            >
+              <Printer size={14} className="text-blue-400" />
+              <span className="hidden sm:inline">Print</span>
             </button>
             <button
               onClick={() =>
