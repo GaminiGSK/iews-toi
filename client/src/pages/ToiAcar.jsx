@@ -600,135 +600,108 @@ const ToiAcar = ({ onBack, packageId, year }) => {
               </div>
 
               {/* Section 14: Legal Form */}
-              <div className="flex flex-col border border-black border-t-0 bg-white">
-                <div className="flex min-h-[50px] border-b border-black">
-                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-[#e6e6e6]">
-                    14
+              <div className="flex border-b border-black border-t-0 bg-white min-h-[50px]">
+                <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-[#e6e6e6]">
+                  14
+                </div>
+                <div className="flex-1 flex flex-col bg-white">
+                  {/* Top Header Row of 14 */}
+                  <div className="flex min-h-[38px]">
+                    <div className="w-[340px] shrink-0 pl-3 pr-2 py-1 flex flex-col justify-center">
+                      <span className="font-bold text-[12px] leading-tight text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                        ទម្រង់សិទ្ធិគតិយុត្ត /ទម្រង់នៃប្រតិបត្តិការអាជីវកម្ម ៖
+                      </span>
+                      <span className="text-[9px] text-black pt-[1px] font-normal" style={{ fontFamily: '"Arial", sans-serif' }}>
+                        Legal Form or Form of Business Operations:
+                      </span>
+                    </div>
+                    <div className="flex-1 flex gap-2">
+                      <div className="flex-1 flex items-center gap-2 pr-1">
+                        <div className="w-[16px] h-[16px] border border-black shrink-0 bg-white flex items-center justify-center">
+                          {filledData?.legalForm === "Private Limited Company" && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
+                        </div>
+                        <div className="flex flex-col leading-tight pt-[1px] w-full">
+                          <span className="text-[11px] text-black tracking-tighter" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ក្រុមហ៊ុនឯកជនទទួលខុសត្រូវមានកម្រិត</span>
+                          <span className="text-[9px] text-black font-normal mt-[1px]" style={{ fontFamily: '"Arial", sans-serif', letterSpacing: '-0.2px' }}>Private Limited Company</span>
+                        </div>
+                      </div>
+                      <div className="flex-[0.8] flex items-center gap-2">
+                        <div className="w-[16px] h-[16px] border border-black shrink-0 bg-white flex items-center justify-center">
+                          {filledData?.legalForm === "State Joint Venture" && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
+                        </div>
+                        <div className="flex flex-col leading-tight pt-[1px] w-full pr-2">
+                          <span className="text-[11px] text-black tracking-tighter" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សហគ្រាសចម្រុះរដ្ឋ</span>
+                          <span className="text-[9px] text-black font-normal mt-[1px]" style={{ fontFamily: '"Arial", sans-serif', letterSpacing: '-0.2px' }}>State Joint Venture</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="w-[340px] shrink-0 border-r border-black px-3 py-1 flex flex-col justify-center bg-white">
-                    <span
-                      className="font-bold text-[12px] leading-tight text-black"
-                      style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
-                    >
-                      ទម្រង់សិទ្ធិគតិយុត្ត /ទម្រង់នែប្រតិបត្តិការអាជីវកម្ម ៖
-                    </span>
-                    <span className="text-[9px] text-black pt-[1px] font-normal" style={{ fontFamily: '"Arial", sans-serif' }}>
-                      Legal Form or Form of Business Operations:
-                    </span>
-                  </div>
-                  <div className="flex-1 flex px-3 py-2 items-start text-[9px] font-bold">
-                    <div className="flex-1 flex flex-col gap-2">
+                  
+                  {/* Divider Line */}
+                  <div className="border-b-[1.5px] border-black w-full"></div>
+                  
+                  {/* Bottom Grid Rows */}
+                  <div className="flex flex-1 py-1.5">
+                    {/* Column 1 */}
+                    <div className="w-[340px] shrink-0 pl-3 pr-2 flex flex-col gap-[7px]">
                       {[
-                        {
-                          kh: "សហគ្រាសឯកបុគ្គល/រូបវន្តបុគ្គល",
-                          en: "Sole Proprietorship / Physical Person",
-                        },
-                        {
-                          kh: "ក្រុមហ៊ុនសហកម្មសិទ្ធិទូទៅ",
-                          en: "General Partnership",
-                        },
-                        {
-                          kh: "ក្រុមហ៊ុនសហកម្មសិទ្ធិមានកម្រិត",
-                          en: "Limited Partnership",
-                        },
-                        {
-                          kh: "សហគ្រាសឯកបុគ្គលទទួលខុសត្រូវមានកម្រិត",
-                          en: "Single Member Private Limited Company",
-                        },
-                        {
-                          kh: "ក្រុមហ៊ុនឯកជនទទួលខុសត្រូវមានកម្រិត",
-                          en: "Private Limited Company",
-                        },
+                        { kh: "សហគ្រាសឯកបុគ្គល/រូបវន្តបុគ្គល", en: "Sole Proprietorship / Physical Person" },
+                        { kh: "ក្រុមហ៊ុនសហកម្មសិទ្ធិទូទៅ", en: "General Partnership" },
+                        { kh: "ក្រុមហ៊ុនសហកម្មសិទ្ធិមានកម្រិត", en: "Limited Partnership" },
+                        { kh: "សហគ្រាសឯកបុគ្គលទទួលខុសត្រូវមានកម្រិត", en: "Single Member Private Limited Company" },
                       ].map((item, idx) => (
-                        <div key={idx} className="flex gap-2 items-start">
-                          <div className="w-[16px] h-[16px] border border-black shrink-0 bg-white flex items-center justify-center">
+                        <div key={'c1'+idx} className="flex gap-2 items-start">
+                          <div className="w-[16px] h-[16px] border border-black shrink-0 bg-white flex items-center justify-center mt-[1px]">
                             {filledData?.legalForm === item.en && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
                           </div>
-                          <div className="flex flex-col leading-tight pt-[1px] w-full pr-1">
-                            <span
-                              className="text-[11px] text-black tracking-tighter"
-                              style={{
-                                fontFamily: '"Kantumruy Pro", sans-serif',
-                              }}
-                            >
-                              {item.kh}
-                            </span>
-                            <span className="text-[9px] text-black font-normal mt-[1px]" style={{ fontFamily: '"Arial", sans-serif', letterSpacing: '-0.2px' }}>
-                              {item.en}
-                            </span>
+                          <div className="flex flex-col leading-tight w-full">
+                            <span className="text-[11px] text-black tracking-tighter" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{item.kh}</span>
+                            <span className="text-[9px] text-black font-normal mt-[1px]" style={{ fontFamily: '"Arial", sans-serif', letterSpacing: '-0.2px' }}>{item.en}</span>
                           </div>
                         </div>
                       ))}
                     </div>
-                    <div className="flex-1 flex flex-col gap-2">
-                      {[
-                        {
-                          kh: "ក្រុមហ៊ុនមហាជនទទួលខុសត្រូវមានកម្រិត",
-                          en: "Public Limited Company",
-                        },
-                        {
-                          kh: "ចំណែកក្នុងសហគ្រាសចម្រុះ",
-                          en: "Interest in Joint Venture",
-                        },
-                        { kh: "សហគ្រាសសាធារណៈ", en: "Public Enterprise" },
-                        { kh: "សហគ្រាសរដ្ឋ", en: "State Enterprise" },
-                        {
-                          kh: "សាខាក្រុមហ៊ុនបរទេស",
-                          en: "Foreign Company's Branch",
-                        },
-                      ].map((item, idx) => (
-                        <div key={idx} className="flex gap-2 items-start">
-                          <div className="w-[16px] h-[16px] border border-black shrink-0 bg-white flex items-center justify-center">
-                            {filledData?.legalForm === item.en && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
+                    {/* Columns 2 and 3 container */}
+                    <div className="flex-1 flex gap-2">
+                      <div className="flex-1 flex flex-col gap-[7px] pr-1">
+                        {[
+                          { kh: "ក្រុមហ៊ុនមហាជនទទួលខុសត្រូវមានកម្រិត", en: "Public Limited Company" },
+                          { kh: "ចំណែកក្នុងសហគ្រាសចម្រុះ", en: "Interest in Joint Venture" },
+                          { kh: "សហគ្រាសសាធារណៈ", en: "Public Enterprise" },
+                          { kh: "សហគ្រាសរដ្ឋ", en: "State Enterprise" },
+                        ].map((item, idx) => (
+                          <div key={'c2'+idx} className="flex gap-2 items-start">
+                            <div className="w-[16px] h-[16px] border border-black shrink-0 bg-white flex items-center justify-center mt-[1px]">
+                              {filledData?.legalForm === item.en && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
+                            </div>
+                            <div className="flex flex-col leading-tight w-full">
+                              <span className="text-[11px] text-black tracking-tighter" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{item.kh}</span>
+                              <span className="text-[9px] text-black font-normal mt-[1px]" style={{ fontFamily: '"Arial", sans-serif', letterSpacing: '-0.2px' }}>{item.en}</span>
+                            </div>
                           </div>
-                          <div className="flex flex-col leading-tight pt-[1px] w-full pr-1">
-                            <span
-                              className="text-[11px] text-black tracking-tighter"
-                              style={{
-                                fontFamily: '"Kantumruy Pro", sans-serif',
-                              }}
-                            >
-                              {item.kh}
-                            </span>
-                            <span className="text-[9px] text-black font-normal mt-[1px]" style={{ fontFamily: '"Arial", sans-serif', letterSpacing: '-0.2px' }}>
-                              {item.en}
-                            </span>
+                        ))}
+                      </div>
+                      <div className="flex-[0.8] flex flex-col gap-[7px]">
+                        {[
+                          { kh: "សាខាក្រុមហ៊ុនបរទេស", en: "Foreign Company's Branch" },
+                          { kh: "ការិយាល័យតំណាង", en: "Representative Office" },
+                          { kh: "អង្គការក្រៅរដ្ឋាភិបាល /សមាគម", en: "Non-Government Organization / Association" },
+                          { kh: "សហគ្រាសដទៃទៀត", en: "Others" },
+                        ].map((item, idx) => (
+                          <div key={'c3'+idx} className="flex gap-2 items-start">
+                            <div className="w-[16px] h-[16px] border border-black shrink-0 bg-white flex items-center justify-center mt-[1px]">
+                              {filledData?.legalForm === item.en && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
+                            </div>
+                            <div className="flex flex-col leading-tight w-full pr-2">
+                              <span className="text-[11px] text-black tracking-tighter" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{item.kh}</span>
+                              <span className="text-[9px] text-black font-normal mt-[1px]" style={{ fontFamily: '"Arial", sans-serif', letterSpacing: '-0.2px' }}>{item.en}</span>
+                              {item.en === "Others" && (
+                                <div className="border-b-[1.5px] border-dashed border-black mt-[2px] w-full" />
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="flex-1 flex flex-col gap-2">
-                      {[
-                        { kh: "សហគ្រាសចម្រុះរដ្ឋ", en: "State Joint Venture" },
-                        { kh: "ការិយាល័យតំណាង", en: "Representative Office" },
-                        {
-                          kh: "អង្គការក្រៅរដ្ឋាភិបាល /សមាគម",
-                          en: "Non-Government Organization / Association",
-                        },
-                        { kh: "សហគ្រាសដទៃទៀត", en: "Others" },
-                      ].map((item, idx) => (
-                        <div key={idx} className="flex gap-2 items-start">
-                          <div className="w-[16px] h-[16px] border border-black shrink-0 bg-white flex items-center justify-center">
-                            {filledData?.legalForm === item.en && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
-                          </div>
-                          <div className="flex flex-col leading-tight pt-[1px] w-full pr-2">
-                            <span
-                              className="text-[11px] text-black tracking-tighter"
-                              style={{
-                                fontFamily: '"Kantumruy Pro", sans-serif',
-                              }}
-                            >
-                              {item.kh}
-                            </span>
-                            <span className="text-[9px] text-black font-normal mt-[1px]" style={{ fontFamily: '"Arial", sans-serif', letterSpacing: '-0.2px' }}>
-                              {item.en}
-                            </span>
-                            {item.en === "Others" && (
-                              <div className="border-b-[1.5px] border-dashed border-black mt-[1px] w-full" />
-                            )}
-                          </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
