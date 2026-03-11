@@ -440,7 +440,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       >
                         {row.kh} ៖
                       </span>
-                      <span className="text-[10px] text-black leading-none pt-[1px]">
+                      <span className="text-[9px] text-black leading-none pt-[1px] font-normal" style={{ fontFamily: '"Arial", sans-serif' }}>
                         {row.en}
                       </span>
                     </div>
@@ -476,140 +476,121 @@ const ToiAcar = ({ onBack, packageId, year }) => {
               {/* Compliance Details */}
               <div className="flex flex-col border border-black">
                 <div className="flex border-b border-black min-h-[50px] bg-white">
-                  <div className="w-10 border-r border-black flex items-center justify-center font-bold text-sm bg-slate-50">
+                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-[#e6e6e6]">
                     11
                   </div>
-                  <div className="w-[30%] border-r border-black p-2 flex flex-col justify-center bg-slate-50">
+                  <div className="w-[340px] shrink-0 border-r border-black px-3 py-1 flex flex-col justify-center bg-white">
                     <span
-                      className="font-bold text-[11px] leading-tight"
+                      className="font-bold text-[12px] leading-tight text-black"
                       style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
                     >
-                      ការរក្សាទុកបញ្ជីគណនេយ្យ ៖
+                      ការរក្សាបញ្ជីគណនេយ្យ ៖
                     </span>
-                    <span className="text-[9px] text-slate-500">
+                    <span className="text-[9px] text-black pt-[1px] font-normal" style={{ fontFamily: '"Arial", sans-serif' }}>
                       Accounting Records:
                     </span>
                   </div>
-                  <div className="flex-1 flex px-3 py-2 items-center text-[10px] gap-6">
-                    <div className="flex items-center gap-2 border border-black p-1.5 flex-1 h-full shadow-sm">
-                      <div className="w-5 h-5 border border-black shrink-0 bg-white flex items-center justify-center">
-                        {filledData?.accountingRecord === 'Using Software' && <div className="w-3 h-3 bg-blue-900"></div>}
+                  <div className="flex-1 flex px-3 py-1 items-center gap-1 bg-white">
+                    <div className="flex-1 flex items-center gap-[6px] relative">
+                      <div className="w-[16px] h-[16px] border border-black shrink-0 bg-white flex items-center justify-center">
+                        {filledData?.accountingRecord === 'Using Software' && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
                       </div>
-                      <div className="flex flex-col leading-tight">
-                        <span
-                          className="font-bold text-[10px]"
-                          style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
-                        >
-                          ប្រើប្រាស់កម្មវិធី (ឈ្មោះ) ៖
-                        </span>
-                        <span className="text-[8px] text-slate-500 mt-0.5">
-                          Using Software (Name):
-                        </span>
+                      <div className="flex flex-col leading-tight pt-[1px] w-[180px]">
+                        <span className="font-bold text-[11px] text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រើប្រាស់កម្មវិធីគណនេយ្យ (ឈ្មោះ) ៖</span>
+                        <span className="text-[9px] text-black mt-[1px]" style={{ fontFamily: '"Arial", sans-serif' }}>Using Accounting Software (Software's Name):</span>
                       </div>
-                      <div className="border-b border-dashed border-slate-400 flex-1 ml-2 font-bold text-blue-900 px-2 text-center text-[10px] whitespace-nowrap overflow-hidden">{filledData?.accountingRecord === 'Using Software' && filledData?.softwareName}</div>
+                      <div className="border-b-[1.5px] border-dashed border-black flex-1 text-center font-bold text-blue-900 text-[10px] mx-1 h-[14px] leading-[10px] overflow-hidden whitespace-nowrap self-end absolute right-2 bottom-[3px] w-[calc(100%-210px)]">
+                        {filledData?.accountingRecord === 'Using Software' && filledData?.softwareName}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 border border-black p-1.5 h-full shadow-sm">
-                      <div className="w-5 h-5 border border-black shrink-0 bg-white flex items-center justify-center">
-                        {filledData?.accountingRecord === 'Not Using Software' && <div className="w-3 h-3 bg-blue-900"></div>}
+                    <div className="flex items-center gap-[6px] pl-4 pr-16 border-l-[1.5px] border-black h-[80%]">
+                      <div className="w-[16px] h-[16px] border border-black shrink-0 bg-white flex items-center justify-center">
+                        {filledData?.accountingRecord === 'Not Using Software' && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
                       </div>
-                      <div className="flex flex-col leading-tight">
-                        <span
-                          className="font-bold text-[10px]"
-                          style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
-                        >
-                          មិនប្រើប្រាស់ទេ
-                        </span>
-                        <span className="text-[8px] text-slate-500 mt-0.5">
-                          Not Using Software
-                        </span>
+                      <div className="flex flex-col leading-tight pt-[1px]">
+                        <span className="font-bold text-[11px] text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>មិនប្រើប្រាស់កម្មវិធីគណនេយ្យ</span>
+                        <span className="text-[9px] text-black mt-[1px]" style={{ fontFamily: '"Arial", sans-serif' }}>Not Using Accounting Software</span>
                       </div>
                     </div>
                   </div>
                 </div>
                 <div className="flex border-b border-black min-h-[50px]">
-                  <div className="w-10 border-r border-black flex items-center justify-center font-bold text-sm bg-slate-50">
+                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-[#e6e6e6]">
                     12
                   </div>
-                  <div className="w-[30%] border-r border-black p-2 flex flex-col justify-center bg-slate-50">
+                  <div className="w-[340px] shrink-0 border-r border-black px-3 py-1 flex flex-col justify-center bg-white">
                     <span
-                      className="font-bold text-[11px] leading-tight"
+                      className="font-bold text-[12px] leading-tight text-black"
                       style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
                     >
-                      អនុលោមភាពសារពើពន្ធ ៖
+                      កម្រិតអនុលោមភាពសារពើពន្ធ (បើមាន) ៖
                     </span>
-                    <span className="text-[9px] text-slate-500">
-                      Tax Compliance Status:
+                    <span className="text-[9px] text-black pt-[1px] font-normal" style={{ fontFamily: '"Arial", sans-serif' }}>
+                      Status of Tax Compliance (if any):
                     </span>
                   </div>
-                  <div className="flex-1 flex px-6 items-center gap-10 text-[11px] font-black uppercase bg-white">
-                    <div className="flex items-center gap-3 border border-black p-2 shadow-sm">
-                      <div className="w-5 h-5 border border-black bg-white flex items-center justify-center">
-                        {filledData?.taxComplianceStatus === 'Gold' && <div className="w-3 h-3 bg-blue-900"></div>}
-                      </div>{" "}
-                      មាស
-                      <br />
-                      <span className="text-[9px] font-bold text-slate-500">
-                        Gold
-                      </span>
+                  <div className="flex-1 flex px-3 py-1 items-center gap-12 bg-white">
+                    <div className="flex items-center gap-[6px]">
+                      <div className="w-[16px] h-[16px] border border-black shrink-0 bg-white flex items-center justify-center">
+                        {filledData?.taxComplianceStatus === 'Gold' && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
+                      </div>
+                      <div className="flex flex-col leading-tight pt-[1px]">
+                        <span className="font-bold text-[11px] text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>មាស</span>
+                        <span className="text-[9px] text-black mt-[1px]" style={{ fontFamily: '"Arial", sans-serif' }}>Gold</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3 border border-black p-2 shadow-sm">
-                      <div className="w-5 h-5 border border-black bg-white flex items-center justify-center">
-                        {filledData?.taxComplianceStatus === 'Silver' && <div className="w-3 h-3 bg-blue-900"></div>}
-                      </div>{" "}
-                      ប្រាក់
-                      <br />
-                      <span className="text-[9px] font-bold text-slate-500">
-                        Silver
-                      </span>
+                    <div className="flex items-center gap-[6px]">
+                      <div className="w-[16px] h-[16px] border border-black shrink-0 bg-white flex items-center justify-center">
+                        {filledData?.taxComplianceStatus === 'Silver' && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
+                      </div>
+                      <div className="flex flex-col leading-tight pt-[1px]">
+                        <span className="font-bold text-[11px] text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រាក់</span>
+                        <span className="text-[9px] text-black mt-[1px]" style={{ fontFamily: '"Arial", sans-serif' }}>Silver</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3 border border-black p-2 shadow-sm">
-                      <div className="w-5 h-5 border border-black bg-white flex items-center justify-center">
-                        {filledData?.taxComplianceStatus === 'Bronze' && <div className="w-3 h-3 bg-blue-900"></div>}
-                      </div>{" "}
-                      សំរិទ្ធ
-                      <br />
-                      <span className="text-[9px] font-bold text-slate-500">
-                        Bronze
-                      </span>
+                    <div className="flex items-center gap-[6px]">
+                      <div className="w-[16px] h-[16px] border border-black shrink-0 bg-white flex items-center justify-center">
+                        {filledData?.taxComplianceStatus === 'Bronze' && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
+                      </div>
+                      <div className="flex flex-col leading-tight pt-[1px]">
+                        <span className="font-bold text-[11px] text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សំរឹទ្ធ</span>
+                        <span className="text-[9px] text-black mt-[1px]" style={{ fontFamily: '"Arial", sans-serif' }}>Bronze</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div className="flex min-h-[50px]">
-                  <div className="w-10 border-r border-black flex items-center justify-center font-bold text-sm bg-slate-50">
+                <div className="flex min-h-[36px] bg-white border-b border-black">
+                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-[#e6e6e6]">
                     13
                   </div>
-                  <div className="w-[30%] border-r border-black p-2 flex flex-col justify-center bg-slate-50">
+                  <div className="w-[340px] shrink-0 border-r border-black px-3 py-1 flex flex-col justify-center bg-white">
                     <span
-                      className="font-bold text-[11px] leading-tight"
+                      className="font-bold text-[12px] leading-tight text-black"
                       style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
                     >
-                      តម្រូវសវនកម្មឯករាជ្យ ៖
+                      សវនកម្មឯករាជ្យដែលតម្រូវដោយច្បាប់ ៖
                     </span>
-                    <span className="text-[9px] text-slate-500">
-                      Statutory Audit Required:
+                    <span className="text-[9px] text-black pt-[1px] font-normal" style={{ fontFamily: '"Arial", sans-serif' }}>
+                      Statutory Audit Requirement:
                     </span>
                   </div>
-                  <div className="flex-1 flex px-6 py-2 items-center gap-10 text-[11px] bg-white">
-                    <div className="flex items-center gap-3 border border-black p-2 flex-1 shadow-sm">
-                      <div className="w-5 h-5 border border-black bg-white shrink-0 flex items-center justify-center">
-                        {filledData?.statutoryAudit === 'Required' && <div className="w-3 h-3 bg-blue-900"></div>}
-                      </div>{" "}
-                      <div className="flex flex-col font-bold leading-tight">
-                        <span>តម្រូវឱ្យមាន</span>
-                        <span className="text-[9px] text-slate-500 mt-0.5">
-                          Required
-                        </span>
+                  <div className="flex-1 flex px-3 py-1 items-center gap-14 bg-white">
+                    <div className="flex items-center gap-[6px]">
+                      <div className="w-[16px] h-[16px] border border-black shrink-0 bg-white flex items-center justify-center">
+                        {filledData?.statutoryAudit === 'Required' && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
+                      </div>
+                      <div className="flex flex-col leading-tight pt-[1px]">
+                        <span className="font-bold text-[11px] text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>មានកាតព្វកិច្ច (តម្រូវឱ្យដាក់របាយការណ៍សវនកម្ម)</span>
+                        <span className="text-[9px] text-black mt-[1px]" style={{ fontFamily: '"Arial", sans-serif' }}>Required (Subject to submit audit report)</span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 border border-black p-2 flex-1 shadow-sm">
-                      <div className="w-5 h-5 border border-black bg-white shrink-0 flex items-center justify-center">
-                        {filledData?.statutoryAudit === 'Not Required' && <div className="w-3 h-3 bg-blue-900"></div>}
-                      </div>{" "}
-                      <div className="flex flex-col font-bold leading-tight">
-                        <span>មិនតម្រូវឱ្យមាន</span>
-                        <span className="text-[9px] text-slate-500 mt-0.5">
-                          Not Required
-                        </span>
+                    <div className="flex items-center gap-[6px]">
+                      <div className="w-[16px] h-[16px] border border-black shrink-0 bg-white flex items-center justify-center">
+                        {filledData?.statutoryAudit === 'Not Required' && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
+                      </div>
+                      <div className="flex flex-col leading-tight pt-[1px]">
+                        <span className="font-bold text-[11px] text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>គ្មានកាតព្វកិច្ច</span>
+                        <span className="text-[9px] text-black mt-[1px]" style={{ fontFamily: '"Arial", sans-serif' }}>Not Required</span>
                       </div>
                     </div>
                   </div>
@@ -619,17 +600,17 @@ const ToiAcar = ({ onBack, packageId, year }) => {
               {/* Section 14: Legal Form */}
               <div className="flex flex-col border border-black border-t-0 bg-white">
                 <div className="flex min-h-[50px] border-b border-black">
-                  <div className="w-10 border-r border-black flex items-center justify-center font-bold text-sm bg-slate-50">
+                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-[#e6e6e6]">
                     14
                   </div>
-                  <div className="w-[30%] border-r border-black p-2 flex flex-col justify-center bg-slate-50">
+                  <div className="w-[340px] shrink-0 border-r border-black px-3 py-1 flex flex-col justify-center bg-white">
                     <span
-                      className="font-bold text-[11px] leading-tight"
+                      className="font-bold text-[12px] leading-tight text-black"
                       style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
                     >
                       ទម្រង់សិទ្ធិគតិយុត្ត /ទម្រង់នែប្រតិបត្តិការអាជីវកម្ម ៖
                     </span>
-                    <span className="text-[9px] text-slate-500">
+                    <span className="text-[9px] text-black pt-[1px] font-normal" style={{ fontFamily: '"Arial", sans-serif' }}>
                       Legal Form or Form of Business Operations:
                     </span>
                   </div>
@@ -658,18 +639,19 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         },
                       ].map((item, idx) => (
                         <div key={idx} className="flex gap-2 items-start">
-                          <div className="w-5 h-5 border border-black shrink-0 flex items-center justify-center">
-                            {filledData?.legalForm === item.en && <div className="w-3 h-3 bg-blue-900"></div>}
+                          <div className="w-[16px] h-[16px] border border-black shrink-0 bg-white flex items-center justify-center">
+                            {filledData?.legalForm === item.en && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
                           </div>
-                          <div className="flex flex-col leading-tight">
+                          <div className="flex flex-col leading-tight pt-[1px] w-full pr-1">
                             <span
+                              className="text-[11px] text-black tracking-tighter"
                               style={{
                                 fontFamily: '"Kantumruy Pro", sans-serif',
                               }}
                             >
                               {item.kh}
                             </span>
-                            <span className="text-[8px] text-slate-500 font-normal">
+                            <span className="text-[9px] text-black font-normal mt-[1px]" style={{ fontFamily: '"Arial", sans-serif', letterSpacing: '-0.2px' }}>
                               {item.en}
                             </span>
                           </div>
@@ -694,18 +676,19 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         },
                       ].map((item, idx) => (
                         <div key={idx} className="flex gap-2 items-start">
-                          <div className="w-5 h-5 border border-black shrink-0 flex items-center justify-center">
-                            {filledData?.legalForm === item.en && <div className="w-3 h-3 bg-blue-900"></div>}
+                          <div className="w-[16px] h-[16px] border border-black shrink-0 bg-white flex items-center justify-center">
+                            {filledData?.legalForm === item.en && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
                           </div>
-                          <div className="flex flex-col leading-tight">
+                          <div className="flex flex-col leading-tight pt-[1px] w-full pr-1">
                             <span
+                              className="text-[11px] text-black tracking-tighter"
                               style={{
                                 fontFamily: '"Kantumruy Pro", sans-serif',
                               }}
                             >
                               {item.kh}
                             </span>
-                            <span className="text-[8px] text-slate-500 font-normal">
+                            <span className="text-[9px] text-black font-normal mt-[1px]" style={{ fontFamily: '"Arial", sans-serif', letterSpacing: '-0.2px' }}>
                               {item.en}
                             </span>
                           </div>
@@ -723,22 +706,23 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         { kh: "សហគ្រាសដទៃទៀត", en: "Others" },
                       ].map((item, idx) => (
                         <div key={idx} className="flex gap-2 items-start">
-                          <div className="w-5 h-5 border border-black shrink-0 flex items-center justify-center">
-                            {filledData?.legalForm === item.en && <div className="w-3 h-3 bg-blue-900"></div>}
+                          <div className="w-[16px] h-[16px] border border-black shrink-0 bg-white flex items-center justify-center">
+                            {filledData?.legalForm === item.en && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
                           </div>
-                          <div className="flex flex-col leading-tight w-full">
+                          <div className="flex flex-col leading-tight pt-[1px] w-full pr-2">
                             <span
+                              className="text-[11px] text-black tracking-tighter"
                               style={{
                                 fontFamily: '"Kantumruy Pro", sans-serif',
                               }}
                             >
                               {item.kh}
                             </span>
-                            <span className="text-[8px] text-slate-500 font-normal">
+                            <span className="text-[9px] text-black font-normal mt-[1px]" style={{ fontFamily: '"Arial", sans-serif', letterSpacing: '-0.2px' }}>
                               {item.en}
                             </span>
                             {item.en === "Others" && (
-                              <div className="border-b border-dashed border-slate-400 mt-1 w-full" />
+                              <div className="border-b-[1.5px] border-dashed border-black mt-[1px] w-full" />
                             )}
                           </div>
                         </div>
@@ -749,164 +733,170 @@ const ToiAcar = ({ onBack, packageId, year }) => {
               </div>
 
               {/* Sections 15, 16, 17 */}
-              <div className="flex flex-col border border-black border-t-0">
+              <div className="flex flex-col border border-black border-t-0 bg-white">
                 {/* Row 15 */}
-                <div className="flex border-b border-black">
-                  <div className="w-10 border-r border-black flex items-center justify-center font-bold text-sm bg-slate-50">
+                <div className="flex border-b border-black min-h-[36px]">
+                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-[#e6e6e6]">
                     15
                   </div>
-                  <div className="w-[30%] border-r border-black p-2 flex flex-col justify-center bg-slate-50">
+                  <div className="w-[340px] shrink-0 border-r border-black px-3 py-1 flex flex-col justify-center bg-white">
                     <span
-                      className="font-bold text-[11px] leading-tight"
+                      className="font-bold text-[12px] leading-tight text-black"
                       style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
                     >
                       លើកលែងពន្ធលើប្រាក់ចំណូល ៖
                     </span>
-                    <span className="text-[9px] text-slate-500">
+                    <span className="text-[9px] text-black pt-[1px] font-normal" style={{ fontFamily: '"Arial", sans-serif' }}>
                       Income Tax Exemption:
                     </span>
                   </div>
                   <div className="flex-1 flex divide-x divide-black bg-white">
-                    <div className="flex-1 p-2 flex flex-col justify-center">
+                    <div className="flex-1 px-3 py-1 flex flex-col justify-center">
                       <span
-                        className="text-[9px] font-bold"
+                        className="text-[11px] font-bold text-black"
                         style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
                       >
                         ឆ្នាំមានចំណូលដំបូង ៖
                       </span>
-                      <span className="text-[8px] text-slate-500">
+                      <span className="text-[9px] text-black font-normal mt-[1px]" style={{ fontFamily: '"Arial", sans-serif' }}>
                         Year of First Revenue:
                       </span>
                     </div>
-                    <div className="flex-[0.5] p-2 flex items-center justify-center border-b-0 border-r-0 text-blue-900 font-bold text-[12px]">{filledData?.yearFirstRevenue || ""}</div>
-                    <div className="flex-1 p-2 flex flex-col justify-center">
+                    <div className="w-[60px] p-2 flex items-center justify-center border-b-0 border-r-0 text-blue-900 font-bold text-[12px]">{filledData?.yearFirstRevenue || ""}</div>
+                    <div className="flex-1 px-3 py-1 flex flex-col justify-center">
                       <span
-                        className="text-[9px] font-bold"
+                        className="text-[11px] font-bold text-black"
                         style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
                       >
                         ឆ្នាំមានចំណេញដំបូង ៖
                       </span>
-                      <span className="text-[8px] text-slate-500">
+                      <span className="text-[9px] text-black font-normal mt-[1px]" style={{ fontFamily: '"Arial", sans-serif' }}>
                         Year of First Profit:
                       </span>
                     </div>
-                    <div className="flex-[0.5] p-2 flex items-center justify-center border-b-0 border-r-0 text-blue-900 font-bold text-[12px]">{filledData?.yearFirstProfit || ""}</div>
-                    <div className="flex-1 p-2 flex flex-col justify-center">
+                    <div className="w-[60px] p-2 flex items-center justify-center border-b-0 border-r-0 text-blue-900 font-bold text-[12px]">{filledData?.yearFirstProfit || ""}</div>
+                    <div className="flex-1 px-3 py-1 flex flex-col justify-center border-l border-black">
                       <span
-                        className="text-[9px] font-bold"
+                        className="text-[11px] font-bold text-black"
                         style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
                       >
                         រយៈពេលអនុគ្រោះ ៖
                       </span>
-                      <span className="text-[8px] text-slate-500">
+                      <span className="text-[9px] text-black font-normal mt-[1px]" style={{ fontFamily: '"Arial", sans-serif' }}>
                         Priority Period:
                       </span>
                     </div>
-                    <div className="flex-[0.3] p-1 flex relative">
-                      <div className="flex-1 border border-black flex flex-col items-center justify-between">
+                    <div className="w-[60px] p-2 flex relative">
+                      <div className="flex-1 border-[1.5px] border-black flex flex-col items-center justify-between">
                         <span
-                          className="text-[8px] font-bold mt-1 z-10"
+                          className="text-[9px] font-bold mt-[2px] z-10 text-black leading-none"
                           style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
                         >
                           ឆ្នាំ
                         </span>
-                        <div className="absolute inset-0 flex items-center justify-center pt-2 text-blue-900 font-bold text-[12px]">{filledData?.priorityPeriodYear || ""}</div>
-                        <span className="text-[8px] z-10">Year</span>
+                        <div className="absolute inset-0 flex items-center justify-center pt-2 text-blue-900 font-bold text-[12px] bg-white z-0 mt-3 mb-3 mx-1">{filledData?.priorityPeriodYear || ""}</div>
+                        <span className="text-[9px] z-10 text-black leading-none mb-[2px] font-normal" style={{ fontFamily: '"Arial", sans-serif' }}>Year</span>
                       </div>
                     </div>
                   </div>
                 </div>
                 {/* Row 16 */}
-                <div className="flex border-b border-black">
-                  <div className="w-10 border-r border-black flex items-center justify-center font-bold text-sm bg-slate-50">
+                <div className="flex border-b border-black min-h-[36px]">
+                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-[#e6e6e6]">
                     16
                   </div>
-                  <div className="w-[30%] border-r border-black p-2 flex flex-col justify-center bg-slate-50">
+                  <div className="w-[340px] shrink-0 border-r border-black px-3 py-1 flex flex-col justify-center bg-white">
                     <span
-                      className="font-bold text-[11px] leading-tight"
+                      className="font-bold text-[12px] leading-tight text-black"
                       style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
                     >
                       អត្រាពន្ធលើប្រាក់ចំណូល ៖
                     </span>
-                    <span className="text-[9px] text-slate-500">
+                    <span className="text-[9px] text-black pt-[1px] font-normal" style={{ fontFamily: '"Arial", sans-serif' }}>
                       Income Tax Rate:
                     </span>
                   </div>
-                  <div className="flex-1 flex gap-2 p-2 items-center text-[10px] font-bold bg-white justify-between">
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-4 h-4 border border-black bg-white flex items-center justify-center">
-                        {filledData?.incomeTaxRate === '30%' && <div className="w-2.5 h-2.5 bg-blue-900"></div>}
-                      </div> 30%
+                  <div className="flex-1 flex px-3 py-1 items-center justify-between text-[11px] font-bold text-black tracking-tighter bg-white">
+                    <div className="flex items-center gap-[6px]">
+                      <div className="w-[16px] h-[16px] border border-black bg-white flex items-center justify-center">
+                        {filledData?.incomeTaxRate === '30%' && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
+                      </div> 
+                      <span className="font-bold -translate-y-[1px]">30%</span>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-4 h-4 border border-black bg-white flex items-center justify-center">
-                        {filledData?.incomeTaxRate === '20%' && <div className="w-2.5 h-2.5 bg-blue-900"></div>}
-                      </div> 20%
+                    <div className="flex items-center gap-[4px]">
+                      <div className="w-[16px] h-[16px] border border-black bg-white flex items-center justify-center">
+                        {filledData?.incomeTaxRate === '20%' && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
+                      </div> 
+                      <span className="font-bold -translate-y-[1px]">20%</span>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-4 h-4 border border-black bg-white flex items-center justify-center">
-                        {filledData?.incomeTaxRate === '5%' && <div className="w-2.5 h-2.5 bg-blue-900"></div>}
-                      </div> 5%
+                    <div className="flex items-center gap-[4px]">
+                      <div className="w-[16px] h-[16px] border border-black bg-white flex items-center justify-center">
+                        {filledData?.incomeTaxRate === '5%' && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
+                      </div> 
+                      <span className="font-bold -translate-y-[1px]">5%</span>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-4 h-4 border border-black bg-white flex items-center justify-center">
-                        {filledData?.incomeTaxRate === '0%' && <div className="w-2.5 h-2.5 bg-blue-900"></div>}
-                      </div> 0%
+                    <div className="flex items-center gap-[4px]">
+                      <div className="w-[16px] h-[16px] border border-black bg-white flex items-center justify-center">
+                        {filledData?.incomeTaxRate === '0%' && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
+                      </div> 
+                      <span className="font-bold -translate-y-[1px]">0%</span>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-4 h-4 border border-black bg-white flex items-center justify-center">
-                        {filledData?.incomeTaxRate === '0-20%' && <div className="w-2.5 h-2.5 bg-blue-900"></div>}
-                      </div> 0-20%
+                    <div className="flex items-center gap-[4px]">
+                      <div className="w-[16px] h-[16px] border border-black bg-white flex items-center justify-center">
+                        {filledData?.incomeTaxRate === '0-20%' && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
+                      </div> 
+                      <span className="font-bold -translate-y-[1px]">0-20%</span>
                     </div>
-                    <div className="flex items-center gap-1.5 leading-tight">
-                      <div className="w-4 h-4 border border-black bg-white flex items-center justify-center">
-                        {filledData?.incomeTaxRate === 'Progressive Rate' && <div className="w-2.5 h-2.5 bg-blue-900"></div>}
-                      </div>{" "}
-                      <div className="flex flex-col">
+                    <div className="flex items-center gap-[4px] pr-2">
+                       <div className="flex flex-col text-right">
                         <span
+                          className="text-[11px] font-bold text-black tracking-tight"
                           style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
                         >
                           អត្រាកំណើនតាមថ្នាក់
                         </span>
-                        <span className="font-normal text-[8px] text-slate-500">
+                        <span className="font-normal text-[9px] text-black pt-[1px]" style={{ fontFamily: '"Arial", sans-serif' }}>
                           Progressive Rate
                         </span>
+                      </div>
+                      <div className="w-[16px] h-[16px] border border-black bg-white flex items-center justify-center">
+                        {filledData?.incomeTaxRate === 'Progressive Rate' && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
                       </div>
                     </div>
                   </div>
                 </div>
-                {/* Row 17 */}
-                <div className="flex h-10">
-                  <div className="w-10 border-r border-black flex items-center justify-center font-bold text-sm bg-slate-50">
+                {/* Row 17 & 18 */}
+                <div className="flex min-h-[36px]">
+                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-[#e6e6e6]">
                     17
                   </div>
-                  <div className="w-[30%] border-r border-black p-2 flex flex-col justify-center bg-slate-50">
+                  <div className="w-[180px] shrink-0 border-r border-black px-3 py-1 flex flex-col justify-center bg-white">
                     <span
-                      className="font-bold text-[11px] leading-tight"
+                      className="font-bold text-[12px] leading-tight text-black"
                       style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
                     >
-                      ពន្ធពន្ធប្រាក់ចំណូលត្រូវបង់ ៖
+                      ពន្ធលើប្រាក់ចំណូលត្រូវបង់ ៖
                     </span>
-                    <span className="text-[9px] text-slate-500">
+                    <span className="text-[9px] text-black pt-[1px] font-normal" style={{ fontFamily: '"Arial", sans-serif' }}>
                       Income Tax Due:
                     </span>
                   </div>
-                  <div className="flex-[0.25] border-r border-black bg-white flex items-center px-4 font-bold text-blue-900 uppercase tracking-widest">{filledData?.incomeTaxDue || ""}</div>
-                  <div className="w-10 border-r border-black flex items-center justify-center font-bold text-sm bg-slate-50">
+                  <div className="w-[110px] border-r border-black bg-white flex items-center font-bold text-blue-900 uppercase tracking-widest text-center justify-center ">{filledData?.incomeTaxDue || ""}</div>
+                  <div className="w-[25px] border-r border-black flex items-center justify-center font-bold text-xs bg-[#e6e6e6]">
                     18
                   </div>
-                  <div className="w-[20%] border-r border-black p-2 flex flex-col justify-center bg-slate-50">
+                  <div className="w-[180px] border-r border-black px-3 py-1 flex flex-col justify-center bg-white">
                     <span
-                      className="font-bold text-[11px] leading-tight"
+                      className="font-bold text-[12px] leading-tight text-black"
                       style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
                     >
                       ឥណទានពន្ធយោងទៅមុខ ៖
                     </span>
-                    <span className="text-[9px] text-slate-500">
+                    <span className="text-[9px] text-black pt-[1px] font-normal" style={{ fontFamily: '"Arial", sans-serif' }}>
                       Tax Credit Carried Forward:
                     </span>
                   </div>
-                  <div className="flex-1 bg-white flex items-center px-4 font-bold text-blue-900 uppercase tracking-widest">{filledData?.taxCreditCarriedForward || ""}</div>
+                  <div className="flex-1 bg-white flex items-center font-bold text-blue-900 uppercase tracking-widest px-4">{filledData?.taxCreditCarriedForward || ""}</div>
                 </div>
               </div>
 
