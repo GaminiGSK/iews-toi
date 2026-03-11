@@ -191,9 +191,11 @@ const ToiAcar = ({ onBack, packageId, year }) => {
         <div className="flex items-center gap-4 pr-6 shrink-0">
           <button
             onClick={() => window.print()}
-            className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 rounded text-[11px] font-bold transition shadow"
+            title="Print Preview"
+            className="flex items-center gap-2 px-[14px] py-[6px] bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg text-white text-[12px] font-bold transition shadow-md hover:shadow-lg active:scale-95 group"
           >
-            <Printer size={13} /> Print
+            <Printer size={16} className="text-blue-400 group-hover:text-blue-300 transition-colors" />
+            <span className="tracking-wide">Print Preview</span>
           </button>
           
           <div className="flex items-center gap-2 border-l border-white/10 pl-4">
@@ -492,8 +494,8 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   </div>
                   <div className="flex-1 flex px-3 py-1 items-center bg-white">
                     <div className="flex items-center gap-[6px]">
-                      <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center">
-                        {filledData?.accountingRecord === 'Using Software' && <div className="w-3 h-3 bg-black border border-transparent"></div>}
+                      <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center relative">
+                        {filledData?.accountingRecord === 'Using Software' && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                       </div>
                       <div className="flex flex-col leading-tight pt-[1px]">
                         <span className="font-bold text-[11px] text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រើប្រាស់កម្មវិធីគណនេយ្យកុំព្យូទ័រ (ឈ្មោះកម្មវិធី) ៖</span>
@@ -506,8 +508,8 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     </div>
 
                     <div className="flex items-center gap-[6px] ml-1">
-                      <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center">
-                        {filledData?.accountingRecord === 'Not Using Software' && <div className="w-3 h-3 bg-black border border-transparent"></div>}
+                      <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center relative">
+                        {filledData?.accountingRecord === 'Not Using Software' && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                       </div>
                       <div className="flex flex-col leading-tight pt-[1px]">
                         <span className="font-bold text-[11px] text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>មិនប្រើប្រាស់កម្មវិធីគណនេយ្យកុំព្យូទ័រ</span>
@@ -533,8 +535,8 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   </div>
                   <div className="flex-1 flex px-3 py-1 items-center gap-14 bg-white">
                     <div className="flex items-center gap-[6px]">
-                      <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center">
-                        {filledData?.taxComplianceStatus === 'Gold' && <div className="w-3 h-3 bg-black border border-transparent"></div>}
+                      <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center relative">
+                        {filledData?.taxComplianceStatus === 'Gold' && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                       </div>
                       <div className="flex flex-col pt-[1px]">
                         <span className="font-bold text-[11px] text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>មាស</span>
@@ -542,8 +544,8 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       </div>
                     </div>
                     <div className="flex items-center gap-[6px]">
-                      <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center">
-                        {filledData?.taxComplianceStatus === 'Silver' && <div className="w-3 h-3 bg-black border border-transparent"></div>}
+                      <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center relative">
+                        {filledData?.taxComplianceStatus === 'Silver' && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                       </div>
                       <div className="flex flex-col pt-[1px]">
                         <span className="font-bold text-[11px] text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រាក់</span>
@@ -551,8 +553,8 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       </div>
                     </div>
                     <div className="flex items-center gap-[6px]">
-                      <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center">
-                        {filledData?.taxComplianceStatus === 'Bronze' && <div className="w-3 h-3 bg-black border border-transparent"></div>}
+                      <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center relative">
+                        {filledData?.taxComplianceStatus === 'Bronze' && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                       </div>
                       <div className="flex flex-col pt-[1px]">
                         <span className="font-bold text-[11px] text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សំរឹទ្ធ</span>
@@ -578,8 +580,8 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   </div>
                   <div className="flex-1 flex px-3 py-1 items-center gap-16 bg-white">
                     <div className="flex items-center gap-[6px]">
-                      <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center">
-                        {filledData?.statutoryAudit === 'Required' && <div className="w-3 h-3 bg-black border border-transparent"></div>}
+                      <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center relative">
+                        {filledData?.statutoryAudit === 'Required' && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                       </div>
                       <div className="flex flex-col leading-tight pt-[1px]">
                         <span className="font-bold text-[11px] text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>មានកាតព្វកិច្ច <span className="font-normal">(តម្រូវឱ្យដាក់របាយការណ៍សវនកម្ម)</span></span>
@@ -587,8 +589,8 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       </div>
                     </div>
                     <div className="flex items-center gap-[6px]">
-                      <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center">
-                        {filledData?.statutoryAudit === 'Not Required' && <div className="w-3 h-3 bg-black border border-transparent"></div>}
+                      <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center relative">
+                        {filledData?.statutoryAudit === 'Not Required' && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                       </div>
                       <div className="flex flex-col leading-tight pt-[1px]">
                         <span className="font-bold text-[11px] text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>គ្មានកាតព្វកិច្ច</span>
@@ -624,8 +626,8 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     {/* Top Header Row of checkboxes */}
                     <div className="flex min-h-[38px] border-b-[1.5px] border-black">
                       <div className="flex-1 flex items-center gap-2 pl-3">
-                        <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center">
-                          {filledData?.legalForm === "Private Limited Company" && <div className="w-3 h-3 bg-black border border-transparent"></div>}
+                        <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center relative">
+                          {filledData?.legalForm === "Private Limited Company" && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                         </div>
                         <div className="flex flex-col leading-tight pt-[1px] w-full">
                           <span className="text-[11px] text-black tracking-tighter" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ក្រុមហ៊ុនឯកជនទទួលខុសត្រូវមានកម្រិត</span>
@@ -633,8 +635,8 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         </div>
                       </div>
                       <div className="flex-[0.8] flex items-center gap-2 relative left-[-24px]">
-                        <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center">
-                          {filledData?.legalForm === "State Joint Venture" && <div className="w-3 h-3 bg-black border border-transparent"></div>}
+                        <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center relative">
+                          {filledData?.legalForm === "State Joint Venture" && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                         </div>
                         <div className="flex flex-col leading-tight pt-[1px] w-full pr-2">
                           <span className="text-[11px] text-black tracking-tighter" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សហគ្រាសចម្រុះរដ្ឋ</span>
@@ -654,8 +656,8 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         { kh: "សហគ្រាសឯកបុគ្គលទទួលខុសត្រូវមានកម្រិត", en: "Single Member Private Limited Company" },
                       ].map((item, idx) => (
                         <div key={'c1'+idx} className="flex gap-2 items-start mt-0.5">
-                          <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center mt-[2px]">
-                            {filledData?.legalForm === item.en && <div className="w-3 h-3 bg-black border border-transparent"></div>}
+                          <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center relative mt-[2px]">
+                            {filledData?.legalForm === item.en && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                           </div>
                           <div className="flex flex-col leading-tight w-full">
                             <span className="text-[11px] text-black tracking-tighter" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{item.kh}</span>
@@ -674,8 +676,8 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                           { kh: "សហគ្រាសរដ្ឋ", en: "State Enterprise" },
                         ].map((item, idx) => (
                           <div key={'c2'+idx} className="flex gap-2 items-start mt-0.5">
-                            <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center mt-[2px]">
-                              {filledData?.legalForm === item.en && <div className="w-3 h-3 bg-black border border-transparent"></div>}
+                            <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center relative mt-[2px]">
+                              {filledData?.legalForm === item.en && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                             </div>
                             <div className="flex flex-col leading-tight w-full">
                               <span className="text-[11px] text-black tracking-tighter" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{item.kh}</span>
@@ -692,8 +694,8 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                           { kh: "សហគ្រាសដទៃទៀត", en: "Others" },
                         ].map((item, idx) => (
                           <div key={'c3'+idx} className="flex gap-2 items-start mt-0.5">
-                            <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center mt-[2px]">
-                              {filledData?.legalForm === item.en && <div className="w-3 h-3 bg-black border border-transparent"></div>}
+                            <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center relative mt-[2px]">
+                              {filledData?.legalForm === item.en && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                             </div>
                             <div className={`flex ${item.en === "Others" ? "flex-row gap-2 flex-1 items-end" : "flex-col w-full pr-2"} leading-tight`}>
                               {item.en === "Others" ? (
@@ -718,6 +720,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   </div>
                 </div>
               </div>
+            </div>
 
               {/* Sections 15, 16, 17 */}
               <div className="flex flex-col border-[1.5px] border-black border-t-0 border-l-0 border-r-0 bg-white">
@@ -805,32 +808,32 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   </div>
                   <div className="flex-1 flex px-3 py-1 items-center justify-between text-[11px] font-bold text-black tracking-tighter bg-white">
                     <div className="flex items-center gap-[6px]">
-                      <div className="w-[16px] h-[16px] border border-black bg-white flex items-center justify-center">
-                        {filledData?.incomeTaxRate === '30%' && <div className="w-2.5 h-2.5 bg-black border border-transparent"></div>}
+                      <div className="w-[16px] h-[16px] border border-black bg-white flex items-center justify-center relative">
+                        {filledData?.incomeTaxRate === '30%' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                       </div> 
                       <span className="font-bold -translate-y-[1px]">30%</span>
                     </div>
                     <div className="flex items-center gap-[4px]">
-                      <div className="w-[16px] h-[16px] border border-black bg-white flex items-center justify-center">
-                        {filledData?.incomeTaxRate === '20%' && <div className="w-2.5 h-2.5 bg-black border border-transparent"></div>}
+                      <div className="w-[16px] h-[16px] border border-black bg-white flex items-center justify-center relative">
+                        {filledData?.incomeTaxRate === '20%' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                       </div> 
                       <span className="font-bold -translate-y-[1px]">20%</span>
                     </div>
                     <div className="flex items-center gap-[4px]">
-                      <div className="w-[16px] h-[16px] border border-black bg-white flex items-center justify-center">
-                        {filledData?.incomeTaxRate === '5%' && <div className="w-2.5 h-2.5 bg-black border border-transparent"></div>}
+                      <div className="w-[16px] h-[16px] border border-black bg-white flex items-center justify-center relative">
+                        {filledData?.incomeTaxRate === '5%' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                       </div> 
                       <span className="font-bold -translate-y-[1px]">5%</span>
                     </div>
                     <div className="flex items-center gap-[4px]">
-                      <div className="w-[16px] h-[16px] border border-black bg-white flex items-center justify-center">
-                        {filledData?.incomeTaxRate === '0%' && <div className="w-2.5 h-2.5 bg-black border border-transparent"></div>}
+                      <div className="w-[16px] h-[16px] border border-black bg-white flex items-center justify-center relative">
+                        {filledData?.incomeTaxRate === '0%' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                       </div> 
                       <span className="font-bold -translate-y-[1px]">0%</span>
                     </div>
                     <div className="flex items-center gap-[4px]">
-                      <div className="w-[16px] h-[16px] border border-black bg-white flex items-center justify-center">
-                        {filledData?.incomeTaxRate === '0-20%' && <div className="w-2.5 h-2.5 bg-black border border-transparent"></div>}
+                      <div className="w-[16px] h-[16px] border border-black bg-white flex items-center justify-center relative">
+                        {filledData?.incomeTaxRate === '0-20%' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                       </div> 
                       <span className="font-bold -translate-y-[1px]">0-20%</span>
                     </div>
@@ -846,8 +849,8 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                           Progressive Rate
                         </span>
                       </div>
-                      <div className="w-[16px] h-[16px] border border-black bg-white flex items-center justify-center">
-                        {filledData?.incomeTaxRate === 'Progressive Rate' && <div className="w-2.5 h-2.5 bg-black border border-transparent"></div>}
+                      <div className="w-[16px] h-[16px] border border-black bg-white flex items-center justify-center relative">
+                        {filledData?.incomeTaxRate === 'Progressive Rate' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                       </div>
                     </div>
                   </div>
