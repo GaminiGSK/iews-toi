@@ -233,7 +233,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
             {/* Content for the white preview */}
             <div className="w-full flex flex-col font-sans mb-12 text-black print:w-[210mm] print:mx-auto print:mb-0">
               {/* OFFICIAL GDT HEADER - Based exactly on reference image */}
-              <div className="w-full relative mb-12 text-[10px] sm:text-[11px] leading-tight pt-4 font-bold flex justify-between items-start">
+              <div className="w-full relative mb-12 print:mb-4 text-[10px] sm:text-[11px] leading-tight pt-4 font-bold flex justify-between items-start">
 
                 {/* LEFT: TOI 01 / I and MINISTRY */}
                 <div className="flex flex-col items-start gap-12 w-[45%]">
@@ -255,7 +255,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       </div>
                     </div>
 
-                    <span className="text-[11px] mt-4 font-normal text-slate-800 tracking-wide" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>( មាត្រា ២៩ ថ្មី នៃច្បាប់ស្តីពីសារពើពន្ធ )</span>
+                    <span className="text-[11px] mt-4 print:mt-1 font-normal text-slate-800 tracking-wide" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>( មាត្រា ២៩ ថ្មី នៃច្បាប់ស្តីពីសារពើពន្ធ )</span>
                     <span className="text-[10px] font-normal text-slate-800 tracking-tight mt-0.5">(Article 29 New of the Law on Taxation)</span>
                   </div>
                 </div>
@@ -264,7 +264,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                 <div className="w-[10%]"></div>
 
                 {/* RIGHT: KINGDOM */}
-                <div className="flex flex-col items-center pt-24 w-[45%] pr-12">
+                <div className="flex flex-col items-center pt-24 print:pt-6 w-[45%] pr-12">
                   <span className="font-bold text-[16px] tracking-wider" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ព្រះរាជាណាចក្រកម្ពុជា</span>
                   <span className="font-medium text-[15px] tracking-[0.15em] pl-1 mb-1">KINGDOM OF CAMBODIA</span>
                   <span className="font-bold text-[15px] tracking-wide" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ជាតិ សាសនា ព្រះមហាក្សត្រ</span>
@@ -280,7 +280,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
               </div>
 
               {/* FORM TITLE */}
-              <div className="flex justify-center items-end w-full mb-8 pt-10">
+              <div className="flex justify-center items-end w-full mb-8 print:mb-4 pt-10 print:pt-4">
                 <div className="flex flex-col items-center justify-center">
                   <h1
                     className="text-[28px] font-normal text-black leading-none"

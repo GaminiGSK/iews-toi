@@ -1,4 +1,4 @@
-﻿import axios from 'axios';
+import axios from 'axios';
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, X, Send, Sparkles, Bot, Paperclip, Minus, ChevronDown, PieChart as PieChartIcon } from 'lucide-react';
 
@@ -254,7 +254,7 @@ const AIAssistant = () => {
 
     return (
         // KEY CHANGE: Moved to Right-6, Items-End to accommodate UI needs
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none">
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none print:hidden">
             {/* Chat Window */}
             {isOpen && (
                 <div
