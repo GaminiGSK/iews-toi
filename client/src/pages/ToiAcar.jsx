@@ -854,7 +854,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-[#e6e6e6]">
                     17
                   </div>
-                  <div className="w-[180px] shrink-0 border-r border-black px-3 py-1 flex flex-col justify-center bg-white">
+                  <div className="w-[340px] shrink-0 border-r border-black px-3 py-1 flex flex-col justify-center bg-white">
                     <span
                       className="font-bold text-[12px] leading-tight text-black"
                       style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
@@ -865,11 +865,11 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       Income Tax Due:
                     </span>
                   </div>
-                  <div className="w-[110px] border-r border-black bg-white flex items-center font-bold text-blue-900 uppercase tracking-widest text-center justify-center ">{filledData?.incomeTaxDue || ""}</div>
-                  <div className="w-[25px] border-r border-black flex items-center justify-center font-bold text-xs bg-[#e6e6e6]">
+                  <div className="flex-[0.6] border-r border-black bg-white flex items-center font-bold text-blue-900 uppercase tracking-widest px-4">{filledData?.incomeTaxDue || ""}</div>
+                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-[#e6e6e6]">
                     18
                   </div>
-                  <div className="w-[180px] border-r border-black px-3 py-1 flex flex-col justify-center bg-white">
+                  <div className="w-[200px] shrink-0 border-r border-black px-3 py-1 flex flex-col justify-center bg-white">
                     <span
                       className="font-bold text-[12px] leading-tight text-black"
                       style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
