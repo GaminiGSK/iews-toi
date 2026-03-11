@@ -116,7 +116,13 @@ const ToiAcar = ({ onBack, packageId, year }) => {
           softwareName: p.softwareName || "",
           taxComplianceStatus: p.taxComplianceStatus || null,
           statutoryAudit: p.statutoryAudit || null,
-          legalForm: p.legalForm || null
+          legalForm: p.legalForm || null,
+          yearFirstRevenue: p.yearFirstRevenue || null,
+          yearFirstProfit: p.yearFirstProfit || null,
+          priorityPeriodYear: p.priorityPeriodYear || null,
+          incomeTaxRate: p.incomeTaxRate || null,
+          incomeTaxDue: p.incomeTaxDue || null,
+          taxCreditCarriedForward: p.taxCreditCarriedForward || null
         };
         setTimeout(() => setFilledData(safeData), 500); // Visual delay for realism
       }
@@ -772,7 +778,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         Year of First Revenue:
                       </span>
                     </div>
-                    <div className="flex-[0.5] p-2 flex items-center justify-center border-b-0 border-r-0"></div>
+                    <div className="flex-[0.5] p-2 flex items-center justify-center border-b-0 border-r-0 text-blue-900 font-bold text-[12px]">{filledData?.yearFirstRevenue || ""}</div>
                     <div className="flex-1 p-2 flex flex-col justify-center">
                       <span
                         className="text-[9px] font-bold"
@@ -784,7 +790,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         Year of First Profit:
                       </span>
                     </div>
-                    <div className="flex-[0.5] p-2 flex items-center justify-center border-b-0 border-r-0"></div>
+                    <div className="flex-[0.5] p-2 flex items-center justify-center border-b-0 border-r-0 text-blue-900 font-bold text-[12px]">{filledData?.yearFirstProfit || ""}</div>
                     <div className="flex-1 p-2 flex flex-col justify-center">
                       <span
                         className="text-[9px] font-bold"
@@ -796,15 +802,16 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         Priority Period:
                       </span>
                     </div>
-                    <div className="flex-[0.3] p-1 flex">
+                    <div className="flex-[0.3] p-1 flex relative">
                       <div className="flex-1 border border-black flex flex-col items-center justify-between">
                         <span
-                          className="text-[8px] font-bold mt-1"
+                          className="text-[8px] font-bold mt-1 z-10"
                           style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
                         >
                           ឆ្នាំ
                         </span>
-                        <span className="text-[8px]">Year</span>
+                        <div className="absolute inset-0 flex items-center justify-center pt-2 text-blue-900 font-bold text-[12px]">{filledData?.priorityPeriodYear || ""}</div>
+                        <span className="text-[8px] z-10">Year</span>
                       </div>
                     </div>
                   </div>
@@ -827,22 +834,34 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   </div>
                   <div className="flex-1 flex gap-2 p-2 items-center text-[10px] font-bold bg-white justify-between">
                     <div className="flex items-center gap-1.5">
-                      <div className="w-4 h-4 border border-black"></div> 30%
+                      <div className="w-4 h-4 border border-black bg-white flex items-center justify-center">
+                        {filledData?.incomeTaxRate === '30%' && <div className="w-2.5 h-2.5 bg-blue-900"></div>}
+                      </div> 30%
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <div className="w-4 h-4 border border-black"></div> 20%
+                      <div className="w-4 h-4 border border-black bg-white flex items-center justify-center">
+                        {filledData?.incomeTaxRate === '20%' && <div className="w-2.5 h-2.5 bg-blue-900"></div>}
+                      </div> 20%
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <div className="w-4 h-4 border border-black"></div> 5%
+                      <div className="w-4 h-4 border border-black bg-white flex items-center justify-center">
+                        {filledData?.incomeTaxRate === '5%' && <div className="w-2.5 h-2.5 bg-blue-900"></div>}
+                      </div> 5%
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <div className="w-4 h-4 border border-black"></div> 0%
+                      <div className="w-4 h-4 border border-black bg-white flex items-center justify-center">
+                        {filledData?.incomeTaxRate === '0%' && <div className="w-2.5 h-2.5 bg-blue-900"></div>}
+                      </div> 0%
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <div className="w-4 h-4 border border-black"></div> 0-20%
+                      <div className="w-4 h-4 border border-black bg-white flex items-center justify-center">
+                        {filledData?.incomeTaxRate === '0-20%' && <div className="w-2.5 h-2.5 bg-blue-900"></div>}
+                      </div> 0-20%
                     </div>
                     <div className="flex items-center gap-1.5 leading-tight">
-                      <div className="w-4 h-4 border border-black"></div>{" "}
+                      <div className="w-4 h-4 border border-black bg-white flex items-center justify-center">
+                        {filledData?.incomeTaxRate === 'Progressive Rate' && <div className="w-2.5 h-2.5 bg-blue-900"></div>}
+                      </div>{" "}
                       <div className="flex flex-col">
                         <span
                           style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
@@ -872,7 +891,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       Income Tax Due:
                     </span>
                   </div>
-                  <div className="flex-[0.25] border-r border-black bg-white"></div>
+                  <div className="flex-[0.25] border-r border-black bg-white flex items-center px-4 font-bold text-blue-900 uppercase tracking-widest">{filledData?.incomeTaxDue || ""}</div>
                   <div className="w-10 border-r border-black flex items-center justify-center font-bold text-sm bg-slate-50">
                     18
                   </div>
@@ -887,7 +906,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       Tax Credit Carried Forward:
                     </span>
                   </div>
-                  <div className="flex-1 bg-white"></div>
+                  <div className="flex-1 bg-white flex items-center px-4 font-bold text-blue-900 uppercase tracking-widest">{filledData?.taxCreditCarriedForward || ""}</div>
                 </div>
               </div>
 
