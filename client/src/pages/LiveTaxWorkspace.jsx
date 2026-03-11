@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import DynamicForm from "../components/DynamicForm";
 import { useSocket } from "../context/SocketContext";
 import {
@@ -1210,13 +1210,6 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear = "20
                     />
                   </div>
                 </div>
-              </div>
-
-              <div className="mt-16 flex flex-col items-center group cursor-default">
-                <div className="w-px bg-slate-700 h-12 group-hover:h-20 transition-all duration-700" />
-                <p className="text-slate-500 font-black text-[10px] uppercase tracking-[0.8em] mt-4 group-hover:tracking-[1.2em] transition-all duration-700">
-                  Page 1 Version 1.0.1 - Blue Print
-                </p>
               </div>
 
               {/* DECLARATION AND SIGNATURE */}
