@@ -439,9 +439,9 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
                - If the profile is complete and there are transactions, perform a high-level evaluation using "Cambodian Tax Law" knowledge below.
 
             **Business Registration (BR) Context (Verified Intel Fragments):**
-            ${brData && brData.length > 0 ? brData.map(doc => `[${doc.name}]: ${doc.text}`).join('\n\n') : "No direct BR document fragments available for this query session."}
+            ${brData && brData.length > 0 ? brData.map(doc => `[${doc.name}]: ${doc.text}`).join('\n\n') : "No direct raw document fragments available. The authoritative Registration Data is presented in the Company Identity block below."}
 
-            **Company Identity (MOC/Tax Profile Summary):**
+            **Company Identity (Business Registration Overview):**
             - **Entity Name (EN)**: ${profile?.nameEn || "N/A"}
             - **Entity Name (KH)**: ${profile?.nameKh || "N/A"}
             - **Registration ID**: ${profile?.regId || "N/A"}
@@ -449,6 +449,7 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
             - **Incorporation Date**: ${profile?.incDate || "N/A"}
             - **Address**: ${profile?.addr || "N/A"}
             - **Type**: ${profile?.type || "N/A"}
+            
             **ROLE: PROFESSIONAL FINANCIAL AUDITOR (IFRS & GDT Standards)**
             **Mandatory Audit Rules:**
             1. **Balance Check**: Verify Assets = Liabilities + Equity. If Assets - (Liabilities + Equity) is not zero, flag the "UNBALANCED" status in RED and identify the exact discrepancy amount.
@@ -530,8 +531,9 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
             7. **generate_chart**: When the user asks to "show a chart," "graph," or visual correlation of the data instead of just text, you can respond with a JSON dataset designed for a Recharts Frontend Component.
                Schema: { "tool_use": "generate_chart", "chart_data": { "type": "bar" | "pie" | "line", "title": "Chart Title", "data": [ { "name": "Category A", "value": 100 }, { "name": "Category B", "value": 200 } ] }, "reply_text": "Here is the visual chart representing the data you requested." }
 
-            8. **fill_toi_workspace**: If the user asks you to fill out the TOI form (e.g., "fill in page one"), MUST extract the entity details from the context company/profile data and output ONLY a valid JSON object in this exact format.
-               Schema: { "tool_use": "fill_toi_workspace", "reply_text": "GK SMART compliance profile located. Extracting structural TIN, Branch sequences, and principal addresses. Injecting to official TOI framework...", "params": { "tin": "extract regId or taxId, ensuring hyphens if any", "name": "extract nameEn and nameKh combined", "branchOut": "001", "registrationDate": "extract incDate, e.g. 15/07/2021", "directorName": "extract director name or N/A", "businessActivities": "extract business type", "agentName": "N/A", "agentLicense": "TA-09281", "address1": "extract exact addr", "address2": "extract exact addr", "address3": "N/A", "taxMonths": "12", "fromDate": "01012026", "untilDate": "31122026" } }
+            8. **fill_toi_workspace**: If the user asks you to fill out the TOI form (e.g., "fill in page one"), MUST extract the entity details from the context company/profile data and output ONLY a valid JSON object in this exact format. If you cannot find certain information, you MUST use the 'reply_text' to explicitly ask the user for it.
+               Schema: { "tool_use": "fill_toi_workspace", "reply_text": "I have filled in the known fields. However, I am missing [List Missing Fields]. Could you provide those?", "params": { "tin": "extract regId or taxId, ensuring hyphens if any", "name": "extract nameEn and nameKh combined", "branchOut": "001", "registrationDate": "extract incDate, e.g. 15/07/2021", "directorName": "extract director name or N/A", "businessActivities": "extract business type", "agentName": "N/A", "agentLicense": "TA-09281", "address1": "extract EXACT Khmer address ONLY from BR docs. (e.g. ផ្ទះលេខ..., សង្កាត់...). NO ENGLISH CHARACTERS IN ADDRESS1.", "address2": "extract EXACT English address from BR docs if any", "address3": "N/A", "taxMonths": "12", "fromDate": "01012026", "untilDate": "31122026", "accountingRecord": "Using Software / Not Using Software / null", "softwareName": "Software if used", "taxComplianceStatus": "Gold / Silver / Bronze / null", "statutoryAudit": "Required / Not Required / null", "legalForm": "Private Limited Company (or match to exact English choices on form) / null" } }
+               **STRICT INTERROGATION PROTOCOL**: If ANY of the fields above (especially accountingRecord, taxComplianceStatus, statutoryAudit, legalForm) are unknown or null, YOU MUST EXPLICITLY ASK THE USER TO PROVIDE THEM IN THE 'reply_text'. DO NOT SIMPLY SAY "I have filled it out". Your 'reply_text' MUST BE A DIRECT QUESTION to the user asking for the missing data (e.g., "Are you using accounting software? Are you a Gold, Silver, or Bronze taxpayer?"). If you fail to ask, the form will be incomplete.
 
             **CRITICAL EXECUTOR LOOP**: 
             1. Did the user ask for an action, OR say "yes/do it" to a proposal in the history?

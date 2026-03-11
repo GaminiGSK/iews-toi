@@ -1544,8 +1544,45 @@ router.get('/ledger', auth, async (req, res) => {
         const transactions = await Transaction.find({
             companyCode: req.user.companyCode
         })
-            .sort({ date: 1, sequence: 1 }) // SORT BY DATE THEN SEQUENCE
             .lean();
+
+        // Fetch all Posted Journal Entries
+        const JournalEntry = require('../models/JournalEntry');
+        const journalEntries = await JournalEntry.find({
+            companyCode: req.user.companyCode,
+            status: 'Posted'
+        }).lean();
+
+        // Flatten JE lines into pseudo-transactions for the ledger view
+        const jeTransactions = [];
+        journalEntries.forEach(je => {
+            je.lines.forEach((line, index) => {
+                // Determine amount polarity based on Bank Transaction logic:
+                // Credit = Positive (Money IN equivalent), Debit = Negative (Money OUT equivalent)
+                const amount = line.credit && line.credit > 0 ? line.credit : -(line.debit || 0);
+                
+                jeTransactions.push({
+                    _id: `${je._id}_${index}`, // Composite ID
+                    date: je.date,
+                    sequence: 9999, // Push to end of day
+                    description: `[Journal Entry: ${je.reference || 'Adjust'}] ${je.description} \n↳ ${line.description || 'Line item'}`,
+                    amount: amount,
+                    accountCode: line.accountCode, // String/ObjectId reference
+                    tagSource: 'je',
+                    isJournalEntry: true
+                });
+            });
+        });
+
+        // Combine and Sort by Date (ASC)
+        let combinedTransactions = [...transactions, ...jeTransactions].sort((a, b) => {
+            const dateA = new Date(a.date).getTime();
+            const dateB = new Date(b.date).getTime();
+            if (dateA === dateB) {
+                return (a.sequence || 0) - (b.sequence || 0);
+            }
+            return dateA - dateB;
+        });
 
         // Fetch all Exchange Rates
         const rates = await ExchangeRate.find({ companyCode: req.user.companyCode }).lean();
@@ -1558,7 +1595,7 @@ router.get('/ledger', auth, async (req, res) => {
         };
 
         // Enrich transactions with KHR values
-        const enrichedTransactions = transactions.map(tx => {
+        const enrichedTransactions = combinedTransactions.map(tx => {
             const rate = getRate(tx.date);
             return {
                 ...tx,

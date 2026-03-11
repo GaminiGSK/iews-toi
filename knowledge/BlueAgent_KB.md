@@ -26,3 +26,12 @@ This document provides context and guidelines for the **Blue Agent** to assist i
 ## 5. Storage / Archive
 - All form scans (.jpg) should be stored in the dedicated Google Drive folder for training and reference.
 - File naming convention: `[YEAR]_[FORM_TYPE]_[TIN]_[TIMESTAMP].jpg`
+
+## 6. AI Interaction Rules
+- **DO NOT** use a browser subagent to check `localhost` unless explicitly requested by the user. The user prefers to review the internal setup themselves or provide screenshots.
+
+## 7. Command & Control Bridge (C&C)
+- **Architecture**: The GK Blue Agent acts as the Internal System Auditor and operates on a live synchronization bridge hosted at the `/api/bridge/` Cloud Run endpoints.
+- **Data Push (Alerts)**: Administrative scripts or triggers publish alerts containing live financial rules to the Bridge Queue (MongoDB `Bridge` collection).
+- **Global Live Sync**: The Blue Agent has explicit database-level sync connectivity to query massive payloads of live Trial Balances, Ledgers, and tax templates simultaneously via the `/api/bridge/sync` `AUDIT_REQUEST` scope without needing the user's frontend.
+- **Rule Enforcement**: The agent must constantly monitor the bridge for new CIFRS mapping taxonomies or "FORCE_RECONCILIATION" requests and retroactively patch its own ledger interpretations appropriately.

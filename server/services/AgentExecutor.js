@@ -57,7 +57,18 @@ class AgentExecutor {
         const Transaction = require('../models/Transaction');
         const AccountCode = require('../models/AccountCode');
 
-        const targetCodeObj = await AccountCode.findOne({ companyCode: companyCode, code: targetCode });
+        let targetCodeObj = await AccountCode.findOne({ companyCode: companyCode, code: targetCode });
+        
+        // AI Fallback: If AI sent the description instead of the code number, try to match by description
+        if (!targetCodeObj && targetCode && targetCode.length > 0) {
+            targetCodeObj = await AccountCode.findOne({
+                companyCode: companyCode,
+                $or: [
+                    { description: { $regex: new RegExp(targetCode.trim(), 'i') } },
+                    { matchDescription: { $regex: new RegExp(targetCode.trim(), 'i') } }
+                ]
+            });
+        }
         if (targetCodeObj) {
             const query = { companyCode: companyCode };
             if (condition === 'money_in') query.amount = { $gt: 0 };

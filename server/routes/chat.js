@@ -216,7 +216,16 @@ router.post('/message', auth, async (req, res) => {
             }
         }
 
-        // 2. Call AI Service (Route based on model selection)
+        let backendBrData = [];
+        if (profile.documents && Array.isArray(profile.documents)) {
+            backendBrData = profile.documents
+                .filter(doc => doc.rawText)
+                .map(doc => ({
+                    name: doc.originalName || doc.docType || 'Document',
+                    text: doc.rawText
+                }));
+        }
+
         const context = {
             companyName,
             profile: {
@@ -236,7 +245,7 @@ router.post('/message', auth, async (req, res) => {
             monthlyStats,
             yearlyStats,
             ui: req.body.context || {}, // Pass UI Context (Route, etc.)
-            brData: req.body.context?.brData || [], // Explicitly pass BR harvested data
+            brData: backendBrData.length > 0 ? backendBrData : (req.body.context?.brData || []), // Use backend docs first
             history: req.body.history || [] // Pass conversation history
         };
 
@@ -266,6 +275,12 @@ router.post('/message', auth, async (req, res) => {
             if (jsonMatch) {
                 const cleanJson = jsonMatch[0];
                 const toolPayload = JSON.parse(cleanJson);
+
+                // --- NORMALIZE AI MISTAKES ---
+                if (toolPayload.action && toolPayload.tool_use !== 'workspace_action' && toolPayload.tool_use !== 'propose_journal_entry' && toolPayload.tool_use !== 'generate_chart' && toolPayload.tool_use !== 'fill_toi_workspace') {
+                    // Force it to a workspace action so the frontend processor runs it
+                    toolPayload.tool_use = 'workspace_action';
+                }
 
                 // --- INJECT SECURE CONTEXT ---
                 // Overwrite frontend params with the authorized/impersonated backend context

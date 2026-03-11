@@ -7,6 +7,7 @@ import {
   Loader2,
   ShieldCheck,
   Activity,
+  Printer,
 } from "lucide-react";
 import LiveTaxWorkspace from "./LiveTaxWorkspace";
 
@@ -25,7 +26,22 @@ const ToiAcar = ({ onBack, packageId, year }) => {
   ]);
 
   // Data State for Template Auto-fill
-  const [filledData, setFilledData] = useState(null);
+  const [filledData, setFilledData] = useState(() => {
+    try {
+      const saved = localStorage.getItem('toiFilledData');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  React.useEffect(() => {
+    if (filledData) {
+      localStorage.setItem('toiFilledData', JSON.stringify(filledData));
+    } else {
+      localStorage.removeItem('toiFilledData');
+    }
+  }, [filledData]);
 
   const handleSend = async () => {
     if (!agentInput.trim() || isTyping) return;
@@ -95,7 +111,12 @@ const ToiAcar = ({ onBack, packageId, year }) => {
           address3: p.address3 || "N/A",
           taxMonths: p.taxMonths || "12",
           fromDate: p.fromDate || "01012026",
-          untilDate: p.untilDate || "31122026"
+          untilDate: p.untilDate || "31122026",
+          accountingRecord: p.accountingRecord || null,
+          softwareName: p.softwareName || "",
+          taxComplianceStatus: p.taxComplianceStatus || null,
+          statutoryAudit: p.statutoryAudit || null,
+          legalForm: p.legalForm || null
         };
         setTimeout(() => setFilledData(safeData), 500); // Visual delay for realism
       }
@@ -113,9 +134,9 @@ const ToiAcar = ({ onBack, packageId, year }) => {
   const years = Array.from({ length: 21 }, (_, i) => (currentYear - 10 + i).toString());
 
   return (
-    <div className="w-full min-h-screen bg-black text-white flex flex-col font-sans relative overflow-hidden">
+    <div className="w-full min-h-screen bg-black text-white flex flex-col font-sans relative overflow-hidden print:h-auto print:min-h-0 print:bg-white print:text-black">
       {/* HEADER */}
-      <div className="bg-black/95 border-b border-white/5 px-8 py-4 flex items-center sticky top-0 z-50 overflow-hidden">
+      <div className="bg-black/95 border-b border-white/5 px-8 py-4 flex items-center sticky top-0 z-50 overflow-hidden print:hidden">
         <div className="flex items-center gap-4 shrink-0">
           <button
             onClick={onBack}
@@ -160,8 +181,16 @@ const ToiAcar = ({ onBack, packageId, year }) => {
           })}
         </div>
 
-        {/* YEAR SELECTOR */}
-        <div className="flex items-center gap-2 pr-6">
+        {/* YEAR SELECTOR & PRINT */}
+        <div className="flex items-center gap-4 pr-6 shrink-0">
+          <button
+            onClick={() => window.print()}
+            className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 rounded text-[11px] font-bold transition shadow"
+          >
+            <Printer size={13} /> Print
+          </button>
+          
+          <div className="flex items-center gap-2 border-l border-white/10 pl-4">
           <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
             Year
           </label>
@@ -176,14 +205,15 @@ const ToiAcar = ({ onBack, packageId, year }) => {
               </option>
             ))}
           </select>
+          </div>
         </div>
       </div>
 
       {/* MAIN CONTENT SPLIT AREA */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden print:overflow-visible">
         {/* NEW LEFT SIDE: WHITE PREVIEW (ONLY PAGE 1) */}
         {activeWorkspacePage === 1 && (
-          <div className="w-[50%] shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black">
+          <div className="w-[50%] shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0">
             {/* Content for the white preview */}
             <div className="w-full flex flex-col font-sans mb-12 text-black">
               {/* OFFICIAL GDT HEADER - Based exactly on reference image */}
@@ -411,7 +441,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     {row.numBox ? (
                       <div className="flex-1 flex bg-white justify-between">
                         <div className="flex items-center px-4">
-                          <span className="font-bold text-[13px] text-blue-900 uppercase tracking-widest leading-none translate-y-px">{filledData ? filledData[row.valKey] : ""}</span>
+                          <span className="font-bold text-[13px] text-blue-900 uppercase tracking-widest leading-none translate-y-px whitespace-pre-wrap py-2">{filledData ? filledData[row.valKey] : ""}</span>
                         </div>
                         <div className="flex items-center px-4 gap-2 border-l border-black shrink-0">
                           <div className="flex flex-col justify-center items-end text-right">
@@ -430,7 +460,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       </div>
                     ) : (
                       <div className="flex-1 bg-white flex items-center px-4">
-                        <span className="font-bold text-[13px] text-blue-900 uppercase tracking-widest leading-none translate-y-px">{filledData ? filledData[row.valKey] : ""}</span>
+                        <span className="font-bold text-[13px] text-blue-900 uppercase tracking-widest leading-none translate-y-px whitespace-pre-wrap py-2">{filledData ? filledData[row.valKey] : ""}</span>
                       </div>
                     )}
                   </div>
@@ -456,7 +486,9 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   </div>
                   <div className="flex-1 flex px-3 py-2 items-center text-[10px] gap-6">
                     <div className="flex items-center gap-2 border border-black p-1.5 flex-1 h-full shadow-sm">
-                      <div className="w-5 h-5 border border-black shrink-0 bg-white"></div>
+                      <div className="w-5 h-5 border border-black shrink-0 bg-white flex items-center justify-center">
+                        {filledData?.accountingRecord === 'Using Software' && <div className="w-3 h-3 bg-blue-900"></div>}
+                      </div>
                       <div className="flex flex-col leading-tight">
                         <span
                           className="font-bold text-[10px]"
@@ -468,10 +500,12 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                           Using Software (Name):
                         </span>
                       </div>
-                      <div className="border-b border-dashed border-slate-400 flex-1 ml-2"></div>
+                      <div className="border-b border-dashed border-slate-400 flex-1 ml-2 font-bold text-blue-900 px-2 text-center text-[10px] whitespace-nowrap overflow-hidden">{filledData?.accountingRecord === 'Using Software' && filledData?.softwareName}</div>
                     </div>
                     <div className="flex items-center gap-2 border border-black p-1.5 h-full shadow-sm">
-                      <div className="w-5 h-5 border border-black shrink-0 bg-white"></div>
+                      <div className="w-5 h-5 border border-black shrink-0 bg-white flex items-center justify-center">
+                        {filledData?.accountingRecord === 'Not Using Software' && <div className="w-3 h-3 bg-blue-900"></div>}
+                      </div>
                       <div className="flex flex-col leading-tight">
                         <span
                           className="font-bold text-[10px]"
@@ -503,7 +537,9 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   </div>
                   <div className="flex-1 flex px-6 items-center gap-10 text-[11px] font-black uppercase bg-white">
                     <div className="flex items-center gap-3 border border-black p-2 shadow-sm">
-                      <div className="w-5 h-5 border border-black bg-white"></div>{" "}
+                      <div className="w-5 h-5 border border-black bg-white flex items-center justify-center">
+                        {filledData?.taxComplianceStatus === 'Gold' && <div className="w-3 h-3 bg-blue-900"></div>}
+                      </div>{" "}
                       មាស
                       <br />
                       <span className="text-[9px] font-bold text-slate-500">
@@ -511,7 +547,9 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       </span>
                     </div>
                     <div className="flex items-center gap-3 border border-black p-2 shadow-sm">
-                      <div className="w-5 h-5 border border-black bg-white"></div>{" "}
+                      <div className="w-5 h-5 border border-black bg-white flex items-center justify-center">
+                        {filledData?.taxComplianceStatus === 'Silver' && <div className="w-3 h-3 bg-blue-900"></div>}
+                      </div>{" "}
                       ប្រាក់
                       <br />
                       <span className="text-[9px] font-bold text-slate-500">
@@ -519,7 +557,9 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       </span>
                     </div>
                     <div className="flex items-center gap-3 border border-black p-2 shadow-sm">
-                      <div className="w-5 h-5 border border-black bg-white"></div>{" "}
+                      <div className="w-5 h-5 border border-black bg-white flex items-center justify-center">
+                        {filledData?.taxComplianceStatus === 'Bronze' && <div className="w-3 h-3 bg-blue-900"></div>}
+                      </div>{" "}
                       សំរិទ្ធ
                       <br />
                       <span className="text-[9px] font-bold text-slate-500">
@@ -545,7 +585,9 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   </div>
                   <div className="flex-1 flex px-6 py-2 items-center gap-10 text-[11px] bg-white">
                     <div className="flex items-center gap-3 border border-black p-2 flex-1 shadow-sm">
-                      <div className="w-5 h-5 border border-black bg-white shrink-0"></div>{" "}
+                      <div className="w-5 h-5 border border-black bg-white shrink-0 flex items-center justify-center">
+                        {filledData?.statutoryAudit === 'Required' && <div className="w-3 h-3 bg-blue-900"></div>}
+                      </div>{" "}
                       <div className="flex flex-col font-bold leading-tight">
                         <span>តម្រូវឱ្យមាន</span>
                         <span className="text-[9px] text-slate-500 mt-0.5">
@@ -554,7 +596,9 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       </div>
                     </div>
                     <div className="flex items-center gap-3 border border-black p-2 flex-1 shadow-sm">
-                      <div className="w-5 h-5 border border-black bg-white shrink-0"></div>{" "}
+                      <div className="w-5 h-5 border border-black bg-white shrink-0 flex items-center justify-center">
+                        {filledData?.statutoryAudit === 'Not Required' && <div className="w-3 h-3 bg-blue-900"></div>}
+                      </div>{" "}
                       <div className="flex flex-col font-bold leading-tight">
                         <span>មិនតម្រូវឱ្យមាន</span>
                         <span className="text-[9px] text-slate-500 mt-0.5">
@@ -608,7 +652,9 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         },
                       ].map((item, idx) => (
                         <div key={idx} className="flex gap-2 items-start">
-                          <div className="w-5 h-5 border border-black shrink-0"></div>
+                          <div className="w-5 h-5 border border-black shrink-0 flex items-center justify-center">
+                            {filledData?.legalForm === item.en && <div className="w-3 h-3 bg-blue-900"></div>}
+                          </div>
                           <div className="flex flex-col leading-tight">
                             <span
                               style={{
@@ -642,7 +688,9 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         },
                       ].map((item, idx) => (
                         <div key={idx} className="flex gap-2 items-start">
-                          <div className="w-5 h-5 border border-black shrink-0"></div>
+                          <div className="w-5 h-5 border border-black shrink-0 flex items-center justify-center">
+                            {filledData?.legalForm === item.en && <div className="w-3 h-3 bg-blue-900"></div>}
+                          </div>
                           <div className="flex flex-col leading-tight">
                             <span
                               style={{
@@ -669,7 +717,9 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         { kh: "សហគ្រាសដទៃទៀត", en: "Others" },
                       ].map((item, idx) => (
                         <div key={idx} className="flex gap-2 items-start">
-                          <div className="w-5 h-5 border border-black shrink-0"></div>
+                          <div className="w-5 h-5 border border-black shrink-0 flex items-center justify-center">
+                            {filledData?.legalForm === item.en && <div className="w-3 h-3 bg-blue-900"></div>}
+                          </div>
                           <div className="flex flex-col leading-tight w-full">
                             <span
                               style={{
@@ -1027,13 +1077,13 @@ const ToiAcar = ({ onBack, packageId, year }) => {
         )}
 
         {/* MIDDLE SIDE: GPT Result Landing Page (Totally Black, empty) */}
-        <div className="w-[25%] overflow-y-auto relative bg-black custom-scrollbar">
+        <div className="w-[25%] overflow-y-auto relative bg-black custom-scrollbar print:hidden">
           {/* Embedded TOI Page 1 Admin Template for GPT Engine to dictate */}
           <LiveTaxWorkspace embedded={true} forcePage={activeWorkspacePage} activeYear={selectedYear} />
         </div>
 
         {/* RIGHT SIDE: Agent Terminal (Right Top Side) */}
-        <div className="w-[25%] shrink-0 border-l border-white/5 bg-slate-950/30 p-8 overflow-y-auto flex flex-col justify-start items-center custom-scrollbar">
+        <div className="w-[25%] shrink-0 border-l border-white/5 bg-slate-950/30 p-8 overflow-y-auto flex flex-col justify-start items-center custom-scrollbar print:hidden">
           {/* AI Orb / Avatar */}
           <div className="relative mb-8 flex items-center justify-center gap-3 mt-8 animate-in fade-in duration-700">
             <span className="text-3xl font-medium tracking-tight text-white/90 drop-shadow-md pb-1">

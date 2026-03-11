@@ -1,0 +1,5 @@
+# AI Agent Instructions
+
+1. **Browser Navigation:** Do NOT use the browser subagent or check `localhost` to visually inspect the UI unless explicitly requested by the user. 
+2. **Visual Verification:** The user prefers to provide screenshots or check the internal setup themselves, so avoid opening the browser subagent for routine checks and tests to save time and reduce popup disruptions.
+3. **Internal Tools:** Focus on backend APIs, DB verification, and code implementation.

@@ -11,6 +11,7 @@ const GeneralLedger = ({ onBack }) => {
     const [error, setError] = useState(null);
     const [viewMode, setViewMode] = useState('date'); // 'date' | 'code'
     const [filterCode, setFilterCode] = useState('');
+    const [fiscalYear, setFiscalYear] = useState('all');
     const [bulkTargetCode, setBulkTargetCode] = useState('');
 
     useEffect(() => {
@@ -174,9 +175,15 @@ const GeneralLedger = ({ onBack }) => {
     };
 
     // Filter transactions
-    const filteredTransactions = filterCode
-        ? transactions.filter(t => t.accountCode === filterCode)
-        : transactions;
+    const filteredTransactions = transactions.filter(t => {
+        if (filterCode && filterCode !== 'uncategorized' && t.accountCode !== filterCode) return false;
+        if (filterCode === 'uncategorized' && t.accountCode && t.accountCode !== 'uncategorized') return false;
+        if (fiscalYear !== 'all') {
+            const y = t.date ? new Date(t.date).getFullYear() : null;
+            if (y && y.toString() !== fiscalYear) return false;
+        }
+        return true;
+    });
 
     // Calculate grouping for Code View
     const getGroupedTransactions = () => {
@@ -241,18 +248,25 @@ const GeneralLedger = ({ onBack }) => {
                             </td>
                             <td className="px-6 py-4 text-xs align-top">
                                 <div className="flex items-center gap-2">
-                                    <select
-                                        value={tx.accountCode || ''}
-                                        onChange={(e) => handleTagChange(tx._id, e.target.value)}
-                                        className={`flex-1 border rounded-lg px-2 py-1 text-xs font-mono focus:ring-2 focus:ring-blue-500 outline-none bg-white transition-colors ${tx.tagSource === 'ai' ? 'border-purple-300 text-purple-700 bg-purple-50/30' : 'border-gray-200 text-gray-700'}`}
-                                    >
-                                        <option value="">-- Select Code --</option>
-                                        {codes.map(c => (
-                                            <option key={c._id} value={c._id}>
-                                                {c.code} - {typeof c.description === 'object' ? JSON.stringify(c.description) : String(c.description || '')}
-                                            </option>
-                                        ))}
-                                    </select>
+                                    {tx.isJournalEntry ? (
+                                        <div className="flex-1 px-2 py-1 text-xs font-mono bg-orange-50 text-orange-800 border-orange-200 border rounded-lg flex items-center gap-1 shadow-sm">
+                                            <Tag size={12} className="text-orange-500" />
+                                            {codes.find(c => c._id === tx.accountCode)?.code || 'LOCKED (JE)'}
+                                        </div>
+                                    ) : (
+                                        <select
+                                            value={tx.accountCode || ''}
+                                            onChange={(e) => handleTagChange(tx._id, e.target.value)}
+                                            className={`flex-1 border rounded-lg px-2 py-1 text-xs font-mono focus:ring-2 focus:ring-blue-500 outline-none bg-white transition-colors ${tx.tagSource === 'ai' ? 'border-purple-300 text-purple-700 bg-purple-50/30' : 'border-gray-200 text-gray-700'}`}
+                                        >
+                                            <option value="">-- Select Code --</option>
+                                            {codes.map(c => (
+                                                <option key={c._id} value={c._id}>
+                                                    {c.code} - {typeof c.description === 'object' ? JSON.stringify(c.description) : String(c.description || '')}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    )}
                                     {tx.tagSource === 'ai' && (
                                         <div title="Tagged by AI Logic" className="text-purple-500 animate-pulse">
                                             <Wand2 size={14} />
@@ -332,6 +346,22 @@ const GeneralLedger = ({ onBack }) => {
                             </button>
                         </div>
 
+                        {/* Year Dropdown */}
+                        <div className="relative">
+                            <select
+                                value={fiscalYear}
+                                onChange={(e) => setFiscalYear(e.target.value)}
+                                className="appearance-none bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold rounded-lg h-9 pl-3 pr-8 focus:ring-2 focus:ring-blue-500 outline-none shadow-sm cursor-pointer hover:border-blue-400 transition"
+                            >
+                                <option value="2025">Year: 2025</option>
+                                <option value="2024">Year: 2024</option>
+                                <option value="all">All Years</option>
+                            </select>
+                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-blue-500">
+                                <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
+                            </div>
+                        </div>
+
                         {/* Filter Dropdown */}
                         <div className="relative">
                             <select
@@ -379,6 +409,7 @@ const GeneralLedger = ({ onBack }) => {
                                 </p>
                                 <p className="text-2xl font-bold text-green-600 mt-1">
                                     ${filteredTransactions
+                                        .filter(tx => !tx.isJournalEntry)
                                         .reduce((acc, tx) => acc + (Number(String(tx.amount).replace(/[^0-9.-]+/g, "")) > 0 ? Number(String(tx.amount).replace(/[^0-9.-]+/g, "")) : 0), 0)
                                         .toLocaleString('en-US', { minimumFractionDigits: 2 })}
                                 </p>
@@ -389,6 +420,7 @@ const GeneralLedger = ({ onBack }) => {
                                 </p>
                                 <p className="text-2xl font-bold text-red-600 mt-1">
                                     ${Math.abs(filteredTransactions
+                                        .filter(tx => !tx.isJournalEntry)
                                         .reduce((acc, tx) => acc + (Number(String(tx.amount).replace(/[^0-9.-]+/g, "")) < 0 ? Number(String(tx.amount).replace(/[^0-9.-]+/g, "")) : 0), 0)
                                     ).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                                 </p>
@@ -399,9 +431,10 @@ const GeneralLedger = ({ onBack }) => {
                                         <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
                                             {filterCode === 'uncategorized' ? 'Unassigned Balance' : 'Net Balance'}
                                         </p>
-                                        <p className={`text-2xl font-bold mt-1 ${filteredTransactions.reduce((acc, tx) => acc + (Number(String(tx.amount).replace(/[^0-9.-]+/g, "")) || 0), 0) >= 0 ? 'text-green-600' : 'text-blue-900'
+                                        <p className={`text-2xl font-bold mt-1 ${filteredTransactions.filter(tx => !tx.isJournalEntry).reduce((acc, tx) => acc + (Number(String(tx.amount).replace(/[^0-9.-]+/g, "")) || 0), 0) >= 0 ? 'text-green-600' : 'text-blue-900'
                                             }`}>
                                             ${filteredTransactions
+                                                .filter(tx => !tx.isJournalEntry)
                                                 .reduce((acc, tx) => acc + (Number(String(tx.amount).replace(/[^0-9.-]+/g, "")) || 0), 0)
                                                 .toLocaleString('en-US', { minimumFractionDigits: 2 })}
                                         </p>
