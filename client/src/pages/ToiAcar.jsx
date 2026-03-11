@@ -475,8 +475,8 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                 ))}
               </div>
 
-              {/* Compliance Details */}
-              <div className="flex flex-col border border-black">
+              {/* Compliance Details (Sections 11 - 18) */}
+              <div className="flex flex-col border-[2px] border-black mb-2 bg-white shadow-sm">
                 <div className="flex border-b border-black min-h-[50px] bg-white">
                   <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-[#e6e6e6]">
                     11
@@ -599,10 +599,9 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     </div>
                   </div>
                 </div>
-              </div>
 
               {/* Section 14: Legal Form */}
-              <div className="flex border-b border-black border-t-0 bg-white min-h-[50px]">
+              <div className="flex border-b border-black bg-white min-h-[50px]">
                 <div className="w-[49px] shrink-0 border-r border-black flex flex-col items-center justify-center bg-[#e6e6e6]">
                   {/* Container to center 14 properly */}
                   <div className="h-full flex flex-col justify-center font-bold text-sm">
@@ -722,8 +721,8 @@ const ToiAcar = ({ onBack, packageId, year }) => {
               </div>
             </div>
 
-              {/* Sections 15, 16, 17 */}
-              <div className="flex flex-col border-[1.5px] border-black border-t-0 border-l-0 border-r-0 bg-white">
+              {/* Sections 15, 16, 17, 18 */}
+              <div className="flex flex-col bg-white">
                 {/* Row 15 */}
                 <div className="flex border-b-[1.5px] border-black min-h-[36px]">
                   <div className="w-[49px] shrink-0 border-r-[1.5px] border-black flex items-center justify-center font-bold text-sm bg-[#e6e6e6]">
@@ -888,6 +887,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   </div>
                   <div className="flex-1 bg-white flex items-center font-bold text-black uppercase tracking-widest px-4">{filledData?.taxCreditCarriedForward || ""}</div>
                 </div>
+              </div>
               </div>
 
               {/* DECLARATION SECTION */}
