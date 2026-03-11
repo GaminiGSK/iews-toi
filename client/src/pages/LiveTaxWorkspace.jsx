@@ -298,7 +298,7 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear = "20
     <div className="min-h-screen bg-[#020617] text-slate-200 flex flex-col font-sans selection:bg-rose-500/30">
       {/* Header / Navigation */}
       {!embedded ? (
-        <div className="bg-slate-900/90 backdrop-blur-xl border-b border-white/5 px-6 py-2.5 flex items-center justify-between sticky top-0 z-50">
+        <div className="bg-slate-900/90 backdrop-blur-xl border-b border-white/5 px-6 py-2.5 flex items-center justify-between sticky top-0 z-50 print:hidden">
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate("/dashboard")}
@@ -388,15 +388,15 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear = "20
       ) : null}
 
       <div
-        className={`flex-1 overflow-auto px-4 md:px-8 py-8 flex justify-start lg:justify-center items-start no-scrollbar ${embedded ? "bg-transparent" : "bg-[#020617]"}`}
+        className={`flex-1 overflow-auto px-4 md:px-8 py-8 flex justify-start lg:justify-center items-start no-scrollbar print:p-0 print:overflow-visible ${embedded ? "bg-transparent print:bg-white" : "bg-[#020617] print:bg-white"}`}
       >
         <div
-          className={`w-full mx-auto flex flex-col items-start ${!embedded ? "min-w-full lg:min-w-[1200px] max-w-[1580px]" : ""}`}
+          className={`w-full mx-auto flex flex-col items-start print:w-[210mm] print:min-w-0 print:max-w-none print:m-0 print:shadow-none ${!embedded ? "min-w-full lg:min-w-[1200px] max-w-[1580px]" : ""}`}
         >
           {/* PAGE 1 CONTENT */}
           {activePage === 1 && (
             <div
-              className={`animate-fade-in relative flex flex-col gap-10 mx-auto w-full ${!embedded ? "max-w-[1250px]" : ""}`}
+              className={`animate-fade-in relative flex flex-col gap-10 mx-auto w-full print:max-w-none print:w-[210mm] print:m-0 ${!embedded ? "max-w-[1250px]" : ""}`}
             >
               <div className="flex flex-col border-b border-white/10 pb-8 gap-8">
                 <div className="flex justify-between items-start">
