@@ -607,7 +607,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                 <div className="flex-1 flex flex-col bg-white">
                   {/* Top Header Row of 14 */}
                   <div className="flex min-h-[38px]">
-                    <div className="w-[340px] shrink-0 pl-3 pr-2 py-1 flex flex-col justify-center">
+                    <div className="w-[340px] shrink-0 border-r border-black pl-3 pr-2 py-1 flex flex-col justify-center">
                       <span className="font-bold text-[12px] leading-tight text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
                         ទម្រង់សិទ្ធិគតិយុត្ត /ទម្រង់នៃប្រតិបត្តិការអាជីវកម្ម ៖
                       </span>
@@ -616,22 +616,22 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       </span>
                     </div>
                     <div className="flex-1 flex gap-2">
-                      <div className="flex-1 flex items-center gap-2 pr-1">
-                        <div className="w-[16px] h-[16px] border border-black shrink-0 bg-white flex items-center justify-center">
-                          {filledData?.legalForm === "Private Limited Company" && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
+                      <div className="flex-1 flex items-center gap-2 pl-3">
+                        <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center">
+                          {filledData?.legalForm === "Private Limited Company" && <div className="w-3 h-3 bg-blue-900 border border-transparent"></div>}
                         </div>
                         <div className="flex flex-col leading-tight pt-[1px] w-full">
                           <span className="text-[11px] text-black tracking-tighter" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ក្រុមហ៊ុនឯកជនទទួលខុសត្រូវមានកម្រិត</span>
-                          <span className="text-[9px] text-black font-normal mt-[1px]" style={{ fontFamily: '"Arial", sans-serif', letterSpacing: '-0.2px' }}>Private Limited Company</span>
+                          <span className="text-[10px] text-black font-normal mt-[1px]" style={{ fontFamily: '"Arial", sans-serif', letterSpacing: '-0.2px' }}>Private Limited Company</span>
                         </div>
                       </div>
                       <div className="flex-[0.8] flex items-center gap-2">
-                        <div className="w-[16px] h-[16px] border border-black shrink-0 bg-white flex items-center justify-center">
-                          {filledData?.legalForm === "State Joint Venture" && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
+                        <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center">
+                          {filledData?.legalForm === "State Joint Venture" && <div className="w-3 h-3 bg-blue-900 border border-transparent"></div>}
                         </div>
                         <div className="flex flex-col leading-tight pt-[1px] w-full pr-2">
                           <span className="text-[11px] text-black tracking-tighter" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សហគ្រាសចម្រុះរដ្ឋ</span>
-                          <span className="text-[9px] text-black font-normal mt-[1px]" style={{ fontFamily: '"Arial", sans-serif', letterSpacing: '-0.2px' }}>State Joint Venture</span>
+                          <span className="text-[10px] text-black font-normal mt-[1px]" style={{ fontFamily: '"Arial", sans-serif', letterSpacing: '-0.2px' }}>State Joint Venture</span>
                         </div>
                       </div>
                     </div>
@@ -641,42 +641,42 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   <div className="border-b-[1.5px] border-black w-full"></div>
                   
                   {/* Bottom Grid Rows */}
-                  <div className="flex flex-1 py-1.5">
+                  <div className="flex flex-1 py-1.5 min-h-[140px]">
                     {/* Column 1 */}
-                    <div className="w-[340px] shrink-0 pl-3 pr-2 flex flex-col gap-[7px]">
+                    <div className="w-[340px] shrink-0 pl-16 pr-2 flex flex-col gap-[7px]">
                       {[
                         { kh: "សហគ្រាសឯកបុគ្គល/រូបវន្តបុគ្គល", en: "Sole Proprietorship / Physical Person" },
                         { kh: "ក្រុមហ៊ុនសហកម្មសិទ្ធិទូទៅ", en: "General Partnership" },
                         { kh: "ក្រុមហ៊ុនសហកម្មសិទ្ធិមានកម្រិត", en: "Limited Partnership" },
                         { kh: "សហគ្រាសឯកបុគ្គលទទួលខុសត្រូវមានកម្រិត", en: "Single Member Private Limited Company" },
                       ].map((item, idx) => (
-                        <div key={'c1'+idx} className="flex gap-2 items-start">
-                          <div className="w-[16px] h-[16px] border border-black shrink-0 bg-white flex items-center justify-center mt-[1px]">
-                            {filledData?.legalForm === item.en && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
+                        <div key={'c1'+idx} className="flex gap-2 items-start mt-0.5">
+                          <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center mt-[2px]">
+                            {filledData?.legalForm === item.en && <div className="w-3 h-3 bg-blue-900 border border-transparent"></div>}
                           </div>
                           <div className="flex flex-col leading-tight w-full">
                             <span className="text-[11px] text-black tracking-tighter" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{item.kh}</span>
-                            <span className="text-[9px] text-black font-normal mt-[1px]" style={{ fontFamily: '"Arial", sans-serif', letterSpacing: '-0.2px' }}>{item.en}</span>
+                            <span className="text-[10px] text-black font-normal mt-[1px]" style={{ fontFamily: '"Arial", sans-serif', letterSpacing: '-0.2px' }}>{item.en}</span>
                           </div>
                         </div>
                       ))}
                     </div>
                     {/* Columns 2 and 3 container */}
                     <div className="flex-1 flex gap-2">
-                      <div className="flex-1 flex flex-col gap-[7px] pr-1">
+                      <div className="flex-1 flex flex-col gap-[7px] pl-3">
                         {[
                           { kh: "ក្រុមហ៊ុនមហាជនទទួលខុសត្រូវមានកម្រិត", en: "Public Limited Company" },
                           { kh: "ចំណែកក្នុងសហគ្រាសចម្រុះ", en: "Interest in Joint Venture" },
                           { kh: "សហគ្រាសសាធារណៈ", en: "Public Enterprise" },
                           { kh: "សហគ្រាសរដ្ឋ", en: "State Enterprise" },
                         ].map((item, idx) => (
-                          <div key={'c2'+idx} className="flex gap-2 items-start">
-                            <div className="w-[16px] h-[16px] border border-black shrink-0 bg-white flex items-center justify-center mt-[1px]">
-                              {filledData?.legalForm === item.en && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
+                          <div key={'c2'+idx} className="flex gap-2 items-start mt-0.5">
+                            <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center mt-[2px]">
+                              {filledData?.legalForm === item.en && <div className="w-3 h-3 bg-blue-900 border border-transparent"></div>}
                             </div>
                             <div className="flex flex-col leading-tight w-full">
                               <span className="text-[11px] text-black tracking-tighter" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{item.kh}</span>
-                              <span className="text-[9px] text-black font-normal mt-[1px]" style={{ fontFamily: '"Arial", sans-serif', letterSpacing: '-0.2px' }}>{item.en}</span>
+                              <span className="text-[10px] text-black font-normal mt-[1px]" style={{ fontFamily: '"Arial", sans-serif', letterSpacing: '-0.2px' }}>{item.en}</span>
                             </div>
                           </div>
                         ))}
@@ -688,15 +688,24 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                           { kh: "អង្គការក្រៅរដ្ឋាភិបាល /សមាគម", en: "Non-Government Organization / Association" },
                           { kh: "សហគ្រាសដទៃទៀត", en: "Others" },
                         ].map((item, idx) => (
-                          <div key={'c3'+idx} className="flex gap-2 items-start">
-                            <div className="w-[16px] h-[16px] border border-black shrink-0 bg-white flex items-center justify-center mt-[1px]">
-                              {filledData?.legalForm === item.en && <div className="w-2.5 h-2.5 bg-blue-900 border border-transparent"></div>}
+                          <div key={'c3'+idx} className="flex gap-2 items-start mt-0.5">
+                            <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center mt-[2px]">
+                              {filledData?.legalForm === item.en && <div className="w-3 h-3 bg-blue-900 border border-transparent"></div>}
                             </div>
-                            <div className="flex flex-col leading-tight w-full pr-2">
-                              <span className="text-[11px] text-black tracking-tighter" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{item.kh}</span>
-                              <span className="text-[9px] text-black font-normal mt-[1px]" style={{ fontFamily: '"Arial", sans-serif', letterSpacing: '-0.2px' }}>{item.en}</span>
-                              {item.en === "Others" && (
-                                <div className="border-b-[1.5px] border-dashed border-black mt-[2px] w-full" />
+                            <div className={`flex ${item.en === "Others" ? "flex-row gap-2 flex-1 items-end" : "flex-col w-full pr-2"} leading-tight`}>
+                              {item.en === "Others" ? (
+                                <>
+                                  <div className="flex flex-col whitespace-nowrap">
+                                    <span className="text-[11px] text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{item.kh}</span>
+                                    <span className="text-[10px] text-black font-normal mt-[1px]" style={{ fontFamily: '"Arial", sans-serif', letterSpacing: '-0.2px' }}>{item.en}</span>
+                                  </div>
+                                  <div className="border-[1.5px] border-black flex-1 h-[20px] min-w-[50px] mr-2 mb-0.5"></div>
+                                </>
+                              ) : (
+                                <>
+                                  <span className="text-[11px] text-black tracking-tighter" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{item.kh}</span>
+                                  <span className="text-[10px] text-black font-normal mt-[1px]" style={{ fontFamily: '"Arial", sans-serif', letterSpacing: '-0.2px' }}>{item.en}</span>
+                                </>
                               )}
                             </div>
                           </div>
