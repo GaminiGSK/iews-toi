@@ -1909,6 +1909,16 @@ router.get('/trial-balance', auth, async (req, res) => {
         let netControlPriorUSD = 0;
         let netControlPriorKHR = 0;
 
+        // 1.5 Handle Uncategorized bucket so TB is balanced AND Bank shows true figure
+        const UNTAGGED_ID = 'UNTAGGED_SUSPENSE';
+        reportMap[UNTAGGED_ID] = {
+            id: UNTAGGED_ID, code: '99999', toiCode: '', description: 'Uncategorized (Suspense)', note: 'Requires Tagging',
+            drUSD: 0, crUSD: 0, drKHR: 0, crKHR: 0,
+            unadjDrUSD: 0, unadjCrUSD: 0, unadjDrKHR: 0, unadjCrKHR: 0,
+            adjDrUSD: 0, adjCrUSD: 0, adjDrKHR: 0, adjCrKHR: 0,
+            priorDrUSD: 0, priorCrUSD: 0, priorDrKHR: 0, priorCrKHR: 0
+        };
+
         transactions.forEach(tx => {
             const amtUSD = tx.amount;
             if (amtUSD === undefined) return;
@@ -1916,14 +1926,7 @@ router.get('/trial-balance', auth, async (req, res) => {
             const txYear = new Date(tx.date).getFullYear();
             const rate = getRate(tx.date);
 
-            // 2. Handle Account Code Aggregation (Skip if untagged completely to maintain balance)
-            if (!tx.accountCode) return;
-            const codeId = tx.accountCode._id;
-
-            // Safety check
-            if (!reportMap[codeId]) return;
-
-            // 1. Handle Bank Control (10130) Accumulation
+            // 1. Handle Bank Control (10130) Accumulation globally for ALL transactions
             if (isAllYears || txYear === currentYear) {
                 netControlUSD += amtUSD;
                 netControlKHR += (amtUSD * rate);
@@ -1931,6 +1934,10 @@ router.get('/trial-balance', auth, async (req, res) => {
                 netControlPriorUSD += amtUSD;
                 netControlPriorKHR += (amtUSD * rate);
             }
+
+            // 2. Handle Account Code Aggregation (Map untagged to Suspense)
+            let codeId = tx.accountCode ? tx.accountCode._id : null;
+            if (!codeId || !reportMap[codeId]) codeId = UNTAGGED_ID;
 
             const amtKHR = amtUSD * rate;
 

@@ -136,11 +136,7 @@ const TrialBalance = ({ onBack }) => {
 
     const totalEquity = equityData.reduce((sum, item) => sum + item.size, 0);
     const isEquationBalanced = Math.abs(totalAssets - (totalLiabilities + totalEquity)) < (currency === 'USD' ? 0.01 : 1.0);
-    // Hard-link Trial Balance to Bank Statement (Module 6)
-    const cashItem = assetData.find(a => a.code.startsWith('101'));
-    const endingCash = cashItem ? cashItem.size : 0;
-    const isBankReconciled = currency === 'USD' ? Math.abs(endingCash - 6532.63) <= 0.02 : true; // Hard lock for audit validation
-    const isAccountingBalanced = isEquationBalanced && isBankReconciled;
+    const isAccountingBalanced = isEquationBalanced;
     // Fallbacks for the insight generator
     const debitData = activeAccounts.filter(r => r.drUSD > r.crUSD).map(r => ({
         name: r.description,

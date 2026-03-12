@@ -255,8 +255,8 @@ const GeneralLedger = ({ onBack }) => {
                     </div>
                 </div>
 
-                <div className="flex-1 p-6 overflow-auto bg-[#f8fbff]">
-                    <div className="max-w-[1600px] mx-auto">
+                <div className="flex-1 p-6 overflow-auto bg-[#f8fbff] pr-[380px]">
+                    <div className="w-full">
                         {loading ? (
                             <div className="bg-white p-12 text-center text-slate-500 rounded border border-slate-300 shadow-sm animate-pulse font-mono tracking-widest uppercase">Loading Ledger Matrix...</div>
                         ) : error ? (

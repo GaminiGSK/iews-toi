@@ -52,6 +52,31 @@ const GlTable = ({ transactions, codes, currencyMode }) => {
             </thead>
             
             <tbody className="divide-y divide-slate-300">
+                {/* Totals Row Moved To Top */}
+                <tr className="bg-[#e8f1f5] font-bold border-b-2 border-slate-400">
+                    <td colSpan="4" className="px-4 py-3 border-r border-slate-400 text-center uppercase tracking-wide text-blue-900">
+                        Running Totals & Balance
+                    </td>
+                    <td className="px-4 py-3 border-r border-slate-400 text-right text-blue-900">
+                        {formatValue(
+                            transactions.reduce((sum, tx) => sum + (Number(String(currencyMode === 'KHR' ? tx.amountKHR : tx.amount).replace(/[^0-9.-]+/g, "")) > 0 ? Number(String(currencyMode === 'KHR' ? tx.amountKHR : tx.amount).replace(/[^0-9.-]+/g, "")) : 0), 0)
+                        , currencyMode)}
+                    </td>
+                    <td className="px-4 py-3 border-r border-slate-400 text-right text-blue-900">
+                        {formatValue(
+                            Math.abs(transactions.reduce((sum, tx) => sum + (Number(String(currencyMode === 'KHR' ? tx.amountKHR : tx.amount).replace(/[^0-9.-]+/g, "")) < 0 ? Number(String(currencyMode === 'KHR' ? tx.amountKHR : tx.amount).replace(/[^0-9.-]+/g, "")) : 0), 0))
+                        , currencyMode)}
+                    </td>
+                    <td className="px-4 py-3 border-r border-slate-400 text-right text-blue-900">
+                        {formatValue(
+                            transactions.reduce((acc, tx) => acc + (Number(String(currencyMode === 'KHR' ? tx.amountKHR : tx.amount).replace(/[^0-9.-]+/g, "")) || 0), 0)
+                        , currencyMode)}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-green-700 font-bold whitespace-nowrap bg-[#e2edf3]">
+                        Verified: Cash: Cash Balance
+                    </td>
+                </tr>
+
                 {transactions.map((tx, idx) => {
                     const rawAmount = currencyMode === 'KHR' ? tx.amountKHR : tx.amount;
                     
@@ -118,29 +143,6 @@ const GlTable = ({ transactions, codes, currencyMode }) => {
                     );
                 })}
             </tbody>
-            
-            {/* Totals Row */}
-            <tfoot className="bg-[#e2edf3] font-bold border-t-2 border-slate-400">
-                <tr>
-                    <td colSpan="4" className="px-4 py-2 border-r border-slate-400 text-center">Totals</td>
-                    <td className="px-4 py-2 border-r border-slate-400 text-right">
-                        {formatValue(
-                            transactions.reduce((sum, tx) => sum + (Number(String(currencyMode === 'KHR' ? tx.amountKHR : tx.amount).replace(/[^0-9.-]+/g, "")) > 0 ? Number(String(currencyMode === 'KHR' ? tx.amountKHR : tx.amount).replace(/[^0-9.-]+/g, "")) : 0), 0)
-                        , currencyMode)}
-                    </td>
-                    <td className="px-4 py-2 border-r border-slate-400 text-right">
-                        {formatValue(
-                            Math.abs(transactions.reduce((sum, tx) => sum + (Number(String(currencyMode === 'KHR' ? tx.amountKHR : tx.amount).replace(/[^0-9.-]+/g, "")) < 0 ? Number(String(currencyMode === 'KHR' ? tx.amountKHR : tx.amount).replace(/[^0-9.-]+/g, "")) : 0), 0))
-                        , currencyMode)}
-                    </td>
-                    <td className="px-4 py-2 border-r border-slate-400 text-right">
-                        {formatValue(runningBalance, currencyMode)}
-                    </td>
-                    <td className="px-4 py-2 text-xs text-green-700 font-bold whitespace-nowrap">
-                        Verified: Cash: Cash Balance
-                    </td>
-                </tr>
-            </tfoot>
         </table>
     );
 };
