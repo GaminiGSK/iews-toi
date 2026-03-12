@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Wand2, Calendar, Tag, Layers, ArrowLeft, Sparkles } from 'lucide-react';
 import ErrorBoundary from '../components/ErrorBoundary';
+import GlHeader from '../components/GeneralLedger/GlHeader';
+import GlTable from '../components/GeneralLedger/GlTable';
 
 const GeneralLedger = ({ onBack }) => {
     const [transactions, setTransactions] = useState([]);
@@ -10,6 +12,7 @@ const GeneralLedger = ({ onBack }) => {
     const [tagging, setTagging] = useState(false);
     const [error, setError] = useState(null);
     const [viewMode, setViewMode] = useState('date'); // 'date' | 'code'
+    const [currencyMode, setCurrencyMode] = useState('USD');
     const [filterCode, setFilterCode] = useState('');
     const [fiscalYear, setFiscalYear] = useState('all');
     const [bulkTargetCode, setBulkTargetCode] = useState('');
@@ -164,18 +167,11 @@ const GeneralLedger = ({ onBack }) => {
         }
     };
 
-    const formatDateSafe = (dateString) => {
-        if (!dateString) return '-';
-        try {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('en-GB', {
-                day: '2-digit', month: 'short', year: 'numeric'
-            });
-        } catch { return '-'; }
-    };
+    // New format demands chronological sorting. Pre-flight sorting to ensure correct running balance:
+    const finalSortedTransactions = [...transactions].sort((a,b) => new Date(a.date) - new Date(b.date));
 
-    // Filter transactions
-    const filteredTransactions = transactions.filter(t => {
+    // Filter transactions (Keep year filtering logic just in case user needs to limit scope)
+    const filteredTransactions = finalSortedTransactions.filter(t => {
         if (filterCode && filterCode !== 'uncategorized' && t.accountCode !== filterCode) return false;
         if (filterCode === 'uncategorized' && t.accountCode && t.accountCode !== 'uncategorized') return false;
         if (fiscalYear !== 'all') {
@@ -185,165 +181,42 @@ const GeneralLedger = ({ onBack }) => {
         return true;
     });
 
-    // Calculate grouping for Code View
-    const getGroupedTransactions = () => {
-        const groups = {};
-
-        // Initialize groups for all codes to ensure they appear even if empty (optional, but good for overview)
-        // Or just group existing transactions. Let's group existing to avoid clutter.
-
-        filteredTransactions.forEach(tx => {
-            const codeId = tx.accountCode || 'uncategorized';
-            if (!groups[codeId]) {
-                groups[codeId] = {
-                    codeInfo: codeId === 'uncategorized'
-                        ? { code: '???', description: 'Uncategorized / Suspense', _id: 'uncategorized' }
-                        : codes.find(c => c._id === codeId) || { code: 'ERR', description: 'Unknown Code', _id: codeId },
-                    items: []
-                };
-            }
-            groups[codeId].items.push(tx);
-        });
-
-        // Convert to array and sort by Code safely
-        return Object.values(groups).sort((a, b) => {
-            if (a.codeInfo._id === 'uncategorized') return -1;
-            if (b.codeInfo._id === 'uncategorized') return 1;
-            return String(a.codeInfo.code || '').localeCompare(String(b.codeInfo.code || ''));
-        });
-    };
-
-    const renderTable = (data, showHeader = true) => {
-        // No special total calculation needed anymore for "Bank Balance" row since it's removed.
-        // We can keep a simplified viewTotals if we want footer totals later, or remove it.
-        // For now, let's keep it simple.
-
-        return (
-            <table className="w-full text-left">
-                {showHeader && (
-                    <thead className="bg-gray-50 text-gray-600 text-xs font-bold uppercase border-b border-gray-200">
-                        <tr>
-                            <th className="px-6 py-4 w-[120px]" rowSpan="2">Date</th>
-                            <th className="px-6 py-4 w-[200px]" rowSpan="2">Account Code</th>
-                            <th className="px-6 py-4 w-full" rowSpan="2">Description</th>
-                            <th className="px-6 py-4 text-center border-l border-gray-200" colSpan="3">USD ($)</th>
-                            <th className="px-6 py-4 text-center border-l border-gray-200" colSpan="3">KHR (៛)</th>
-                        </tr>
-                        <tr className="border-t border-gray-200">
-                            <th className="px-4 py-2 text-right border-l text-gray-500">In</th>
-                            <th className="px-4 py-2 text-right text-gray-500">Out</th>
-                            <th className="px-4 py-2 text-right text-gray-500">Bal</th>
-                            <th className="px-4 py-2 text-right border-l text-gray-500">In</th>
-                            <th className="px-4 py-2 text-right text-gray-500">Out</th>
-                            <th className="px-4 py-2 text-right text-gray-500">Bal</th>
-                        </tr>
-                    </thead>
-                )}
-                <tbody className="divide-y divide-gray-100">
-                    {data.map((tx, idx) => (
-                        <tr key={idx} className="hover:bg-gray-50 transition">
-                            <td className="px-6 py-4 text-xs text-gray-600 font-bold whitespace-nowrap align-top">
-                                {formatDateSafe(tx.date)}
-                                {tx.rateUsed > 0 && <div className="text-[10px] text-teal-600 mt-1 font-normal">@{tx.rateUsed}</div>}
-                            </td>
-                            <td className="px-6 py-4 text-xs align-top">
-                                <div className="flex items-center gap-2">
-                                    {tx.isJournalEntry ? (
-                                        <div className="flex-1 px-2 py-1 text-xs font-mono bg-orange-50 text-orange-800 border-orange-200 border rounded-lg flex items-center gap-1 shadow-sm">
-                                            <Tag size={12} className="text-orange-500" />
-                                            {codes.find(c => c._id === tx.accountCode)?.code || 'LOCKED (JE)'}
-                                        </div>
-                                    ) : (
-                                        <select
-                                            value={tx.accountCode || ''}
-                                            onChange={(e) => handleTagChange(tx._id, e.target.value)}
-                                            className={`flex-1 border rounded-lg px-2 py-1 text-xs font-mono focus:ring-2 focus:ring-blue-500 outline-none bg-white transition-colors ${tx.tagSource === 'ai' ? 'border-purple-300 text-purple-700 bg-purple-50/30' : 'border-gray-200 text-gray-700'}`}
-                                        >
-                                            <option value="">-- Select Code --</option>
-                                            {codes.map(c => (
-                                                <option key={c._id} value={c._id}>
-                                                    {c.code} - {typeof c.description === 'object' ? JSON.stringify(c.description) : String(c.description || '')}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    )}
-                                    {tx.tagSource === 'ai' && (
-                                        <div title="Tagged by AI Logic" className="text-purple-500 animate-pulse">
-                                            <Wand2 size={14} />
-                                        </div>
-                                    )}
-                                    {tx.tagSource === 'rule' && (
-                                        <div title="Tagged by Keyword Rule" className="text-blue-500">
-                                            <Sparkles size={14} />
-                                        </div>
-                                    )}
-                                </div>
-                            </td>
-                            <td className="px-6 py-4 text-xs text-gray-700 font-medium align-top leading-relaxed whitespace-pre-wrap">
-                                {typeof tx.description === 'object' ? JSON.stringify(tx.description) : String(tx.description || '')}
-                            </td>
-                            <td className="px-4 py-4 text-xs text-right font-bold text-green-600 align-top whitespace-nowrap border-l border-gray-100">
-                                {Number(String(tx.amount).replace(/[^0-9.-]+/g,"")) > 0 ? Number(String(tx.amount).replace(/[^0-9.-]+/g,"")).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
-                            </td>
-                            <td className="px-4 py-4 text-xs text-right font-bold text-red-600 align-top whitespace-nowrap">
-                                {Number(String(tx.amount).replace(/[^0-9.-]+/g,"")) < 0 ? Math.abs(Number(String(tx.amount).replace(/[^0-9.-]+/g,""))).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
-                            </td>
-                            <td className="px-4 py-4 text-xs text-right text-gray-900 font-bold align-top whitespace-nowrap">
-                                {tx.balance ? Number(String(tx.balance).replace(/[^0-9.-]+/g,"")).toLocaleString('en-US', { minimumFractionDigits: 2 }) : '-'}
-                            </td>
-                            <td className="px-4 py-4 text-xs text-right font-bold text-teal-600 align-top whitespace-nowrap border-l border-gray-100 bg-gray-50/50">
-                                {Number(String(tx.amountKHR).replace(/[^0-9.-]+/g,"")) > 0 ? Number(String(tx.amountKHR).replace(/[^0-9.-]+/g,"")).toLocaleString('en-US', { maximumFractionDigits: 0 }) : ''}
-                            </td>
-                            <td className="px-4 py-4 text-xs text-right font-bold text-red-400 align-top whitespace-nowrap bg-gray-50/50">
-                                {Number(String(tx.amountKHR).replace(/[^0-9.-]+/g,"")) < 0 ? Math.abs(Number(String(tx.amountKHR).replace(/[^0-9.-]+/g,""))).toLocaleString('en-US', { maximumFractionDigits: 0 }) : ''}
-                            </td>
-                            <td className="px-4 py-4 text-xs text-right text-gray-600 font-bold align-top whitespace-nowrap bg-gray-50/50">
-                                {tx.balanceKHR ? Number(String(tx.balanceKHR).replace(/[^0-9.-]+/g,"")).toLocaleString('en-US', { maximumFractionDigits: 0 }) : '-'}
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        );
-    };
-
     return (
         <ErrorBoundary>
-            <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900">
+            <div className="min-h-screen bg-white flex flex-col font-sans text-gray-900 border-x border-slate-300 max-w-[1700px] mx-auto shadow-2xl overflow-hidden">
                 {/* Header - Left Aligned */}
-                <div className="bg-white border-b border-gray-200 px-8 py-5 flex items-center gap-8 sticky top-0 z-20 shadow-sm overflow-x-auto">
+                <div className="bg-white border-b-4 border-slate-700 px-6 py-4 flex items-center justify-start gap-12 sticky top-0 z-20 overflow-x-auto shadow-md">
                     <div className="flex items-center gap-4 shrink-0">
                         <button
                             onClick={onBack}
-                            className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-sm font-medium transition shrink-0 shadow-md"
+                            className="p-2 bg-slate-700 hover:bg-slate-800 text-white rounded-full text-sm font-medium transition shrink-0 shadow-sm"
                         >
-                            <ArrowLeft size={20} />
+                            <ArrowLeft size={16} />
                         </button>
                         <div>
-                            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-700 to-blue-900 bg-clip-text text-transparent">
-                                General Ledger
+                            <h1 className="text-xl font-black text-slate-800 uppercase tracking-widest">
+                                Master Ledger
                             </h1>
-                            <p className="text-xs text-gray-500 mt-1">Full chronological financial history.</p>
+                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">Formal Audit View • {transactions.length} Records</p>
                         </div>
                     </div>
 
-                    <div className="h-10 w-px bg-gray-200 shrink-0"></div>
-
-                    <div className="flex items-center gap-4 shrink-0">
-                        {/* View Toggle */}
-                        <div className="bg-gray-100 p-1 rounded-lg flex gap-1 border border-gray-200">
-                            <button
-                                onClick={() => setViewMode('date')}
-                                className={`px-3 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-2 ${viewMode === 'date' ? 'bg-white text-blue-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                            >
-                                <Calendar size={14} /> Date View
-                            </button>
-                            <button
-                                onClick={() => setViewMode('code')}
-                                className={`px-3 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-2 ${viewMode === 'code' ? 'bg-white text-blue-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                            >
-                                <Layers size={14} /> Code View
-                            </button>
+                    <div className="flex items-center gap-4 shrink-0 bg-slate-50 border border-slate-200 p-1.5 rounded-lg">
+                        
+                        {/* THE NEW CURRENCY TOGGLE */}
+                        <div className="flex bg-white rounded-md shadow-sm border border-slate-200 overflow-hidden text-xs font-bold mr-2">
+                           <button 
+                                onClick={() => setCurrencyMode('KHR')}
+                                className={`px-4 py-1.5 transition ${currencyMode === 'KHR' ? 'bg-[#2a4e7e] text-white' : 'text-slate-500 hover:bg-slate-100'}`}
+                           >
+                               KHR View
+                           </button>
+                           <button 
+                                onClick={() => setCurrencyMode('USD')}
+                                className={`px-4 py-1.5 transition ${currencyMode === 'USD' ? 'bg-[#2a4e7e] text-white' : 'text-slate-500 hover:bg-slate-100'}`}
+                           >
+                               USD View
+                           </button>
                         </div>
 
                         {/* Year Dropdown */}
@@ -351,15 +224,12 @@ const GeneralLedger = ({ onBack }) => {
                             <select
                                 value={fiscalYear}
                                 onChange={(e) => setFiscalYear(e.target.value)}
-                                className="appearance-none bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold rounded-lg h-9 pl-3 pr-8 focus:ring-2 focus:ring-blue-500 outline-none shadow-sm cursor-pointer hover:border-blue-400 transition"
+                                className="appearance-none bg-white border border-slate-300 text-slate-700 text-xs font-bold rounded-md h-8 pl-3 pr-8 focus:ring-2 focus:ring-[#2a4e7e] outline-none shadow-sm cursor-pointer"
                             >
-                                <option value="2025">Year: 2025</option>
-                                <option value="2024">Year: 2024</option>
-                                <option value="all">All Years</option>
+                                <option value="2025">Yr: 2025</option>
+                                <option value="2024">Yr: 2024</option>
+                                <option value="all">All Yrs</option>
                             </select>
-                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-blue-500">
-                                <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
-                            </div>
                         </div>
 
                         {/* Filter Dropdown */}
@@ -367,7 +237,7 @@ const GeneralLedger = ({ onBack }) => {
                             <select
                                 value={filterCode}
                                 onChange={(e) => setFilterCode(e.target.value)}
-                                className="appearance-none bg-white border border-gray-300 text-gray-700 text-xs font-medium rounded-lg h-9 pl-3 pr-8 focus:ring-2 focus:ring-blue-500 outline-none shadow-sm cursor-pointer hover:border-blue-400 transition"
+                                className="appearance-none bg-white border border-slate-300 text-slate-700 text-xs font-medium rounded-md h-8 pl-3 pr-8 focus:ring-2 focus:ring-[#2a4e7e] outline-none shadow-sm cursor-pointer max-w-[200px]"
                             >
                                 <option value="">All Transactions</option>
                                 <option value="uncategorized">Uncategorized Only</option>
@@ -376,161 +246,37 @@ const GeneralLedger = ({ onBack }) => {
                                     const descStr = typeof c.description === 'object' ? JSON.stringify(c.description) : String(c.description || '');
                                     return (
                                         <option key={c._id} value={c._id}>
-                                            {c.code} - {descStr ? descStr.substring(0, 40) : 'No Description'}...
+                                            {c.code} - {descStr ? descStr.substring(0, 30) : 'No Description'}...
                                         </option>
                                     );
                                 })}
                             </select>
-                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
-                                <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
-                            </div>
                         </div>
-
-                        <div className="h-8 w-px bg-gray-200 mx-2"></div>
-
-                        <button
-                            onClick={handleAutoTag}
-                            disabled={tagging}
-                            className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-lg text-sm font-medium transition flex items-center gap-2 shadow-sm disabled:opacity-50"
-                        >
-                            <Wand2 className={`w-4 h-4 ${tagging ? 'animate-spin' : ''}`} />
-                            {tagging ? 'AI Analyzing...' : 'Auto-Tag with AI'}
-                        </button>
                     </div>
                 </div>
 
-                <div className="flex-1 p-8 overflow-auto">
-                    {/* Summary Cards */}
-                    {!loading && (
-                        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 text-center">
-                            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                    {filterCode === 'uncategorized' ? 'Unassigned Money In' : 'Total Money In'}
-                                </p>
-                                <p className="text-2xl font-bold text-green-600 mt-1">
-                                    ${filteredTransactions
-                                        .filter(tx => !tx.isJournalEntry)
-                                        .reduce((acc, tx) => acc + (Number(String(tx.amount).replace(/[^0-9.-]+/g, "")) > 0 ? Number(String(tx.amount).replace(/[^0-9.-]+/g, "")) : 0), 0)
-                                        .toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                                </p>
-                            </div>
-                            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                    {filterCode === 'uncategorized' ? 'Unassigned Money Out' : 'Total Money Out'}
-                                </p>
-                                <p className="text-2xl font-bold text-red-600 mt-1">
-                                    ${Math.abs(filteredTransactions
-                                        .filter(tx => !tx.isJournalEntry)
-                                        .reduce((acc, tx) => acc + (Number(String(tx.amount).replace(/[^0-9.-]+/g, "")) < 0 ? Number(String(tx.amount).replace(/[^0-9.-]+/g, "")) : 0), 0)
-                                    ).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                                </p>
-                            </div>
-                            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 ring-2 ring-blue-50 relative">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                            {filterCode === 'uncategorized' ? 'Unassigned Balance' : 'Net Balance'}
-                                        </p>
-                                        <p className={`text-2xl font-bold mt-1 ${filteredTransactions.filter(tx => !tx.isJournalEntry).reduce((acc, tx) => acc + (Number(String(tx.amount).replace(/[^0-9.-]+/g, "")) || 0), 0) >= 0 ? 'text-green-600' : 'text-blue-900'
-                                            }`}>
-                                            ${filteredTransactions
-                                                .filter(tx => !tx.isJournalEntry)
-                                                .reduce((acc, tx) => acc + (Number(String(tx.amount).replace(/[^0-9.-]+/g, "")) || 0), 0)
-                                                .toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                                        </p>
-
-                                        {/* Quick Actions for ABA (10130) */}
-                                        {!filterCode && (
-                                            <div className="mt-4 pt-3 border-t border-blue-100 flex flex-col gap-2">
-                                                <p className="text-[10px] font-bold text-gray-500 uppercase">QUICK ACTIONS (ABA 10130)</p>
-                                                <button
-                                                    onClick={handleUnassignABA}
-                                                    disabled={tagging}
-                                                    className="w-full py-1.5 bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 border border-gray-200 hover:border-red-200 rounded text-xs font-bold transition"
-                                                >
-                                                    Reset ABA Tags (Undo Mistake)
-                                                </button>
-                                            </div>
-                                        )}
-
-                                        {/* Safe Bulk Assign Tool */}
-                                        {!filterCode && transactions.some(t => !t.accountCode || t.accountCode === 'uncategorized') && (
-                                            <div className="mt-3 pt-3 border-t border-blue-100 flex flex-col gap-2">
-                                                <p className="text-[10px] font-bold text-blue-400 uppercase">RE-ASSIGN ONLY UNBALANCE</p>
-                                                <div className="flex items-center gap-2">
-                                                    <select
-                                                        value={bulkTargetCode}
-                                                        onChange={(e) => setBulkTargetCode(e.target.value)}
-                                                        className="flex-1 text-xs border border-gray-200 rounded px-2 py-1 outline-none bg-white font-medium text-gray-700"
-                                                    >
-                                                        <option value="">Assign as Bank Balance...</option>
-                                                        {codes.map(c => (
-                                                            <option key={c._id} value={c._id}>
-                                                                {c.code} - {typeof c.description === 'object' ? JSON.stringify(c.description) : String(c.description || '')}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                    <button
-                                                        onClick={handleSafeBulkTag}
-                                                        disabled={!bulkTargetCode || tagging}
-                                                        className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-bold transition disabled:opacity-50"
-                                                    >
-                                                        Apply
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                    <div className="max-w-7xl mx-auto space-y-8">
+                <div className="flex-1 p-6 overflow-auto bg-[#f8fbff] pr-8">
+                    <div className="w-full">
                         {loading ? (
-                            <div className="bg-white p-12 text-center text-gray-500 rounded-xl border border-gray-200">Loading Ledger...</div>
+                            <div className="bg-white p-12 text-center text-slate-500 rounded border border-slate-300 shadow-sm animate-pulse font-mono tracking-widest uppercase">Loading Ledger Matrix...</div>
                         ) : error ? (
-                            <div className="bg-white p-12 text-center text-red-500 rounded-xl border border-gray-200">Error: {error}</div>
+                            <div className="bg-white p-12 text-center text-red-500 rounded border border-red-300 font-bold">CRITICAL DATABASE ERROR: {error}</div>
                         ) : filteredTransactions.length === 0 ? (
-                            <div className="bg-white p-12 text-center text-gray-500 rounded-xl border border-gray-200">No transactions found for this selection.</div>
-                        ) : viewMode === 'date' ? (
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                                {renderTable(filteredTransactions)}
-                            </div>
+                            <div className="bg-white p-12 text-center text-slate-500 rounded border border-slate-300 shadow-sm">No transactions found for this selection.</div>
                         ) : (
-                            // CODE VIEW RENDER
-                            getGroupedTransactions().map((group, idx) => (
-                                <div key={idx} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden animate-fade-in">
-                                    <div className={`px-6 py-4 border-b border-gray-200 flex justify-between items-center ${group.codeInfo._id === 'uncategorized' ? 'bg-red-50' : 'bg-gray-50'}`}>
-                                        <div className="flex items-center gap-3">
-                                            <div className={`p-2 rounded-lg ${group.codeInfo._id === 'uncategorized' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
-                                                <Tag size={18} />
-                                            </div>
-                                            <div>
-                                                <h3 className="font-bold text-gray-800 text-lg flex items-center gap-2">
-                                                    <span className="font-mono text-blue-600">{group.codeInfo.code}</span>
-                                                    <span>{typeof group.codeInfo.description === 'object' ? JSON.stringify(group.codeInfo.description) : String(group.codeInfo.description || '')}</span>
-                                                </h3>
-                                                <p className="text-xs text-gray-500">{group.items.length} transactions</p>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="text-xs font-bold text-gray-400 uppercase">Group Total</p>
-                                            <p className={`font-bold font-mono text-lg ${group.items.reduce((sum, t) => sum + (Number(String(t.amount).replace(/[^0-9.-]+/g, "")) || 0), 0) >= 0 ? 'text-green-600' : 'text-red-500'
-                                                }`}>
-                                                ${group.items.reduce((sum, t) => sum + (Number(String(t.amount).replace(/[^0-9.-]+/g, "")) || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    {renderTable(group.items, true)}
+                            <div className="shadow-lg bg-white overflow-hidden" style={{fontFamily: 'Helvetica, Arial, sans-serif'}}>
+                                {/* IMPORT THE TWO NEW COMPONENTS HERE */}
+                                <GlHeader codes={codes} />
+                                <div className="overflow-x-auto">
+                                    <GlTable transactions={filteredTransactions} codes={codes} currencyMode={currencyMode} />
                                 </div>
-                            ))
+                            </div>
                         )}
                     </div>
-                </div>
+                    </div>
             </div>
         </ErrorBoundary>
     );
 };
 
 export default GeneralLedger;
-
