@@ -295,53 +295,93 @@ const TrialBalance = ({ onBack }) => {
                 )}
 
                 {viewMode === 'visual' && !loading && (
-                    <div className="max-w-7xl mx-auto space-y-6 animate-fade-in">
+                    <div className="max-w-[1600px] mx-auto space-y-6 animate-fade-in pb-12">
 
-                        {/* Financial Header - Clean & Readable */}
-                        <div className="bg-gray-900 rounded-2xl p-8 text-white shadow-xl border border-gray-800 font-sans">
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 divide-y md:divide-y-0 md:divide-x divide-gray-700">
-                                <div className="px-2">
-                                    <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Total Assets</p>
-                                    <p className="text-4xl font-bold text-blue-400">
-                                        {currency} {totalAssets.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                    </p>
-                                    <p className="text-xs text-gray-500 mt-2">What You Own</p>
-                                </div>
-                                <div className="px-2">
-                                    <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Total Liabilities</p>
-                                    <p className="text-4xl font-bold text-rose-400">
-                                        {currency} {totalLiabilities.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                    </p>
-                                    <p className="text-xs text-gray-500 mt-2">What You Owe</p>
-                                </div>
-                                <div className="px-2">
-                                    <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Total Equity</p>
-                                    <p className={`text-4xl font-bold ${totalEquity >= 0 ? 'text-emerald-400' : 'text-red-600'}`}>
-                                        {currency} {totalEquity.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                    </p>
-                                    <p className="text-xs text-gray-500 mt-2">Net Worth (Incl. Net Profit: {currency} {netProfit.toLocaleString(undefined, { minimumFractionDigits: 2 })})</p>
-                                </div>
-                                <div className="px-2">
-                                    <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Ledger Status</p>
-                                    <div className={`mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-lg border ${isAccountingBalanced ? 'border-green-500/30 bg-green-900/20 text-green-400' : 'border-red-500/30 bg-red-900/20 text-red-400'}`}>
-                                        <span className={`w-2.5 h-2.5 rounded-full ${isAccountingBalanced ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></span>
-                                        <span className="font-bold text-lg">{isAccountingBalanced ? 'BANK RECONCILED' : 'UNBALANCED'}</span>
+                        {/* Financial Header - Futuristic Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                            {/* Assets Card */}
+                            <div className="bg-[#0b1324] border border-blue-500/20 rounded-[20px] p-6 relative overflow-hidden group hover:border-blue-500/60 hover:shadow-[0_0_30px_rgba(59,130,246,0.15)] transition-all duration-500">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-[40px] -mr-10 -mt-10 group-hover:bg-blue-500/20 transition-all duration-700"></div>
+                                <div className="absolute left-0 top-1/4 w-1 h-1/2 bg-gradient-to-b from-transparent via-blue-500 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 shadow-[0_0_15px_rgba(59,130,246,1)]"></div>
+                                <div className="flex justify-between items-start mb-6">
+                                    <div>
+                                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400 mb-1">Total Assets</p>
+                                        <p className="text-xs text-slate-500">System Liquidity</p>
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-2 font-mono">Eq Diff: {currency} {Math.abs(totalAssets - (totalLiabilities + totalEquity)).toFixed(5)}</p>
+                                    <div className="w-8 h-8 rounded-full border border-blue-500/30 bg-blue-500/10 flex items-center justify-center shadow-[inset_0_0_10px_rgba(59,130,246,0.2)]">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse shadow-[0_0_8px_rgba(59,130,246,1)]"></div>
+                                    </div>
+                                </div>
+                                <p className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-blue-300 to-blue-600 tracking-tight font-mono">
+                                    {currency} {totalAssets.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </p>
+                            </div>
+
+                            {/* Liabilities Card */}
+                            <div className="bg-[#0b1324] border border-rose-500/20 rounded-[20px] p-6 relative overflow-hidden group hover:border-rose-500/60 hover:shadow-[0_0_30px_rgba(244,63,94,0.15)] transition-all duration-500">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/10 rounded-full blur-[40px] -mr-10 -mt-10 group-hover:bg-rose-500/20 transition-all duration-700"></div>
+                                <div className="absolute left-0 top-1/4 w-1 h-1/2 bg-gradient-to-b from-transparent via-rose-500 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 shadow-[0_0_15px_rgba(244,63,94,1)]"></div>
+                                <div className="flex justify-between items-start mb-6">
+                                    <div>
+                                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-rose-400 mb-1">Total Liabilities</p>
+                                        <p className="text-xs text-slate-500">System Debt</p>
+                                    </div>
+                                    <div className="w-8 h-8 rounded-full border border-rose-500/30 bg-rose-500/10 flex items-center justify-center shadow-[inset_0_0_10px_rgba(244,63,94,0.2)]">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse shadow-[0_0_8px_rgba(244,63,94,1)]"></div>
+                                    </div>
+                                </div>
+                                <p className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-rose-300 to-rose-600 tracking-tight font-mono">
+                                    {currency} {totalLiabilities.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </p>
+                            </div>
+
+                            {/* Equity Card */}
+                            <div className={`bg-[#0b1324] border ${totalEquity >= 0 ? 'border-emerald-500/20 hover:border-emerald-500/60 hover:shadow-[0_0_30px_rgba(16,185,129,0.15)]' : 'border-red-500/20 hover:border-red-500/60 hover:shadow-[0_0_30px_rgba(239,68,68,0.15)]'} rounded-[20px] p-6 relative overflow-hidden group transition-all duration-500`}>
+                                <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-[40px] -mr-10 -mt-10 transition-all duration-700 ${totalEquity >= 0 ? 'bg-emerald-500/10 group-hover:bg-emerald-500/20' : 'bg-red-500/10 group-hover:bg-red-500/20'}`}></div>
+                                <div className={`absolute left-0 top-1/4 w-1 h-1/2 bg-gradient-to-b from-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 ${totalEquity >= 0 ? 'via-emerald-500 shadow-[0_0_15px_rgba(16,185,129,1)]' : 'via-red-500 shadow-[0_0_15px_rgba(239,68,68,1)]'}`}></div>
+                                <div className="flex justify-between items-start mb-6">
+                                    <div>
+                                        <p className={`text-[10px] font-black uppercase tracking-[0.2em] mb-1 ${totalEquity >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>Total Equity</p>
+                                        <p className="text-xs text-slate-500">Net Worth</p>
+                                    </div>
+                                    <div className={`w-8 h-8 rounded-full border flex items-center justify-center ${totalEquity >= 0 ? 'border-emerald-500/30 bg-emerald-500/10 shadow-[inset_0_0_10px_rgba(16,185,129,0.2)]' : 'border-red-500/30 bg-red-500/10 shadow-[inset_0_0_10px_rgba(239,68,68,0.2)]'}`}>
+                                        <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${totalEquity >= 0 ? 'bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,1)]' : 'bg-red-400 shadow-[0_0_8px_rgba(239,68,68,1)]'}`}></div>
+                                    </div>
+                                </div>
+                                <p className={`text-3xl font-black text-transparent bg-clip-text tracking-tight font-mono ${totalEquity >= 0 ? 'bg-gradient-to-br from-emerald-300 to-emerald-600' : 'bg-gradient-to-br from-red-300 to-red-600'}`}>
+                                    {currency} {totalEquity.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </p>
+                            </div>
+
+                            {/* Ledger Status */}
+                            <div className="bg-[#0b1324] border border-white/5 rounded-[20px] p-6 relative overflow-hidden group hover:border-indigo-500/40 hover:shadow-[0_0_30px_rgba(99,102,241,0.1)] transition-all duration-500 flex flex-col justify-between">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-[40px] -mr-10 -mt-10 group-hover:bg-indigo-500/10 transition-all duration-700"></div>
+                                <div className="absolute left-0 top-1/4 w-1 h-1/2 bg-gradient-to-b from-transparent via-indigo-500 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 shadow-[0_0_15px_rgba(99,102,241,1)]"></div>
+                                <div>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 mb-1">Ledger Status</p>
+                                    <p className="text-[10px] text-slate-500 font-mono tracking-widest mt-1">EQ DIFF: {Math.abs(totalAssets - (totalLiabilities + totalEquity)).toFixed(5)}</p>
+                                </div>
+                                
+                                <div className={`mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl border relative overflow-hidden ${isAccountingBalanced ? 'border-emerald-500/30 bg-emerald-950/30 text-emerald-400' : 'border-red-500/30 bg-red-950/30 text-red-500'}`}>
+                                    {isAccountingBalanced && <div className="absolute inset-0 bg-emerald-500/5 pulse-glow"></div>}
+                                    <div className={`w-2 h-2 rounded-full relative z-10 ${isAccountingBalanced ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,1)] animate-ping' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,1)]'}`}></div>
+                                    <span className="font-bold text-xs uppercase tracking-[0.15em] relative z-10">{isAccountingBalanced ? 'Fully Reconciled' : 'Unbalanced'}</span>
                                 </div>
                             </div>
                         </div>
 
+                        {/* Charts Area */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {/* Assets Visualization (Donut Chart for Liquidity Breakdown) */}
-                            <div className="bg-gray-900 p-6 rounded-2xl shadow-xl border border-gray-800 h-[500px] flex flex-col">
-                                <h3 className="font-bold text-gray-300 mb-6 flex justify-between items-center text-lg">
-                                    <span>Assets (Liquidity Mix)</span>
-                                    <span className="text-xs text-blue-400 bg-blue-900/20 px-3 py-1 rounded-full border border-blue-900">
-                                        Total: {currency} {totalAssets.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                            {/* Assets Chart */}
+                            <div className="bg-[#050b14] border border-blue-900/40 p-6 rounded-[24px] shadow-2xl relative overflow-hidden flex flex-col h-[500px] group hover:border-blue-700/50 transition-colors duration-500">
+                                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent"></div>
+                                <div className="flex justify-between items-center mb-8 relative z-10">
+                                    <h3 className="font-bold text-slate-200 text-sm tracking-widest uppercase">Asset Liquidity</h3>
+                                    <span className="text-[10px] font-mono text-blue-400 bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/20 shadow-[0_0_10px_rgba(59,130,246,0.1)]">
+                                        TOT: {currency} {totalAssets.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                     </span>
-                                </h3>
-                                <div className="flex-1 -mt-4">
+                                </div>
+                                <div className="flex-1 relative z-10 filter drop-shadow-[0_0_15px_rgba(59,130,246,0.1)]">
                                     {assetData.length > 0 ? (
                                         <ResponsiveContainer width="100%" height="100%">
                                             <PieChart>
@@ -350,115 +390,121 @@ const TrialBalance = ({ onBack }) => {
                                                     cx="50%"
                                                     cy="50%"
                                                     innerRadius={80}
-                                                    outerRadius={120}
-                                                    paddingAngle={5}
+                                                    outerRadius={130}
+                                                    paddingAngle={3}
                                                     dataKey="value"
                                                     stroke="none"
+                                                    cornerRadius={6}
                                                 >
                                                     {assetData.map((entry, index) => (
                                                         <Cell key={`cell-${index}`} fill={entry.size < 0 ? '#EF4444' : COLORS[index % COLORS.length]} />
                                                     ))}
                                                 </Pie>
                                                 <Tooltip
-                                                    contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151', color: '#F3F4F6', borderRadius: '8px' }}
-                                                    itemStyle={{ color: '#E5E7EB', fontWeight: 'bold' }}
+                                                    contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', backdropFilter: 'blur(10px)', borderColor: 'rgba(59, 130, 246, 0.3)', color: '#F8FAFC', borderRadius: '12px', boxShadow: '0 0 20px rgba(0,0,0,0.5)' }}
+                                                    itemStyle={{ color: '#60A5FA', fontWeight: 'bold', fontSize: '13px' }}
                                                     formatter={(value, name, props) => {
                                                         const actualSize = props.payload.actualSize;
                                                         return [`${currency} ${actualSize.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, 'Balance'];
                                                     }}
                                                 />
-                                                <Legend
-                                                    verticalAlign="bottom"
-                                                    height={36}
-                                                    iconType="circle"
-                                                    wrapperStyle={{ fontSize: '11px', color: '#9CA3AF' }}
-                                                />
                                             </PieChart>
                                         </ResponsiveContainer>
                                     ) : (
-                                        <div className="flex bg-gray-800/50 rounded-lg border border-gray-700 h-full items-center justify-center text-gray-500">
-                                            No asset data found.
+                                        <div className="flex h-full items-center justify-center text-slate-600 font-mono text-xs tracking-widest uppercase">
+                                            No Data Available
                                         </div>
                                     )}
                                 </div>
                             </div>
 
-                            {/* Liabilities Visualization */}
-                            <div className="bg-gray-900 p-6 rounded-2xl shadow-xl border border-gray-800 h-[500px] flex flex-col">
-                                <h3 className="font-bold text-gray-300 mb-6 flex justify-between items-center text-lg">
-                                    <span>Liabilities (What You Owe)</span>
-                                    <span className="text-xs text-rose-400 bg-rose-900/20 px-3 py-1 rounded-full border border-rose-900">
-                                        Total: {currency} {totalLiabilities.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                            {/* Liabilities Chart */}
+                            <div className="bg-[#050b14] border border-rose-900/30 p-6 rounded-[24px] shadow-2xl relative overflow-hidden flex flex-col h-[500px] group hover:border-rose-700/50 transition-colors duration-500">
+                                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-rose-500/50 to-transparent"></div>
+                                <div className="flex justify-between items-center mb-8 relative z-10">
+                                    <h3 className="font-bold text-slate-200 text-sm tracking-widest uppercase">Liability Struct</h3>
+                                    <span className="text-[10px] font-mono text-rose-400 bg-rose-500/10 px-3 py-1.5 rounded-lg border border-rose-500/20 shadow-[0_0_10px_rgba(244,63,94,0.1)]">
+                                        TOT: {currency} {totalLiabilities.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                     </span>
-                                </h3>
-                                <div className="flex-1">
+                                </div>
+                                <div className="flex-1 relative z-10">
                                     {liabilityData.length > 0 ? (
                                         <ResponsiveContainer width="100%" height="100%">
                                             <BarChart
                                                 layout="vertical"
                                                 data={liabilityData.sort((a, b) => b.size - a.size).slice(0, 10)}
-                                                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                                                margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
                                             >
-                                                <XAxis type="number" stroke="#6B7280" fontSize={12} tickFormatter={(val) => `KHR ${val / 1000}k`} />
-                                                <YAxis type="category" dataKey="name" width={120} stroke="#9CA3AF" fontSize={11} tick={{ fill: '#E5E7EB' }} />
+                                                <defs>
+                                                    <linearGradient id="roseGradient" x1="0" y1="0" x2="1" y2="0">
+                                                        <stop offset="0%" stopColor="#BE123C" />
+                                                        <stop offset="100%" stopColor="#FB7185" />
+                                                    </linearGradient>
+                                                </defs>
+                                                <XAxis type="number" stroke="#334155" fontSize={10} tickFormatter={(val) => `${val / 1000}k`} tickLine={false} axisLine={false} />
+                                                <YAxis type="category" dataKey="name" width={110} stroke="#64748b" fontSize={10} tick={{ fill: '#94a3b8' }} tickLine={false} axisLine={false} />
                                                 <Tooltip
-                                                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                                                    contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151', color: '#F3F4F6' }}
-                                                    itemStyle={{ color: '#FB7185' }}
+                                                    cursor={{ fill: 'rgba(255,255,255,0.02)' }}
+                                                    contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', backdropFilter: 'blur(10px)', borderColor: 'rgba(244, 63, 94, 0.3)', color: '#F8FAFC', borderRadius: '12px' }}
+                                                    itemStyle={{ color: '#FB7185', fontWeight: 'bold' }}
                                                     formatter={(value) => [`${currency} ${value.toLocaleString()}`, 'Amount']}
                                                 />
-                                                <Bar dataKey="size" fill="#F43F5E" radius={[0, 4, 4, 0]} barSize={20}>
+                                                <Bar dataKey="size" fill="url(#roseGradient)" radius={[0, 6, 6, 0]} barSize={16}>
                                                     {liabilityData.map((entry, index) => (
-                                                        <Cell key={`cell-${index}`} fill={entry.size >= 0 ? '#F43F5E' : '#3B82F6'} />
+                                                        <Cell key={`cell-${index}`} />
                                                     ))}
                                                 </Bar>
                                             </BarChart>
                                         </ResponsiveContainer>
                                     ) : (
-                                        <div className="flex bg-gray-800/50 rounded-lg border border-gray-700 h-full items-center justify-center text-gray-500">
-                                            No active liabilities.
+                                        <div className="flex h-full items-center justify-center text-slate-600 font-mono text-xs tracking-widest uppercase">
+                                            No Active Liabilities
                                         </div>
                                     )}
                                 </div>
                             </div>
 
-                            {/* Equity Visualization */}
-                            <div className="bg-gray-900 p-6 rounded-2xl shadow-xl border border-gray-800 h-[500px] flex flex-col">
-                                <h3 className="font-bold text-gray-300 mb-6 flex justify-between items-center text-lg">
-                                    <span>Equity (Net Worth)</span>
-                                    <span className="text-xs text-emerald-400 bg-emerald-900/20 px-3 py-1 rounded-full border border-emerald-900">
-                                        Total: {currency} {totalEquity.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                            {/* Equity Chart */}
+                            <div className="bg-[#050b14] border border-emerald-900/30 p-6 rounded-[24px] shadow-2xl relative overflow-hidden flex flex-col h-[500px] group hover:border-emerald-700/50 transition-colors duration-500">
+                                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent"></div>
+                                <div className="flex justify-between items-center mb-8 relative z-10">
+                                    <h3 className="font-bold text-slate-200 text-sm tracking-widest uppercase">Equity Struct</h3>
+                                    <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]">
+                                        TOT: {currency} {totalEquity.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                     </span>
-                                </h3>
-                                <div className="flex-1">
+                                </div>
+                                <div className="flex-1 relative z-10">
                                     {equityData.length > 0 ? (
                                         <ResponsiveContainer width="100%" height="100%">
                                             <BarChart
                                                 layout="vertical"
                                                 data={equityData.sort((a, b) => b.size - a.size).slice(0, 10)}
-                                                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                                                margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
                                             >
-                                                {/* Allow domain to auto-adjust for negative values (losses) */}
-                                                <XAxis type="number" stroke="#6B7280" fontSize={12} tickFormatter={(val) => `KHR ${val / 1000}k`} />
-                                                <YAxis type="category" dataKey="name" width={120} stroke="#9CA3AF" fontSize={11} tick={{ fill: '#E5E7EB' }} />
+                                                <defs>
+                                                    <linearGradient id="emeraldGradient" x1="0" y1="0" x2="1" y2="0">
+                                                        <stop offset="0%" stopColor="#047857" />
+                                                        <stop offset="100%" stopColor="#34D399" />
+                                                    </linearGradient>
+                                                </defs>
+                                                <XAxis type="number" stroke="#334155" fontSize={10} tickFormatter={(val) => `${val / 1000}k`} tickLine={false} axisLine={false} />
+                                                <YAxis type="category" dataKey="name" width={110} stroke="#64748b" fontSize={10} tick={{ fill: '#94a3b8' }} tickLine={false} axisLine={false} />
                                                 <Tooltip
-                                                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                                                    contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151', color: '#F3F4F6' }}
-                                                    itemStyle={{ color: '#34D399' }}
+                                                    cursor={{ fill: 'rgba(255,255,255,0.02)' }}
+                                                    contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', backdropFilter: 'blur(10px)', borderColor: 'rgba(16, 185, 129, 0.3)', color: '#F8FAFC', borderRadius: '12px' }}
+                                                    itemStyle={{ color: '#34D399', fontWeight: 'bold' }}
                                                     formatter={(value) => [`${currency} ${value.toLocaleString()}`, 'Amount']}
                                                 />
-                                                <Bar dataKey="size" radius={[0, 4, 4, 0]} barSize={20}>
-                                                    {
-                                                        equityData.sort((a, b) => b.size - a.size).slice(0, 10).map((entry, index) => (
-                                                            <Cell key={`cell-${index}`} fill={entry.size >= 0 ? '#10B981' : '#EF4444'} />
-                                                        ))
-                                                    }
+                                                <Bar dataKey="size" fill="url(#emeraldGradient)" radius={[0, 6, 6, 0]} barSize={16}>
+                                                    {equityData.sort((a, b) => b.size - a.size).slice(0, 10).map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={entry.size >= 0 ? 'url(#emeraldGradient)' : '#EF4444'} />
+                                                    ))}
                                                 </Bar>
                                             </BarChart>
                                         </ResponsiveContainer>
                                     ) : (
-                                        <div className="flex bg-gray-800/50 rounded-lg border border-gray-700 h-full items-center justify-center text-gray-500">
-                                            No equity data found.
+                                        <div className="flex h-full items-center justify-center text-slate-600 font-mono text-xs tracking-widest uppercase">
+                                            No Equity Data
                                         </div>
                                     )}
                                 </div>
