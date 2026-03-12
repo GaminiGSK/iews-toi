@@ -21,7 +21,7 @@ const AIAssistant = () => {
     const [isOpen, setIsOpen] = useState(true); // Default Open
     const [selectedModel, setSelectedModel] = useState('gemini-2.0'); // Default
     const [messages, setMessages] = useState([
-        { role: 'assistant', text: 'Hello! I am your GK Blue Agent. Describe your request or paste an image for analysis.' }
+        { role: 'assistant', text: 'Hello! I am the blue agent Auditor. Describe your request or paste an image for analysis.' }
     ]);
     const [input, setInput] = useState('');
     const [image, setImage] = useState(null); // Base64 string
@@ -173,7 +173,7 @@ const AIAssistant = () => {
             if (err.response?.status === 401 || err.response?.status === 400) {
                 setMessages(prev => [...prev, {
                     role: 'assistant',
-                    text: "Your session has expired or is invalid. Please Log Out and log back in to reconnect to the GK Blue Agent.",
+                    text: "Your session has expired or is invalid. Please Log Out and log back in to reconnect to the blue agent Auditor.",
                     isSystem: true
                 }]);
             } else {
@@ -258,23 +258,21 @@ const AIAssistant = () => {
             {/* Chat Window */}
             {isOpen && (
                 <div
-                    className="bg-slate-900 pointer-events-auto rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.7)] border-2 border-blue-500/40 w-[650px] max-w-[calc(100vw-48px)] flex flex-col mb-4 overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300"
+                    className="bg-[#030712] pointer-events-auto rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] border border-white/60 w-[650px] max-w-[calc(100vw-48px)] flex flex-col mb-4 overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300"
                     style={{ height: '98vh', maxHeight: 'none' }}
                 >
-                    {/* Header - Enforce Blue Gradient */}
-                    <div className="bg-gradient-to-tr from-blue-700 via-blue-800 to-indigo-900 p-6 shrink-0 flex justify-between items-center text-white shadow-2xl border-b border-white/10 relative z-30">
-                        <div className="flex items-center gap-6 overflow-hidden">
-                            {/* Logo - Premium Circular Frame */}
-                            <div className="p-1 bg-white ring-4 ring-blue-500/40 rounded-full h-24 w-24 shrink-0 flex items-center justify-center overflow-hidden shadow-2xl relative">
-                                <img src={GK_LOGO} alt="GK" className="object-cover w-full h-full" onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }} />
-                                <div className="hidden w-full h-full bg-blue-600 items-center justify-center font-bold text-white text-3xl">GK</div>
-                            </div>
+                    {/* Header - Sleek Dark with Thin Bright Borders */}
+                    <div className="bg-[#0a0f18] p-5 shrink-0 flex justify-between items-center text-white border-b border-white/40 relative z-30">
+                        <div className="flex items-center gap-4 overflow-hidden">
                             <div className="flex flex-col min-w-0">
-                                <h3 className="font-extrabold text-3xl tracking-tight text-white drop-shadow-lg truncate">GK BLUE AGENT</h3>
+                                <h3 className="font-semibold text-2xl tracking-tighter text-white flex items-center gap-2 lowercase">
+                                    the <div className="w-5 h-5 rounded-full bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.9)] border border-blue-300"></div> blue agent 
+                                    <span className="uppercase text-[10px] font-bold tracking-widest text-slate-300 ml-2 bg-slate-800 px-2 py-0.5 rounded border border-slate-600">Auditor</span>
+                                </h3>
                                 <div className="flex items-center gap-3 mt-2 min-w-0">
-                                    <div className="flex items-center gap-2 bg-black/30 px-3 py-1 rounded-full border border-white/10">
-                                        <span className={`w-3 h-3 rounded-full ${isConnected ? 'bg-emerald-400' : 'bg-red-500'} animate-pulse shadow-[0_0_10px_rgba(52,211,153,0.5)]`}></span>
-                                        <span className={`text-[16px] font-black uppercase tracking-widest ${isConnected ? 'text-emerald-300' : 'text-red-400'}`}>{isConnected ? 'Online' : 'Offline'}</span>
+                                    <div className="flex items-center gap-2 bg-black/40 px-3 py-1 rounded-full border border-white/20">
+                                        <span className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-emerald-400' : 'bg-red-500'} animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.5)]`}></span>
+                                        <span className={`text-xs font-bold uppercase tracking-widest ${isConnected ? 'text-emerald-300' : 'text-red-400'}`}>{isConnected ? 'Online' : 'Offline'}</span>
                                     </div>
 
                                     {/* Model Selector - Refined */}
@@ -282,7 +280,7 @@ const AIAssistant = () => {
                                         <select
                                             value={selectedModel}
                                             onChange={(e) => setSelectedModel(e.target.value)}
-                                            className="appearance-none bg-blue-950/60 border border-white/20 text-[16px] font-black uppercase tracking-wider rounded-xl pl-4 pr-10 py-1.5 outline-none cursor-pointer hover:bg-blue-800/80 transition-all text-blue-50 w-full truncate"
+                                            className="appearance-none bg-slate-900/60 border border-white/20 text-xs font-semibold uppercase tracking-wider rounded-lg pl-3 pr-8 py-1.5 outline-none cursor-pointer hover:bg-slate-800 transition-all text-slate-200 w-full truncate"
                                         >
                                             <option value="gemini-2.0">Gemini 3.1 Pro (High) New</option>
                                             <option value="gemini-flash">Gemini 3 Flash</option>
@@ -292,7 +290,7 @@ const AIAssistant = () => {
                                             <option value="ollama-v3">Ollama: Deepseek V3.1</option>
                                             <option value="ollama-coder">Ollama: Deepseek Coder</option>
                                         </select>
-                                        <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 pointer-events-none group-hover:text-white transition-colors" />
+                                        <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-white/50 pointer-events-none group-hover:text-white transition-colors" />
                                     </div>
                                 </div>
                             </div>
@@ -489,8 +487,8 @@ const AIAssistant = () => {
                             </button>
                         </div>
                         <div className="text-center mt-3">
-                            <p className="text-xl text-slate-500 flex items-center justify-center gap-2">
-                                <Sparkles size={14} className="text-blue-400" /> GK Blue Agent - v3.0 Ultra
+                            <p className="text-xs text-slate-500 flex items-center justify-center gap-2">
+                                <Sparkles size={12} className="text-blue-400" /> the blue agent Auditor - v3.0 Ultra
                             </p>
                         </div>
                     </div>
