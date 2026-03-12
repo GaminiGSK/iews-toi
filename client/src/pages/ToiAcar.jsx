@@ -1077,9 +1077,6 @@ const ToiAcar = ({ onBack, packageId, year }) => {
         <div className="w-[45%] shrink-0 border-l border-white/5 bg-slate-950/30 p-8 overflow-y-auto flex flex-col justify-start items-center custom-scrollbar print:hidden">
           {/* AI Orb / Avatar */}
           <div className="relative mb-8 flex items-center justify-center gap-3 mt-8 animate-in fade-in duration-700">
-            <span className="text-3xl font-medium tracking-tight text-white/90 drop-shadow-md pb-1">
-              the
-            </span>
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-700 shadow-[0_0_20px_rgba(59,130,246,0.5),inset_0_-4px_10px_rgba(0,0,0,0.5)] flex items-center justify-center relative overflow-hidden" />
             <span className="text-3xl font-medium tracking-tight text-white/90 drop-shadow-md pb-1">
               blue agent TOI
