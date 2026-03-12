@@ -15,6 +15,11 @@ const ToiAcar = ({ onBack, packageId, year }) => {
   const [activeWorkspacePage, setActiveWorkspacePage] = useState(1);
   const [selectedYear, setSelectedYear] = useState(year || new Date().getFullYear().toString());
 
+  // Role Check
+  const userStr = localStorage.getItem("user");
+  const userObj = userStr ? JSON.parse(userStr) : {};
+  const isAdmin = userObj.role === "admin";
+
   // Agent Chat State
   const [agentInput, setAgentInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -216,7 +221,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
       <div className="flex-1 flex overflow-hidden print:overflow-visible">
         {/* NEW LEFT SIDE: WHITE PREVIEW (ONLY PAGE 1) */}
         {activeWorkspacePage === 1 && (
-          <div className="w-[50%] shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible">
+          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
             {/* Content for the white preview */}
             <div className="w-full flex flex-col font-sans mb-12 text-black print:toi-form-scale print:mb-0">
               {/* OFFICIAL GDT HEADER - Based exactly on reference image */}
@@ -1050,10 +1055,12 @@ const ToiAcar = ({ onBack, packageId, year }) => {
         )}
 
         {/* MIDDLE SIDE: GPT Result Landing Page (Totally Black, empty) */}
-        <div className="w-[15%] overflow-y-auto relative bg-black custom-scrollbar print:hidden">
-          {/* Embedded TOI Page 1 Admin Template for GPT Engine to dictate */}
-          <LiveTaxWorkspace embedded={true} forcePage={activeWorkspacePage} activeYear={selectedYear} />
-        </div>
+        {isAdmin && (
+          <div className="w-[15%] overflow-y-auto relative bg-black custom-scrollbar print:hidden">
+            {/* Embedded TOI Page 1 Admin Template for GPT Engine to dictate */}
+            <LiveTaxWorkspace embedded={true} forcePage={activeWorkspacePage} activeYear={selectedYear} />
+          </div>
+        )}
 
         {/* RIGHT SIDE: Agent Terminal (Right Top Side) */}
         <div className="w-[35%] shrink-0 border-l border-white/5 bg-slate-950/30 p-8 overflow-y-auto flex flex-col justify-start items-center custom-scrollbar print:hidden">
