@@ -50,7 +50,7 @@ mongoose.connect(process.env.MONGODB_URI).then(async () => {
     // TOIAG Target: Total Money In $34,443.55
     // Owner Capital is $10,400 of that
     await db.collection('transactions').insertMany([
-        { // Service Revenue = $24,043.55 (34,443.55 - 10,400)
+        { // Service Revenue = $24,043.55
             companyCode: 'GK_SMART_AI',
             user: new mongoose.Types.ObjectId('698ee86ca61b7e7a5b415550'),
             date: new Date('2025-05-15T10:00:00Z'),
@@ -60,6 +60,18 @@ mongoose.connect(process.env.MONGODB_URI).then(async () => {
             moneyOut: 0,
             code: '40000',
             accountCode: codesMap['40000'],
+            tagSource: 'bank_statement'
+        },
+        { // Missed Bank Expense or Fee = -$2,000.00
+            companyCode: 'GK_SMART_AI',
+            user: new mongoose.Types.ObjectId('698ee86ca61b7e7a5b415550'),
+            date: new Date('2025-05-20T10:00:00Z'),
+            description: 'Miscellaneous Bank Expense',
+            amount: -2000.00,
+            moneyIn: 0,
+            moneyOut: 2000.00,
+            code: '61000',
+            accountCode: codesMap['61000'],
             tagSource: 'bank_statement'
         },
         { // Owner Capital = $10,400.00

@@ -503,11 +503,11 @@ const TrialBalance = ({ onBack }) => {
                                                     <th className="border-r border-gray-300 p-2 text-center w-16 text-xs text-gray-500 uppercase">Note</th>
                                                     <th colSpan="2" className="border-r border-gray-300 p-2 text-center font-bold text-gray-900 bg-[#E2E8F0]/40">
                                                         For the year ended<br /><span className="text-xs font-normal">31-Dec-{fiscalYear}</span><br />
-                                                        <span className="text-xs uppercase text-gray-500">{inThousands ? "KHR'000" : "KHR"}</span>
+                                                        <span className="text-xs uppercase text-gray-500">{inThousands ? "KHR'000" : currency}</span>
                                                     </th>
                                                     <th colSpan="2" className="border-r border-gray-300 p-2 text-center font-bold text-gray-500 bg-gray-50">
                                                         For the year ended<br /><span className="text-xs font-normal">31-Dec-{fiscalYear - 1}</span><br />
-                                                        <span className="text-xs uppercase text-gray-400">{inThousands ? "KHR'000" : "KHR"}</span>
+                                                        <span className="text-xs uppercase text-gray-400">{inThousands ? "KHR'000" : currency}</span>
                                                     </th>
                                                     <th className="p-2 text-center w-16 text-xs text-gray-500 uppercase">Ref</th>
                                                 </tr>
@@ -543,10 +543,10 @@ const TrialBalance = ({ onBack }) => {
                                                             </tr>
                                                             {groupRows.map(row => {
                                                                 const scale = inThousands ? 1000 : 1;
-                                                                const dr = row.drKHR ? row.drKHR / scale : 0;
-                                                                const cr = row.crKHR ? row.crKHR / scale : 0;
-                                                                const pDr = row.priorDrKHR ? row.priorDrKHR / scale : 0;
-                                                                const pCr = row.priorCrKHR ? row.priorCrKHR / scale : 0;
+                                                                const dr = (currency === 'USD' ? row.drUSD : row.drKHR) ? (currency === 'USD' ? row.drUSD : row.drKHR) / scale : 0;
+                                                                const cr = (currency === 'USD' ? row.crUSD : row.crKHR) ? (currency === 'USD' ? row.crUSD : row.crKHR) / scale : 0;
+                                                                const pDr = (currency === 'USD' ? row.priorDrUSD : row.priorDrKHR) ? (currency === 'USD' ? row.priorDrUSD : row.priorDrKHR) / scale : 0;
+                                                                const pCr = (currency === 'USD' ? row.priorCrUSD : row.priorCrKHR) ? (currency === 'USD' ? row.priorCrUSD : row.priorCrKHR) / scale : 0;
 
                                                                 if (dr === 0 && cr === 0 && pDr === 0 && pCr === 0) return null;
 
@@ -556,10 +556,10 @@ const TrialBalance = ({ onBack }) => {
                                                                         <td className="border-r border-gray-300 p-2 text-center text-xs font-mono text-gray-400">{row.toiCode}</td>
                                                                         <td className="border-r border-gray-300 p-2 pl-4 text-gray-800 font-medium">{row.description}</td>
                                                                         <td className="border-r border-gray-300 p-2 text-center text-xs text-blue-600 font-bold">{row.note}</td>
-                                                                        <td className="border-r border-gray-300 p-2 text-right font-mono text-gray-900 bg-slate-50">{dr > 0 ? dr.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '-'}</td>
-                                                                        <td className="border-r border-gray-300 p-2 text-right font-mono text-gray-900 bg-slate-50">{cr > 0 ? cr.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '-'}</td>
-                                                                        <td className="border-r border-gray-300 p-2 text-right font-mono text-gray-500 bg-white">{pDr > 0 ? pDr.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '-'}</td>
-                                                                        <td className="border-r border-gray-300 p-2 text-right font-mono text-gray-500 bg-white">{pCr > 0 ? pCr.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '-'}</td>
+                                                                        <td className="border-r border-gray-300 p-2 text-right font-mono text-gray-900 bg-slate-50">{dr > 0 ? dr.toLocaleString(undefined, { maximumFractionDigits: currency === 'USD' ? 2 : 0 }) : '-'}</td>
+                                                                        <td className="border-r border-gray-300 p-2 text-right font-mono text-gray-900 bg-slate-50">{cr > 0 ? cr.toLocaleString(undefined, { maximumFractionDigits: currency === 'USD' ? 2 : 0 }) : '-'}</td>
+                                                                        <td className="border-r border-gray-300 p-2 text-right font-mono text-gray-500 bg-white">{pDr > 0 ? pDr.toLocaleString(undefined, { maximumFractionDigits: currency === 'USD' ? 2 : 0 }) : '-'}</td>
+                                                                        <td className="border-r border-gray-300 p-2 text-right font-mono text-gray-500 bg-white">{pCr > 0 ? pCr.toLocaleString(undefined, { maximumFractionDigits: currency === 'USD' ? 2 : 0 }) : '-'}</td>
                                                                         <td className="p-2 text-center text-xs text-gray-400">{row.note}</td>
                                                                     </tr>
                                                                 );
@@ -572,10 +572,10 @@ const TrialBalance = ({ onBack }) => {
                                                     <td className="border-r border-gray-600"></td>
                                                     <td className="border-r border-gray-600 p-3 text-right uppercase text-xs text-gray-300">Total</td>
                                                     <td className="border-r border-gray-600"></td>
-                                                    <td className="border-r border-gray-600 p-3 text-right text-teal-400 bg-[#334155]">{(totals.drKHR / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
-                                                    <td className="border-r border-gray-600 p-3 text-right text-teal-400 bg-[#334155]">{(totals.crKHR / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
-                                                    <td className="border-r border-gray-600 p-3 text-right text-gray-300">{(totals.priorDrKHR ? (totals.priorDrKHR / (inThousands ? 1000 : 1)) : 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
-                                                    <td className="border-r border-gray-600 p-3 text-right text-gray-300">{(totals.priorCrKHR ? (totals.priorCrKHR / (inThousands ? 1000 : 1)) : 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                                    <td className="border-r border-gray-600 p-3 text-right text-teal-400 bg-[#334155]">{((currency === 'USD' ? totals.drUSD : totals.drKHR) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: currency === 'USD' ? 2 : 0 })}</td>
+                                                    <td className="border-r border-gray-600 p-3 text-right text-teal-400 bg-[#334155]">{((currency === 'USD' ? totals.crUSD : totals.crKHR) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: currency === 'USD' ? 2 : 0 })}</td>
+                                                    <td className="border-r border-gray-600 p-3 text-right text-gray-300">{((currency === 'USD' ? totals.priorDrUSD : totals.priorDrKHR) ? ((currency === 'USD' ? totals.priorDrUSD : totals.priorDrKHR) / (inThousands ? 1000 : 1)) : 0).toLocaleString(undefined, { maximumFractionDigits: currency === 'USD' ? 2 : 0 })}</td>
+                                                    <td className="border-r border-gray-600 p-3 text-right text-gray-300">{((currency === 'USD' ? totals.priorCrUSD : totals.priorCrKHR) ? ((currency === 'USD' ? totals.priorCrUSD : totals.priorCrKHR) / (inThousands ? 1000 : 1)) : 0).toLocaleString(undefined, { maximumFractionDigits: currency === 'USD' ? 2 : 0 })}</td>
                                                     <td></td>
                                                 </tr>
                                             </tbody>

@@ -915,58 +915,71 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                 
                 <div className="flex justify-between items-stretch mt-1 gap-2 relative">
                   {/* Left Box */}
-                  <div className="w-[45%] flex flex-col shrink-0">
-                    <div className="border-[1.5px] border-black rounded-[8px] flex flex-col overflow-hidden bg-white mt-1">
+                  <div className="w-[50%] flex flex-col shrink-0">
+                    <div className="border-[1.5px] border-black rounded-[12px] flex flex-col overflow-hidden bg-white mt-1 gap-0">
                       {/* Header */}
-                      <div className="text-center py-[2px] border-b-[1.5px] border-black font-bold text-[10px] bg-white">
+                      <div className="text-center py-[4px] border-b-[1.5px] border-black font-bold text-[10px] bg-[#f0f0f0]">
                         <span style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
                           សម្រាប់មន្ត្រីពន្ធដារ / FOR TAX OFFICIAL USE
                         </span>
                       </div>
                       
-                      {/* Date Row */}
-                      <div className="flex items-center border-b border-black pr-2 min-h-[36px] pl-[6px]">
-                        <div className="flex flex-col w-[54px] leading-tight shrink-0">
-                          <span style={{ fontFamily: '"Kantumruy Pro", sans-serif', fontSize: '10px' }}>កាលបរិច្ឆេទ</span>
-                          <span className="text-[7.5px] text-black font-normal font-sans pt-[1px]">Date</span>
-                        </div>
-                        <div className="flex gap-[2px]">
-                          {Array.from({ length: 8 }).map((_, i) => (
-                            <div key={i} className="w-[18px] h-[22px] border border-black bg-white"></div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* No Row */}
-                      <div className="flex items-center border-b border-black pr-2 min-h-[38px] pl-[6px] py-[4px]">
-                        <div className="flex flex-col w-[54px] leading-tight shrink-0">
-                          <span style={{ fontFamily: '"Kantumruy Pro", sans-serif', fontSize: '10px' }}>លេខចូល</span>
-                          <span className="text-[7.5px] text-black font-normal font-sans pt-[1px]">(No.)</span>
-                        </div>
-                        <div className="flex-1 border border-black h-[22px] bg-white"></div>
-                      </div>
-
-                      {/* Signature Row */}
-                      <div className="flex relative min-h-[64px]">
-                        <div className="flex-1 pl-[6px] pt-[6px]">
-                          <div className="flex flex-col leading-tight">
-                            <span style={{ fontFamily: '"Kantumruy Pro", sans-serif', fontSize: '10px' }}>ហត្ថលេខា<br/>និងឈ្មោះមន្ត្រី</span>
-                            <span className="text-[7.5px] text-black font-normal mt-[1px] font-sans">Signature & Name</span>
-                          </div>
-                        </div>
+                      {/* Body area */}
+                      <div className="p-3 flex flex-col gap-[8px] relative bg-white min-h-[140px]">
                         
-                        {/* Tax ID Float Corner */}
-                        <div className="absolute bottom-0 right-0 border-t border-l border-black w-[100px] h-[36px] flex flex-col bg-white">
-                          <div className="flex-1 flex items-end justify-center pb-[2px] text-[8.5px] text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif'}}>
-                            អត្ត.លេខ / Tax ID
+                        {/* Date Row */}
+                        <div className="flex items-start">
+                          <div className="w-[85px] flex flex-col leading-tight shrink-0">
+                            <span style={{ fontFamily: '"Kantumruy Pro", sans-serif', fontSize: '10px' }}>កាលបរិច្ឆេទ</span>
+                            <span className="text-[8px] text-black font-normal font-sans mt-[1px]">Date</span>
                           </div>
-                          <div className="flex h-[20px] border-t border-black divide-x divide-black">
-                            <div className="flex-1"></div>
-                            <div className="flex-1"></div>
-                            <div className="flex-1"></div>
-                            <div className="flex-1"></div>
+                          <div className="flex gap-[6px]">
+                            <div className="flex">
+                              <div className="w-[18px] h-[20px] border-[1px] border-black bg-white"></div>
+                              <div className="w-[18px] h-[20px] border-[1px] border-l-0 border-black bg-white"></div>
+                            </div>
+                            <div className="flex">
+                              <div className="w-[18px] h-[20px] border-[1px] border-black bg-white"></div>
+                              <div className="w-[18px] h-[20px] border-[1px] border-l-0 border-black bg-white"></div>
+                            </div>
+                            <div className="flex">
+                              <div className="w-[18px] h-[20px] border-[1px] border-black bg-white"></div>
+                              <div className="w-[18px] h-[20px] border-[1px] border-l-0 border-black bg-white"></div>
+                              <div className="w-[18px] h-[20px] border-[1px] border-l-0 border-black bg-white"></div>
+                              <div className="w-[18px] h-[20px] border-[1px] border-l-0 border-black bg-white"></div>
+                            </div>
                           </div>
                         </div>
+
+                        {/* No Row */}
+                        <div className="flex items-start">
+                          <div className="w-[85px] flex flex-col leading-tight shrink-0">
+                            <span style={{ fontFamily: '"Kantumruy Pro", sans-serif', fontSize: '10px' }}>លេខចូល</span>
+                            <span className="text-[8px] text-black font-normal font-sans mt-[1px]">(No.)</span>
+                          </div>
+                          <div className="flex-1 max-w-[172px] h-[20px] border-[1px] border-black bg-white mt-[1px]"></div>
+                        </div>
+
+                        {/* Signature Row */}
+                        <div className="flex items-start mt-[4px]">
+                          <div className="w-[85px] flex flex-col leading-none shrink-0">
+                            <span style={{ fontFamily: '"Kantumruy Pro", sans-serif', fontSize: '10px', lineHeight: '1.2' }}>ហត្ថលេខា<br/>និងឈ្មោះមន្ត្រី</span>
+                            <span className="text-[8px] text-black font-normal font-sans mt-[2px]">Signature & Name</span>
+                          </div>
+                          <div className="flex-1 max-w-[140px] h-[60px] border-[1px] border-black bg-white leading-none"></div>
+                        </div>
+
+                        {/* Tax ID Box Floating in Bottom Right */}
+                        <div className="absolute bottom-[10px] right-[10px] flex flex-col items-center">
+                          <span style={{ fontFamily: '"Kantumruy Pro", sans-serif', fontSize: '10px' }} className="mb-[2px]">អត្តលេខ / Tax ID</span>
+                          <div className="flex">
+                            <div className="w-[18px] h-[20px] border-[1px] border-black bg-white"></div>
+                            <div className="w-[18px] h-[20px] border-[1px] border-l-0 border-black bg-white"></div>
+                            <div className="w-[18px] h-[20px] border-[1px] border-l-0 border-black bg-white"></div>
+                            <div className="w-[18px] h-[20px] border-[1px] border-l-0 border-black bg-white"></div>
+                          </div>
+                        </div>
+
                       </div>
                     </div>
 
