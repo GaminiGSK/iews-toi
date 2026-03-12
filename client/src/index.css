@@ -17,4 +17,12 @@
     print-color-adjust: exact;
     background-color: white !important;
   }
+  .toi-form-scale {
+    width: 1400px !important;
+    max-width: 1400px !important;
+    zoom: 0.55 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
 }

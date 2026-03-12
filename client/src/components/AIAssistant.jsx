@@ -254,7 +254,7 @@ const AIAssistant = () => {
 
     return (
         // KEY CHANGE: Moved to Right-6, Items-End to accommodate UI needs
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none print:hidden">
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none no-print">
             {/* Chat Window */}
             {isOpen && (
                 <div
