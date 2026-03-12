@@ -26,7 +26,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
   const [chatMessages, setChatMessages] = useState([
     {
       role: "agent",
-      text: "Hello. I am <b>the blue agent</b>.<br /><br />I can read company registration profiles, bank statements, and compliance history to auto-fill identifiers and compliance indicators on this workspace. How can I help you today?",
+      text: "Hello. I am <b>blue agent TOI</b>.<br /><br />I can read company registration profiles, bank statements, and compliance history to auto-fill identifiers and compliance indicators on this workspace. How can I help you today?",
     }
   ]);
 
@@ -949,7 +949,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                             <span style={{ fontFamily: '"Kantumruy Pro", sans-serif', fontSize: '10px' }}>លេខចូល</span>
                             <span className="text-[8px] text-black font-normal font-sans mt-[1px]">(No.)</span>
                           </div>
-                          <div className="flex-1 h-[22px] border-[1px] border-black bg-white mr-1 ml-1"></div>
+                          <div className="flex-1 h-[22px] border-[1px] border-black bg-white mr-1 ml-1 flex items-center justify-center font-bold text-center text-[11px] overflow-hidden px-1">{filledData?.taxOfficeNo || ""}</div>
                         </div>
 
                         {/* Signature Row */}
@@ -965,10 +965,11 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                               <span style={{ fontFamily: '"Kantumruy Pro", sans-serif', fontSize: '8.5px' }}>អត្តលេខ / Tax ID</span>
                             </div>
                             <div className="flex min-w-[96px]">
-                              <div className="flex-1 h-[20px] bg-white border-r-[1px] border-black"></div>
-                              <div className="flex-1 h-[20px] bg-white border-r-[1px] border-black"></div>
-                              <div className="flex-1 h-[20px] bg-white border-r-[1px] border-black"></div>
-                              <div className="flex-1 h-[20px] bg-white"></div>
+                              {Array.from({ length: 4 }).map((_, i) => (
+                                <div key={'txid'+i} className={`flex-1 h-[20px] bg-white flex items-center justify-center font-bold text-[12px] ${i < 3 ? 'border-r-[1px] border-black' : ''}`}>
+                                  {filledData?.taxOfficialId?.[i] || ""}
+                                </div>
+                              ))}
                             </div>
                           </div>
                         </div>
@@ -1003,26 +1004,36 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                           <span style={{ fontFamily: '"Kantumruy Pro", sans-serif'}} className="leading-none text-[11px]">ធ្វើនៅ</span>
                           <span className="text-[8px] font-normal font-sans pt-[2px]">Filed in.</span>
                        </div>
-                       <div className="w-[100px] border border-black h-[22px] shrink-0"></div>
+                       <div className="w-[100px] border border-black h-[22px] flex items-center justify-center text-[10px] font-bold text-center shrink-0 overflow-hidden px-1">{filledData?.filedIn || ""}</div>
                        <div className="flex gap-[4px] ml-4">
                            <div className="flex gap-[2px]">
-                             <div className="w-[18px] h-[22px] border border-black bg-white"></div>
-                             <div className="w-[18px] h-[22px] border border-black bg-white"></div>
+                             {Array.from({ length: 2 }).map((_, i) => (
+                               <div key={'fd'+i} className="w-[18px] h-[22px] border border-black bg-white flex items-center justify-center font-bold text-black text-[11px]">
+                                 {filledData?.filingDate?.[i] || ""}
+                               </div>
+                             ))}
                            </div>
                            <div className="flex gap-[2px] ml-1">
-                             <div className="w-[18px] h-[22px] border border-black bg-white"></div>
-                             <div className="w-[18px] h-[22px] border border-black bg-white"></div>
+                             {Array.from({ length: 2 }).map((_, i) => (
+                               <div key={'fm'+i} className="w-[18px] h-[22px] border border-black bg-white flex items-center justify-center font-bold text-black text-[11px]">
+                                 {filledData?.filingDate?.[i + 2] || ""}
+                               </div>
+                             ))}
                            </div>
                            <div className="flex gap-[2px] ml-1">
-                             <div className="w-[18px] h-[22px] border border-black bg-white"></div>
-                             <div className="w-[18px] h-[22px] border border-black bg-white"></div>
-                             <div className="w-[18px] h-[22px] border border-black bg-white"></div>
-                             <div className="w-[18px] h-[22px] border border-black bg-white"></div>
+                             {Array.from({ length: 4 }).map((_, i) => (
+                               <div key={'fy'+i} className="w-[18px] h-[22px] border border-black bg-white flex items-center justify-center font-bold text-black text-[11px]">
+                                 {filledData?.filingDate?.[i + 4] || ""}
+                               </div>
+                             ))}
                            </div>
                        </div>
                     </div>
 
-                    <div className="flex-1 flex flex-col justify-end text-center text-[9px] w-full items-center pb-[8px]">
+                    <div className="flex-1 flex flex-col justify-end text-center text-[9px] w-full items-center pb-[8px] relative">
+                       {filledData?.signatoryName && (
+                         <div className="absolute bottom-[28px] w-full text-center text-blue-800 font-bold text-[14px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif'}}>{filledData.signatoryName}</div>
+                       )}
                        <span className="font-bold tracking-tight text-[9.5px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif'}}>អភិបាល/អ្នកគ្រប់គ្រង/ម្ចាស់សហគ្រាស/ ភ្នាក់ងារសេវាកម្មពន្ធដារ</span>
                        <span className="font-bold pt-[1px] uppercase tracking-tighter text-[8.5px]" style={{ fontFamily: '"Arial", sans-serif'}}>DIRECTOR/MANAGER/OWNER OF ENTERPRISE/TAX SERVICE AGENT</span>
                        <span className="pt-[1px] text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif'}}>ហត្ថលេខា ឈ្មោះ និងត្រា / (Signature, Name & Seal)</span>
@@ -1063,15 +1074,12 @@ const ToiAcar = ({ onBack, packageId, year }) => {
         )}
 
         {/* RIGHT SIDE: Agent Terminal (Right Top Side) */}
-        <div className="w-[35%] shrink-0 border-l border-white/5 bg-slate-950/30 p-8 overflow-y-auto flex flex-col justify-start items-center custom-scrollbar print:hidden">
+        <div className="w-[45%] shrink-0 border-l border-white/5 bg-slate-950/30 p-8 overflow-y-auto flex flex-col justify-start items-center custom-scrollbar print:hidden">
           {/* AI Orb / Avatar */}
           <div className="relative mb-8 flex items-center justify-center gap-3 mt-8 animate-in fade-in duration-700">
-            <span className="text-3xl font-medium tracking-tight text-white/90 drop-shadow-md pb-1">
-              the
-            </span>
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-700 shadow-[0_0_20px_rgba(59,130,246,0.5),inset_0_-4px_10px_rgba(0,0,0,0.5)] flex items-center justify-center relative overflow-hidden" />
             <span className="text-3xl font-medium tracking-tight text-white/90 drop-shadow-md pb-1">
-              blue agent
+              blue agent TOI
             </span>
           </div>
 
@@ -1100,8 +1108,8 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   {msg.role === 'agent' && (
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-700 shadow-[0_0_10px_rgba(59,130,246,0.3)] flex items-center justify-center shrink-0 border border-white/10" />
                   )}
-                  <div className={`border rounded-2xl px-4 py-3 max-w-[85%] ${msg.role === 'agent' ? 'bg-slate-900 border-white/5 rounded-tl-none' : 'bg-blue-600 border-blue-500 rounded-tr-none'}`}>
-                    <p className={`text-[13px] leading-relaxed ${msg.role === 'agent' ? 'text-slate-300' : 'text-white'}`} dangerouslySetInnerHTML={{ __html: msg.text }}></p>
+                  <div className={`border rounded-2xl px-5 py-4 max-w-[85%] ${msg.role === 'agent' ? 'bg-slate-900 border-white/5 rounded-tl-none' : 'bg-blue-600 border-blue-500 rounded-tr-none'}`}>
+                    <p className={`text-[17px] sm:text-[18px] leading-relaxed tracking-wide ${msg.role === 'agent' ? 'text-slate-300' : 'text-white'}`} dangerouslySetInnerHTML={{ __html: msg.text }}></p>
                   </div>
                 </div>
               ))}
@@ -1130,7 +1138,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     }
                   }}
                   placeholder="Message GPT Agent..."
-                  className="w-full bg-transparent border-none outline-none text-sm text-white placeholder:text-slate-600 resize-none custom-scrollbar px-1 leading-relaxed"
+                  className="w-full bg-transparent border-none outline-none text-[16px] text-white placeholder:text-slate-600 resize-none custom-scrollbar px-2 py-1 leading-relaxed"
                   rows={4}
                 />
                 <div className="flex justify-end">
