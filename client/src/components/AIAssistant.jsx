@@ -265,9 +265,8 @@ const AIAssistant = () => {
                     <div className="bg-[#0a0f18] p-5 shrink-0 flex justify-between items-center text-white border-b border-white/40 relative z-30">
                         <div className="flex items-center gap-4 overflow-hidden">
                             <div className="flex flex-col min-w-0">
-                                <h3 className="font-semibold text-2xl tracking-tighter text-white flex items-center gap-2 lowercase">
-                                    the <div className="w-5 h-5 rounded-full bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.9)] border border-blue-300"></div> blue agent 
-                                    <span className="uppercase text-[10px] font-bold tracking-widest text-slate-300 ml-2 bg-slate-800 px-2 py-0.5 rounded border border-slate-600">Auditor</span>
+                                <h3 className="font-semibold text-2xl tracking-tighter text-white flex items-center gap-3">
+                                    the <div className="w-5 h-5 rounded-full bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.9)] border border-blue-300"></div> blue agent Auditor
                                 </h3>
                                 <div className="flex items-center gap-3 mt-2 min-w-0">
                                     <div className="flex items-center gap-2 bg-black/40 px-3 py-1 rounded-full border border-white/20">
@@ -296,16 +295,8 @@ const AIAssistant = () => {
                             </div>
                         </div>
 
-                        {/* Action Buttons: MINIMIZE and CLOSE */}
+                        {/* Action Buttons: CLOSE */}
                         <div className="flex items-center gap-3 shrink-0 ml-6">
-                            <button
-                                onClick={() => setIsOpen(false)}
-                                className="flex items-center gap-2 px-4 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-2xl transition-all shadow-lg active:scale-95 group"
-                                title="Minimize to icon"
-                            >
-                                <Minus size={24} className="group-hover:scale-110 transition-transform" />
-                                <span className="hidden md:block font-black text-[14px] uppercase tracking-tighter">Minimize</span>
-                            </button>
                             <button
                                 onClick={() => setIsOpen(false)}
                                 className="p-3 bg-red-500/20 hover:bg-red-500 border border-red-500/40 rounded-2xl transition-all shadow-lg active:scale-95 group text-red-100"

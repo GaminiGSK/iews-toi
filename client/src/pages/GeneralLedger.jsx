@@ -185,7 +185,7 @@ const GeneralLedger = ({ onBack }) => {
         <ErrorBoundary>
             <div className="min-h-screen bg-white flex flex-col font-sans text-gray-900 border-x border-slate-300 max-w-[1700px] mx-auto shadow-2xl overflow-hidden">
                 {/* Header - Left Aligned */}
-                <div className="bg-white border-b-4 border-slate-700 px-6 py-4 flex items-center justify-between sticky top-0 z-20 overflow-x-auto shadow-md">
+                <div className="bg-white border-b-4 border-slate-700 px-6 py-4 flex items-center justify-start gap-12 sticky top-0 z-20 overflow-x-auto shadow-md">
                     <div className="flex items-center gap-4 shrink-0">
                         <button
                             onClick={onBack}
@@ -255,7 +255,7 @@ const GeneralLedger = ({ onBack }) => {
                     </div>
                 </div>
 
-                <div className="flex-1 p-6 overflow-auto bg-[#f8fbff] pr-[380px]">
+                <div className="flex-1 p-6 overflow-auto bg-[#f8fbff] pr-8">
                     <div className="w-full">
                         {loading ? (
                             <div className="bg-white p-12 text-center text-slate-500 rounded border border-slate-300 shadow-sm animate-pulse font-mono tracking-widest uppercase">Loading Ledger Matrix...</div>
