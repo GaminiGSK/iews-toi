@@ -925,7 +925,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       </div>
                       
                       {/* Date Row */}
-                      <div className="flex items-center border-b border-black pr-2 min-h-[30px] pl-[6px]">
+                      <div className="flex items-center border-b border-black pr-2 min-h-[36px] pl-[6px]">
                         <div className="flex flex-col w-[54px] leading-tight shrink-0">
                           <span style={{ fontFamily: '"Kantumruy Pro", sans-serif', fontSize: '10px' }}>កាលបរិច្ឆេទ</span>
                           <span className="text-[7.5px] text-black font-normal font-sans pt-[1px]">Date</span>
@@ -938,7 +938,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       </div>
 
                       {/* No Row */}
-                      <div className="flex items-center border-b border-black pr-2 min-h-[32px] pl-[6px] py-[4px]">
+                      <div className="flex items-center border-b border-black pr-2 min-h-[38px] pl-[6px] py-[4px]">
                         <div className="flex flex-col w-[54px] leading-tight shrink-0">
                           <span style={{ fontFamily: '"Kantumruy Pro", sans-serif', fontSize: '10px' }}>លេខចូល</span>
                           <span className="text-[7.5px] text-black font-normal font-sans pt-[1px]">(No.)</span>
@@ -947,7 +947,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       </div>
 
                       {/* Signature Row */}
-                      <div className="flex relative min-h-[48px]">
+                      <div className="flex relative min-h-[64px]">
                         <div className="flex-1 pl-[6px] pt-[6px]">
                           <div className="flex flex-col leading-tight">
                             <span style={{ fontFamily: '"Kantumruy Pro", sans-serif', fontSize: '10px' }}>ហត្ថលេខា<br/>និងឈ្មោះមន្ត្រី</span>
