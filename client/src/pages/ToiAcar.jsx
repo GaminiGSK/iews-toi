@@ -97,34 +97,21 @@ const ToiAcar = ({ onBack, packageId, year }) => {
       // Trigger the UI injection if instructed
       if (parsedToolAction && parsedToolAction.tool_use === 'fill_toi_workspace') {
         const p = parsedToolAction.params || {};
-        const safeData = {
-          tin: p.tin || "N/A",
-          name: p.name || "Unknown Entity",
-          branchOut: p.branchOut || "001",
-          registrationDate: p.registrationDate || "Unknown",
-          directorName: p.directorName || "Not Listed",
-          businessActivities: p.businessActivities || "Software / App Development",
-          agentName: p.agentName || "N/A",
-          agentLicense: p.agentLicense || "N/A",
-          address1: p.address1 || "No Address Provided",
-          address2: p.address2 || "No Address Provided",
-          address3: p.address3 || "N/A",
-          taxMonths: p.taxMonths || "12",
-          fromDate: p.fromDate || "01012026",
-          untilDate: p.untilDate || "31122026",
-          accountingRecord: p.accountingRecord || null,
-          softwareName: p.softwareName || "",
-          taxComplianceStatus: p.taxComplianceStatus || null,
-          statutoryAudit: p.statutoryAudit || null,
-          legalForm: p.legalForm || null,
-          yearFirstRevenue: p.yearFirstRevenue || null,
-          yearFirstProfit: p.yearFirstProfit || null,
-          priorityPeriodYear: p.priorityPeriodYear || null,
-          incomeTaxRate: p.incomeTaxRate || null,
-          incomeTaxDue: p.incomeTaxDue || null,
-          taxCreditCarriedForward: p.taxCreditCarriedForward || null
-        };
-        setTimeout(() => setFilledData(safeData), 500); // Visual delay for realism
+        
+        // Remove empty/null fields so they don't overwrite existing user data
+        const cleanUpdates = {};
+        Object.keys(p).forEach(key => {
+            if (p[key] !== null && p[key] !== "N/A" && p[key] !== "") {
+                cleanUpdates[key] = p[key];
+            }
+        });
+
+        setTimeout(() => {
+            setFilledData(prev => ({
+                ...(prev || {}),
+                ...cleanUpdates
+            }));
+        }, 500); // Visual delay for realism
       }
 
     } catch (err) {
@@ -170,8 +157,37 @@ const ToiAcar = ({ onBack, packageId, year }) => {
 
         <div className="h-8 w-px bg-white/10 mx-6 shrink-0" />
 
+        {/* YEAR SELECTOR & PRINT */}
+        <div className="flex items-center gap-4 pr-6 shrink-0">
+          <button
+            onClick={() => window.print()}
+            title="Print Preview"
+            className="flex items-center gap-2 px-[14px] py-[6px] bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg text-white text-[12px] font-bold transition shadow-md hover:shadow-lg active:scale-95 group"
+          >
+            <Printer size={16} className="text-blue-400 group-hover:text-blue-300 transition-colors" />
+            <span className="tracking-wide">Print Preview</span>
+          </button>
+          
+          <div className="flex items-center gap-2 border-l border-white/10 pl-4">
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              Year
+            </label>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+              className="bg-slate-900 border border-slate-700 text-white text-xs font-bold rounded-lg px-3 py-1.5 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all cursor-pointer shadow-sm hover:bg-slate-800"
+            >
+              {years.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
         {/* 27 small round buttons */}
-        <div className="flex flex-1 items-center gap-2 overflow-x-auto custom-scrollbar pb-1 pt-1 pr-4">
+        <div className="flex flex-1 items-center gap-2 overflow-x-auto custom-scrollbar pb-1 pt-1 pr-4 pl-4 border-l border-white/10">
           {Array.from({ length: 27 }).map((_, i) => {
             const palettes = [
               "hover:border-emerald-500 hover:bg-emerald-500/10 text-emerald-400",
@@ -193,35 +209,6 @@ const ToiAcar = ({ onBack, packageId, year }) => {
               </button>
             );
           })}
-        </div>
-
-        {/* YEAR SELECTOR & PRINT */}
-        <div className="flex items-center gap-4 pr-6 shrink-0">
-          <button
-            onClick={() => window.print()}
-            title="Print Preview"
-            className="flex items-center gap-2 px-[14px] py-[6px] bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg text-white text-[12px] font-bold transition shadow-md hover:shadow-lg active:scale-95 group"
-          >
-            <Printer size={16} className="text-blue-400 group-hover:text-blue-300 transition-colors" />
-            <span className="tracking-wide">Print Preview</span>
-          </button>
-          
-          <div className="flex items-center gap-2 border-l border-white/10 pl-4">
-          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-            Year
-          </label>
-          <select
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(e.target.value)}
-            className="bg-slate-900 border border-slate-700 text-white text-xs font-bold rounded-lg px-3 py-1.5 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all cursor-pointer shadow-sm hover:bg-slate-800"
-          >
-            {years.map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </select>
-          </div>
         </div>
       </div>
 
@@ -1063,13 +1050,13 @@ const ToiAcar = ({ onBack, packageId, year }) => {
         )}
 
         {/* MIDDLE SIDE: GPT Result Landing Page (Totally Black, empty) */}
-        <div className="w-[25%] overflow-y-auto relative bg-black custom-scrollbar print:hidden">
+        <div className="w-[15%] overflow-y-auto relative bg-black custom-scrollbar print:hidden">
           {/* Embedded TOI Page 1 Admin Template for GPT Engine to dictate */}
           <LiveTaxWorkspace embedded={true} forcePage={activeWorkspacePage} activeYear={selectedYear} />
         </div>
 
         {/* RIGHT SIDE: Agent Terminal (Right Top Side) */}
-        <div className="w-[25%] shrink-0 border-l border-white/5 bg-slate-950/30 p-8 overflow-y-auto flex flex-col justify-start items-center custom-scrollbar print:hidden">
+        <div className="w-[35%] shrink-0 border-l border-white/5 bg-slate-950/30 p-8 overflow-y-auto flex flex-col justify-start items-center custom-scrollbar print:hidden">
           {/* AI Orb / Avatar */}
           <div className="relative mb-8 flex items-center justify-center gap-3 mt-8 animate-in fade-in duration-700">
             <span className="text-3xl font-medium tracking-tight text-white/90 drop-shadow-md pb-1">
