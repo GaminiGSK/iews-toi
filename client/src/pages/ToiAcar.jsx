@@ -200,7 +200,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
           <button
             onClick={() => window.print()}
             title="Print Preview"
-            className="flex items-center gap-2 px-[14px] py-[6px] bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg text-white text-[12px] font-bold transition shadow-md hover:shadow-lg active:scale-95 group"
+            className="flex items-center gap-2 px-[14px] py-[6px] print:py-0 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg text-white text-[12px] font-bold transition shadow-md hover:shadow-lg active:scale-95 group"
           >
             <Printer size={16} className="text-blue-400 group-hover:text-blue-300 transition-colors" />
             <span className="tracking-wide">Print Preview</span>
@@ -213,7 +213,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
           <select
             value={selectedYear}
             onChange={(e) => setSelectedYear(e.target.value)}
-            className="bg-slate-900 border border-slate-700 text-white text-xs font-bold rounded-lg px-3 py-1.5 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all cursor-pointer shadow-sm hover:bg-slate-800"
+            className="bg-slate-900 border border-slate-700 text-white text-xs font-bold rounded-lg px-3 py-1 print:py-0.5 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all cursor-pointer shadow-sm hover:bg-slate-800"
           >
             {years.map((y) => (
               <option key={y} value={y}>
@@ -229,11 +229,11 @@ const ToiAcar = ({ onBack, packageId, year }) => {
       <div className="flex-1 flex overflow-hidden print:overflow-visible">
         {/* NEW LEFT SIDE: WHITE PREVIEW (ONLY PAGE 1) */}
         {activeWorkspacePage === 1 && (
-          <div className="w-[50%] shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible">
+          <div className="w-[50%] shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-8 py-8 print:p-0 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible">
             {/* Content for the white preview */}
             <div className="w-full flex flex-col font-sans mb-12 text-black print:w-[210mm] print:mx-auto print:mb-0">
               {/* OFFICIAL GDT HEADER - Based exactly on reference image */}
-              <div className="w-full relative mb-12 print:mb-4 text-[10px] sm:text-[11px] leading-tight pt-4 font-bold flex justify-between items-start">
+              <div className="w-full relative mb-12 print:mb-2 print:mb-0 text-[10px] sm:text-[11px] leading-tight pt-4 font-bold flex justify-between items-start">
 
                 {/* LEFT: TOI 01 / I and MINISTRY */}
                 <div className="flex flex-col items-start gap-12 w-[45%]">
@@ -244,13 +244,13 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     <span className="font-semibold text-[13px] tracking-wide mb-0.5">MINISTRY OF ECONOMY AND FINANCE</span>
                     <div className="w-[105%] h-[2.5px] bg-black my-0.5"></div>
                     <span className="font-bold text-[14px] mt-1 tracking-wide" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>អគ្គនាយកដ្ឋានពន្ធដារ</span>
-                    <span className="font-semibold text-[13px] mb-2 tracking-wide">GENERAL DEPARTMENT OF TAXATION</span>
+                    <span className="font-semibold text-[13px] mb-2 print:mb-0 tracking-wide">GENERAL DEPARTMENT OF TAXATION</span>
 
                     <div className="relative">
                       {/* Drop shadow box */}
                       <div className="absolute top-[3px] left-[3px] w-full h-full bg-black"></div>
                       {/* Main block */}
-                      <div className="bg-[#f2f2f2] border-[2px] border-black border-b-0 border-r-0 font-extrabold px-8 py-2 text-[15px] text-center relative z-10 w-[300px]">
+                      <div className="bg-[#f2f2f2] border-[2px] border-black border-b-0 border-r-0 font-extrabold px-8 py-2 print:py-0 text-[15px] text-center relative z-10 w-[300px]">
                         ទម្រង់ ពបច ០១ / FORM TOI 01
                       </div>
                     </div>
@@ -264,7 +264,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                 <div className="w-[10%]"></div>
 
                 {/* RIGHT: KINGDOM */}
-                <div className="flex flex-col items-center pt-24 print:pt-6 w-[45%] pr-12">
+                <div className="flex flex-col items-center pt-2 print:pt-04 print:pt-1 w-[45%] pr-12">
                   <span className="font-bold text-[16px] tracking-wider" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ព្រះរាជាណាចក្រកម្ពុជា</span>
                   <span className="font-medium text-[15px] tracking-[0.15em] pl-1 mb-1">KINGDOM OF CAMBODIA</span>
                   <span className="font-bold text-[15px] tracking-wide" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ជាតិ សាសនា ព្រះមហាក្សត្រ</span>
@@ -280,7 +280,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
               </div>
 
               {/* FORM TITLE */}
-              <div className="flex justify-center items-end w-full mb-8 print:mb-4 pt-10 print:pt-4">
+              <div className="flex justify-center items-end w-full mb-8 print:mb-2 print:mb-0 pt-10 print:pt-1">
                 <div className="flex flex-col items-center justify-center">
                   <h1
                     className="text-[28px] font-normal text-black leading-none"
@@ -309,7 +309,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
               <div className="w-full h-[5px] bg-black rounded-b-[1px] mb-0.5 z-20 relative"></div>
 
               {/* Tax Period Row */}
-              <div className="flex w-full mb-2 items-center pt-2 pl-[49px]">
+              <div className="flex w-full mb-2 print:mb-0 items-center pt-2 print:pt-0 pl-[49px]">
                 {/* Left section: Text and 2 boxes */}
                 <div className="flex items-center">
                   <div className="flex flex-col justify-center items-center">
@@ -387,14 +387,14 @@ const ToiAcar = ({ onBack, packageId, year }) => {
               </div>
 
               {/* MAIN ENTERPRISE BOX (ROWS 1-10) */}
-              <div className="flex flex-col border-[2px] border-black mb-4 bg-white shadow-sm">
+              <div className="flex flex-col border-[2px] border-black mb-4 print:mb-1 bg-white shadow-sm">
 
                 {/* ROW 1: TIN Box */}
                 <div className="flex w-full border-b border-black">
                   <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-extrabold text-[15px] bg-[#e6e6e6] text-black">
                     1
                   </div>
-                  <div className="w-[340px] shrink-0 px-3 py-1 flex flex-col justify-center border-r border-black bg-white">
+                  <div className="w-[340px] shrink-0 px-3 py-1 print:py-0 flex flex-col justify-center border-r border-black bg-white">
                     <span
                       className="text-[13px] font-bold text-black"
                       style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
@@ -405,7 +405,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       Tax Identification Number (TIN):
                     </span>
                   </div>
-                  <div className="flex-1 flex gap-[6px] items-center justify-start pl-6 bg-white overflow-hidden py-1">
+                  <div className="flex-1 flex gap-[6px] items-center justify-start pl-6 bg-white overflow-hidden py-1 print:py-0">
                     <div className="flex gap-[2px]">
                       {Array.from({ length: 4 }).map((_, i) => (
                         <div key={i} className="w-[26px] h-[32px] border border-black bg-white flex items-center justify-center font-bold text-black text-lg">
@@ -438,12 +438,12 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                 ].map((row, i) => (
                   <div
                     key={i}
-                    className={`flex border-b border-black last:border-b-0 ${row.tall ? "min-h-[44px]" : "min-h-[30px]"}`}
+                    className={`flex border-b border-black last:border-b-0 ${row.tall ? "min-h-[44px] print:min-h-0" : "min-h-[30px] print:min-h-0"}`}
                   >
                     <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-[14px] bg-[#e6e6e6] text-black">
                       {row.id}
                     </div>
-                    <div className="w-[340px] shrink-0 border-r border-black px-3 py-1 flex flex-col justify-center text-black bg-white">
+                    <div className="w-[340px] shrink-0 border-r border-black px-3 py-1 print:py-0 flex flex-col justify-center text-black bg-white">
                       <span
                         className="font-bold text-[12px] leading-tight text-black"
                         style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
@@ -457,7 +457,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     {row.numBox ? (
                       <div className="flex-1 flex bg-white justify-between">
                         <div className="flex items-center px-4">
-                          <span className="font-bold text-[13px] text-black uppercase tracking-widest leading-none translate-y-px whitespace-pre-wrap py-2">{filledData ? cleanVal(filledData[row.valKey]) : ""}</span>
+                          <span className="font-bold text-[13px] text-black uppercase tracking-widest leading-none translate-y-px whitespace-pre-wrap py-2 print:py-0">{filledData ? cleanVal(filledData[row.valKey]) : ""}</span>
                         </div>
                         <div className="flex items-center px-4 gap-2 border-l border-black shrink-0">
                           <div className="flex flex-col justify-center items-center text-center w-[220px]">
@@ -476,7 +476,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       </div>
                     ) : (
                       <div className="flex-1 bg-white flex items-center px-4 w-full overflow-hidden">
-                        <span className="font-bold text-[13px] text-black uppercase tracking-widest leading-none translate-y-px whitespace-normal break-words py-2">{filledData ? cleanVal(filledData[row.valKey]) : ""}</span>
+                        <span className="font-bold text-[13px] text-black uppercase tracking-widest leading-none translate-y-px whitespace-normal break-words py-2 print:py-0">{filledData ? cleanVal(filledData[row.valKey]) : ""}</span>
                       </div>
                     )}
                   </div>
@@ -484,12 +484,12 @@ const ToiAcar = ({ onBack, packageId, year }) => {
               </div>
 
               {/* Compliance Details (Sections 11 - 18) */}
-              <div className="flex flex-col border-[2px] border-black mb-2 bg-white shadow-sm">
-                <div className="flex border-b border-black min-h-[50px] bg-white">
-                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-[#e6e6e6]">
+              <div className="flex flex-col border-[2px] border-black mb-2 print:mb-0 bg-white shadow-sm">
+                <div className="flex border-b border-black min-h-[50px] print:min-h-0 bg-white">
+                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-white">
                     11
                   </div>
-                  <div className="w-[340px] shrink-0 border-r border-black px-3 py-1 flex flex-col justify-center bg-white">
+                  <div className="w-[340px] shrink-0 border-r border-black px-3 py-1 print:py-0 flex flex-col justify-center bg-white">
                     <span
                       className="font-bold text-[12px] leading-tight text-black"
                       style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
@@ -500,7 +500,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       Accounting Records:
                     </span>
                   </div>
-                  <div className="flex-1 flex px-3 py-1 items-center bg-white">
+                  <div className="flex-1 flex px-3 py-1 print:py-0 items-center bg-white">
                     <div className="flex items-center gap-[6px]">
                       <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center relative">
                         {filledData?.accountingRecord === 'Using Software' && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
@@ -526,11 +526,11 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     </div>
                   </div>
                 </div>
-                <div className="flex border-b border-black min-h-[50px]">
-                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-[#e6e6e6]">
+                <div className="flex border-b border-black min-h-[50px] print:min-h-0">
+                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-white">
                     12
                   </div>
-                  <div className="w-[340px] shrink-0 border-r border-black px-3 py-1 flex flex-col justify-center bg-white">
+                  <div className="w-[340px] shrink-0 border-r border-black px-3 py-1 print:py-0 flex flex-col justify-center bg-white">
                     <span
                       className="font-bold text-[12px] leading-tight text-black"
                       style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
@@ -541,7 +541,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       Status of Tax Compliance (if any):
                     </span>
                   </div>
-                  <div className="flex-1 flex px-3 py-1 items-center gap-14 bg-white">
+                  <div className="flex-1 flex px-3 py-1 print:py-0 items-center gap-14 bg-white">
                     <div className="flex items-center gap-[6px]">
                       <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center relative">
                         {filledData?.taxComplianceStatus === 'Gold' && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
@@ -571,11 +571,11 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     </div>
                   </div>
                 </div>
-                <div className="flex min-h-[36px] bg-white border-b border-black">
-                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-[#e6e6e6]">
+                <div className="flex min-h-[36px] print:min-h-0 bg-white border-b border-black">
+                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-white">
                     13
                   </div>
-                  <div className="w-[340px] shrink-0 border-r border-black px-3 py-1 flex flex-col justify-center bg-white">
+                  <div className="w-[340px] shrink-0 border-r border-black px-3 py-1 print:py-0 flex flex-col justify-center bg-white">
                     <span
                       className="font-bold text-[12px] leading-tight text-black"
                       style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
@@ -586,7 +586,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       Statutory Audit Requirement:
                     </span>
                   </div>
-                  <div className="flex-1 flex px-3 py-1 items-center gap-16 bg-white">
+                  <div className="flex-1 flex px-3 py-1 print:py-0 items-center gap-16 bg-white">
                     <div className="flex items-center gap-[6px]">
                       <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center relative">
                         {filledData?.statutoryAudit === 'Required' && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
@@ -609,8 +609,8 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                 </div>
 
               {/* Section 14: Legal Form */}
-              <div className="flex border-b border-black bg-white min-h-[50px]">
-                <div className="w-[49px] shrink-0 border-r border-black flex flex-col items-center justify-center bg-[#e6e6e6]">
+              <div className="flex border-b border-black bg-white min-h-[50px] print:min-h-0">
+                <div className="w-[49px] shrink-0 border-r border-black flex flex-col items-center justify-center bg-white">
                   {/* Container to center 14 properly */}
                   <div className="h-full flex flex-col justify-center font-bold text-sm">
                     14
@@ -619,7 +619,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                 <div className="flex-1 flex bg-white">
                   
                   {/* Left Column Label Block spanning full height */}
-                  <div className="w-[340px] shrink-0 border-r border-black pl-3 pr-2 py-1 flex flex-col justify-start pt-2 bg-[#f0f0f0]">
+                  <div className="w-[340px] shrink-0 border-r border-black pl-3 pr-2 py-1 print:py-0 flex flex-col justify-start pt-2 print:pt-0 bg-white">
                     <span className="font-bold text-[12px] leading-tight text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
                       ទម្រង់សិទ្ធិគតិយុត្ត /ទម្រង់នៃប្រតិបត្តិការអាជីវកម្ម ៖
                     </span>
@@ -631,7 +631,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   {/* Right Blocks */}
                   <div className="flex-1 flex flex-col">
                     {/* Top Header Row of checkboxes */}
-                    <div className="flex min-h-[38px] border-b border-black">
+                    <div className="flex min-h-[38px] print:min-h-0 border-b border-black">
                       <div className="w-[36%] shrink-0 flex items-center gap-2 pl-[50px] pr-2">
                         <div className="w-[20px] h-[20px] border border-black shrink-0 bg-white flex items-center justify-center relative mt-[2px]">
                           {filledData?.legalForm === "Private Limited Company" && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
@@ -654,7 +654,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     </div>
                   
                   {/* Bottom Grid Rows */}
-                  <div className="flex flex-1 py-[6px] min-h-[140px]">
+                  <div className="flex flex-1 py-[6px] print:py-0 min-h-[140px] print:min-h-[110px]">
                     {/* Column 1 */}
                     <div className="w-[36%] shrink-0 pl-[50px] pr-2 flex flex-col gap-[7px]">
                       {[
@@ -732,11 +732,11 @@ const ToiAcar = ({ onBack, packageId, year }) => {
               {/* Sections 15, 16, 17, 18 */}
               <div className="flex flex-col bg-white">
                 {/* Row 15 */}
-                <div className="flex border-b border-black min-h-[36px]">
-                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-[#e6e6e6]">
+                <div className="flex border-b border-black min-h-[36px] print:min-h-0">
+                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-white">
                     15
                   </div>
-                  <div className="w-[340px] shrink-0 border-r border-black px-3 py-[6px] flex flex-col justify-center bg-[#f0f0f0]">
+                  <div className="w-[340px] shrink-0 border-r border-black px-3 py-[6px] print:py-0 flex flex-col justify-center bg-white">
                     <span
                       className="font-bold text-[12px] leading-tight text-black"
                       style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
@@ -748,7 +748,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     </span>
                   </div>
                   <div className="flex-1 flex divide-x divide-black bg-white">
-                    <div className="flex-1 px-3 py-1 flex flex-col justify-center">
+                    <div className="flex-1 px-3 py-1 print:py-0 flex flex-col justify-center">
                       <span
                         className="text-[11px] font-bold text-black"
                         style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
@@ -760,7 +760,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       </span>
                     </div>
                     <div className="w-[60px] p-2 flex items-center justify-center border-b-0 border-r-0 text-black font-bold text-[12px]">{filledData?.yearFirstRevenue || ""}</div>
-                    <div className="flex-1 px-3 py-1 flex flex-col justify-center">
+                    <div className="flex-1 px-3 py-1 print:py-0 flex flex-col justify-center">
                       <span
                         className="text-[11px] font-bold text-black"
                         style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
@@ -772,7 +772,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       </span>
                     </div>
                     <div className="w-[60px] p-2 flex items-center justify-center border-b-0 border-r-0 text-black font-bold text-[12px]">{filledData?.yearFirstProfit || ""}</div>
-                    <div className="flex-1 px-3 py-[6px] flex flex-col justify-center border-l border-black">
+                    <div className="flex-1 px-3 py-[6px] print:py-0 flex flex-col justify-center border-l border-black">
                       <span
                         className="text-[11px] font-bold text-black"
                         style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
@@ -785,18 +785,18 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     </div>
                     <div className="w-[60px] p-2 flex relative justify-center items-center border-l-0">
                       <div className="flex-1 flex flex-col items-center justify-between border-b border-black">
-                        <div className="flex items-center justify-center pt-2 text-black font-bold text-[12px] bg-white z-0 mt-2 mb-2">{filledData?.priorityPeriodYear || ""}</div>
+                        <div className="flex items-center justify-center pt-2 print:pt-0 text-black font-bold text-[12px] bg-white z-0 mt-2 mb-2 print:mb-0">{filledData?.priorityPeriodYear || ""}</div>
                         <span className="text-[9px] z-10 text-black leading-none mb-1 font-normal" style={{ fontFamily: '"Arial", sans-serif' }}>Year(s)</span>
                       </div>
                     </div>
                   </div>
                 </div>
                 {/* Row 16 */}
-                <div className="flex border-b border-black min-h-[36px]">
-                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-[#e6e6e6]">
+                <div className="flex border-b border-black min-h-[36px] print:min-h-0">
+                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-white">
                     16
                   </div>
-                  <div className="w-[340px] shrink-0 border-r border-black px-3 py-[6px] flex flex-col justify-center bg-[#f0f0f0]">
+                  <div className="w-[340px] shrink-0 border-r border-black px-3 py-[6px] print:py-0 flex flex-col justify-center bg-white">
                     <span
                       className="font-bold text-[12px] leading-tight text-black"
                       style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
@@ -807,7 +807,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       Income Tax Rate:
                     </span>
                   </div>
-                  <div className="flex-1 flex px-3 py-1 items-center justify-between text-[11px] font-bold text-black tracking-tighter bg-white">
+                  <div className="flex-1 flex px-3 py-1 print:py-0 items-center justify-between text-[11px] font-bold text-black tracking-tighter bg-white">
                     <div className="flex items-center gap-[6px]">
                       <div className="w-[16px] h-[16px] border border-black bg-white flex items-center justify-center relative">
                         {filledData?.incomeTaxRate === '30%' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
@@ -857,11 +857,11 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   </div>
                 </div>
                 {/* Row 17 & 18 */}
-                <div className="flex min-h-[36px]">
-                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-[#e6e6e6]">
+                <div className="flex min-h-[36px] print:min-h-0">
+                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-white">
                     17
                   </div>
-                  <div className="w-[340px] shrink-0 border-r border-black px-3 py-[6px] flex flex-col justify-center bg-[#f0f0f0]">
+                  <div className="w-[340px] shrink-0 border-r border-black px-3 py-[6px] print:py-0 flex flex-col justify-center bg-white">
                     <span
                       className="font-bold text-[12px] leading-tight text-black"
                       style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
@@ -873,10 +873,10 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     </span>
                   </div>
                   <div className="flex-[0.6] border-r border-black bg-white flex items-center font-bold text-black uppercase tracking-widest px-4">{filledData?.incomeTaxDue ? String(filledData.incomeTaxDue).replace(/null|N\/A/ig, "") : ""}</div>
-                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-[#e6e6e6]">
+                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-white">
                     18
                   </div>
-                  <div className="w-[180px] shrink-0 border-r border-black px-3 py-[6px] flex flex-col justify-center bg-[#f0f0f0]">
+                  <div className="w-[180px] shrink-0 border-r border-black px-3 py-[6px] print:py-0 flex flex-col justify-center bg-white">
                     <span
                       className="font-bold text-[12px] leading-tight text-black"
                       style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
@@ -918,14 +918,14 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   <div className="w-[45%] flex flex-col shrink-0">
                     <div className="border-[1.5px] border-black rounded-[8px] flex flex-col overflow-hidden bg-white mt-1">
                       {/* Header */}
-                      <div className="text-center py-[2px] border-b-[1.5px] border-black font-bold text-[10px] bg-[#f0f0f0]">
+                      <div className="text-center py-[2px] border-b-[1.5px] border-black font-bold text-[10px] bg-white">
                         <span style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
                           សម្រាប់មន្ត្រីពន្ធដារ / FOR TAX OFFICIAL USE
                         </span>
                       </div>
                       
                       {/* Date Row */}
-                      <div className="flex items-center border-b border-black pr-2 min-h-[30px] pl-[6px]">
+                      <div className="flex items-center border-b border-black pr-2 min-h-[30px] print:min-h-0 pl-[6px]">
                         <div className="flex flex-col w-[54px] leading-tight shrink-0">
                           <span style={{ fontFamily: '"Kantumruy Pro", sans-serif', fontSize: '10px' }}>កាលបរិច្ឆេទ</span>
                           <span className="text-[7.5px] text-black font-normal font-sans pt-[1px]">Date</span>
@@ -1025,7 +1025,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                 </div>
 
                 {/* Page Number absolute bottom right text */}
-                <div className="w-full flex justify-end font-bold pt-2 gap-[6px] items-center text-black">
+                <div className="w-full flex justify-end font-bold pt-2 print:pt-0 gap-[6px] items-center text-black">
                     <svg width="6" height="10" viewBox="0 0 10 16" fill="black"><path d="M0 0 L10 8 L0 16 Z" /></svg>
                     <div className="flex flex-col items-center pl-1">
                        <span style={{ fontFamily: '"Kantumruy Pro", sans-serif'}} className="leading-none text-[12px] translate-y-[2px]">ទំព័រទី</span>
@@ -1036,7 +1036,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
               </div>
 
               <div className="w-full text-center mt-12 mb-8 opacity-20 flex flex-col items-center print:hidden">
-                <div className="w-px h-16 bg-black mb-4"></div>
+                <div className="w-px h-16 bg-black mb-4 print:mb-1"></div>
                 <span className="text-xl font-black tracking-[0.5em] uppercase text-black">
                   Page 1 Virtual Print
                 </span>
@@ -1077,7 +1077,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   Agent Terminal
                 </span>
               </div>
-              <div className="flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 px-2 py-1 rounded">
+              <div className="flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 px-2 py-1 print:py-0 rounded">
                 <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
                 <span className="text-[8px] font-black uppercase tracking-widest text-indigo-400">
                   Online
@@ -1126,7 +1126,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   rows={4}
                 />
                 <div className="flex justify-end">
-                  <button onClick={handleSend} disabled={isTyping} className="bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 disabled:opacity-50 text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition active:scale-95 shadow-[0_0_20px_rgba(59,130,246,0.2)]">
+                  <button onClick={handleSend} disabled={isTyping} className="bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 disabled:opacity-50 text-white px-6 py-2 print:py-0 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition active:scale-95 shadow-[0_0_20px_rgba(59,130,246,0.2)]">
                     Send &gt;
                   </button>
                 </div>
