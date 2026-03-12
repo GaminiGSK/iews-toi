@@ -195,10 +195,10 @@ const TrialBalance = ({ onBack }) => {
                         <ArrowLeft size={20} />
                     </button>
                     <div>
-                        <h1 className="text-2xl font-bold text-teal-800 flex items-center gap-2">
-                            <Scale className="w-6 h-6" /> Trial Balance <span className="text-sm font-normal text-gray-400 bg-gray-100 px-2 py-1 rounded-full">AI Enhanced</span>
+                        <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2 tracking-tight">
+                            <Scale className="w-6 h-6 text-blue-600" /> Trial Balance Dashboard
                         </h1>
-                        <p className="text-xs text-gray-500 mt-1">Dynamic financial visualization.</p>
+                        <p className="text-[11px] text-slate-500 font-medium uppercase tracking-wider mt-0.5">Professional Financial Visualization</p>
                     </div>
                 </div>
 
@@ -297,75 +297,69 @@ const TrialBalance = ({ onBack }) => {
                 {viewMode === 'visual' && !loading && (
                     <div className="max-w-[1600px] mx-auto space-y-6 animate-fade-in pb-12">
 
-                        {/* Financial Header - Futuristic Cards */}
+                        {/* Financial Header - Enterprise Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                             {/* Assets Card */}
-                            <div className="bg-[#0b1324] border border-blue-500/20 rounded-[20px] p-6 relative overflow-hidden group hover:border-blue-500/60 hover:shadow-[0_0_30px_rgba(59,130,246,0.15)] transition-all duration-500">
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-[40px] -mr-10 -mt-10 group-hover:bg-blue-500/20 transition-all duration-700"></div>
-                                <div className="absolute left-0 top-1/4 w-1 h-1/2 bg-gradient-to-b from-transparent via-blue-500 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 shadow-[0_0_15px_rgba(59,130,246,1)]"></div>
+                            <div className="bg-white border border-slate-200/60 rounded-3xl p-7 relative overflow-hidden group hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300">
+                                <div className="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
                                 <div className="flex justify-between items-start mb-6">
                                     <div>
-                                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400 mb-1">Total Assets</p>
-                                        <p className="text-xs text-slate-500">System Liquidity</p>
+                                        <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-1">Total Assets</p>
+                                        <p className="text-xs text-slate-500 font-medium">Liquidity & Holdings</p>
                                     </div>
-                                    <div className="w-8 h-8 rounded-full border border-blue-500/30 bg-blue-500/10 flex items-center justify-center shadow-[inset_0_0_10px_rgba(59,130,246,0.2)]">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse shadow-[0_0_8px_rgba(59,130,246,1)]"></div>
+                                    <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center">
+                                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
                                     </div>
                                 </div>
-                                <p className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-blue-300 to-blue-600 tracking-tight font-mono">
+                                <p className="text-3xl font-black text-slate-800 tracking-tight font-mono">
                                     {currency} {totalAssets.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </p>
                             </div>
 
                             {/* Liabilities Card */}
-                            <div className="bg-[#0b1324] border border-rose-500/20 rounded-[20px] p-6 relative overflow-hidden group hover:border-rose-500/60 hover:shadow-[0_0_30px_rgba(244,63,94,0.15)] transition-all duration-500">
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/10 rounded-full blur-[40px] -mr-10 -mt-10 group-hover:bg-rose-500/20 transition-all duration-700"></div>
-                                <div className="absolute left-0 top-1/4 w-1 h-1/2 bg-gradient-to-b from-transparent via-rose-500 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 shadow-[0_0_15px_rgba(244,63,94,1)]"></div>
+                            <div className="bg-white border border-slate-200/60 rounded-3xl p-7 relative overflow-hidden group hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300">
+                                <div className="absolute top-0 left-0 w-full h-1 bg-rose-500"></div>
                                 <div className="flex justify-between items-start mb-6">
                                     <div>
-                                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-rose-400 mb-1">Total Liabilities</p>
-                                        <p className="text-xs text-slate-500">System Debt</p>
+                                        <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-1">Total Liabilities</p>
+                                        <p className="text-xs text-slate-500 font-medium">Obligations & Debt</p>
                                     </div>
-                                    <div className="w-8 h-8 rounded-full border border-rose-500/30 bg-rose-500/10 flex items-center justify-center shadow-[inset_0_0_10px_rgba(244,63,94,0.2)]">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse shadow-[0_0_8px_rgba(244,63,94,1)]"></div>
+                                    <div className="w-10 h-10 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center">
+                                        <div className="w-2 h-2 rounded-full bg-rose-500"></div>
                                     </div>
                                 </div>
-                                <p className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-rose-300 to-rose-600 tracking-tight font-mono">
+                                <p className="text-3xl font-black text-slate-800 tracking-tight font-mono">
                                     {currency} {totalLiabilities.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </p>
                             </div>
 
                             {/* Equity Card */}
-                            <div className={`bg-[#0b1324] border ${totalEquity >= 0 ? 'border-emerald-500/20 hover:border-emerald-500/60 hover:shadow-[0_0_30px_rgba(16,185,129,0.15)]' : 'border-red-500/20 hover:border-red-500/60 hover:shadow-[0_0_30px_rgba(239,68,68,0.15)]'} rounded-[20px] p-6 relative overflow-hidden group transition-all duration-500`}>
-                                <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-[40px] -mr-10 -mt-10 transition-all duration-700 ${totalEquity >= 0 ? 'bg-emerald-500/10 group-hover:bg-emerald-500/20' : 'bg-red-500/10 group-hover:bg-red-500/20'}`}></div>
-                                <div className={`absolute left-0 top-1/4 w-1 h-1/2 bg-gradient-to-b from-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 ${totalEquity >= 0 ? 'via-emerald-500 shadow-[0_0_15px_rgba(16,185,129,1)]' : 'via-red-500 shadow-[0_0_15px_rgba(239,68,68,1)]'}`}></div>
+                            <div className="bg-white border border-slate-200/60 rounded-3xl p-7 relative overflow-hidden group hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300">
+                                <div className={`absolute top-0 left-0 w-full h-1 ${totalEquity >= 0 ? 'bg-emerald-500' : 'bg-orange-500'}`}></div>
                                 <div className="flex justify-between items-start mb-6">
                                     <div>
-                                        <p className={`text-[10px] font-black uppercase tracking-[0.2em] mb-1 ${totalEquity >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>Total Equity</p>
-                                        <p className="text-xs text-slate-500">Net Worth</p>
+                                        <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-1">Total Equity</p>
+                                        <p className="text-xs text-slate-500 font-medium">Business Net Worth</p>
                                     </div>
-                                    <div className={`w-8 h-8 rounded-full border flex items-center justify-center ${totalEquity >= 0 ? 'border-emerald-500/30 bg-emerald-500/10 shadow-[inset_0_0_10px_rgba(16,185,129,0.2)]' : 'border-red-500/30 bg-red-500/10 shadow-[inset_0_0_10px_rgba(239,68,68,0.2)]'}`}>
-                                        <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${totalEquity >= 0 ? 'bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,1)]' : 'bg-red-400 shadow-[0_0_8px_rgba(239,68,68,1)]'}`}></div>
+                                    <div className={`w-10 h-10 rounded-2xl border flex items-center justify-center ${totalEquity >= 0 ? 'bg-emerald-50 border-emerald-100' : 'bg-orange-50 border-orange-100'}`}>
+                                        <div className={`w-2 h-2 rounded-full ${totalEquity >= 0 ? 'bg-emerald-500' : 'bg-orange-500'}`}></div>
                                     </div>
                                 </div>
-                                <p className={`text-3xl font-black text-transparent bg-clip-text tracking-tight font-mono ${totalEquity >= 0 ? 'bg-gradient-to-br from-emerald-300 to-emerald-600' : 'bg-gradient-to-br from-red-300 to-red-600'}`}>
+                                <p className={`text-3xl font-black tracking-tight font-mono ${totalEquity >= 0 ? 'text-slate-800' : 'text-orange-600'}`}>
                                     {currency} {totalEquity.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </p>
                             </div>
 
                             {/* Ledger Status */}
-                            <div className="bg-[#0b1324] border border-white/5 rounded-[20px] p-6 relative overflow-hidden group hover:border-indigo-500/40 hover:shadow-[0_0_30px_rgba(99,102,241,0.1)] transition-all duration-500 flex flex-col justify-between">
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-[40px] -mr-10 -mt-10 group-hover:bg-indigo-500/10 transition-all duration-700"></div>
-                                <div className="absolute left-0 top-1/4 w-1 h-1/2 bg-gradient-to-b from-transparent via-indigo-500 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 shadow-[0_0_15px_rgba(99,102,241,1)]"></div>
+                            <div className="bg-white border border-slate-200/60 rounded-3xl p-7 relative overflow-hidden group hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300 flex flex-col justify-between">
+                                <div className="absolute top-0 left-0 w-full h-1 bg-indigo-500"></div>
                                 <div>
-                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 mb-1">Ledger Status</p>
-                                    <p className="text-[10px] text-slate-500 font-mono tracking-widest mt-1">EQ DIFF: {Math.abs(totalAssets - (totalLiabilities + totalEquity)).toFixed(5)}</p>
+                                    <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-1">Ledger Check</p>
+                                    <p className="text-[10px] text-slate-400 font-mono tracking-widest mt-1 uppercase">Accounting Equation</p>
                                 </div>
-                                
-                                <div className={`mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl border relative overflow-hidden ${isAccountingBalanced ? 'border-emerald-500/30 bg-emerald-950/30 text-emerald-400' : 'border-red-500/30 bg-red-950/30 text-red-500'}`}>
-                                    {isAccountingBalanced && <div className="absolute inset-0 bg-emerald-500/5 pulse-glow"></div>}
-                                    <div className={`w-2 h-2 rounded-full relative z-10 ${isAccountingBalanced ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,1)] animate-ping' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,1)]'}`}></div>
-                                    <span className="font-bold text-xs uppercase tracking-[0.15em] relative z-10">{isAccountingBalanced ? 'Fully Reconciled' : 'Unbalanced'}</span>
+                                <div className={`mt-4 w-full flex items-center justify-center gap-3 py-3.5 rounded-2xl border relative overflow-hidden transition-colors ${isAccountingBalanced ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-red-200 bg-red-50 text-red-600'}`}>
+                                    <div className={`w-2 h-2 rounded-full relative z-10 ${isAccountingBalanced ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`}></div>
+                                    <span className="font-bold text-xs uppercase tracking-widest relative z-10">{isAccountingBalanced ? 'Fully Reconciled' : 'Unbalanced Journal'}</span>
                                 </div>
                             </div>
                         </div>
@@ -373,15 +367,14 @@ const TrialBalance = ({ onBack }) => {
                         {/* Charts Area */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             {/* Assets Chart */}
-                            <div className="bg-[#050b14] border border-blue-900/40 p-6 rounded-[24px] shadow-2xl relative overflow-hidden flex flex-col h-[500px] group hover:border-blue-700/50 transition-colors duration-500">
-                                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent"></div>
+                            <div className="bg-white border border-slate-200/60 p-6 rounded-3xl shadow-sm relative overflow-hidden flex flex-col h-[500px] hover:shadow-md transition-shadow">
                                 <div className="flex justify-between items-center mb-8 relative z-10">
-                                    <h3 className="font-bold text-slate-200 text-sm tracking-widest uppercase">Asset Liquidity</h3>
-                                    <span className="text-[10px] font-mono text-blue-400 bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/20 shadow-[0_0_10px_rgba(59,130,246,0.1)]">
+                                    <h3 className="font-extrabold text-slate-800 text-sm tracking-widest uppercase">Asset Composition</h3>
+                                    <span className="text-[11px] font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg">
                                         TOT: {currency} {totalAssets.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                     </span>
                                 </div>
-                                <div className="flex-1 relative z-10 filter drop-shadow-[0_0_15px_rgba(59,130,246,0.1)]">
+                                <div className="flex-1 relative z-10">
                                     {assetData.length > 0 ? (
                                         <ResponsiveContainer width="100%" height="100%">
                                             <PieChart>
@@ -401,8 +394,8 @@ const TrialBalance = ({ onBack }) => {
                                                     ))}
                                                 </Pie>
                                                 <Tooltip
-                                                    contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', backdropFilter: 'blur(10px)', borderColor: 'rgba(59, 130, 246, 0.3)', color: '#F8FAFC', borderRadius: '12px', boxShadow: '0 0 20px rgba(0,0,0,0.5)' }}
-                                                    itemStyle={{ color: '#60A5FA', fontWeight: 'bold', fontSize: '13px' }}
+                                                    contentStyle={{ backgroundColor: 'white', borderColor: '#E2E8F0', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }}
+                                                    itemStyle={{ color: '#1E293B', fontWeight: 'bold', fontSize: '13px' }}
                                                     formatter={(value, name, props) => {
                                                         const actualSize = props.payload.actualSize;
                                                         return [`${currency} ${actualSize.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, 'Balance'];
@@ -411,7 +404,7 @@ const TrialBalance = ({ onBack }) => {
                                             </PieChart>
                                         </ResponsiveContainer>
                                     ) : (
-                                        <div className="flex h-full items-center justify-center text-slate-600 font-mono text-xs tracking-widest uppercase">
+                                        <div className="flex h-full items-center justify-center text-slate-400 font-medium text-xs tracking-widest uppercase">
                                             No Data Available
                                         </div>
                                     )}
@@ -419,11 +412,10 @@ const TrialBalance = ({ onBack }) => {
                             </div>
 
                             {/* Liabilities Chart */}
-                            <div className="bg-[#050b14] border border-rose-900/30 p-6 rounded-[24px] shadow-2xl relative overflow-hidden flex flex-col h-[500px] group hover:border-rose-700/50 transition-colors duration-500">
-                                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-rose-500/50 to-transparent"></div>
+                            <div className="bg-white border border-slate-200/60 p-6 rounded-3xl shadow-sm relative overflow-hidden flex flex-col h-[500px] hover:shadow-md transition-shadow">
                                 <div className="flex justify-between items-center mb-8 relative z-10">
-                                    <h3 className="font-bold text-slate-200 text-sm tracking-widest uppercase">Liability Struct</h3>
-                                    <span className="text-[10px] font-mono text-rose-400 bg-rose-500/10 px-3 py-1.5 rounded-lg border border-rose-500/20 shadow-[0_0_10px_rgba(244,63,94,0.1)]">
+                                    <h3 className="font-extrabold text-slate-800 text-sm tracking-widest uppercase">Liability Structure</h3>
+                                    <span className="text-[11px] font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg">
                                         TOT: {currency} {totalLiabilities.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                     </span>
                                 </div>
@@ -435,21 +427,15 @@ const TrialBalance = ({ onBack }) => {
                                                 data={liabilityData.sort((a, b) => b.size - a.size).slice(0, 10)}
                                                 margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
                                             >
-                                                <defs>
-                                                    <linearGradient id="roseGradient" x1="0" y1="0" x2="1" y2="0">
-                                                        <stop offset="0%" stopColor="#BE123C" />
-                                                        <stop offset="100%" stopColor="#FB7185" />
-                                                    </linearGradient>
-                                                </defs>
-                                                <XAxis type="number" stroke="#334155" fontSize={10} tickFormatter={(val) => `${val / 1000}k`} tickLine={false} axisLine={false} />
-                                                <YAxis type="category" dataKey="name" width={110} stroke="#64748b" fontSize={10} tick={{ fill: '#94a3b8' }} tickLine={false} axisLine={false} />
+                                                <XAxis type="number" stroke="#94A3B8" fontSize={10} tickFormatter={(val) => `${val / 1000}k`} tickLine={false} axisLine={false} />
+                                                <YAxis type="category" dataKey="name" width={110} stroke="#64748b" fontSize={10} tick={{ fill: '#475569' }} tickLine={false} axisLine={false} />
                                                 <Tooltip
-                                                    cursor={{ fill: 'rgba(255,255,255,0.02)' }}
-                                                    contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', backdropFilter: 'blur(10px)', borderColor: 'rgba(244, 63, 94, 0.3)', color: '#F8FAFC', borderRadius: '12px' }}
-                                                    itemStyle={{ color: '#FB7185', fontWeight: 'bold' }}
+                                                    cursor={{ fill: 'rgba(0,0,0,0.02)' }}
+                                                    contentStyle={{ backgroundColor: 'white', borderColor: '#E2E8F0', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                                    itemStyle={{ color: '#E11D48', fontWeight: 'bold' }}
                                                     formatter={(value) => [`${currency} ${value.toLocaleString()}`, 'Amount']}
                                                 />
-                                                <Bar dataKey="size" fill="url(#roseGradient)" radius={[0, 6, 6, 0]} barSize={16}>
+                                                <Bar dataKey="size" fill="#FB7185" radius={[0, 6, 6, 0]} barSize={16}>
                                                     {liabilityData.map((entry, index) => (
                                                         <Cell key={`cell-${index}`} />
                                                     ))}
@@ -457,7 +443,7 @@ const TrialBalance = ({ onBack }) => {
                                             </BarChart>
                                         </ResponsiveContainer>
                                     ) : (
-                                        <div className="flex h-full items-center justify-center text-slate-600 font-mono text-xs tracking-widest uppercase">
+                                        <div className="flex h-full items-center justify-center text-slate-400 font-medium text-xs tracking-widest uppercase">
                                             No Active Liabilities
                                         </div>
                                     )}
@@ -465,11 +451,10 @@ const TrialBalance = ({ onBack }) => {
                             </div>
 
                             {/* Equity Chart */}
-                            <div className="bg-[#050b14] border border-emerald-900/30 p-6 rounded-[24px] shadow-2xl relative overflow-hidden flex flex-col h-[500px] group hover:border-emerald-700/50 transition-colors duration-500">
-                                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent"></div>
+                            <div className="bg-white border border-slate-200/60 p-6 rounded-3xl shadow-sm relative overflow-hidden flex flex-col h-[500px] hover:shadow-md transition-shadow">
                                 <div className="flex justify-between items-center mb-8 relative z-10">
-                                    <h3 className="font-bold text-slate-200 text-sm tracking-widest uppercase">Equity Struct</h3>
-                                    <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]">
+                                    <h3 className="font-extrabold text-slate-800 text-sm tracking-widest uppercase">Equity Analysis</h3>
+                                    <span className="text-[11px] font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg">
                                         TOT: {currency} {totalEquity.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                     </span>
                                 </div>
@@ -481,29 +466,23 @@ const TrialBalance = ({ onBack }) => {
                                                 data={equityData.sort((a, b) => b.size - a.size).slice(0, 10)}
                                                 margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
                                             >
-                                                <defs>
-                                                    <linearGradient id="emeraldGradient" x1="0" y1="0" x2="1" y2="0">
-                                                        <stop offset="0%" stopColor="#047857" />
-                                                        <stop offset="100%" stopColor="#34D399" />
-                                                    </linearGradient>
-                                                </defs>
-                                                <XAxis type="number" stroke="#334155" fontSize={10} tickFormatter={(val) => `${val / 1000}k`} tickLine={false} axisLine={false} />
-                                                <YAxis type="category" dataKey="name" width={110} stroke="#64748b" fontSize={10} tick={{ fill: '#94a3b8' }} tickLine={false} axisLine={false} />
+                                                <XAxis type="number" stroke="#94A3B8" fontSize={10} tickFormatter={(val) => `${val / 1000}k`} tickLine={false} axisLine={false} />
+                                                <YAxis type="category" dataKey="name" width={110} stroke="#64748b" fontSize={10} tick={{ fill: '#475569' }} tickLine={false} axisLine={false} />
                                                 <Tooltip
-                                                    cursor={{ fill: 'rgba(255,255,255,0.02)' }}
-                                                    contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', backdropFilter: 'blur(10px)', borderColor: 'rgba(16, 185, 129, 0.3)', color: '#F8FAFC', borderRadius: '12px' }}
-                                                    itemStyle={{ color: '#34D399', fontWeight: 'bold' }}
+                                                    cursor={{ fill: 'rgba(0,0,0,0.02)' }}
+                                                    contentStyle={{ backgroundColor: 'white', borderColor: '#E2E8F0', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                                    itemStyle={{ color: '#059669', fontWeight: 'bold' }}
                                                     formatter={(value) => [`${currency} ${value.toLocaleString()}`, 'Amount']}
                                                 />
-                                                <Bar dataKey="size" fill="url(#emeraldGradient)" radius={[0, 6, 6, 0]} barSize={16}>
+                                                <Bar dataKey="size" radius={[0, 6, 6, 0]} barSize={16}>
                                                     {equityData.sort((a, b) => b.size - a.size).slice(0, 10).map((entry, index) => (
-                                                        <Cell key={`cell-${index}`} fill={entry.size >= 0 ? 'url(#emeraldGradient)' : '#EF4444'} />
+                                                        <Cell key={`cell-${index}`} fill={entry.size >= 0 ? '#10B981' : '#EF4444'} />
                                                     ))}
                                                 </Bar>
                                             </BarChart>
                                         </ResponsiveContainer>
                                     ) : (
-                                        <div className="flex h-full items-center justify-center text-slate-600 font-mono text-xs tracking-widest uppercase">
+                                        <div className="flex h-full items-center justify-center text-slate-400 font-medium text-xs tracking-widest uppercase">
                                             No Equity Data
                                         </div>
                                     )}
