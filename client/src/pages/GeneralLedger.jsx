@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Wand2, Calendar, Tag, Layers, ArrowLeft, Sparkles } from 'lucide-react';
 import ErrorBoundary from '../components/ErrorBoundary';
+import GlHeader from '../components/GeneralLedger/GlHeader';
+import GlTable from '../components/GeneralLedger/GlTable';
 
 const GeneralLedger = ({ onBack }) => {
     const [transactions, setTransactions] = useState([]);
@@ -10,6 +12,7 @@ const GeneralLedger = ({ onBack }) => {
     const [tagging, setTagging] = useState(false);
     const [error, setError] = useState(null);
     const [viewMode, setViewMode] = useState('date'); // 'date' | 'code'
+    const [currencyMode, setCurrencyMode] = useState('USD');
     const [filterCode, setFilterCode] = useState('');
     const [fiscalYear, setFiscalYear] = useState('all');
     const [bulkTargetCode, setBulkTargetCode] = useState('');
