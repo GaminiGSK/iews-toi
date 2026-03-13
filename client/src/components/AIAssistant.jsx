@@ -258,20 +258,24 @@ const AIAssistant = () => {
             {/* Chat Window */}
             {isOpen && (
                 <div
-                    className="bg-[#030712] pointer-events-auto rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] border border-white/60 w-[650px] max-w-[calc(100vw-48px)] flex flex-col mb-4 overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300"
-                    style={{ height: '98vh', maxHeight: 'none' }}
+                    className="bg-[#030712] pointer-events-auto rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] border border-white/60 w-[650px] max-w-[calc(100vw-48px)] flex flex-col mb-4 overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300"
+                    style={{ height: 'calc(100vh - 100px)', maxHeight: '1000px' }}
                 >
                     {/* Header - Sleek Dark with Thin Bright Borders */}
-                    <div className="bg-[#0a0f18] p-5 shrink-0 flex justify-between items-center text-white border-b border-white/40 relative z-30">
+                    <div className="bg-[#0a0f18] p-6 shrink-0 flex justify-between items-center text-white border-b border-white/40 relative z-30">
                         <div className="flex items-center gap-4 overflow-hidden">
                             <div className="flex flex-col min-w-0">
-                                <h3 className="font-semibold text-2xl tracking-tighter text-white flex items-center gap-3">
-                                    the <div className="w-5 h-5 rounded-full bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.9)] border border-blue-300"></div> blue agent Auditor
+                                <h3 className="font-bold text-[30px] tracking-tight text-white flex items-center gap-4">
+                                    <div className="relative flex items-center justify-center w-[52px] h-[52px] rounded-full bg-blue-600 shadow-[0_0_25px_rgba(37,99,235,0.7)] border-[2.5px] border-blue-400 shrink-0">
+                                        <Bot size={28} className="text-white" strokeWidth={2.5} />
+                                        <span className={`absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-[#0a0f18] ${isConnected ? 'bg-teal-400 shadow-[0_0_12px_rgba(45,212,191,1)]' : 'bg-red-500'} transition-colors duration-300`}></span>
+                                    </div>
+                                    <span className="font-sans">the blue agent Auditor</span>
                                 </h3>
-                                <div className="flex items-center gap-3 mt-2 min-w-0">
+                                <div className="flex items-center gap-3 mt-3 min-w-0">
                                     <div className="flex items-center gap-2 bg-black/40 px-3 py-1 rounded-full border border-white/20">
-                                        <span className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-emerald-400' : 'bg-red-500'} animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.5)]`}></span>
-                                        <span className={`text-xs font-bold uppercase tracking-widest ${isConnected ? 'text-emerald-300' : 'text-red-400'}`}>{isConnected ? 'Online' : 'Offline'}</span>
+                                        <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-teal-400' : 'bg-red-500'} animate-pulse shadow-[0_0_8px_rgba(45,212,191,0.5)]`}></span>
+                                        <span className={`text-xs font-black uppercase tracking-widest ${isConnected ? 'text-teal-300' : 'text-red-400'}`}>{isConnected ? 'Online' : 'Offline'}</span>
                                     </div>
 
                                     {/* Model Selector - Refined */}

@@ -291,6 +291,28 @@ export default function AdminDashboard() {
         }
     };
 
+    const handleTriggerBridge = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.get('/api/bridge/unread', {
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    // Providing a stub secret in case the backend requires one, although token auth should handle it depending on setup
+                    'x-bridge-secret': process.env.REACT_APP_BRIDGE_SECRET || '' 
+                }
+            });
+            
+            if (res.data && res.data.length > 0) {
+                alert(`Bridge Brain Activated: Found ${res.data.length} unread instruction(s) in the queue.`);
+            } else {
+                alert('Bridge Brain Activated: No pending instructions found.');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Failed to connect to the Bridge Brain.');
+        }
+    };
+
     return (
         <div className="min-h-screen bg-black text-white font-sans flex flex-col">
 
@@ -309,7 +331,13 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="flex items-center gap-4">
-
+                    <button 
+                        onClick={handleTriggerBridge} 
+                        className="bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all flex items-center gap-2"
+                        title="Ping Google Cloud Run Bridge Brain"
+                    >
+                        <Brain size={14} /> Trigger Bridge Brain
+                    </button>
                     <button onClick={handleLogout} className="bg-white/5 text-gray-400 border border-white/10 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-600/20 hover:text-red-400 hover:border-red-500/30 transition-all">Sign Out</button>
                 </div>
             </div>
