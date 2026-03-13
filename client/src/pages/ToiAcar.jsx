@@ -127,6 +127,23 @@ const ToiAcar = ({ onBack, packageId, year }) => {
     setIsTyping(false);
   };
 
+  const handleTestBridge = async () => {
+    const pin = prompt("Admin Authentication: Enter 6-digit PIN to manually trigger Bridge");
+    if (pin !== "999999") {
+      alert("Unauthorized: Invalid Admin PIN.");
+      return;
+    }
+    
+    setChatMessages(prev => [...prev, { role: "user", text: "[ADMIN OVERRIDE] Trigger Manual Bridge Connection" }]);
+    setIsTyping(true);
+    
+    // Simulate Bridge Trigger Delay
+    setTimeout(() => {
+        setChatMessages(prev => [...prev, { role: "agent", text: "📡 <b>Bridge Triggered Successfully</b><br/>Status: Gemini ai bridge is action.<br/>Connection established." }]);
+        setIsTyping(false);
+    }, 1200);
+  };
+
   // Generate years: 10 years back to 10 years forward
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 21 }, (_, i) => (currentYear - 10 + i).toString());
@@ -1096,11 +1113,21 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   Agent Terminal
                 </span>
               </div>
-              <div className="flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 px-2 py-1 rounded">
-                <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
-                <span className="text-[8px] font-black uppercase tracking-widest text-indigo-400">
-                  Online
-                </span>
+              <div className="flex items-center gap-3">
+                {isAdmin && (
+                    <button 
+                        onClick={handleTestBridge}
+                        className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-[0_0_10px_rgba(16,185,129,0.1)] flex items-center gap-1"
+                    >
+                        <Activity size={10} /> Test Bridge
+                    </button>
+                )}
+                <div className="flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 px-2 py-1 rounded">
+                  <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
+                  <span className="text-[8px] font-black uppercase tracking-widest text-indigo-400">
+                    Online
+                  </span>
+                </div>
               </div>
             </div>
 
