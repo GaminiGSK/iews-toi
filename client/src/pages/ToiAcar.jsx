@@ -1799,6 +1799,131 @@ const ToiAcar = ({ onBack, packageId, year }) => {
           </div>
         )}
 
+        {/* NEW LEFT SIDE: WHITE PREVIEW (PAGE 6 - INCOME STATEMENT CONT) */}
+        {activeWorkspacePage === 6 && (
+          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
+            {/* Content for the white preview */}
+            <div className="w-full flex flex-col font-sans mb-12 text-black print:toi-form-scale print:mb-0">
+               {/* -----------------HEADER----------------- */}
+               <div className="w-full relative mb-10 text-[10px] sm:text-[11px] leading-tight pt-4 font-bold flex justify-between items-start">
+                 <div className="flex flex-col items-start gap-12 w-[45%]">
+                   <span className="font-extrabold text-[16px] tracking-wide font-serif">TOI 01 / IV</span>
+                 </div>
+                 
+                 {/* Top Right Box - Tax Year */}
+                 <div className="flex flex-col items-end">
+                    <div className="flex items-center gap-2 mb-2 pr-2 mt-4 border-b-2 border-transparent relative right-[6px]">
+                       <div className="w-0 h-0 border-t-[5px] border-t-transparent border-l-[10px] border-l-black border-b-[5px] border-b-transparent"></div>
+                       <div className="flex flex-col text-right">
+                          <span className="font-bold text-[10px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំជាប់ពន្ធ</span>
+                          <span className="text-[8px] font-bold leading-tight mt-0">Tax Year</span>
+                       </div>
+                       <div className="flex gap-[4px] ml-1">
+                          {Array.from({ length: 4 }).map((_, i) => (
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black pt-1">
+                               {selectedYear[i] || ""}
+                             </div>
+                          ))}
+                       </div>
+                    </div>
+                 </div>
+               </div>
+               
+               {/* -----------------TIN----------------- */}
+               <div className="flex w-full mb-4 mt-8">
+                 <div className="flex-1"></div>
+                 <div className="flex items-start gap-2">
+                   <div className="mt-2 w-0 h-0 border-t-[7px] border-t-transparent border-l-[14px] border-l-black border-b-[7px] border-b-transparent"></div>
+                   <div className="flex flex-col flex-end">
+                     <div className="flex items-center gap-[6px]">
+                        <span className="font-bold text-[11px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
+                        <div className="flex gap-[4px]">
+                           {Array.from({ length: 4 }).map((_, i) => (
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{filledData?.tin?.replace('-', '')[i] || ""}</div>
+                           ))}
+                           <span className="text-black font-black text-xl leading-none mx-0 relative top-[1px]">-</span>
+                           {Array.from({ length: 9 }).map((_, i) => (
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{filledData?.tin?.replace('-', '')[i + 4] || ""}</div>
+                           ))}
+                        </div>
+                     </div>
+                     <span className="font-normal text-[9px] mt-[1px] text-left">Tax Identification Number (TIN) :</span>
+                   </div>
+                 </div>
+               </div>
+
+               {/* -----------------INCOME STATEMENT TABLE (Continued)----------------- */}
+               <div className="flex flex-col border-[2px] border-black bg-white shadow-sm mb-6 border-t-[2px]">
+                  {/* Body Rows B25 -> B48 */}
+                  {[
+                    { ref: 'B 25', indent: true, k: 'ចំណាយធ្វើដំណើរ និងចំណាយស្នាក់នៅ', e: 'Travelling and accommodation expenses' },
+                    { ref: 'B 26', indent: true, k: 'ចំណាយដឹកជញ្ជូន', e: 'Transportation expenses' },
+                    { ref: 'B 27', indent: true, k: 'ចំណាយលើការជួល', e: 'Rental expenses' },
+                    { ref: 'B 28', indent: true, k: 'ចំណាយលើការថែទាំ និងជួសជុល', e: 'Repair and maintenance expenses' },
+                    { ref: 'B 29', indent: true, k: 'ចំណាយលើការកម្សាន្តសប្បាយ', e: 'Entertainment expenses' },
+                    { ref: 'B 30', indent: true, k: 'ចំណាយកម្រៃជើងសារ ផ្សាយពាណិជ្ជកម្ម និងចំណាយការលក់', e: 'Commission, advertising, and selling expenses' },
+                    { ref: 'B 31', indent: true, k: 'ចំណាយបង់ពន្ធ និងអាករផ្សេងៗ', e: 'Other tax expenses' },
+                    { ref: 'B 32', indent: true, k: 'ចំណាយអំណោយ', e: 'Donation expenses' },
+                    { ref: 'B 33', indent: true, k: 'ចំណាយសេវាគ្រប់គ្រង ពិគ្រោះយោបល់ បច្ចេកទេស និងសេវាស្រដៀងគ្នានេះ', e: 'Management, consulting, technical, and other similar service expenses' },
+                    { ref: 'B 34', indent: true, k: 'ចំណាយលើសួយសារ', e: 'Royalty expenses' },
+                    { ref: 'B 35', indent: true, k: 'ចំណាយលើបំណុលទាមទារមិនបាន', e: 'Written-off bad debt expenses' },
+                    { ref: 'B 36', indent: true, k: 'ចំណាយរំលស់', e: 'Amortisation/depletion and/or depreciation expenses' },
+                    { ref: 'B 37', indent: true, k: 'ការកើនឡើង/ថយចុះ នូវសំវិធានធន', e: 'Increase/decrease in provisions' },
+                    { ref: 'B 38', indent: true, k: 'ខាតពីការលក់ទ្រព្យសកម្មរយៈពេលវែង', e: 'Loss on disposal of fixed assets' },
+                    { ref: 'B 39', indent: true, k: 'ខាតពីការប្តូរប្រាក់សម្រេចបាន', e: 'Loss on realised currency translations' },
+                    { ref: 'B 40', indent: true, k: 'ខាតពីការប្តូរប្រាក់មិនទាន់សម្រេចបាន', e: 'Loss on unrealised currency translations' },
+                    { ref: 'B 41', indent: true, k: 'ចំណាយផ្សេងៗ', e: 'Other expenses' },
+                    { ref: 'B 42', indent: false, k: 'ប្រាក់ចំណេញ/(ខាត) ពីប្រតិបត្តិការ (B42 = B7 + B8 + B12 - B22)', e: 'Profit/Loss from Operations (B42 = B7 + B8 + B12 - B22)' },
+                    { ref: 'B 43', indent: true, k: 'ចំណាយការប្រាក់បង់ទូទាត់ឲ្យនិវាសនជន', e: 'Interest expense paid to residents' },
+                    { ref: 'B 44', indent: true, k: 'ចំណាយការប្រាក់បង់ទូទាត់ឲ្យអនិវាសនជន', e: 'Interest expense paid to non-residents' },
+                    { ref: 'B 45', indent: true, k: 'ចំណាយការប្រាក់សុទ្ធ *', e: 'Unwinding interest expenses *' },
+                    { ref: 'B 46', indent: false, k: 'ប្រាក់ចំណេញ/(ខាត) មុនបង់ពន្ធ [B46 = (B42 - B43 - B44 - B45)]', e: 'Profit/(Loss) Before Tax [B46 = (B42 - B43 - B44 - B45)]' },
+                    { ref: 'B 47', indent: true, k: 'ពន្ធលើប្រាក់ចំណូល', e: 'Income Tax' },
+                    { ref: 'B 48', indent: false, k: 'ប្រាក់ចំណេញក្រោយបង់ពន្ធ (B48 = B46 - B47)', e: 'Net Profit After Tax (B48 = B46 - B47)' }
+                  ].map((row, idx) => (
+                    <div key={row.ref} className={`flex border-b ${idx === 23 ? 'border-b-0' : 'border-black'} min-h-[29px] text-[11px] ${row.indent ? 'font-normal' : 'font-bold bg-[#f9f9f9]'}`}>
+                       <div className={`w-[50%] border-r border-black px-2 flex flex-col justify-center shrink-0 py-[2px] ${row.indent ? 'pl-8' : 'pl-2'}`}>
+                          <span className="text-[11px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.k}</span>
+                          <span className={`text-[9px] leading-tight text-slate-800 ${row.indent ? 'font-normal' : 'font-bold'}`}>{row.e}</span>
+                       </div>
+                       <div className="w-[8%] border-r border-black flex items-center justify-center shrink-0 py-[2px] font-bold text-[10px]">{row.ref}</div>
+                       <div className="w-[21%] border-r border-black flex items-center justify-end shrink-0 py-[2px] px-2 font-mono text-[10px]">-</div>
+                       <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px]">-</div>
+                    </div>
+                  ))}
+               </div>
+
+               {/* Note at bottom of Page 6 */}
+               <div className="flex w-full text-[9px] leading-tight text-black mb-4">
+                 <div className="flex flex-col">
+                   <span style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>* ចំណាយការប្រាក់មិនមានការទូទាត់ជាក់ស្តែងដែលកត់ត្រាស្របតាមស្តង់ដារគណនេយ្យអន្តរជាតិនៃកម្ពុជា</span>
+                   <span>* Interest Expense without actual payment but recorded by the Cambodia International Financial Reporting Standards (CIFRS) requirement.</span>
+                 </div>
+               </div>
+
+               {/* Page Number absolute bottom right text */}
+               <div className="w-full flex justify-end font-bold pt-2 gap-[6px] items-center text-black">
+                   <svg width="6" height="10" viewBox="0 0 10 16" fill="black"><path d="M0 0 L10 8 L0 16 Z" /></svg>
+                   <div className="flex flex-col items-center pl-1">
+                      <span style={{ fontFamily: '"Kantumruy Pro", sans-serif'}} className="leading-none text-[12px] translate-y-[2px]">ទំព័រទី</span>
+                      <span className="text-[9px] leading-none text-black tracking-widest uppercase mt-0">Page</span>
+                   </div>
+                   <span className="text-[19px] leading-none italic font-black translate-y-[1px]">6/16</span>
+               </div>
+            </div>
+
+            <div className="w-full text-center mt-12 mb-8 opacity-20 flex flex-col items-center print:hidden">
+              <div className="w-px h-16 bg-black mb-4"></div>
+              <span className="text-xl font-black tracking-[0.5em] uppercase text-black">
+                Page 6 Virtual Print
+              </span>
+              <span className="text-xs font-bold tracking-widest text-black mt-2">
+                I N C O M E &bull; S T A T E M E N T &bull; C O N T .
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* MIDDLE SIDE: GPT Result Landing Page (Totally Black, empty) */}
         {isAdmin && (
           <div className="w-[15%] overflow-y-auto relative bg-black custom-scrollbar print:hidden">
