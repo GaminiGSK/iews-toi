@@ -1157,7 +1157,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
 
             {/* GPT Input Area */}
             <div className="p-4 bg-slate-950/50 border-t border-white/5 shrink-0">
-              <div className="flex flex-col gap-3 border border-white/10 bg-black/40 p-3 rounded-2xl focus-within:border-blue-500/50 transition-all shadow-inner">
+              <div className="flex flex-col gap-3 border border-white bg-black/40 p-3 rounded-2xl focus-within:border-blue-500/50 transition-all shadow-inner">
                 <textarea
                   value={agentInput}
                   onChange={(e) => setAgentInput(e.target.value)}
