@@ -1088,94 +1088,104 @@ const ToiAcar = ({ onBack, packageId, year }) => {
             {/* Content for the white preview */}
             <div className="w-full flex flex-col font-sans mb-12 text-black print:toi-form-scale print:mb-0">
                {/* -----------------HEADER----------------- */}
-               <div className="flex w-full items-end pb-2 mb-4 border-b-2 border-black gap-4 pt-4">
-                 <div className="text-[20px] font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
-                   ភាគទី២៖ ព័ត៌មានអំពីសហគ្រាស
+               <div className="w-full relative mb-10 text-[10px] sm:text-[11px] leading-tight pt-4 font-bold flex justify-between items-start">
+                 <div className="flex flex-col items-start gap-12 w-[45%]">
+                   <span className="font-extrabold text-[16px] tracking-wide font-serif">TOI 01 / II</span>
                  </div>
-                 <div className="text-[14px] font-bold uppercase tracking-wider mb-[2px]">
-                   PART 2: ENTERPRISE INFORMATION
+               </div>
+
+               {/* Center Box */}
+               <div className="flex w-full justify-center mb-1">
+                 <div className="border border-black px-12 py-2 flex flex-col items-center justify-center relative w-[75%]">
+                   <div className="flex items-center gap-4">
+                     <span className="font-bold text-[16px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការចូលរួមមូលធនគិតត្រឹមការិយបរិច្ឆេទ</span>
+                     <div className="flex gap-[4px] ml-4 justify-center">
+                        {Array.from({ length: 4 }).map((_, i) => (
+                           <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black pt-1">
+                             {selectedYear[i] || ""}
+                           </div>
+                        ))}
+                     </div>
+                   </div>
+                   <span className="font-bold text-[12px] uppercase mt-1">CAPITAL CONTRIBUTIONS AS AT</span>
                  </div>
                </div>
                
                {/* -----------------TIN----------------- */}
-               <div className="flex w-full mt-2 mb-6">
+               <div className="flex w-full mb-4">
                  <div className="flex-1"></div>
-                 <div className="flex items-center gap-2">
-                   <div className="flex flex-col text-right justify-center">
-                     <span className="font-bold text-[13px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ (TIN)</span>
-                     <span className="font-bold text-[10px] uppercase">Tax Identification Number</span>
-                   </div>
-                   <div className="flex gap-[4px] ml-2">
-                      {Array.from({ length: 4 }).map((_, i) => (
-                        <div key={i} className="w-[28px] h-[34px] border border-black bg-white flex items-center justify-center font-bold text-lg text-black">{filledData?.tin?.replace('-', '')[i] || ""}</div>
-                      ))}
-                      <span className="text-black font-black text-2xl leading-none mx-1 relative top-[-2px]">-</span>
-                      {Array.from({ length: 9 }).map((_, i) => (
-                        <div key={i} className="w-[28px] h-[34px] border border-black bg-white flex items-center justify-center font-bold text-lg text-black">{filledData?.tin?.replace('-', '')[i + 4] || ""}</div>
-                      ))}
+                 <div className="flex items-start gap-2">
+                   <div className="mt-2 w-0 h-0 border-t-[7px] border-t-transparent border-l-[14px] border-l-black border-b-[7px] border-b-transparent"></div>
+                   <div className="flex flex-col flex-end">
+                     <div className="flex items-center gap-[6px]">
+                        <span className="font-bold text-[11px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
+                        <div className="flex gap-[4px]">
+                           {Array.from({ length: 4 }).map((_, i) => (
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{filledData?.tin?.replace('-', '')[i] || ""}</div>
+                           ))}
+                           <span className="text-black font-black text-xl leading-none mx-0 relative top-[1px]">-</span>
+                           {Array.from({ length: 9 }).map((_, i) => (
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{filledData?.tin?.replace('-', '')[i + 4] || ""}</div>
+                           ))}
+                        </div>
+                     </div>
+                     <span className="font-normal text-[9px] mt-[1px] text-left">Tax Identification Number (TIN) :</span>
                    </div>
                  </div>
                </div>
 
                {/* -----------------CAPITAL SECTION----------------- */}
                <div className="flex flex-col border-[2px] border-black bg-white shadow-sm mb-6">
-                  {/* Table title */}
-                  <div className="flex border-b-[2px] border-black min-h-[46px] items-center bg-[#e6e6e6]">
-                    <div className="w-[49px] h-full shrink-0 border-r-[2px] border-black flex items-center justify-center font-bold text-sm bg-white self-stretch">
-                      19
-                    </div>
-                    <div className="px-4 py-2 flex flex-col">
-                      <span className="font-bold text-[14px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការវិនិយោគទុនមូលធនរបស់សហគ្រាសគិតត្រឹមការិយបរិច្ឆេទនៃលិខិតប្រកាសនេះ</span>
-                      <span className="font-bold text-[10px] uppercase mt-[2px]">Capital and Shareholders of Enterprise as at the end of the tax period</span>
-                    </div>
-                  </div>
 
                   {/* Header Row */}
-                  <div className="flex border-b border-black text-center font-bold">
-                    <div className="w-[6%] py-1 border-r border-black flex items-center justify-center shrink-0"><span className="text-[12px]">ល.រ<br/><span className="text-[9px]">Nº</span></span></div>
-                    <div className="w-[20%] py-1 border-r border-black flex flex-col items-center justify-center shrink-0">
-                       <span className="text-[12px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឈ្មោះអ្នកចូលហ៊ុន</span>
-                       <span className="text-[9px]">Shareholder's Name</span>
+                  <div className="flex border-b border-black text-center items-stretch bg-white">
+                    <div className="w-[26%] py-1 border-r border-black flex flex-col items-center justify-center">
+                       <span className="font-bold text-[12px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឈ្មោះអ្នកចូលហ៊ុន<br/><span className="text-[11px] font-normal">(ឈ្មោះរូបវន្តបុគ្គល/នីតិបុគ្គល)</span></span>
+                       <span className="font-bold text-[9px] mt-1 leading-tight">Shareholder's Name<br/><span className="font-normal">(Name of Individual/Legal Entity)</span></span>
                     </div>
-                    <div className="w-[18%] py-1 border-r border-black flex flex-col items-center justify-center shrink-0">
-                       <span className="text-[12px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>អាសយដ្ឋានបច្ចុប្បន្ន</span>
-                       <span className="text-[9px]">Current Address</span>
+                    <div className="w-[18%] py-1 border-r border-black flex flex-col items-center justify-center">
+                       <span className="font-bold text-[12px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>អាសយដ្ឋានបច្ចុប្បន្ន<br/>របស់ម្ចាស់ភាគហ៊ុន</span>
+                       <span className="font-bold text-[9px] mt-1 leading-tight">Current Address<br/>of Shareholder</span>
                     </div>
-                    <div className="w-[12%] py-1 border-r border-black flex flex-col items-center justify-center shrink-0">
-                       <span className="text-[12px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>មុខងារ</span>
-                       <span className="text-[9px]">Position</span>
+                    <div className="w-[12%] py-1 border-r border-black flex flex-col items-center justify-center">
+                       <span className="font-bold text-[12px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>មុខងារ<br/>ក្នុងសហគ្រាស</span>
+                       <span className="font-bold text-[9px] mt-1 leading-tight">Position in<br/>the Enterprise</span>
                     </div>
                     <div className="flex-1 flex flex-col bg-white">
-                       <div className="border-b border-black py-1 flex flex-col">
-                         <span className="text-[12px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ភាគហ៊ុន ឬចំណែកដែលមាន</span>
-                         <span className="text-[9px]">Shares Held</span>
+                       <div className="border-b border-black py-1 flex flex-col justify-center min-h-[44px]">
+                         <span className="font-bold text-[12px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ភាគហ៊ុន ឬចំណែកដែលមាន</span>
+                         <span className="font-bold text-[9px]">Shares Held</span>
                        </div>
                        <div className="flex-1 flex">
                           <div className="w-1/2 border-r border-black flex flex-col">
-                             <div className="border-b border-black py-1 flex flex-col bg-[#f2f2f2]">
-                                <span className="text-[10px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ដើមការិយបរិច្ឆេទ</span>
-                                <span className="text-[8px]">Start Period</span>
+                             <div className="border-b border-black py-[2px] flex flex-col bg-white">
+                                <span className="font-bold text-[10px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ដើមការិយបរិច្ឆេទ</span>
+                                <span className="font-bold text-[8px]">Beginning of the Period</span>
                              </div>
-                             <div className="flex-1 flex">
-                                <div className="w-[30%] border-r border-black flex items-center justify-center text-[10px] shrink-0">
-                                  %
+                             <div className="flex-1 flex leading-tight">
+                                <div className="w-[30%] border-r border-black flex flex-col items-center justify-center shrink-0">
+                                  <span className="font-bold text-[10px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ភាគរយ</span>
+                                  <span className="font-bold text-[9px]">%</span>
                                 </div>
-                                <div className="flex-1 flex flex-col items-center justify-center text-[10px]">
-                                  ទឹកប្រាក់ <span className="text-[8px] font-normal uppercase">Amount</span>
+                                <div className="flex-1 flex flex-col items-center justify-center">
+                                  <span className="font-bold text-[10px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ទឹកប្រាក់</span>
+                                  <span className="font-bold text-[8px]">Amount</span>
                                 </div>
                              </div>
                           </div>
                           <div className="w-1/2 flex flex-col">
-                             <div className="border-b border-black py-1 flex flex-col bg-[#f2f2f2]">
-                                <span className="text-[10px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចុងការិយបរិច្ឆេទ</span>
-                                <span className="text-[8px]">End Period</span>
+                             <div className="border-b border-black py-[2px] flex flex-col bg-white">
+                                <span className="font-bold text-[10px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចុងការិយបរិច្ឆេទ</span>
+                                <span className="font-bold text-[8px]">End of the Period</span>
                              </div>
-                             <div className="flex-1 flex">
-                                <div className="w-[30%] border-r border-black flex items-center justify-center text-[10px] shrink-0">
-                                  %
+                             <div className="flex-1 flex leading-tight">
+                                <div className="w-[30%] border-r border-black flex flex-col items-center justify-center shrink-0">
+                                  <span className="font-bold text-[10px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ភាគរយ</span>
+                                  <span className="font-bold text-[9px]">%</span>
                                 </div>
-                                <div className="flex-1 flex flex-col items-center justify-center text-[10px]">
-                                  ទឹកប្រាក់ <span className="text-[8px] font-normal uppercase">Amount</span>
+                                <div className="flex-1 flex flex-col items-center justify-center">
+                                  <span className="font-bold text-[10px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ទឹកប្រាក់</span>
+                                  <span className="font-bold text-[8px]">Amount</span>
                                 </div>
                              </div>
                           </div>
@@ -1184,8 +1194,9 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   </div>
 
                   {/* Section A */}
-                  <div className="flex border-b-[2px] border-black bg-[#f9f9f9] py-2 px-3">
-                     <span className="font-bold text-[12px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ក. មូលធន/មូលធនភាគហ៊ុនចុះបញ្ជី / <span className="font-normal text-[10px] uppercase ml-1">A. Registered Capital / Share Capital</span></span>
+                  <div className="flex flex-col border-b-[2px] border-black bg-white py-[6px] px-2 text-left w-full border-l-0 border-r-0 font-bold">
+                     <span className="text-[12px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ក. មូលធន/មូលធនភាគហ៊ុនចុះបញ្ជី</span>
+                     <span className="text-[10px] font-normal">A. Registered Capital / Share Capital</span>
                   </div>
                   {[1,2,3,4,5].map(i => (
                     <div key={'A'+i} className="flex border-b border-black min-h-[28px] text-[11px] font-bold">
