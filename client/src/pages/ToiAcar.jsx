@@ -970,7 +970,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         </div>
 
                         {/* Signature Row */}
-                        <div className="flex items-start p-2 pt-3 h-[75px] relative">
+                        <div className="flex items-start p-2 pt-3 h-[90px] relative">
                           <div className="w-[100px] flex flex-col leading-tight shrink-0 pl-1">
                             <span style={{ fontFamily: '"Kantumruy Pro", sans-serif', fontSize: '10px', lineHeight: '1.4' }}>ហត្ថលេខា<br/>និងឈ្មោះមន្ត្រី</span>
                             <span className="text-[8px] text-black font-normal font-sans mt-[2px]">Signature & Name</span>
@@ -995,7 +995,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     </div>
 
                     {/* Notes (under left box) */}
-                    <div className="mt-1 flex flex-col text-[10px]">
+                    <div className="mt-4 flex flex-col text-[10px]">
                       <div className="font-bold flex gap-1 items-center leading-none mt-1" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
                          <div className="w-12 border-b-[2px] border-black"></div>
                          <span className="text-[11px] pt-[1px]">សម្គាល់ / </span><span className="text-[9px] uppercase pt-[1px]" style={{ fontFamily: '"Arial", sans-serif' }}>Note :</span>
