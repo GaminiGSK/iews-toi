@@ -925,7 +925,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                 <div className="flex justify-between items-stretch mt-1 gap-2 relative">
                   {/* Left Box */}
                   <div className="w-[50%] flex flex-col shrink-0">
-                    <div className="border-[1.5px] border-black rounded-[8px] flex flex-col overflow-hidden bg-white mt-1 gap-0">
+                    <div className="border-[1.5px] border-black flex flex-col bg-white mt-1 gap-0">
                       {/* Header */}
                       <div className="text-center py-[4px] border-b-[1.5px] border-black font-bold text-[10px] bg-white">
                         <span style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
@@ -970,7 +970,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         </div>
 
                         {/* Signature Row */}
-                        <div className="flex items-start p-2 pt-3 h-[90px] relative">
+                        <div className="flex items-start p-2 pt-3 h-[110px] relative">
                           <div className="w-[100px] flex flex-col leading-tight shrink-0 pl-1">
                             <span style={{ fontFamily: '"Kantumruy Pro", sans-serif', fontSize: '10px', lineHeight: '1.4' }}>ហត្ថលេខា<br/>និងឈ្មោះមន្ត្រី</span>
                             <span className="text-[8px] text-black font-normal font-sans mt-[2px]">Signature & Name</span>
@@ -995,7 +995,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     </div>
 
                     {/* Notes (under left box) */}
-                    <div className="mt-4 flex flex-col text-[10px]">
+                    <div className="mt-8 flex flex-col text-[10px]">
                       <div className="font-bold flex gap-1 items-center leading-none mt-1" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
                          <div className="w-12 border-b-[2px] border-black"></div>
                          <span className="text-[11px] pt-[1px]">សម្គាល់ / </span><span className="text-[9px] uppercase pt-[1px]" style={{ fontFamily: '"Arial", sans-serif' }}>Note :</span>
@@ -1015,7 +1015,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   </div>
 
                   {/* Right Box */}
-                  <div className="flex-1 border-[1.5px] border-black rounded-[8px] flex flex-col bg-white mt-1 pt-3 overflow-hidden relative">
+                  <div className="flex-1 border-[1.5px] border-black flex flex-col bg-white mt-1 pt-3 relative">
                     <div className="flex px-[14px] pt-0 gap-[6px] items-start">
                        <div className="flex flex-col text-[10px] leading-tight pt-[2px]">
                           <span style={{ fontFamily: '"Kantumruy Pro", sans-serif'}} className="leading-none text-[11px]">ធ្វើនៅ</span>
