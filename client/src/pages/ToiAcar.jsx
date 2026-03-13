@@ -1924,6 +1924,157 @@ const ToiAcar = ({ onBack, packageId, year }) => {
           </div>
         )}
 
+        {/* NEW LEFT SIDE: WHITE PREVIEW (PAGE 7 - COSTS OF PRODUCTS SOLD) */}
+        {activeWorkspacePage === 7 && (
+          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
+            {/* Content for the white preview */}
+            <div className="w-full flex flex-col font-sans mb-12 text-black print:toi-form-scale print:mb-0">
+               {/* -----------------HEADER----------------- */}
+               <div className="w-full relative mb-6 text-[10px] sm:text-[11px] leading-tight pt-4 font-bold flex justify-between items-start">
+                 <div className="flex flex-col items-start gap-12 w-[25%]">
+                   <span className="font-extrabold text-[16px] tracking-wide font-serif">TOI 01 / V</span>
+                 </div>
+                 
+                 {/* Center Box */}
+                 <div className="flex w-[50%] justify-center mt-2 relative left-4 lg:left-8">
+                   <div className="border border-black px-12 py-3 flex flex-col items-center justify-center w-full min-w-[320px]">
+                     <span className="font-bold text-[14px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ថ្លៃដើមផលិតផលបានលក់</span>
+                     <span className="font-bold text-[12px] uppercase mt-1">COSTS OF PRODUCTS SOLD</span>
+                     <span className="font-bold text-[13px] mt-2 mb-1" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>(សហគ្រាសផលិតកម្ម)</span>
+                     <span className="font-bold text-[11px] uppercase">(PRODUCTION ENTERPRISE)</span>
+                   </div>
+                 </div>
+
+                 {/* Top Right Box - Tax Year */}
+                 <div className="flex flex-col items-end w-[25%] relative top-12">
+                    <div className="flex items-center gap-2 mb-2 pr-2 mt-4 border-b-2 border-transparent relative right-[6px]">
+                       <div className="w-0 h-0 border-t-[5px] border-t-transparent border-l-[10px] border-l-black border-b-[5px] border-b-transparent"></div>
+                       <div className="flex flex-col text-right">
+                          <span className="font-bold text-[10px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំជាប់ពន្ធ</span>
+                          <span className="text-[8px] font-bold leading-tight mt-0">Tax Year</span>
+                       </div>
+                       <div className="flex gap-[4px] ml-1">
+                          {Array.from({ length: 4 }).map((_, i) => (
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black pt-1">
+                               {selectedYear[i] || ""}
+                             </div>
+                          ))}
+                       </div>
+                    </div>
+                 </div>
+               </div>
+               
+               {/* -----------------TIN----------------- */}
+               <div className="flex w-full mb-4 mt-2">
+                 <div className="flex-1"></div>
+                 <div className="flex items-start gap-2">
+                   <div className="mt-2 w-0 h-0 border-t-[7px] border-t-transparent border-l-[14px] border-l-black border-b-[7px] border-b-transparent"></div>
+                   <div className="flex flex-col flex-end">
+                     <div className="flex items-center gap-[6px]">
+                        <span className="font-bold text-[11px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
+                        <div className="flex gap-[4px]">
+                           {Array.from({ length: 4 }).map((_, i) => (
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{filledData?.tin?.replace('-', '')[i] || ""}</div>
+                           ))}
+                           <span className="text-black font-black text-xl leading-none mx-0 relative top-[1px]">-</span>
+                           {Array.from({ length: 9 }).map((_, i) => (
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{filledData?.tin?.replace('-', '')[i + 4] || ""}</div>
+                           ))}
+                        </div>
+                     </div>
+                     <span className="font-normal text-[9px] mt-[1px] text-left">Tax Identification Number (TIN) :</span>
+                   </div>
+                 </div>
+               </div>
+
+               {/* -----------------COSTS OF PRODUCTS SOLD TABLE----------------- */}
+               <div className="flex flex-col border-[2px] border-black bg-white shadow-sm mb-6 border-b-[2px]">
+                  {/* Header Row */}
+                  <div className="flex border-b border-black text-center items-stretch bg-[#e6e6e6]">
+                    <div className="w-[50%] py-1 border-r border-black flex flex-col items-center justify-center shrink-0">
+                       <span className="font-bold text-[12px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បរិយាយ</span>
+                       <span className="font-bold text-[9px] mt-1 leading-tight">Description</span>
+                    </div>
+                    <div className="w-[8%] py-1 border-r border-black flex flex-col items-center justify-center shrink-0">
+                       <span className="font-bold text-[12px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>យោង</span>
+                       <span className="font-bold text-[9px] mt-1 leading-tight">Ref</span>
+                    </div>
+                    <div className="w-[21%] py-1 border-r border-black flex flex-col items-center justify-center shrink-0">
+                       <span className="font-bold text-[12px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការិយបរិច្ឆេទនេះ (N)</span>
+                       <span className="font-bold text-[9px] mt-1 leading-tight text-slate-800">Current year (N)</span>
+                    </div>
+                    <div className="flex-1 py-1 flex flex-col items-center justify-center">
+                       <span className="font-bold text-[12px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការិយបរិច្ឆេទមុន (N-1)</span>
+                       <span className="font-bold text-[9px] mt-1 leading-tight text-slate-800">Last year (N-1)</span>
+                    </div>
+                  </div>
+
+                  {/* Body Rows C1 -> C20 */}
+                  {[
+                    { ref: 'C 1', indent: true, k: 'ស្តុកវត្ថុធាតុដើម និងសម្ភារផ្គត់ផ្គង់ដើមគ្រា', e: 'Stock of raw materials and supplies at the beginning of the period' },
+                    { ref: 'C 2', indent: true, k: 'ចំណាយទិញវត្ថុធាតុដើម និងសម្ភារផ្គត់ផ្គង់ក្នុងគ្រា', e: 'Purchases of raw materials and supplies during the period' },
+                    { ref: 'C 3', indent: true, k: 'ចំណាយផ្សេងៗទាក់ទងដល់ការទិញវត្ថុធាតុដើម ឬសម្ភារផ្គត់ផ្គង់ (១)', e: 'Other expenses related to purchases of raw materials or supplies (1)' },
+                    { ref: 'C 4', indent: false, k: 'សរុបវត្ថុធាតុដើម និងសម្ភារផ្គត់ផ្គង់ដែលមានសម្រាប់ផលិត [C4 = សរុប(C1:C3)]', e: 'Total raw materials and supplies available for production [C4 = Sum(C1:C3)]' },
+                    { ref: 'C 5', indent: true, k: 'ដក៖ ស្តុកវត្ថុធាតុដើម និងសម្ភារផ្គត់ផ្គង់ចុងគ្រា', e: 'Less: Stock of raw materials and supplies at the end of the period' },
+                    { ref: 'C 6', indent: false, k: 'ចំណាយថ្លៃដើមវត្ថុធាតុដើម និងសម្ភារផ្គត់ផ្គង់ដែលបានប្រើប្រាស់ [C6 = (C4 - C5)]', e: 'Expenses on raw materials and supplies used [C6 = (C4 - C5)]' },
+                    { ref: 'C 7', indent: false, k: 'ចំណាយផ្សេងៗក្នុងផលិតកម្ម [C7 = សរុប(C8:C14)]', e: 'Other Production Costs [C7 = Sum(C8:C14)]' },
+                    { ref: 'C 8', indent: true, k: 'ប្រាក់បៀវត្សអ្នកគ្រប់គ្រង និងកម្មករសម្រាប់ការផលិត', e: 'Salaries for managers and workers in the production' },
+                    { ref: 'C 9', indent: true, k: 'រំលស់ទ្រព្យសកម្មអរូបីរយៈពេលវែងជាអាទិ៍មាន៖ មូលនិធិពាណិជ្ជកម្ម លិខិតអនុញ្ញាត...', e: 'Amortization of intangible assets such as goodwill, license...' },
+                    { ref: 'C 10', indent: true, k: 'ប្រេងឥន្ធនៈ ទឹក និងថាមពល', e: 'Fuel, water and power' },
+                    { ref: 'C 11', indent: true, k: 'ការវេចខ្ចប់', e: 'Packaging' },
+                    { ref: 'C 12', indent: true, k: 'រំលស់រោងចក្រ គ្រឿងម៉ាស៊ីន និងបរិក្ខារផ្សេងៗក្នុងផលិតកម្ម', e: 'Depreciation of plants and equipment' },
+                    { ref: 'C 13', indent: true, k: 'សេវាម៉ៅការបន្ត និងសេវាផលិតដោយសហគ្រាសដទៃ', e: 'Sub-contract and production services costs by other enterprises' },
+                    { ref: 'C 14', indent: true, k: 'ចំណាយផ្សេងៗក្នុងផលិតកម្ម', e: 'Other manufacturing costs' },
+                    { ref: 'C 15', indent: true, k: 'ការងារកំពុងដំណើរការ ឬស្តុកកំពុងផលិតនៅដើមគ្រា', e: 'Work in progress or stock in progress at the beginning of the period' },
+                    { ref: 'C 16', indent: true, k: 'ដក៖ ការងារកំពុងដំណើរការ ឬស្តុកកំពុងផលិតនៅចុងគ្រា', e: 'Less: Work in progress or stock in progress at the end of the period' },
+                    { ref: 'C 17', indent: false, k: 'សរុបចំណាយថ្លៃដើមផលិតកម្ម (C17 = C6 + C7 + C15 - C16)', e: 'Total Production Costs (C17 = C6 + C7 + C15 - C16)' },
+                    { ref: 'C 18', indent: true, k: 'ស្តុកផលិតផលសម្រេចនៅដើមគ្រា', e: 'Stock of finished products at the beginning of the period' },
+                    { ref: 'C 19', indent: true, k: 'ដក៖ ស្តុកផលិតផលសម្រេចនៅចុងគ្រា', e: 'Less: Stock of finished products at the end of the period' },
+                    { ref: 'C 20', indent: false, k: 'ថ្លៃដើមផលិតផលសម្រេចដែលបានលក់ (C20 = C17 + C18 - C19)', e: 'Cost of Finished Products Sold (C20 = C17 + C18 - C19)' }
+                  ].map((row, idx) => (
+                    <div key={row.ref} className={`flex border-b ${idx === 19 ? 'border-b-0' : 'border-black'} min-h-[30px] text-[11px] ${row.indent ? 'font-normal' : 'font-bold bg-[#f9f9f9]'}`}>
+                       <div className={`w-[50%] border-r border-black px-2 flex flex-col justify-center shrink-0 py-[3px] ${row.indent ? 'pl-8' : 'pl-2'}`}>
+                          <span className="text-[11px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.k}</span>
+                          <span className={`text-[9px] leading-tight text-slate-800 mt-[1px] ${row.indent ? 'font-normal' : 'font-bold'}`}>{row.e}</span>
+                       </div>
+                       <div className="w-[8%] border-r border-black flex items-center justify-center shrink-0 py-[2px] font-bold text-[10px]">{row.ref}</div>
+                       <div className="w-[21%] border-r border-black flex items-center justify-end shrink-0 py-[2px] px-2 font-mono text-[10px]">-</div>
+                       <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px]">-</div>
+                    </div>
+                  ))}
+               </div>
+
+               {/* Note at bottom of Page 7 */}
+               <div className="flex w-full text-[9px] leading-relaxed text-black mb-4">
+                 <div className="flex flex-col">
+                   <span style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>(១) - ចំណាយផ្សេងៗទាក់ទងដល់ការទិញវត្ថុធាតុដើម ឬសម្ភារផ្គត់ផ្គង់មានជាអាទិ៍៖ ដឹកជញ្ជូន ពន្ធអាករពេលនាំចូល លើកដាក់ រត់ការ...</span>
+                   <span>(1)- Other expenses related to purchases of raw materials or supplies such as transportation, import duties and taxes, lift-on and lift-off, and clearance services...</span>
+                 </div>
+               </div>
+
+               {/* Page Number absolute bottom right text */}
+               <div className="w-full flex justify-end font-bold pt-2 gap-[6px] items-center text-black">
+                   <svg width="6" height="10" viewBox="0 0 10 16" fill="black"><path d="M0 0 L10 8 L0 16 Z" /></svg>
+                   <div className="flex flex-col items-center pl-1">
+                      <span style={{ fontFamily: '"Kantumruy Pro", sans-serif'}} className="leading-none text-[12px] translate-y-[2px]">ទំព័រទី</span>
+                      <span className="text-[9px] leading-none text-black tracking-widest uppercase mt-0">Page</span>
+                   </div>
+                   <span className="text-[19px] leading-none italic font-black translate-y-[1px]">7/16</span>
+               </div>
+            </div>
+
+            <div className="w-full text-center mt-12 mb-8 opacity-20 flex flex-col items-center print:hidden">
+              <div className="w-px h-16 bg-black mb-4"></div>
+              <span className="text-xl font-black tracking-[0.5em] uppercase text-black">
+                Page 7 Virtual Print
+              </span>
+              <span className="text-xs font-bold tracking-widest text-black mt-2">
+                C O S T S &bull; O F &bull; P R O D U C T S
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* MIDDLE SIDE: GPT Result Landing Page (Totally Black, empty) */}
         {isAdmin && (
           <div className="w-[15%] overflow-y-auto relative bg-black custom-scrollbar print:hidden">
