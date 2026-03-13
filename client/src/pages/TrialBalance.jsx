@@ -13,7 +13,7 @@ const TrialBalance = ({ onBack }) => {
     const [currency, setCurrency] = useState('KHR'); // Toggle for main visual currency display
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [viewMode, setViewMode] = useState('visual'); // 'visual' | 'table'
+    
     const [reportFormat, setReportFormat] = useState('comparative'); // 'comparative' | 'accounting_cycle' | 'inventory_heavy'
     const [inThousands, setInThousands] = useState(false);
 
@@ -209,24 +209,7 @@ const TrialBalance = ({ onBack }) => {
                 <div className="h-10 w-px bg-gray-200 shrink-0"></div>
 
                 <div className="flex items-center gap-3 shrink-0">
-                    <div className="bg-gray-100 p-1 rounded-lg flex gap-1 border border-gray-200">
-                        <button
-                            onClick={() => setViewMode('visual')}
-                            className={`px-3 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-2 ${viewMode === 'visual' ? 'bg-white text-teal-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                        >
-                            <LayoutDashboard size={14} /> Visual
-                        </button>
-                        <button
-                            onClick={() => setViewMode('table')}
-                            className={`px-3 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-2 ${viewMode === 'table' ? 'bg-white text-teal-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                        >
-                            <TableIcon size={14} /> Table
-                        </button>
-                    </div>
-
-                    <div className="h-6 w-px bg-gray-300 mx-1"></div>
-
-                    {viewMode === 'table' && (
+                    
                         <div className="relative mr-2">
                             <select
                                 value={reportFormat}
@@ -298,180 +281,7 @@ const TrialBalance = ({ onBack }) => {
                     </div>
                 )}
 
-                {viewMode === 'visual' && !loading && (
-                    <div className="max-w-7xl mx-auto space-y-6 animate-fade-in">
-
-                        {/* Financial Header - Clean & Readable */}
-                        <div className="bg-gray-900 rounded-2xl p-8 text-white shadow-xl border border-gray-800 font-sans">
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 divide-y md:divide-y-0 md:divide-x divide-gray-700">
-                                <div className="px-2">
-                                    <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Total Assets</p>
-                                    <p className="text-4xl font-bold text-blue-400">
-                                        {currency} {totalAssets.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                    </p>
-                                    <p className="text-xs text-gray-500 mt-2">What You Own</p>
-                                </div>
-                                <div className="px-2">
-                                    <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Total Liabilities</p>
-                                    <p className="text-4xl font-bold text-rose-400">
-                                        {currency} {totalLiabilities.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                    </p>
-                                    <p className="text-xs text-gray-500 mt-2">What You Owe</p>
-                                </div>
-                                <div className="px-2">
-                                    <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Total Equity</p>
-                                    <p className={`text-4xl font-bold ${totalEquity >= 0 ? 'text-emerald-400' : 'text-red-600'}`}>
-                                        {currency} {totalEquity.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                    </p>
-                                    <p className="text-xs text-gray-500 mt-2">Net Worth (Incl. Net Profit: {currency} {netProfit.toLocaleString(undefined, { minimumFractionDigits: 2 })})</p>
-                                </div>
-                                <div className="px-2">
-                                    <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Ledger Status</p>
-                                    <div className={`mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-lg border ${isAccountingBalanced ? 'border-green-500/30 bg-green-900/20 text-green-400' : 'border-red-500/30 bg-red-900/20 text-red-400'}`}>
-                                        <span className={`w-2.5 h-2.5 rounded-full ${isAccountingBalanced ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></span>
-                                        <span className="font-bold text-lg">{isAccountingBalanced ? 'BANK RECONCILED' : 'UNBALANCED'}</span>
-                                    </div>
-                                    <p className="text-xs text-gray-500 mt-2 font-mono">Eq Diff: {currency} {Math.abs(totalAssets - (totalLiabilities + totalEquity)).toFixed(5)}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {/* Assets Visualization (Donut Chart for Liquidity Breakdown) */}
-                            <div className="bg-gray-900 p-6 rounded-2xl shadow-xl border border-gray-800 h-[500px] flex flex-col">
-                                <h3 className="font-bold text-gray-300 mb-6 flex justify-between items-center text-lg">
-                                    <span>Assets (Liquidity Mix)</span>
-                                    <span className="text-xs text-blue-400 bg-blue-900/20 px-3 py-1 rounded-full border border-blue-900">
-                                        Total: {currency} {totalAssets.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                    </span>
-                                </h3>
-                                <div className="flex-1 -mt-4">
-                                    {assetData.length > 0 ? (
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <PieChart>
-                                                <Pie
-                                                    data={assetData.map(a => ({ name: a.name, value: Math.abs(a.size), actualSize: a.size }))}
-                                                    cx="50%"
-                                                    cy="50%"
-                                                    innerRadius={80}
-                                                    outerRadius={120}
-                                                    paddingAngle={5}
-                                                    dataKey="value"
-                                                    stroke="none"
-                                                >
-                                                    {assetData.map((entry, index) => (
-                                                        <Cell key={`cell-${index}`} fill={entry.size < 0 ? '#EF4444' : COLORS[index % COLORS.length]} />
-                                                    ))}
-                                                </Pie>
-                                                <Tooltip
-                                                    contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151', color: '#F3F4F6', borderRadius: '8px' }}
-                                                    itemStyle={{ color: '#E5E7EB', fontWeight: 'bold' }}
-                                                    formatter={(value, name, props) => {
-                                                        const actualSize = props.payload.actualSize;
-                                                        return [`${currency} ${actualSize.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, 'Balance'];
-                                                    }}
-                                                />
-                                                <Legend
-                                                    verticalAlign="bottom"
-                                                    height={36}
-                                                    iconType="circle"
-                                                    wrapperStyle={{ fontSize: '11px', color: '#9CA3AF' }}
-                                                />
-                                            </PieChart>
-                                        </ResponsiveContainer>
-                                    ) : (
-                                        <div className="flex bg-gray-800/50 rounded-lg border border-gray-700 h-full items-center justify-center text-gray-500">
-                                            No asset data found.
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Liabilities Visualization */}
-                            <div className="bg-gray-900 p-6 rounded-2xl shadow-xl border border-gray-800 h-[500px] flex flex-col">
-                                <h3 className="font-bold text-gray-300 mb-6 flex justify-between items-center text-lg">
-                                    <span>Liabilities (What You Owe)</span>
-                                    <span className="text-xs text-rose-400 bg-rose-900/20 px-3 py-1 rounded-full border border-rose-900">
-                                        Total: {currency} {totalLiabilities.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                    </span>
-                                </h3>
-                                <div className="flex-1">
-                                    {liabilityData.length > 0 ? (
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <BarChart
-                                                layout="vertical"
-                                                data={liabilityData.sort((a, b) => b.size - a.size).slice(0, 10)}
-                                                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                                            >
-                                                <XAxis type="number" stroke="#6B7280" fontSize={12} tickFormatter={(val) => `KHR ${val / 1000}k`} />
-                                                <YAxis type="category" dataKey="name" width={120} stroke="#9CA3AF" fontSize={11} tick={{ fill: '#E5E7EB' }} />
-                                                <Tooltip
-                                                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                                                    contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151', color: '#F3F4F6' }}
-                                                    itemStyle={{ color: '#FB7185' }}
-                                                    formatter={(value) => [`${currency} ${value.toLocaleString()}`, 'Amount']}
-                                                />
-                                                <Bar dataKey="size" fill="#F43F5E" radius={[0, 4, 4, 0]} barSize={20}>
-                                                    {liabilityData.map((entry, index) => (
-                                                        <Cell key={`cell-${index}`} fill={entry.size >= 0 ? '#F43F5E' : '#3B82F6'} />
-                                                    ))}
-                                                </Bar>
-                                            </BarChart>
-                                        </ResponsiveContainer>
-                                    ) : (
-                                        <div className="flex bg-gray-800/50 rounded-lg border border-gray-700 h-full items-center justify-center text-gray-500">
-                                            No active liabilities.
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Equity Visualization */}
-                            <div className="bg-gray-900 p-6 rounded-2xl shadow-xl border border-gray-800 h-[500px] flex flex-col">
-                                <h3 className="font-bold text-gray-300 mb-6 flex justify-between items-center text-lg">
-                                    <span>Equity (Net Worth)</span>
-                                    <span className="text-xs text-emerald-400 bg-emerald-900/20 px-3 py-1 rounded-full border border-emerald-900">
-                                        Total: {currency} {totalEquity.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                    </span>
-                                </h3>
-                                <div className="flex-1">
-                                    {equityData.length > 0 ? (
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <BarChart
-                                                layout="vertical"
-                                                data={equityData.sort((a, b) => b.size - a.size).slice(0, 10)}
-                                                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                                            >
-                                                {/* Allow domain to auto-adjust for negative values (losses) */}
-                                                <XAxis type="number" stroke="#6B7280" fontSize={12} tickFormatter={(val) => `KHR ${val / 1000}k`} />
-                                                <YAxis type="category" dataKey="name" width={120} stroke="#9CA3AF" fontSize={11} tick={{ fill: '#E5E7EB' }} />
-                                                <Tooltip
-                                                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                                                    contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151', color: '#F3F4F6' }}
-                                                    itemStyle={{ color: '#34D399' }}
-                                                    formatter={(value) => [`${currency} ${value.toLocaleString()}`, 'Amount']}
-                                                />
-                                                <Bar dataKey="size" radius={[0, 4, 4, 0]} barSize={20}>
-                                                    {
-                                                        equityData.sort((a, b) => b.size - a.size).slice(0, 10).map((entry, index) => (
-                                                            <Cell key={`cell-${index}`} fill={entry.size >= 0 ? '#10B981' : '#EF4444'} />
-                                                        ))
-                                                    }
-                                                </Bar>
-                                            </BarChart>
-                                        </ResponsiveContainer>
-                                    ) : (
-                                        <div className="flex bg-gray-800/50 rounded-lg border border-gray-700 h-full items-center justify-center text-gray-500">
-                                            No equity data found.
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {viewMode === 'table' && (
+                
                     <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-lg border border-gray-300 overflow-hidden text-sm font-serif animate-fade-in">
 
                         {/* Audit Toolbar */}
