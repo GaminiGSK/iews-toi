@@ -13,6 +13,7 @@
     "@copilotkit/react-core": "^1.51.2",
     "@copilotkit/react-textarea": "^1.51.2",
     "@copilotkit/react-ui": "^1.51.2",
+    "@react-pdf/renderer": "^4.3.2",
     "axios": "^1.13.2",
     "chart.js": "^4.5.1",
     "framer-motion": "^12.26.1",
