@@ -4385,6 +4385,384 @@ const ToiAcar = ({ onBack, packageId, year }) => {
           </div>
         )}
 
+        {/* NEW LEFT SIDE: WHITE PREVIEW (PAGE 17 - ANNEX 1 - LIST OF RELATED-PARTY TRANSACTIONS) */}
+        {activeWorkspacePage === 17 && (
+          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
+            {/* Content for the white preview */}
+            <div className="w-full flex flex-col font-sans mb-12 text-black print:toi-form-scale print:mb-0 max-w-[950px] mx-auto">
+               
+               {/* -----------------HEADER----------------- */}
+               <div className="w-full relative mb-6 text-[10px] sm:text-[11px] leading-tight font-bold flex justify-between items-start">
+                  
+                  {/* Left: Ministry */}
+                  <div className="flex flex-col items-center ml-0 mt-6 w-[35%] gap-1">
+                    <span className="font-bold text-[14px] tracking-wide" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ក្រសួងសេដ្ឋកិច្ចនិងហិរញ្ញវត្ថុ</span>
+                    <span className="font-semibold text-[13px] tracking-wide mb-0.5">MINISTRY OF ECONOMY AND FINANCE</span>
+                    <div className="w-[85%] h-[2.5px] bg-black my-0.5"></div>
+                    <span className="font-bold text-[14px] mt-1 tracking-wide" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>អគ្គនាយកដ្ឋានពន្ធដារ</span>
+                    <span className="font-semibold text-[13px] tracking-wide">GENERAL DEPARTMENT OF TAXATION</span>
+                  </div>
+
+                  {/* Center: GDT Logo */}
+                  <div className="flex flex-col items-center w-[30%]">
+                    <img src="/logos/gdt_logo.png" alt="GDT Logo" className="w-[110px] h-[110px] object-contain opacity-90 mx-auto" />
+                  </div>
+
+                  {/* Right: Kingdom of Cambodia */}
+                  <div className="flex flex-col items-center mt-2 w-[35%] flex-shrink-0">
+                    <span className="font-bold text-[15px] tracking-widest pl-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ព្រះរាជាណាចក្រកម្ពុជា</span>
+                    <span className="font-bold text-[12px] tracking-widest mt-1 uppercase pl-2">KINGDOM OF CAMBODIA</span>
+                    <span className="font-bold text-[12px] tracking-widest mt-0 pl-2 text-justify text-center" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ជាតិ សាសនា ព្រះមហាក្សត្រ</span>
+                    <span className="font-bold text-[11px] uppercase mt-0 pl-2 flex justify-between w-full tracking-wider px-8"><span>NATION</span> <span>RELIGION</span> <span>KING</span></span>
+                    
+                    {/* decorative line */}
+                    <div className="w-full flex justify-center items-center mt-2 mb-6 pr-2">
+                       <img src="/logos/line.png" alt="line" className="h-[7px] object-contain opacity-80" />
+                    </div>
+
+                    {/* Annex 1 Title Box */}
+                    <div className="w-full flex justify-end pr-0">
+                       <div className="flex items-stretch h-[32px]">
+                          <div className="w-0 h-0 border-t-[32px] border-t-white border-r-[32px] border-r-[#e6e6e6]"></div>
+                          <div className="bg-[#e6e6e6] w-[140px] h-full flex flex-col justify-center items-center font-bold relative -left-[1px]">
+                             <span className="text-[12px] leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឧបសម្ព័ន្ធ ១</span>
+                             <span className="text-[10px] leading-tight">Annex 1</span>
+                          </div>
+                       </div>
+                    </div>
+                  </div>
+               </div>
+
+               {/* Center Title */}
+               <div className="flex flex-col items-center justify-center text-center mt-[-10px] mb-4 gap-1">
+                  <span className="font-bold text-[16px] tracking-wider" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>តារាងប្រតិបត្តិការជាមួយបុគ្គលទាក់ទិន</span>
+                  <span className="font-bold text-[14px]">LIST OF RELATED-PARTY TRANSACTIONS</span>
+               </div>
+
+               <div className="w-full flex justify-end mb-2 pr-2">
+                 <div className="flex items-center gap-2 border border-black rounded-[4px] px-2 py-1 relative">
+                    <div className="flex flex-col text-right">
+                        <span className="font-bold text-[9px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការិយបរិច្ឆេទ៖</span>
+                        <span className="text-[7px] font-bold leading-tight mt-0">For the Year:</span>
+                    </div>
+                    <div className="flex gap-[2px] ml-1">
+                        {Array.from({ length: 4 }).map((_, i) => (
+                           <div key={i} className="w-[18px] h-[22px] border border-black bg-white flex items-center justify-center font-bold text-[11px] text-black">
+                             {selectedYear[i] || ""}
+                           </div>
+                        ))}
+                    </div>
+                 </div>
+               </div>
+
+               {/* General Info Lines */}
+               <div className="flex flex-col gap-2 mb-4 w-full">
+                 <div className="flex items-stretch border border-black bg-white h-[28px]">
+                    <div className="w-[20%] border-r border-black flex flex-col justify-center px-1 shrink-0">
+                       <span className="text-[9px] font-bold leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឈ្មោះសហគ្រាស ៖</span>
+                       <span className="text-[7px] font-bold leading-tight">Name of Enterprise:</span>
+                    </div>
+                    <div className="w-[30%] border-r border-black flex items-center px-2 font-bold text-[11px] uppercase">
+                       {filledData?.companyNameKH || ""}
+                    </div>
+                    <div className="w-[15%] border-r border-black flex flex-col justify-center px-1 shrink-0">
+                       <span className="text-[9px] font-bold leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឈ្មោះអក្សរឡាតាំង ៖</span>
+                       <span className="text-[7px] font-bold leading-tight">Name in Latin:</span>
+                    </div>
+                    <div className="w-[35%] flex items-center px-2 font-bold text-[11px] uppercase">
+                       {filledData?.companyNameEN || ""}
+                    </div>
+                 </div>
+
+                 <div className="flex items-center gap-2 w-full mt-1">
+                    <div className="flex flex-col text-left mr-2 min-w-[200px]">
+                      <span className="font-bold text-[10px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
+                      <span className="text-[8px] font-bold leading-tight mt-0">Tax Identification Number (TIN) :</span>
+                    </div>
+                    <div className="flex gap-[4px]">
+                      {Array.from({ length: 4 }).map((_, i) => (
+                         <div key={i} className="w-[20px] h-[26px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black pt-[2px]">
+                           {filledData?.tin?.replace('-', '')[i] || ""}
+                         </div>
+                      ))}
+                      <span className="text-black font-black text-xl leading-none mx-[2px] relative top-[1px]">-</span>
+                      {Array.from({ length: 9 }).map((_, i) => (
+                         <div key={i} className="w-[20px] h-[26px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black pt-[2px]">
+                           {filledData?.tin?.replace('-', '')[i + 4] || ""}
+                         </div>
+                      ))}
+                    </div>
+                 </div>
+               </div>
+
+               {/* Table Content Sections */}
+               
+               {/* SECTION A */}
+               <div className="flex flex-col w-full bg-[#f2f2f2] px-1 py-[2px] mb-[2px] border-b border-black">
+                  <span className="font-bold text-[10px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ក. ប្រតិបត្តិការចំណូល/លក់ (ទៅឱ្យបុគ្គលទាក់ទិន) / REVENUES/SALES (TO RELATED PARTIES)</span>
+               </div>
+               <div className="flex flex-col border-[2px] border-black bg-white w-full mb-2">
+                  <div className="flex border-b-[2px] border-black text-center items-stretch h-[28px]">
+                     <div className="w-[5%] border-r border-black flex flex-col justify-center gap-[1px]">
+                        <span className="text-[8px] font-bold font-serif leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ល.រ</span>
+                        <span className="text-[7px] font-bold leading-none">No.</span>
+                     </div>
+                     <div className="w-[25%] border-r border-black flex flex-col justify-center gap-[1px]">
+                        <span className="text-[9px] font-bold font-serif leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឈ្មោះបុគ្គលទាក់ទិន</span>
+                        <span className="text-[7px] font-bold leading-none">Name of Related Party</span>
+                     </div>
+                     <div className="w-[25%] border-r border-black flex flex-col justify-center gap-[1px]">
+                        <span className="text-[9px] font-bold font-serif leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រទេសដែលបុគ្គលទាក់ទិនបានចុះបញ្ជី</span>
+                        <span className="text-[7px] font-bold leading-none">Country Where the Related Party Has Registered</span>
+                     </div>
+                     <div className="w-[25%] border-r border-black flex flex-col justify-center gap-[1px]">
+                        <span className="text-[9px] font-bold font-serif leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បរិយាយពីលក្ខណៈ និងប្រភេទប្រតិបត្តិការ</span>
+                        <span className="text-[7px] font-bold leading-none shrink-0">Description of Nature and Type of Transactions</span>
+                     </div>
+                     <div className="w-[20%] flex flex-col justify-center gap-[1px]">
+                        <span className="text-[9px] font-bold font-serif leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំនួនទឹកប្រាក់ (រៀល)</span>
+                        <span className="text-[7px] font-bold leading-none">Amounts (Riels)</span>
+                     </div>
+                  </div>
+                  {[1, 2, 3].map((_, i) => (
+                    <div key={`A-${i}`} className="flex border-b border-black h-[22px] items-center">
+                       <div className="w-[5%] border-r border-black h-full"></div>
+                       <div className="w-[25%] border-r border-black h-full"></div>
+                       <div className="w-[25%] border-r border-black h-full"></div>
+                       <div className="w-[25%] border-r border-black h-full"></div>
+                       <div className="w-[20%] h-full flex items-center justify-end px-2 text-[9px]">-</div>
+                    </div>
+                  ))}
+                  <div className="flex h-[28px] items-center bg-[#f7f7f7]">
+                     <div className="w-[5%] border-r border-black h-full flex flex-col justify-center items-center">
+                        <span className="text-[8px] font-bold font-serif leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សរុប</span>
+                        <span className="text-[7px] font-bold leading-tight">Note:</span>
+                     </div>
+                     <div className="w-[75%] border-r border-black h-full flex flex-col justify-center pl-2">
+                        <span className="text-[9px] font-bold leading-none text-slate-900" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សហគ្រាសត្រូវកត់ត្រាផងដែរនូវចំណូលផ្សេងៗទៀតដែលទទួលបានពីបុគ្គលទាក់ទិន។</span>
+                        <span className="text-[7.5px] font-bold mt-[2px] text-slate-800">Enterprise must also record the other revenues received/incurred from related parties.</span>
+                     </div>
+                     <div className="w-[20%] h-full flex items-center justify-end px-2 text-[9px] font-mono font-bold"></div>
+                  </div>
+               </div>
+
+               {/* SECTION B */}
+               <div className="flex flex-col w-full bg-[#f2f2f2] px-1 py-[2px] mb-[2px] border-b border-black">
+                  <span className="font-bold text-[10px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ខ. ប្រតិបត្តិការចំណាយ/ទិញ (ពីបុគ្គលទាក់ទិន) / EXPENSES/PURCHASES (FROM RELATED PARTIES)</span>
+               </div>
+               <div className="flex flex-col border-[2px] border-black bg-white w-full mb-2">
+                  <div className="flex border-b-[2px] border-black text-center items-stretch h-[28px]">
+                     <div className="w-[5%] border-r border-black flex flex-col justify-center gap-[1px]">
+                        <span className="text-[8px] font-bold font-serif leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ល.រ</span>
+                        <span className="text-[7px] font-bold leading-none">No.</span>
+                     </div>
+                     <div className="w-[25%] border-r border-black flex flex-col justify-center gap-[1px]">
+                        <span className="text-[9px] font-bold font-serif leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឈ្មោះបុគ្គលទាក់ទិន</span>
+                        <span className="text-[7px] font-bold leading-none">Name of Related Party</span>
+                     </div>
+                     <div className="w-[25%] border-r border-black flex flex-col justify-center gap-[1px]">
+                        <span className="text-[9px] font-bold font-serif leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រទេសដែលបុគ្គលទាក់ទិនបានចុះបញ្ជី</span>
+                        <span className="text-[7px] font-bold leading-none">Country Where the Related Party Has Registered</span>
+                     </div>
+                     <div className="w-[25%] border-r border-black flex flex-col justify-center gap-[1px]">
+                        <span className="text-[9px] font-bold font-serif leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បរិយាយពីលក្ខណៈ និងប្រភេទប្រតិបត្តិការ</span>
+                        <span className="text-[7px] font-bold leading-none shrink-0">Description of Nature and Type of Transactions</span>
+                     </div>
+                     <div className="w-[20%] flex flex-col justify-center gap-[1px]">
+                        <span className="text-[9px] font-bold font-serif leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំនួនទឹកប្រាក់ (រៀល)</span>
+                        <span className="text-[7px] font-bold leading-none">Amounts (Riels)</span>
+                     </div>
+                  </div>
+                  {[1, 2, 3].map((_, i) => (
+                    <div key={`B-${i}`} className="flex border-b border-black h-[22px] items-center">
+                       <div className="w-[5%] border-r border-black h-full"></div>
+                       <div className="w-[25%] border-r border-black h-full"></div>
+                       <div className="w-[25%] border-r border-black h-full"></div>
+                       <div className="w-[25%] border-r border-black h-full"></div>
+                       <div className="w-[20%] h-full flex items-center justify-end px-2 text-[9px]">-</div>
+                    </div>
+                  ))}
+                  <div className="flex h-[28px] items-center bg-[#f7f7f7]">
+                     <div className="w-[5%] border-r border-black h-full flex flex-col justify-center items-center">
+                        <span className="text-[8px] font-bold font-serif leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សរុប</span>
+                        <span className="text-[7px] font-bold leading-tight">Note:</span>
+                     </div>
+                     <div className="w-[75%] border-r border-black h-full flex flex-col justify-center pl-2">
+                        <span className="text-[9px] font-bold leading-none text-slate-900" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សហគ្រាសត្រូវកត់ត្រាផងដែរនូវចំណាយផ្សេងៗទៀតដែលទូទាត់ ឬបង្គរដើម្បីទូទាត់បុគ្គលទាក់ទិន។</span>
+                        <span className="text-[7.5px] font-bold mt-[2px] text-slate-800">Enterprise must also record the other paid or accrued/incurred with related parties.</span>
+                     </div>
+                     <div className="w-[20%] h-full flex items-center justify-end px-2 text-[9px] font-mono font-bold"></div>
+                  </div>
+               </div>
+
+               {/* SECTION C */}
+               <div className="flex flex-col w-full bg-[#e6e6e6] px-1 py-[2px] mb-[2px] border-b border-black">
+                  <span className="font-bold text-[10px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>គ. កម្ចីផ្តល់ឱ្យបុគ្គលទាក់ទិន / LOANS TO RELATED PARTIES</span>
+               </div>
+               <div className="flex flex-col border-[2px] border-black bg-white w-full mb-2">
+                  <div className="flex border-b-[2px] border-black text-center items-stretch h-[28px]">
+                     <div className="w-[5%] border-r border-black flex flex-col justify-center gap-[1px]">
+                        <span className="text-[8px] font-bold font-serif leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ល.រ</span>
+                        <span className="text-[7px] font-bold leading-none">No.</span>
+                     </div>
+                     <div className="w-[25%] border-r border-black flex flex-col justify-center gap-[1px]">
+                        <span className="text-[9px] font-bold font-serif leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឈ្មោះបុគ្គលទាក់ទិន</span>
+                        <span className="text-[7px] font-bold leading-none">Name of Related Party</span>
+                     </div>
+                     <div className="w-[25%] border-r border-black flex flex-col justify-center gap-[1px]">
+                        <span className="text-[9px] font-bold font-serif leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រទេសដែលបុគ្គលទាក់ទិនបានចុះបញ្ជី</span>
+                        <span className="text-[7px] font-bold leading-none">Country Where the Related Party Has Registered</span>
+                     </div>
+                     <div className="w-[25%] border-r border-black flex flex-col justify-center gap-[1px]">
+                        <span className="text-[9px] font-bold font-serif leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំនួនទឹកប្រាក់ (រៀល)</span>
+                        <span className="text-[7px] font-bold leading-none">Amounts (Riels)</span>
+                     </div>
+                     <div className="w-[20%] flex flex-col justify-center gap-[1px]">
+                        <span className="text-[9px] font-bold font-serif leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>អត្រាការប្រាក់ (%)</span>
+                        <span className="text-[7px] font-bold leading-none">Interest Rate</span>
+                     </div>
+                  </div>
+                  {[1, 2, 3].map((_, i) => (
+                    <div key={`C-${i}`} className="flex border-b border-black h-[22px] items-center">
+                       <div className="w-[5%] border-r border-black h-full"></div>
+                       <div className="w-[25%] border-r border-black h-full"></div>
+                       <div className="w-[25%] border-r border-black h-full"></div>
+                       <div className="w-[25%] border-r border-black h-full flex items-center justify-end px-2 text-[9px]">-</div>
+                       <div className="w-[20%] h-full flex items-center justify-end px-2 text-[9px]">-</div>
+                    </div>
+                  ))}
+               </div>
+
+               {/* SECTION D */}
+               <div className="flex flex-col w-full bg-[#f2f2f2] px-1 py-[2px] mb-[2px] border-b border-black">
+                  <span className="font-bold text-[10px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឃ. កម្ចីទទួលបានពីបុគ្គលទាក់ទិន / LOANS FROM RELATED PARTIES</span>
+               </div>
+               <div className="flex flex-col border-[2px] border-black bg-white w-full mb-2">
+                  <div className="flex border-b-[2px] border-black text-center items-stretch h-[28px]">
+                     <div className="w-[5%] border-r border-black flex flex-col justify-center gap-[1px]">
+                        <span className="text-[8px] font-bold font-serif leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ល.រ</span>
+                        <span className="text-[7px] font-bold leading-none">No.</span>
+                     </div>
+                     <div className="w-[25%] border-r border-black flex flex-col justify-center gap-[1px]">
+                        <span className="text-[9px] font-bold font-serif leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឈ្មោះបុគ្គលទាក់ទិន</span>
+                        <span className="text-[7px] font-bold leading-none">Name of Related Party</span>
+                     </div>
+                     <div className="w-[25%] border-r border-black flex flex-col justify-center gap-[1px]">
+                        <span className="text-[9px] font-bold font-serif leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រទេសដែលបុគ្គលទាក់ទិនបានចុះបញ្ជី</span>
+                        <span className="text-[7px] font-bold leading-none">Country Where the Related Party Has Registered</span>
+                     </div>
+                     <div className="w-[25%] border-r border-black flex flex-col justify-center gap-[1px]">
+                        <span className="text-[9px] font-bold font-serif leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំនួនទឹកប្រាក់ (រៀល)</span>
+                        <span className="text-[7px] font-bold leading-none">Amounts (Riels)</span>
+                     </div>
+                     <div className="w-[20%] flex flex-col justify-center gap-[1px]">
+                        <span className="text-[9px] font-bold font-serif leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>អត្រាការប្រាក់ (%)</span>
+                        <span className="text-[7px] font-bold leading-none">Interest Rate</span>
+                     </div>
+                  </div>
+                  {[1, 2, 3].map((_, i) => (
+                    <div key={`D-${i}`} className="flex border-b border-black h-[22px] items-center">
+                       <div className="w-[5%] border-r border-black h-full"></div>
+                       <div className="w-[25%] border-r border-black h-full"></div>
+                       <div className="w-[25%] border-r border-black h-full"></div>
+                       <div className="w-[25%] border-r border-black h-full flex items-center justify-end px-2 text-[9px]">-</div>
+                       <div className="w-[20%] h-full flex items-center justify-end px-2 text-[9px]">-</div>
+                    </div>
+                  ))}
+               </div>
+
+               {/* SECTION E */}
+               <div className="flex flex-col w-full px-1 py-[2px] border-b-[2px] border-black mt-2 mb-2">
+                  <span className="font-bold text-[10px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ង. ឯកសារផ្ទេរថ្លៃ / DOCUMENT OF TRANSFER PRICING</span>
+               </div>
+               
+               <div className="flex items-start justify-between w-full mb-4 px-1 gap-4">
+                  <div className="flex flex-col gap-1 w-[70%] text-[8px] leading-tight font-bold">
+                     <span className="text-slate-900" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>តើសហគ្រាសបានរៀបចំ និងរក្សាទុកឯកសារផ្ទេរថ្លៃនៃប្រតិបត្តិការ ជាមួយបុគ្គលទាក់ទិន តាមគោលការណ៍កម្រិតនៃតម្លៃទីផ្សារ ដែលមានចែងក្នុងប្រកាសលេខ ៩៨៦ សហវ.ប្រក ដែរឬទេ?</span>
+                     <span className="text-[7px]">Has the Enterprise prepared and kept the Document of Transfer Pricing of Related-Party Transactions in accordance with the arm's length principle as stated in the Prakas No.986 MEF.PK?</span>
+                     
+                     <span className="text-slate-900 mt-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>យើងខ្ញុំសូមធានាអះអាងថា គ្រប់ប្រតិបត្តិការទាំងអស់ជាមួយបុគ្គលទាក់ទិនដែលបានប្រកាសខាងលើនេះ គឺពិតជាត្រឹមត្រូវ។</span>
+                     <span className="text-[7px] font-normal">We ensure that the disclosures of related-party transaction as stated above are correct.</span>
+                  </div>
+                  <div className="flex gap-4 items-center mt-2 font-bold text-[10px]">
+                     <div className="flex items-center gap-1">
+                        <div className="w-5 h-5 border-2 border-black"></div>
+                        <div className="flex flex-col">
+                           <span style={{ fontFamily: '"Kantumruy Pro", sans-serif', fontSize: '9px' }}>បាទ</span>
+                           <span className="text-[8px] mt-[-2px]">Yes</span>
+                        </div>
+                     </div>
+                     <div className="flex items-center gap-1">
+                        <div className="w-5 h-5 border-2 border-black"></div>
+                        <div className="flex flex-col">
+                           <span style={{ fontFamily: '"Kantumruy Pro", sans-serif', fontSize: '9px' }}>ទេ</span>
+                           <span className="text-[8px] mt-[-2px]">No</span>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+
+               {/* Bottom Signature Section */}
+               <div className="flex justify-between w-full gap-4 mt-2">
+                  {/* Left Notes */}
+                  <div className="flex flex-col w-[50%] p-1">
+                     <span className="font-bold text-[10px] underline border-b border-black max-w-max pb-[2px] mb-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សម្គាល់ /NOTE:</span>
+                     <div className="text-[9px] font-bold leading-[1.6] text-slate-800 text-justify mb-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                       យោងតាមប្រការ ១៩ នៃប្រកាសលេខ ៩៨៦ សហវ.ប្រក ចុះថ្ងៃទី១០ ខែតុលា ឆ្នាំ២០១៧ ស្តីពីវិធាន និងនីតិវិធី សម្រាប់ការចែងចំណូល និងចំណាយក្នុងចំណោមបុគ្គលទាក់ទិន ក្នុងករណីខកខានមិនបានផ្ដល់ព័ត៌មានខាងលើ អ្នកជាប់ពន្ធ ត្រូវបានផាកពិន័យស្របតាមបទប្បញ្ញត្តិស្តីពីសារពើពន្ធ ឬរដ្ឋបាលពន្ធនឹងវាយតម្លៃឡើងវិញនូវកម្រិតហានិភ័យនៃសហគ្រាស តាមប្រការ១៣៣ នៃច្បាប់ស្តីពីសារពើពន្ធ។
+                     </div>
+                     <div className="text-[7.5px] font-bold leading-tight text-slate-800 text-justify">
+                       According to the Article 19 of Prakas No.986 MEF.PK dated on 10 October 2017 on "Rules and Procedures for Allocations of Income and Expense Among Related Parties", if the taxpayers fail to provide the above-mentioned information to the Tax Administration, the Tax Administration will revoke the Tax Compliance Certificate or will re-evaluate the status of tax compliance and will penalize them as stated in article 133 of the Law on Taxation.
+                     </div>
+                  </div>
+
+                  {/* Right Signature Box */}
+                  <div className="flex flex-col items-center w-[48%] relative border border-black rounded-[8px] h-[190px]">
+                     <div className="absolute top-[-10px] left-4 bg-white px-1">
+                        <div className="flex flex-col items-center border border-black px-1.5 py-0.5 relative z-10 bg-white shadow-sm">
+                           <span className="font-bold text-[11px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ធ្វើនៅ</span>
+                           <span className="text-[8px] font-bold leading-tight">Filed in</span>
+                        </div>
+                     </div>
+                     
+                     <div className="absolute top-[8px] left-16 flex items-center pr-2 gap-2 w-full justify-between">
+                        <div className="border border-black bg-slate-50 opacity-40 h-[22px] flex-1 mr-2 ml-4"></div>
+                        <div className="flex gap-[4px] mr-12">
+                           <div className="w-0 h-0 border-t-[3px] border-t-transparent border-l-[6px] border-l-black border-b-[3px] border-b-transparent relative top-2 -ml-2"></div>
+                           {Array.from({ length: 2 }).map((_, i) => (
+                              <div key={`d-${i}`} className="w-[14px] h-[20px] border border-black"></div>
+                           ))}
+                           <span className="text-black font-black text-xl leading-none mx-[1px] relative top-[-1px]">-</span>
+                           {Array.from({ length: 2 }).map((_, i) => (
+                              <div key={`m-${i}`} className="w-[14px] h-[20px] border border-black"></div>
+                           ))}
+                           <span className="text-black font-black text-xl leading-none mx-[1px] relative top-[-1px]">-</span>
+                           {Array.from({ length: 4 }).map((_, i) => (
+                              <div key={`y-${i}`} className="w-[14px] h-[20px] border border-black"></div>
+                           ))}
+                        </div>
+                     </div>
+
+                     <div className="mt-[42px] font-bold text-[10px] opacity-80" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                        ហត្ថលេខា និងត្រាប្រធានសហគ្រាស
+                     </div>
+                  </div>
+               </div>
+
+            </div>
+
+            <div className="w-full text-center mt-6 mb-8 opacity-20 flex flex-col items-center print:hidden print:w-0 print:h-0 overflow-hidden shrink-0">
+              <div className="w-px h-16 bg-black mb-4"></div>
+              <span className="text-xl font-black tracking-[0.5em] uppercase text-black">
+                Page 17 Virtual Print
+              </span>
+              <span className="text-xs font-bold tracking-widest text-black mt-2">
+                A N N E X &bull; 1
+              </span>
+            </div>
+
+          </div>
+        )}
+
         {/* MIDDLE SIDE: GPT Result Landing Page (Totally Black, empty) */}
         {isAdmin && (
           <div className="w-[15%] overflow-y-auto relative bg-black custom-scrollbar print:hidden">
