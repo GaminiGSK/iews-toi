@@ -3187,7 +3187,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
 
         {/* NEW LEFT SIDE: WHITE PREVIEW (PAGE 13 - DEPRECIATION TABLE AS PER LOT) */}
         {activeWorkspacePage === 13 && (
-          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-slate-100 border-r border-slate-300 overflow-y-auto overflow-x-auto custom-scrollbar shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:p-0 print:overflow-visible flex items-start justify-center p-8`}>
+          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-slate-100 border-r border-slate-300 overflow-y-auto overflow-x-auto custom-scrollbar shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:p-0 print:overflow-visible flex items-start justify-start p-8`}>
             {/* Content for the white preview */}
             <div className={`min-w-[1240px] w-full max-w-[1400px] bg-white border border-slate-300 shadow-sm p-12 flex flex-col font-sans my-auto shrink-0 print:my-0 print:w-full print:max-w-none print:border-none print:shadow-none print:p-0`}>
                {/* -----------------HEADER----------------- */}
