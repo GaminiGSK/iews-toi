@@ -5550,6 +5550,230 @@ const ToiAcar = ({ onBack, packageId, year }) => {
           </div>
         )}
 
+        {/* NEW LEFT SIDE: WHITE PREVIEW (PAGE 21 - ANNEX 4 - EXCESS INCOME TAX ON MINING/OIL) */}
+        {activeWorkspacePage === 21 && (
+          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
+            {/* Content for the white preview */}
+            <div className="w-full flex flex-col font-sans mb-12 text-black print:toi-form-scale print:mb-0 max-w-[950px] mx-auto">
+               
+               {/* -----------------HEADER----------------- */}
+               <div className="w-full relative mb-1 text-[10px] sm:text-[11px] leading-tight font-bold flex justify-between items-start">
+                  
+                  {/* Left: Ministry */}
+                  <div className="flex flex-col items-center ml-0 mt-6 w-[35%] gap-1">
+                    <span className="font-bold text-[14px] tracking-wide" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ក្រសួងសេដ្ឋកិច្ចនិងហិរញ្ញវត្ថុ</span>
+                    <span className="font-semibold text-[13px] tracking-wide mb-0.5">MINISTRY OF ECONOMY AND FINANCE</span>
+                    <div className="w-[85%] h-[2.5px] bg-black my-0.5"></div>
+                    <span className="font-bold text-[14px] mt-1 tracking-wide" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>អគ្គនាយកដ្ឋានពន្ធដារ</span>
+                    <span className="font-semibold text-[13px] tracking-wide">GENERAL DEPARTMENT OF TAXATION</span>
+                  </div>
+
+                  {/* Center: GDT Logo */}
+                  <div className="flex flex-col items-center w-[30%]">
+                    <img src="/logos/gdt_logo.png" alt="GDT Logo" className="w-[110px] h-[110px] object-contain opacity-90 mx-auto" />
+                  </div>
+
+                  {/* Right: Kingdom of Cambodia */}
+                  <div className="flex flex-col items-center mt-2 w-[35%] flex-shrink-0">
+                    <span className="font-bold text-[15px] tracking-widest pl-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ព្រះរាជាណាចក្រកម្ពុជា</span>
+                    <span className="font-bold text-[12px] tracking-widest mt-1 uppercase pl-2">KINGDOM OF CAMBODIA</span>
+                    <span className="font-bold text-[12px] tracking-widest mt-0 pl-2 text-justify text-center" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ជាតិ សាសនា ព្រះមហាក្សត្រ</span>
+                    <span className="font-bold text-[11px] uppercase mt-0 pl-2 flex justify-between w-full tracking-wider px-8"><span>NATION</span> <span>RELIGION</span> <span>KING</span></span>
+                    
+                    {/* decorative line */}
+                    <div className="w-full flex justify-center items-center mt-2 mb-6 pr-2">
+                       <img src="/logos/line.png" alt="line" className="h-[7px] object-contain opacity-80" />
+                    </div>
+
+                    {/* Annex 4 Title Box */}
+                    <div className="w-full flex justify-end pr-0">
+                       <div className="flex items-stretch h-[32px]">
+                          <div className="w-0 h-0 border-t-[32px] border-t-white border-r-[32px] border-r-[#e6e6e6]"></div>
+                          <div className="bg-[#e6e6e6] w-[140px] h-full flex flex-col justify-center items-center font-bold relative -left-[1px]">
+                             <span className="text-[12px] leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឧបសម្ព័ន្ធ ៤</span>
+                             <span className="text-[10px] leading-tight mt-[1px]">Annex 4</span>
+                          </div>
+                       </div>
+                    </div>
+                  </div>
+               </div>
+
+               {/* Center Title */}
+               <div className="flex flex-col items-center justify-center text-center mt-4 mb-8 gap-[2px]">
+                  <span className="font-bold text-[15px] tracking-wide" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ពន្ធលើប្រាក់ចំណូលលើសកម្រិតលើប្រតិបត្តិការធនធានរ៉ែ / ប្រេងកាត</span>
+                  <span className="font-bold text-[12px] tracking-tight">EXCESS INCOME TAX ON MINING / OIL AND GAS OPERATIONS</span>
+               </div>
+
+               {/* Info Section (Tax Year and TIN) */}
+               <div className="flex flex-col items-end w-full pr-1 gap-4 mb-6">
+                 
+                 {/* Tax Year */}
+                 <div className="flex items-center gap-2">
+                    <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[12px] border-l-black border-b-[6px] border-b-transparent mt-[2px]"></div>
+                    <div className="flex flex-col text-right">
+                       <span className="font-bold text-[11px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំជាប់ពន្ធ</span>
+                       <span className="text-[9px] font-bold leading-tight mt-0">Tax Year</span>
+                    </div>
+                    <div className="flex gap-[4px] ml-1">
+                       {Array.from({ length: 4 }).map((_, i) => (
+                          <div key={i} className="w-[20px] h-[26px] border border-black bg-white flex items-center justify-center font-bold text-[11px] text-black pt-[2px]">
+                            {selectedYear[i] || ""}
+                          </div>
+                       ))}
+                    </div>
+                 </div>
+
+                 {/* TIN */}
+                 <div className="flex items-center gap-2 w-full justify-center pl-20 mt-2">
+                    <div className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[18px] border-l-black border-b-[8px] border-b-transparent mt-[2px]"></div>
+                    <div className="flex flex-col text-right ml-2 mr-1">
+                       <span className="font-bold text-[11px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
+                       <span className="text-[8px] font-bold leading-tight mt-[2px] text-slate-700">Tax Identification Number (TIN) :</span>
+                    </div>
+                    <div className="flex gap-[4px] ml-[2px]">
+                       {Array.from({ length: 4 }).map((_, i) => (
+                          <div key={i} className="w-[20px] h-[26px] border border-black bg-white flex items-center justify-center font-bold text-[11px] text-black pt-[2px]">
+                            {filledData?.tin?.replace('-', '')[i] || ""}
+                          </div>
+                       ))}
+                       <span className="text-black font-black text-xl leading-none mx-[2px] relative top-[1px]">-</span>
+                       {Array.from({ length: 9 }).map((_, i) => (
+                          <div key={i} className="w-[20px] h-[26px] border border-black bg-white flex items-center justify-center font-bold text-[11px] text-black pt-[2px]">
+                            {filledData?.tin?.replace('-', '')[i + 4] || ""}
+                          </div>
+                       ))}
+                    </div>
+                 </div>
+               </div>
+
+               {/* Table Title */}
+               <div className="flex flex-col ml-1 mb-1">
+                  <span className="font-bold text-[11px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការគណនាពន្ធលើប្រាក់ចំណូលលើសកម្រិត</span>
+                  <span className="font-bold text-[10px] mt-[-1px]">Excess Income Tax Calculation</span>
+               </div>
+               
+               {/* -----------------TABLE----------------- */}
+               <div className="flex flex-col w-full shrink-0 relative z-10 z-[100] border-[2px] border-black bg-white">
+                 
+                 {/* Header Row */}
+                 <div className="flex border-b-[2px] border-black text-center items-stretch bg-white">
+                    <div className="w-[60%] pt-2 pb-1 border-r-[2px] border-black flex flex-col justify-center px-1 shrink-0 gap-[1px]">
+                       <span className="font-bold text-[10.5px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បរិយាយ</span>
+                       <span className="font-bold text-[9px] leading-tight">Description</span>
+                    </div>
+
+                    <div className="w-[10%] pt-2 pb-1 border-r-[2px] border-black flex flex-col justify-center px-1 shrink-0 gap-[1px]">
+                       <span className="font-bold text-[10.5px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>យោង</span>
+                       <span className="font-bold text-[9px] leading-tight">Ref.</span>
+                    </div>
+
+                    <div className="w-[30%] flex flex-col justify-center shrink-0">
+                       <span className="font-bold text-[10.5px] leading-tight mt-1" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំនួនទឹកប្រាក់</span>
+                       <span className="font-bold text-[9.5px] leading-tight px-1 mb-1">Amount</span>
+                    </div>
+                 </div>
+
+                 {/* Row X1 */}
+                 <div className="flex border-b-[2px] border-black text-black items-stretch h-[42px]">
+                    <div className="w-[60%] border-r-[2px] border-black flex flex-col justify-center px-2 py-1 shrink-0 gap-[1px]">
+                       <span className="font-bold text-[10.5px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រាក់ចំណូលជាប់ពន្ធ (E42)</span>
+                       <span className="font-bold text-[8.5px] leading-tight">Taxable income (E42)</span>
+                    </div>
+                    <div className="w-[10%] border-r-[2px] border-black flex items-center justify-center font-bold text-[10.5px] shrink-0">X 1</div>
+                    <div className="w-[30%] flex justify-end items-center px-4 font-mono text-[11px] font-bold">-</div>
+                 </div>
+
+                 {/* Row X2 */}
+                 <div className="flex border-b-[2px] border-black text-black items-stretch h-[42px] bg-[#f9f9f9]">
+                    <div className="w-[60%] border-r-[2px] border-black flex flex-col justify-center px-2 py-1 shrink-0 gap-[1px]">
+                       <span className="font-bold text-[10.5px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណូលបង្គរ (ចំណូលបូកបន្ត)</span>
+                       <span className="font-bold text-[8.5px] leading-tight">Accumulated income</span>
+                    </div>
+                    <div className="w-[10%] border-r-[2px] border-black flex items-center justify-center font-bold text-[10.5px] shrink-0 bg-white">X 2</div>
+                    <div className="w-[30%] flex justify-end items-center px-4 font-mono text-[11px] font-bold bg-white">-</div>
+                 </div>
+
+                 {/* Row X3 */}
+                 <div className="flex border-b-[2px] border-black text-black items-stretch h-[42px]">
+                    <div className="w-[60%] border-r-[2px] border-black flex flex-col justify-center px-2 py-1 shrink-0 gap-[1px]">
+                       <span className="font-bold text-[10.5px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណាយបង្គរ (ចំណាយបូកបន្ត)</span>
+                       <span className="font-bold text-[8.5px] leading-tight">Accumulated expenses</span>
+                    </div>
+                    <div className="w-[10%] border-r-[2px] border-black flex items-center justify-center font-bold text-[10.5px] shrink-0">X 3</div>
+                    <div className="w-[30%] flex justify-end items-center px-4 font-mono text-[11px] font-bold">-</div>
+                 </div>
+
+                 {/* Row X4 */}
+                 <div className="flex border-b-[2px] border-black text-black items-stretch h-[46px] bg-[#f9f9f9]">
+                    <div className="w-[60%] border-r-[2px] border-black flex flex-col justify-center px-2 py-1 shrink-0 gap-[1px]">
+                       <span className="font-bold text-[10.5px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សមាមាត្រនៃប្រាក់ចំណូលលើសកម្រិត (X4 = X2 / X3)</span>
+                       <span className="font-bold text-[8.5px] leading-tight">Proportion of excess income (X4 = X2 / X3)</span>
+                    </div>
+                    <div className="w-[10%] border-r-[2px] border-black flex items-center justify-center font-bold text-[10.5px] shrink-0 bg-white">X 4</div>
+                    <div className="w-[30%] flex justify-end items-center px-4 font-mono text-[11px] font-bold bg-white">-</div>
+                 </div>
+
+                 {/* Row X5 */}
+                 <div className="flex text-black items-stretch h-[46px]">
+                    <div className="w-[60%] border-r-[2px] border-black flex flex-col justify-center px-2 py-1 shrink-0 gap-[1px]">
+                       <span className="font-bold text-[11px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ពន្ធលើប្រាក់ចំណូលលើសកម្រិត *</span>
+                       <span className="font-bold text-[9px] leading-tight">Excess income tax *</span>
+                    </div>
+                    <div className="w-[10%] border-r-[2px] border-black flex items-center justify-center font-bold text-[10.5px] shrink-0">X 5</div>
+                    <div className="w-[30%] flex justify-end items-center px-4 font-mono text-[11px] font-bold bg-[#f7f7f7] border-l border-b-transparent">-</div>
+                 </div>
+               </div>
+
+               <div className="w-full flex justify-end h-[4px]">
+                 <div className="w-[40%] bg-black h-full"></div>
+               </div>
+
+               {/* Footer Notes Section */}
+               <div className="flex flex-col mt-4 gap-3 bg-white px-2">
+                  <div className="font-bold text-[11px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                     *ពន្ធលើប្រាក់ចំណូលលើសកម្រិត ៖
+                  </div>
+                  
+                  {/* Condition 1 */}
+                  <div className="flex flex-col gap-1 w-full pl-1">
+                     <span className="font-[600] text-[10.5px] leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>-បើ X4 នៅចន្លោះពី ០ ដល់ ១,៣ អត្រាពន្ធគឺ ០%, X5=0</span>
+                     <span className="font-bold text-[8px] leading-none tracking-tight opacity-90">-If X4 is between 0 to 1.3, tax rate is 0%, X5=0</span>
+                  </div>
+
+                  {/* Condition 2 */}
+                  <div className="flex flex-col gap-1 w-full pl-1">
+                     <span className="font-[600] text-[10.5px] leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>-បើ X4 លើសពី ១,៣ ដល់ ១,៦ អត្រាពន្ធគឺ ១០%, X5=X1*(( X4-1.3 )/X4) ) *10%</span>
+                     <span className="font-bold text-[8px] leading-none tracking-tight opacity-90">-If X4 is between over 1.3 to 1.6, tax rate is 10%, X5=X1*((X4-1.3)/X4))*10%</span>
+                  </div>
+
+                  {/* Condition 3 */}
+                  <div className="flex flex-col gap-1 w-full pl-1">
+                     <span className="font-[600] text-[10.5px] leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>-បើ X4 លើសពី ១,៦ ដល់ ២ អត្រាពន្ធគឺ ២០%, X5=( X1*(( 1.6-1.3 )/1.6) ) *10%+( X1*((X4-1.6)/X4 )) *20%</span>
+                     <span className="font-bold text-[8px] leading-none tracking-tight opacity-90">-If X4 is between over 1.6 to 2, tax rate is 20% X5=(X1*((1.6-1.3)/1.6))*10%+(X1*((X4-1.6)/X4))*20%</span>
+                  </div>
+
+                  {/* Condition 4 */}
+                  <div className="flex flex-col gap-1 w-full pl-1">
+                     <span className="font-[600] text-[10.5px] leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>-បើ X4 លើសពី ២ អត្រាពន្ធគឺ ៣០%, X5=( X1*(( 1.6-1.3 )/1.6 ) ) *10%+( X1*(( (2-1.6 )/2 ) ) *20%+( X1*( ( X4-2 )/X4 ) ) *30%</span>
+                     <span className="font-bold text-[8px] leading-none tracking-tight opacity-90">-If X4 is between over 2, tax rate is 30% X5=(X1*((1.6-1.3)/1.6))*10%+(X1*((2-1.6)/2))*20%+(X1*((X4-2)/X4))x30%</span>
+                  </div>
+               </div>
+
+            </div>
+
+            <div className="w-full text-center mt-6 mb-8 opacity-20 flex flex-col items-center print:hidden print:w-0 print:h-0 overflow-hidden shrink-0">
+              <div className="w-px h-16 bg-black mb-4"></div>
+              <span className="text-xl font-black tracking-[0.5em] uppercase text-black">
+                Page 21 Virtual Print
+              </span>
+              <span className="text-xs font-bold tracking-widest text-black mt-2">
+                A N N E X &bull; 4
+              </span>
+            </div>
+
+          </div>
+        )}
+
         {/* MIDDLE SIDE: GPT Result Landing Page (Totally Black, empty) */}
         {isAdmin && (
           <div className="w-[15%] overflow-y-auto relative bg-black custom-scrollbar print:hidden">
