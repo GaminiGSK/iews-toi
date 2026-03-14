@@ -2711,6 +2711,209 @@ const ToiAcar = ({ onBack, packageId, year }) => {
           </div>
         )}
 
+        {/* NEW LEFT SIDE: WHITE PREVIEW (PAGE 11 - CHARITABLE CONTRIBUTIONS AND INTEREST EXPENSE) */}
+        {activeWorkspacePage === 11 && (
+          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
+            {/* Content for the white preview */}
+            <div className="w-full flex flex-col font-sans mb-12 text-black print:toi-form-scale print:mb-0">
+               {/* -----------------HEADER----------------- */}
+               <div className="w-full relative mb-10 text-[10px] sm:text-[11px] leading-tight pt-4 font-bold flex justify-between items-start">
+                 <div className="flex flex-col items-start gap-12 w-[45%]">
+                   <span className="font-extrabold text-[16px] tracking-wide font-serif">TOI 01 / VIII</span>
+                 </div>
+
+                 {/* Top Right Box - Tax Year */}
+                 <div className="flex flex-col items-end">
+                    <div className="flex items-center gap-2 mb-2 mt-4 border-b-2 border-transparent relative right-[6px]">
+                       <div className="w-0 h-0 border-t-[5px] border-t-transparent border-l-[10px] border-l-black border-b-[5px] border-b-transparent"></div>
+                       <div className="flex flex-col text-right">
+                          <span className="font-bold text-[10px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំជាប់ពន្ធ</span>
+                          <span className="text-[8px] font-bold leading-tight mt-0">Tax Year</span>
+                       </div>
+                       <div className="flex gap-[4px] ml-1">
+                          {Array.from({ length: 4 }).map((_, i) => (
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black pt-1">
+                               {selectedYear[i] || ""}
+                             </div>
+                          ))}
+                       </div>
+                    </div>
+                 </div>
+               </div>
+
+               {/* Center Box */}
+               <div className="flex w-full justify-center mb-1">
+                 <div className="border border-black px-12 py-3 flex flex-col items-center justify-center relative w-[80%] text-center">
+                   <span className="font-bold text-[14px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការគណនាវិភាគទានសប្បុរសធម៌ ការប្រាក់អាចកាត់កងបាន និងឥណទានខាតយោងទៅមុខ</span>
+                   <span className="font-bold text-[11px] uppercase mt-1 tracking-tight">CHARITABLE CONTRIBUTIONS, DEDUCTIBLE INTEREST EXPENSES AND<br/>ACCUMULATED LOSSES CARRIED FORWARD</span>
+                 </div>
+               </div>
+               
+               {/* -----------------TIN----------------- */}
+               <div className="flex w-full mb-8 mt-2">
+                 <div className="flex-1"></div>
+                 <div className="flex items-start gap-2">
+                   <div className="mt-2 w-0 h-0 border-t-[7px] border-t-transparent border-l-[14px] border-l-black border-b-[7px] border-b-transparent"></div>
+                   <div className="flex flex-col flex-end">
+                     <div className="flex items-center gap-[6px]">
+                        <span className="font-bold text-[11px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
+                        <div className="flex gap-[4px]">
+                           {Array.from({ length: 4 }).map((_, i) => (
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{filledData?.tin?.replace('-', '')[i] || ""}</div>
+                           ))}
+                           <span className="text-black font-black text-xl leading-none mx-0 relative top-[1px]">-</span>
+                           {Array.from({ length: 9 }).map((_, i) => (
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{filledData?.tin?.replace('-', '')[i + 4] || ""}</div>
+                           ))}
+                        </div>
+                     </div>
+                     <span className="font-normal text-[9px] mt-[1px] text-left">Tax Identification Number (TIN) :</span>
+                   </div>
+                 </div>
+               </div>
+
+               {/* -----------------SECTION A: Charitable Contributions----------------- */}
+               <div className="mb-1 text-[11px] font-bold leading-tight mt-4">
+                  <span style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ក. ការគណនាវិភាគទានសប្បុរសធម៌</span><br/>
+                  <span>A. Charitable Contribution Calculation</span>
+               </div>
+               <div className="flex flex-col border-[2px] border-black bg-white shadow-sm mb-6">
+                  {/* Header Row A */}
+                  <div className="flex border-b border-black text-center items-stretch bg-white">
+                    <div className="w-[75%] py-[6px] border-r border-black flex flex-col items-center justify-center shrink-0">
+                       <span className="font-bold text-[11px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បរិយាយ</span>
+                       <span className="font-bold text-[9px] mt-[2px] leading-tight">Description</span>
+                    </div>
+                    <div className="w-[8%] py-[6px] border-r border-black flex flex-col items-center justify-center shrink-0">
+                       <span className="font-bold text-[11px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>យោង</span>
+                       <span className="font-bold text-[9px] mt-[2px] leading-tight">Ref</span>
+                    </div>
+                    <div className="flex-1 py-[6px] flex flex-col items-center justify-center shrink-0">
+                       <span className="font-bold text-[11px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំនួនទឹកប្រាក់</span>
+                       <span className="font-bold text-[9px] mt-[2px] leading-tight">Amount</span>
+                    </div>
+                  </div>
+
+                  {/* Body Rows F1 -> F6 */}
+                  {[
+                    { ref: 'F 1', k: 'ប្រាក់ចំណេញសុទ្ធ / (ខាត) ក្រោយនិយតកម្ម (F1 = E36)', e: 'Profit/(loss) after adjustment (F1 = E36)' },
+                    { ref: 'F 2', k: 'ចំណាយសប្បុរសធម៌', e: 'Charitable contributions' },
+                    { ref: 'F 3', k: 'ប្រាក់ចំណូលសម្រាប់គណនាចំណាយសប្បុរសធម៌អតិបរមាដែលអាចកាត់កងបាន (F3 = F1 + F2)', e: 'Adjusted income for calculation of maximum deductible charitable contributions (F3 = F1 + F2)' },
+                    { ref: 'F 4', k: 'ចំណាយសប្បុរសធម៌អតិបរមាដែលអាចកាត់កងបាន (F4 = F3 x 5%)', e: 'Maximum deductible charitable contributions (F4 = F3 x 5%)' },
+                    { ref: 'F 5', k: 'ចំណាយសប្បុរសធម៌អាចកាត់កងបានក្នុងឆ្នាំ (F5 = F4 or F2 មួយណាដែលតិចជាង)', e: 'Deductible charitable contributions during the period (F5 = F4 or F2 whichever is the lower)' },
+                    { ref: 'F 6', k: 'ចំណាយសប្បុរសធម៌មិនអាចកាត់កងបានត្រូវបូកបញ្ចូលជាប្រាក់ចំណូល / (ខាត) ជាប់ពន្ធ ((F6 = F2 - F5))', e: 'Non-deductible charitable contributions to be added back in taxable income/(loss) (F6 = F2 - F5)' }
+                  ].map((row, idx) => (
+                    <div key={row.ref} className={`flex border-b border-black min-h-[36px] text-[11px] bg-white`}>
+                       <div className={`w-[75%] border-r border-black px-2 flex flex-col justify-center shrink-0 py-[4px] pl-3`}>
+                          <span className="text-[11px] leading-tight font-normal" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.k}</span>
+                          <span className={`text-[8.5px] leading-tight text-slate-800 mt-[2px] font-normal`}>{row.e}</span>
+                       </div>
+                       <div className="w-[8%] border-r border-black flex items-center justify-center shrink-0 py-[2px] font-bold text-[10px]">{row.ref}</div>
+                       <div className="flex-1 flex items-center justify-end py-[2px] px-3 font-mono text-[11px] bg-white">-</div>
+                    </div>
+                  ))}
+
+                  {/* F Note / Disclaimers */}
+                  <div className="flex flex-col py-3 px-4 text-[9px] bg-white">
+                      <div className="flex items-start gap-1 mb-2">
+                        <span>*</span>
+                        <div className="flex flex-col">
+                           <span className="leading-tight text-slate-900" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណាយសប្បុរសធម៌អាចកាត់កងបានក្នុងការិយបរិច្ឆេទដូចមានចែងក្នុងកថាខណ្ឌ២ ប្រការ៣៣ នៃប្រកាសស្ដីពីពន្ធលើប្រាក់ចំណូលគឹជាចំនួនណាមួយដែលតិចជាង F4 និង F5</span>
+                           <span className="leading-tight text-slate-700 mt-[1px]">* Deductible charitable contributions during the period as per section paragraph 2, Prakas 33 of Prakas Toi whichever is the lower of F4 and F5</span>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-1">
+                        <span>*</span>
+                        <div className="flex flex-col">
+                           <span className="leading-tight text-slate-900" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>អនុលោមតាមច្បាប់ស្ដីពីសារពើពន្ធ ចំនួនលើសជាចំនួនមិនអាចកាត់កងបាន ហើយមិនអាចយោងទៅឆ្នាំខាងមុខបាន</span>
+                           <span className="leading-tight text-slate-700 mt-[1px]">* In accordance with the Law on Taxation, the excess amount is permanently non-deductible and cannot be carried forward.</span>
+                        </div>
+                      </div>
+                  </div>
+               </div>
+
+               {/* -----------------SECTION B: Interest Expense Calculation----------------- */}
+               <div className="mb-1 text-[11px] font-bold leading-tight mt-6">
+                  <span style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ខ. ការគណនាចំណាយការប្រាក់</span><br/>
+                  <span>B. Interest Expense Calculation</span>
+               </div>
+               <div className="flex flex-col border-[2px] border-black bg-white shadow-sm mb-6">
+                  {/* Header Row B */}
+                  <div className="flex border-b border-black text-center items-stretch bg-white">
+                    <div className="w-[75%] py-[6px] border-r border-black flex flex-col items-center justify-center shrink-0">
+                       <span className="font-bold text-[11px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការគណនាចំណាយការប្រាក់អនុញ្ញាតឱ្យកាត់កងក្នុងការិយបរិច្ឆេទ</span>
+                       <span className="font-bold text-[9px] mt-[2px] leading-tight">Calculation of Deductible Interest Expense during the Period</span>
+                    </div>
+                    <div className="w-[8%] py-[6px] border-r border-black flex flex-col items-center justify-center shrink-0">
+                       <span className="font-bold text-[11px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>យោង</span>
+                       <span className="font-bold text-[9px] mt-[2px] leading-tight">Ref</span>
+                    </div>
+                    <div className="flex-1 py-[6px] flex flex-col items-center justify-center shrink-0">
+                       <span className="font-bold text-[11px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំនួនទឹកប្រាក់</span>
+                       <span className="font-bold text-[9px] mt-[2px] leading-tight">Amount</span>
+                    </div>
+                  </div>
+
+                  {/* Body Rows G1 -> G7 */}
+                  {[
+                    { ref: 'G 1', k: 'ប្រាក់ចំណេញសុទ្ធ / (ខាត) មុននិយតកម្មការប្រាក់ (G1 = E38)', e: 'Net Profit/(loss) before interest adjustment (G1 = E38)' },
+                    { ref: 'G 2', k: 'បូក៖ ចំណាយការប្រាក់ក្នុងការិយបរិច្ឆេទ', e: 'Add: Interest expenses during the period', greyAmount: true },
+                    { ref: 'G 3', k: 'ដក៖ ចំណូលការប្រាក់ក្នុងការិយបរិច្ឆេទ', e: 'Less: Interest income during the period' },
+                    { ref: 'G 4', k: 'ប្រាក់ចំណូលសុទ្ធគ្មានការប្រាក់ (G4 = G1 + G2 - G3 និង G4 ជានិច្ចជាកាល >= 0)', e: 'Net non-interest income (G4 = G1 + G2 - G3 and G4 is always >= 0)' },
+                    { ref: 'G 5', k: '៥០% នៃប្រាក់ចំណូលសុទ្ធគ្មានការប្រាក់ (G5 = G4 x 50%)', e: '50% of net non-interest income (G5 = G4 x 50%)' },
+                    { ref: 'G 6', k: 'ចំណូលការប្រាក់ក្នុងការិយបរិច្ឆេទ (G6 = G3)', e: 'Interest income during the period (G6 = G3)' },
+                    { ref: 'G 7', k: 'ចំណាយការប្រាក់អតិបរមាអនុញ្ញាតឱ្យកាត់កងបានក្នុងការិយបរិច្ឆេទ (G7 = G5 + G6)', e: 'Maximum deductible interest expense during the period (G7 = G5 + G6)', greyAmount: true }
+                  ].map((row, idx) => (
+                    <div key={row.ref} className={`flex border-b border-black min-h-[36px] text-[11px] bg-white`}>
+                       <div className={`w-[75%] border-r border-black px-2 flex flex-col justify-center shrink-0 py-[4px] pl-3`}>
+                          <span className="text-[11px] leading-tight font-normal" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{row.k}</span>
+                          <span className={`text-[8.5px] leading-tight text-slate-800 mt-[2px] font-normal`}>{row.e}</span>
+                       </div>
+                       <div className="w-[8%] border-r border-black flex items-center justify-center shrink-0 py-[2px] font-bold text-[10px]">{row.ref}</div>
+                       <div className={`flex-1 flex items-center justify-end py-[2px] px-3 font-mono text-[11px] ${row.greyAmount ? 'bg-[#e5e5e5]' : 'bg-white'}`}>-</div>
+                    </div>
+                  ))}
+
+                  {/* Body Row G8 Complex */}
+                  <div className="flex min-h-[50px] text-[11px] bg-white">
+                      <div className="w-[75%] border-r border-black flex flex-col justify-start shrink-0 py-[6px] pl-3 pr-2">
+                          <span className="text-[11px] leading-tight font-normal mb-1" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំនួនទឹកប្រាក់ដែលត្រូវបូកក្នុងប្រាក់ចំណូលជាប់ពន្ធ (G8 = G2 - G7)</span>
+                          <span className="text-[8.5px] leading-tight text-slate-800 font-normal mb-3">Amount to be added to taxable income (G8 = G2 - G7)</span>
+                          
+                          <span className="text-[10px] leading-tight font-normal text-slate-900 mt-1" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>* បើ G7 តូចជាង G2, លម្អៀង (G8) ត្រូវបន្ថែមក្នុងប្រាក់ចំណូលជាប់ពន្ធដោយបំពេញក្នុងប្រអប់ (E39) និងប្រអប់ G10 នៃតារាង B.1 (តារាងតាមដានចំណាយការប្រាក់យោងទៅមុខ) នៅទំព័របន្ទាប់ (ទំព័រ១២)</span>
+                          <span className="text-[8px] leading-tight text-slate-700 font-normal mb-2 mt-1">* If G7 &lt; G2, the difference (G8) should be added back to the adjusted taxable income by filling in the box (E39) and box G10 of table B.1 at the next page (Page 12)</span>
+                          
+                          <span className="text-[10px] leading-tight font-normal text-slate-900 mt-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>* បើ G7 ធំជាង G2, ចំនួនលម្អៀងត្រូវបំពេញក្នុងប្រអប់ G9 នៃតារាង B.1 (តារាងតាមដានចំណាយការប្រាក់យោងទៅមុខ) នៅទំព័របន្ទាប់ (ទំព័រ១២)</span>
+                          <span className="text-[8px] leading-tight text-slate-700 font-normal mt-1 mb-1">* If G7 &gt; G2, the difference (G9) of table B.1 (Table of Interest Expense Carried Forward) in the next page (Page 12)</span>
+                      </div>
+                      <div className="w-[8%] border-r border-black flex items-center justify-center shrink-0 py-[2px] font-bold text-[10px]">G 8*</div>
+                      <div className="flex-1 flex items-end justify-end py-3 px-3 font-mono text-[11px] bg-white">-</div>
+                  </div>
+               </div>
+
+               {/* Page Number absolute bottom right text */}
+               <div className="w-full flex justify-end font-bold pt-2 gap-[6px] items-center text-black">
+                   <svg width="6" height="10" viewBox="0 0 10 16" fill="black"><path d="M0 0 L10 8 L0 16 Z" /></svg>
+                   <div className="flex flex-col items-center pl-1">
+                      <span style={{ fontFamily: '"Kantumruy Pro", sans-serif'}} className="leading-none text-[12px] translate-y-[2px]">ទំព័រទី</span>
+                      <span className="text-[9px] leading-none text-black tracking-widest uppercase mt-0">Page</span>
+                   </div>
+                   <span className="text-[19px] leading-none italic font-black translate-y-[1px]">11/16</span>
+               </div>
+            </div>
+
+            <div className="w-full text-center mt-12 mb-8 opacity-20 flex flex-col items-center print:hidden">
+              <div className="w-px h-16 bg-black mb-4"></div>
+              <span className="text-xl font-black tracking-[0.5em] uppercase text-black">
+                Page 11 Virtual Print
+              </span>
+              <span className="text-xs font-bold tracking-widest text-black mt-2">
+                C H A R I T A B L E &bull; &amp; &bull; I N T E R E S T
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* MIDDLE SIDE: GPT Result Landing Page (Totally Black, empty) */}
         {isAdmin && (
           <div className="w-[15%] overflow-y-auto relative bg-black custom-scrollbar print:hidden">
