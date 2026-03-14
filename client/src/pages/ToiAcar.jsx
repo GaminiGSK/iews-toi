@@ -5404,6 +5404,152 @@ const ToiAcar = ({ onBack, packageId, year }) => {
           </div>
         )}
 
+        {/* NEW LEFT SIDE: WHITE PREVIEW (PAGE 20 - ANNEX 3 CON'T) */}
+        {activeWorkspacePage === 20 && (
+          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
+            {/* Content for the white preview */}
+            <div className="w-full flex flex-col font-sans mb-12 text-black print:toi-form-scale print:mb-0 max-w-[950px] mx-auto">
+               
+               {/* -----------------HEADER----------------- */}
+               <div className="w-full relative shrink-0 pt-2 mb-2">
+                  
+                  {/* Annex 3 Con't Title Box (Top Right) */}
+                  <div className="absolute right-0 top-16">
+                     <div className="flex items-stretch h-[36px]">
+                        <div className="w-0 h-0 border-t-[36px] border-t-white border-r-[36px] border-r-[#e6e6e6]"></div>
+                        <div className="bg-[#e6e6e6] w-[160px] h-full flex flex-col justify-center items-center font-bold relative -left-[1px]">
+                           <span className="text-[12px] leading-none mt-1" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឧបសម្ព័ន្ធ ៣ (ត)</span>
+                           <span className="text-[10px] leading-tight mt-[1px]">Annex 3 (Con't)</span>
+                        </div>
+                     </div>
+                  </div>
+
+                  {/* Left Side Info Blocks */}
+                  <div className="flex flex-col items-start gap-2 w-[70%] mt-4">
+                    {/* TIN Box */}
+                    <div className="flex items-center gap-1 w-full justify-between">
+                       <div className="flex flex-col text-left w-[200px] shrink-0">
+                          <span className="font-bold text-[10px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
+                          <span className="text-[8px] font-bold leading-tight mt-0">Tax Identification Number (TIN) :</span>
+                       </div>
+                       <div className="flex gap-[4px] flex-1">
+                          {Array.from({ length: 4 }).map((_, i) => (
+                             <div key={i} className="w-[18px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[11px] text-black pt-[2px]">
+                               {filledData?.tin?.replace('-', '')[i] || ""}
+                             </div>
+                          ))}
+                          <span className="text-black font-black text-xl leading-none mx-[1px] relative top-[1px]">-</span>
+                          {Array.from({ length: 9 }).map((_, i) => (
+                             <div key={i} className="w-[18px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[11px] text-black pt-[2px]">
+                               {filledData?.tin?.replace('-', '')[i + 4] || ""}
+                             </div>
+                          ))}
+                       </div>
+                    </div>
+
+                    {/* Branch Name Box */}
+                    <div className="flex items-center gap-1 w-full justify-between mt-1">
+                       <div className="flex flex-col text-left w-[200px] shrink-0">
+                          <span className="font-bold text-[10px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឈ្មោះសាខាសហគ្រាស ៖</span>
+                          <span className="text-[8px] font-bold leading-tight mt-0">Name of Enterprise's Branch :</span>
+                       </div>
+                       <div className="flex-1 border border-black bg-white h-[26px] flex items-center px-2 text-[11px] uppercase">
+                          {""}
+                       </div>
+                    </div>
+                  </div>
+               </div>
+
+               {/* Inner Header Bar for Table */}
+               <div className="w-full flex justify-end h-[24px] bg-[#f0f0f0] opacity-80 border-t-0 mt-8 shrink-0 relative top-[2px]"></div>
+               
+               {/* -----------------TABLE----------------- */}
+               <div className="flex flex-col w-full shrink-0 relative z-10 z-[100] border-[2px] border-black bg-white">
+                 
+                 {/* Header Row */}
+                 <div className="flex border-b-[2px] border-black text-center items-stretch bg-white">
+                    <div className="w-[45%] pt-2 pb-1 border-r-[2px] border-black flex flex-col justify-center px-1 shrink-0 gap-[1px]">
+                       <span className="font-bold text-[10px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បរិយាយ</span>
+                       <span className="font-bold text-[9px] leading-tight">Description</span>
+                    </div>
+
+                    <div className="w-[7%] pt-2 pb-1 border-r-[2px] border-black flex flex-col justify-center px-1 shrink-0 gap-[1px]">
+                       <span className="font-bold text-[10px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>យោង</span>
+                       <span className="font-bold text-[9px] leading-tight">Ref.</span>
+                    </div>
+
+                    <div className="w-[24%] border-r-[2px] border-black flex flex-col justify-center shrink-0">
+                       <span className="font-bold text-[10px] leading-tight mt-1" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការិយបរិច្ឆេទនេះ (N)</span>
+                       <span className="font-bold text-[9px] leading-tight px-1 mb-1">Current Year (N)</span>
+                    </div>
+
+                    <div className="w-[24%] flex flex-col justify-center shrink-0">
+                       <span className="font-bold text-[10px] leading-tight mt-1" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការិយបរិច្ឆេទមុន (N-1)</span>
+                       <span className="font-bold text-[9px] leading-tight px-1 mb-1">Last Year (N-1)</span>
+                    </div>
+                 </div>
+
+                 {/* Rows Mapper */}
+                 {[
+                   { ref: 'H 0', titleKH: 'ចំណូលប្រតិបត្តិការ', titleEN: 'Operating Revenues', isBold: true },
+                   { ref: 'H 1', titleKH: 'ការលក់ផលិតផល', titleEN: 'Sales of products' },
+                   { ref: 'H 2', titleKH: 'ការលក់ទំនិញ', titleEN: 'Sales of goods' },
+                   { ref: 'H 3', titleKH: 'ការផ្គត់ផ្គង់សេវា', titleEN: 'Supplies of services' },
+                   { ref: 'H 4', titleKH: 'ចំណូលដទៃទៀត', titleEN: 'Other revenues' },
+                   { ref: 'H 5', titleKH: 'ចំណាយប្រតិបត្តិការ', titleEN: 'Operating Expenses', isBold: true },
+                   { ref: 'H 6', titleKH: 'ចំណាយបៀវត្ស', titleEN: 'Salary expenses' },
+                   { ref: 'H 7', titleKH: 'ចំណាយប្រេង ឧស្ម័ន អគ្គិសនី និងទឹក', titleEN: 'Fuel, gas, electricity and water expenses' },
+                   { ref: 'H 8', titleKH: 'ចំណាយធ្វើដំណើរ និងចំណាយស្នាក់នៅ', titleEN: 'Travelling and accommodation expenses' },
+                   { ref: 'H 9', titleKH: 'ចំណាយដឹកជញ្ជូន', titleEN: 'Transportation expenses' },
+                   { ref: 'H 10', titleKH: 'ចំណាយលើការជួល', titleEN: 'Rental expenses' },
+                   { ref: 'H 11', titleKH: 'ចំណាយលើការថែទាំ និងជួលជុល', titleEN: 'Repair and maintenance expenses' },
+                   { ref: 'H 12', titleKH: 'ចំណាយលើការកម្សាន្តសប្បាយ', titleEN: 'Entertainment expenses' },
+                   { ref: 'H 13', titleKH: 'ចំណាយកម្រៃជើងសារ ផ្សាយពាណិជ្ជកម្ម និងចំណាយការលក់', titleEN: 'Commission, advertising, and selling expenses' },
+                   { ref: 'H 14', titleKH: 'ចំណាយសេវាគ្រប់គ្រង ពិគ្រោះយោបល់ បច្ចេកទេស និងសេវាស្រដៀងគ្នាក្រៅពីនេះ', titleEN: 'Management, consulting, technical, and other similar service expenses' },
+                   { ref: 'H 15', titleKH: 'ចំណាយលើបំណុលទាមិនបាន', titleEN: 'Written-off bad debt expenses' },
+                   { ref: 'H 16', titleKH: 'ចំណាយផ្សេងៗ', titleEN: 'Other expenses' },
+                 ].map((row, index) => (
+                    <div key={index} className="flex border-b border-black text-black items-stretch hover:bg-[#f9f9f9] transition-colors h-[32px] sm:h-[36px]">
+                       <div className="w-[45%] border-r-[2px] border-black flex flex-col justify-center px-2 py-1 shrink-0 gap-[1px]">
+                          <span className={`text-[10.5px] leading-tight ${row.isBold ? 'font-black' : 'font-bold'}`} style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                            {row.titleKH}
+                          </span>
+                          <span className={`text-[8.5px] leading-tight ${row.isBold ? 'font-black' : 'font-bold'}`}>
+                            {row.titleEN}
+                          </span>
+                       </div>
+                       
+                       <div className="w-[7%] border-r-[2px] border-black flex items-center justify-center font-bold text-[10px] shrink-0">
+                          {row.ref}
+                       </div>
+                       
+                       <div className="w-[24%] border-r-[2px] border-black flex justify-end items-center px-4 font-mono text-[11px] font-bold">
+                          -
+                       </div>
+                       
+                       <div className="w-[24%] flex justify-end items-center px-4 font-mono text-[11px] font-bold">
+                          -
+                       </div>
+                    </div>
+                 ))}
+
+               </div>
+
+            </div>
+
+            <div className="w-full text-center mt-6 mb-8 opacity-20 flex flex-col items-center print:hidden print:w-0 print:h-0 overflow-hidden shrink-0">
+              <div className="w-px h-16 bg-black mb-4"></div>
+              <span className="text-xl font-black tracking-[0.5em] uppercase text-black">
+                Page 20 Virtual Print
+              </span>
+              <span className="text-xs font-bold tracking-widest text-black mt-2">
+                A N N E X &bull; 3 &bull; (CON'T)
+              </span>
+            </div>
+
+          </div>
+        )}
+
         {/* MIDDLE SIDE: GPT Result Landing Page (Totally Black, empty) */}
         {isAdmin && (
           <div className="w-[15%] overflow-y-auto relative bg-black custom-scrollbar print:hidden">
