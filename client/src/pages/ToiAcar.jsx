@@ -269,8 +269,18 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   </div>
                 </div>
 
-                {/* CENTER: NO LOGO */}
-                <div className="w-[10%]"></div>
+                {/* CENTER: GDT EMBLEM / LOGO */}
+                <div className="flex flex-col items-center w-[10%] justify-center pt-4">
+                  <img
+                    src="/assets/gdt_logo.jpg"
+                    alt="GDT Emblem"
+                    className="w-[120px] h-[120px] object-contain"
+                    onError={(e) => {
+                      // Fallback to existing seal PNG if JPG not found
+                      e.target.src = '/assets/gdt_seal.png';
+                    }}
+                  />
+                </div>
 
                 {/* RIGHT: KINGDOM */}
                 <div className="flex flex-col items-center pt-24 w-[45%] pr-12">
