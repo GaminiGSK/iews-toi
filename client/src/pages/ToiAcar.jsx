@@ -2914,6 +2914,277 @@ const ToiAcar = ({ onBack, packageId, year }) => {
           </div>
         )}
 
+        {/* NEW LEFT SIDE: WHITE PREVIEW (PAGE 12 - INTEREST EXPENSE & LOSSES CARRIED FORWARD) */}
+        {activeWorkspacePage === 12 && (
+          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
+            {/* Content for the white preview */}
+            <div className="w-full flex flex-col font-sans mb-12 text-black print:toi-form-scale print:mb-0">
+               {/* -----------------HEADER----------------- */}
+               <div className="w-full relative mb-10 text-[10px] sm:text-[11px] leading-tight pt-4 font-bold flex justify-between items-start">
+                 <div className="flex flex-col items-start gap-12 w-[45%]">
+                   <span className="font-extrabold text-[16px] tracking-wide font-serif">TOI 01 / VIII</span>
+                 </div>
+
+                 {/* Top Right Box - Tax Year */}
+                 <div className="flex flex-col items-end">
+                    <div className="flex items-center gap-2 mb-2 mt-4 border-b-2 border-transparent relative right-[6px]">
+                       <div className="w-0 h-0 border-t-[5px] border-t-transparent border-l-[10px] border-l-black border-b-[5px] border-b-transparent"></div>
+                       <div className="flex flex-col text-right">
+                          <span className="font-bold text-[10px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំជាប់ពន្ធ</span>
+                          <span className="text-[8px] font-bold leading-tight mt-0">Tax Year</span>
+                       </div>
+                       <div className="flex gap-[4px] ml-1">
+                          {Array.from({ length: 4 }).map((_, i) => (
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black pt-1">
+                               {selectedYear[i] || ""}
+                             </div>
+                          ))}
+                       </div>
+                    </div>
+                 </div>
+               </div>
+               
+               {/* -----------------TIN----------------- */}
+               <div className="flex w-full mb-8 mt-2">
+                 <div className="flex-1"></div>
+                 <div className="flex items-start gap-2">
+                   <div className="mt-2 w-0 h-0 border-t-[7px] border-t-transparent border-l-[14px] border-l-black border-b-[7px] border-b-transparent"></div>
+                   <div className="flex flex-col flex-end">
+                     <div className="flex items-center gap-[6px]">
+                        <span className="font-bold text-[11px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
+                        <div className="flex gap-[4px]">
+                           {Array.from({ length: 4 }).map((_, i) => (
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{filledData?.tin?.replace('-', '')[i] || ""}</div>
+                           ))}
+                           <span className="text-black font-black text-xl leading-none mx-0 relative top-[1px]">-</span>
+                           {Array.from({ length: 9 }).map((_, i) => (
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{filledData?.tin?.replace('-', '')[i + 4] || ""}</div>
+                           ))}
+                        </div>
+                     </div>
+                     <span className="font-normal text-[9px] mt-[1px] text-left">Tax Identification Number (TIN) :</span>
+                   </div>
+                 </div>
+               </div>
+
+               {/* -----------------SECTION B.1: Table of Interest Expenses Carried Forward----------------- */}
+               <div className="mb-1 text-[11px] font-bold leading-tight mt-2">
+                  <span style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ខ.១ តារាងតាមដានចំណាយការប្រាក់យោងទៅមុខ</span><br/>
+                  <span>B.1 Table of Interest Expenses Carried Forward</span>
+               </div>
+               <div className="flex flex-col border-[2px] border-black bg-white mb-2">
+                  {/* Header Row B.1 */}
+                  <div className="flex border-b border-black text-center items-stretch bg-white h-[60px]">
+                    <div className="w-[12%] py-2 border-r border-black flex flex-col items-center justify-center shrink-0 px-1 text-center text-balance">
+                       <span className="font-bold text-[10px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការិយបរិច្ឆេទ</span>
+                       <span className="font-bold text-[8.5px] mt-[2px] leading-tight">Period</span>
+                    </div>
+                    <div className="w-[22%] border-r border-black flex flex-col shrink-0">
+                       <div className="flex-1 py-1 px-1 flex flex-col justify-center items-center text-center text-balance overflow-hidden">
+                          <span className="font-bold text-[8.5px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណាយការប្រាក់អតិបរមាដែលអាច<br/>កាត់កងជាមួយការប្រាក់យោងពីឆ្នាំមុន</span>
+                          <span className="font-bold text-[6.5px] mt-[2px] leading-tight">Maximum Interest Expenses can be<br/>Deductible with Interest Brought Forward</span>
+                       </div>
+                       <div className="border-t border-black bg-white py-[2px] text-[10px] font-bold h-[20px] flex items-center justify-center">(G9)</div>
+                    </div>
+                    <div className="w-[16.5%] border-r border-black flex flex-col shrink-0">
+                       <div className="flex-1 py-1 px-1 flex flex-col justify-center items-center text-center text-balance overflow-hidden">
+                          <span className="font-bold text-[8.5px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>និយតកម្មការប្រាក់មិនអាច<br/>កាត់កងក្នុងការិយបរិច្ឆេទ</span>
+                          <span className="font-bold text-[6.5px] mt-[2px] leading-tight">Adjusted Not-Allowed Interest<br/>During the Period</span>
+                       </div>
+                       <div className="border-t border-black bg-white py-[2px] text-[10px] font-bold h-[20px] flex items-center justify-center">(G10)</div>
+                    </div>
+                    <div className="w-[16.5%] border-r border-black flex flex-col shrink-0">
+                       <div className="flex-1 py-1 px-1 flex flex-col justify-center items-center text-center text-balance overflow-hidden">
+                          <span className="font-bold text-[8.5px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការប្រាក់អនុញ្ញាតប្រើប្រាស់<br/>កាត់កងក្នុងការិយបរិច្ឆេទ</span>
+                          <span className="font-bold text-[6.5px] mt-[2px] leading-tight">Interest Allowed During the Period</span>
+                       </div>
+                       <div className="border-t border-black bg-white py-[2px] text-[10px] font-bold h-[20px] flex items-center justify-center">(G11)*</div>
+                    </div>
+                    <div className="w-[16.5%] border-r border-black flex flex-col shrink-0">
+                       <div className="flex-1 py-1 px-1 flex flex-col justify-center items-center text-center text-balance overflow-hidden">
+                          <span className="font-bold text-[8.5px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការប្រាក់អនុញ្ញាតប្រើប្រាស់<br/>កាត់កងបូកសរុប</span>
+                          <span className="font-bold text-[6.5px] mt-[2px] leading-tight">Accumulated Interest Allowed</span>
+                       </div>
+                       <div className="border-t border-black bg-white py-[2px] text-[10px] font-bold h-[20px] flex items-center justify-center">(G12)</div>
+                    </div>
+                    <div className="flex-1 flex flex-col shrink-0">
+                       <div className="flex-1 py-1 px-1 flex flex-col justify-center items-center text-center text-balance overflow-hidden">
+                          <span className="font-bold text-[8.5px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការប្រាក់នៅសល់អនុញ្ញាត<br/>ប្រើប្រាស់យោងទៅមុខ</span>
+                          <span className="font-bold text-[6.5px] mt-[2px] leading-tight">Interest Carried Forward</span>
+                       </div>
+                       <div className="border-t border-black bg-white py-[2px] text-[10px] font-bold h-[20px] flex items-center justify-center">(G13) = (G10) - (G12)</div>
+                    </div>
+                  </div>
+
+                  {/* Body Rows N-5 -> N container (to overlay the X mark properly) */}
+                  <div className="relative w-full flex flex-col">
+                     {/* Overlay Cross for G9 (N-5 to N-1) */}
+                     <div className="absolute top-0 left-[12%] w-[22%] h-[150px] bg-[#e5e5e5] border-r border-black pointer-events-none z-10 overflow-hidden">
+                        <svg className="absolute w-[100%] h-[100%] stroke-black stroke-[1.5px] opacity-70" preserveAspectRatio="none" viewBox="0 0 100 100">
+                           <line x1="0" y1="0" x2="100" y2="100" />
+                           <line x1="100" y1="0" x2="0" y2="100" />
+                        </svg>
+                     </div>
+
+                     {/* Rows */}
+                     {[
+                        { y: 'N-5' }, { y: 'N-4' }, { y: 'N-3' }, { y: 'N-2' }, { y: 'N-1' }
+                     ].map((row, i) => (
+                        <div key={row.y} className="flex border-b border-black h-[30px] bg-white">
+                           <div className="w-[12%] border-r border-black flex flex-col items-center justify-center shrink-0">
+                              <span className="font-bold text-[10px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំ {row.y}</span>
+                              <span className="text-[8px] font-bold leading-tight uppercase scale-90">Year {row.y}</span>
+                           </div>
+                           <div className="w-[22%] border-r border-black"></div> {/* Empty under overlay */}
+                           <div className="w-[16.5%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]"></div>
+                           <div className="w-[16.5%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]"></div>
+                           <div className="w-[16.5%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">-</div>
+                           <div className="flex-1 flex items-center justify-end px-2 font-mono text-[10px]">-</div>
+                        </div>
+                     ))}
+                     
+                     {/* Year N (Last Row without Cross on G9) */}
+                     <div className="flex bg-white h-[30px]">
+                        <div className="w-[12%] border-r border-black flex flex-col items-center justify-center shrink-0">
+                           <span className="font-bold text-[10px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំ N</span>
+                           <span className="text-[8px] font-bold leading-tight uppercase scale-90">Year N</span>
+                        </div>
+                        <div className="w-[22%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]"></div>
+                        <div className="w-[16.5%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]"></div>
+                        <div className="w-[16.5%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">-</div>
+                        <div className="w-[16.5%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]"></div>
+                        <div className="flex-1 flex items-center justify-end px-2 font-mono text-[10px]"></div>
+                     </div>
+                  </div>
+               </div>
+
+               {/* Subtext B.1 */}
+               <div className="flex flex-col mb-8 text-[9px] bg-white leading-tight">
+                  <div className="flex items-start gap-1">
+                    <span>*</span>
+                    <div className="flex flex-col">
+                       <span className="text-slate-900 font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សរុបចំនួនទឹកប្រាក់ក្នុងជួរឈរ (G11) ត្រូវយកទៅដកចេញពីប្រាក់ចំណូលជាប់ពន្ធដោយបំពេញក្នុងប្រអប់ (E39)</span>
+                       <span className="text-slate-700">* Sum amount of column (G11) to be deducted from the adjusted taxable income by filling in the box (E39)</span>
+                    </div>
+                  </div>
+               </div>
+
+               {/* -----------------SECTION C: Table of Taxable Accumulated Losses Carried Forward----------------- */}
+               <div className="mb-1 text-[11px] font-bold leading-tight mt-2">
+                  <span style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>គ. តារាងតាមដានលទ្ធផលខាតកើនក្នុងគ្រាយោងទៅមុខ</span><br/>
+                  <span>C. Table of Taxable Accumulated Losses Carried Forward</span>
+               </div>
+               <div className="flex flex-col border-[2px] border-black bg-white mb-2">
+                  {/* Header Row C */}
+                  <div className="flex border-b border-black text-center items-stretch bg-white h-[60px]">
+                    <div className="w-[12%] py-2 border-r border-black flex flex-col items-center justify-center shrink-0 px-1 text-center text-balance">
+                       <span className="font-bold text-[10px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ការិយបរិច្ឆេទ</span>
+                       <span className="font-bold text-[8.5px] mt-[2px] leading-tight">Period</span>
+                    </div>
+                    <div className="w-[17.6%] border-r border-black flex flex-col shrink-0">
+                       <div className="flex-1 py-1 px-1 flex flex-col justify-center items-center text-center text-balance overflow-hidden">
+                          <span className="font-bold text-[8.5px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លទ្ធផលចំណេញសារពើពន្ធ</span>
+                          <span className="font-bold text-[6.5px] mt-[4px] leading-tight">Taxable Profit During the Period</span>
+                       </div>
+                       <div className="border-t border-black bg-white py-[2px] text-[10px] font-bold h-[20px] flex items-center justify-center">(1)</div>
+                    </div>
+                    <div className="w-[17.6%] border-r border-black flex flex-col shrink-0">
+                       <div className="flex-1 py-1 px-1 flex flex-col justify-center items-center text-center text-balance overflow-hidden">
+                          <span className="font-bold text-[8.5px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លទ្ធផលខាតសារពើពន្ធ<br/>ក្នុងការិយបរិច្ឆេទ</span>
+                          <span className="font-bold text-[6.5px] mt-[4px] leading-tight">Taxable Loss During the Period</span>
+                       </div>
+                       <div className="border-t border-black bg-white py-[2px] text-[10px] font-bold h-[20px] flex items-center justify-center">(2)</div>
+                    </div>
+                    <div className="w-[17.6%] border-r border-black flex flex-col shrink-0">
+                       <div className="flex-1 py-1 px-1 flex flex-col justify-center items-center text-center text-balance overflow-hidden">
+                          <span className="font-bold text-[8.5px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ខាតអនុញ្ញាតប្រើប្រាស់<br/>កាត់កងក្នុងការិយបរិច្ឆេទ</span>
+                          <span className="font-bold text-[6.5px] mt-[4px] leading-tight">Loss Allowance During the Period</span>
+                       </div>
+                       <div className="border-t border-black bg-white py-[2px] text-[10px] font-bold h-[20px] flex items-center justify-center">(3)</div>
+                    </div>
+                    <div className="w-[17.6%] border-r border-black flex flex-col shrink-0">
+                       <div className="flex-1 py-1 px-1 flex flex-col justify-center items-center text-center text-balance overflow-hidden">
+                          <span className="font-bold text-[8.5px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ខាតអនុញ្ញាតប្រើប្រាស់<br/>កាត់កងបូកសរុប</span>
+                          <span className="font-bold text-[6.5px] mt-[4px] leading-tight">Accumulated Losses Allowance</span>
+                       </div>
+                       <div className="border-t border-black bg-white py-[2px] text-[10px] font-bold h-[20px] flex items-center justify-center">(4)*</div>
+                    </div>
+                    <div className="flex-1 flex flex-col shrink-0">
+                       <div className="flex-1 py-1 px-1 flex flex-col justify-center items-center text-center text-balance overflow-hidden">
+                          <span className="font-bold text-[8.5px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ខាតនៅសល់អនុញ្ញាតប្រើប្រាស់<br/>យោងទៅមុខ</span>
+                          <span className="font-bold text-[6.5px] mt-[4px] leading-tight">Losses Carried Forward</span>
+                       </div>
+                       <div className="border-t border-black bg-white py-[2px] text-[10px] font-bold h-[20px] flex items-center justify-center">(5) = (2) - (4)</div>
+                    </div>
+                  </div>
+
+                  {/* Body Rows C: N-5 -> N */}
+                  {[
+                     { y: 'N-5' }, { y: 'N-4' }, { y: 'N-3' }, { y: 'N-2' }, { y: 'N-1' }, { y: 'N**' }
+                  ].map((row, i) => (
+                     <div key={row.y} className={`flex ${i === 5 ? '' : 'border-b'} border-black h-[30px] bg-white`}>
+                        <div className="w-[12%] border-r border-black flex flex-col items-center justify-center shrink-0">
+                           <span className="font-bold text-[10px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឆ្នាំ {row.y}</span>
+                           <span className="text-[8px] font-bold leading-tight uppercase scale-90">Year {row.y.replace('**', '')}{row.y.includes('**') ? '**' : ''}</span>
+                        </div>
+                        <div className="w-[17.6%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]"></div>
+                        <div className="w-[17.6%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">{row.y === 'N-4' || row.y === 'N-3' || row.y === 'N-1' ? '-' : ''}</div>
+                        <div className="w-[17.6%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">{row.y === 'N-4' ? '-' : ''}</div>
+                        <div className="w-[17.6%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">{row.y === 'N-4' ? '-' : ''}</div>
+                        <div className="flex-1 flex items-center justify-end px-2 font-mono text-[10px]">{row.y === 'N-5' ? '' : '-'}</div>
+                     </div>
+                  ))}
+               </div>
+
+               {/* Subtext C */}
+               <div className="flex flex-col mb-4 text-[9px] bg-white leading-tight mt-1 gap-2">
+                  <div className="flex items-start">
+                    <span className="text-slate-900 font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                      (4)* គឺជាចំនួនទឹកប្រាក់ខាតសារពើពន្ធបូកសរុបអនុញ្ញាតពីឆ្នាំកន្លងមកនិងក្នុងឆ្នាំចរន្ត <span className="font-normal text-slate-800 ml-1">It is an accumulated taxable loss allowance from previous periods and current period.</span>
+                    </span>
+                  </div>
+                  <div className="flex flex-col mb-1">
+                    <span className="text-slate-900 font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                      ** ឆ្នាំ N គឺជាឆ្នាំចរន្ត <span className="font-normal text-slate-800 ml-1">Year N is the current year.</span>
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-[6px] text-justify tracking-tight pr-4">
+                    <span className="text-slate-900 font-normal leading-[1.35]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                      ក្នុងករណីដែលមានការខាតបង់នៅក្នុងឆ្នាំជាប់ពន្ធណាមួយ ការខាតបង់នោះត្រូវបានចាត់ទុកជាបន្ទុកសម្រាប់ឆ្នាំជាប់ពន្ធបន្ទាប់ ហើយត្រូវកាត់កងចេញពីប្រាក់ចំណេញសម្រេចបាននៅក្នុងឆ្នាំជាប់ពន្ធបន្ទាប់នោះ ។
+                      បើប្រាក់ចំណេញនេះមិនគ្រប់គ្រាន់សម្រាប់ទូទាត់ជាស្ថាពរទេ ចំណែកនៃខាតបង់ដែលនៅសេសសល់ត្រូវទាញយកទៅឆ្នាំជាប់ពន្ធបន្ទាប់ រហូតដល់ឆ្នាំជាប់ពន្ធទី៥ ។ នៅពេលដែលការខាតបង់
+                      មានលើសពីមួយឆ្នាំ ត្រូវអនុវត្តចំពោះការខាតបង់ទាំងឡាយតាមលំដាប់ដែលការខាតបង់បានកើតឡើង ដូចមានចែងក្នុងមាត្រា ១៧ នៃច្បាប់ស្តីពីសារពើពន្ធ និងប្រការ ៥៥ នៃប្រកាសស្តីពីពន្ធលើប្រាក់ចំណូល ។
+                    </span>
+                    <span className="text-slate-800 leading-[1.3] text-[8.5px]">
+                      In case of any loss in any tax year, this loss is considered as a charge for the following tax year and shall be deducted from the profit realized in that following year.
+                      If this profit is not sufficient to definitively settle it, the remaining part of the loss is carried over successively to following tax years until the fifth tax year as stated in article 17 of
+                      Law on Taxation and Praka 55 of Prakas on Income Tax.
+                    </span>
+                  </div>
+               </div>
+
+               {/* Page Number absolute bottom right text */}
+               <div className="w-full flex justify-end font-bold pt-2 gap-[6px] items-center text-black">
+                   <svg width="6" height="10" viewBox="0 0 10 16" fill="black"><path d="M0 0 L10 8 L0 16 Z" /></svg>
+                   <div className="flex flex-col items-center pl-1">
+                      <span style={{ fontFamily: '"Kantumruy Pro", sans-serif'}} className="leading-none text-[12px] translate-y-[2px]">ទំព័រទី</span>
+                      <span className="text-[9px] leading-none text-black tracking-widest uppercase mt-0">Page</span>
+                   </div>
+                   <span className="text-[19px] leading-none italic font-black translate-y-[1px]">12/16</span>
+               </div>
+            </div>
+
+            <div className="w-full text-center mt-12 mb-8 opacity-20 flex flex-col items-center print:hidden">
+              <div className="w-px h-16 bg-black mb-4"></div>
+              <span className="text-xl font-black tracking-[0.5em] uppercase text-black">
+                Page 12 Virtual Print
+              </span>
+              <span className="text-xs font-bold tracking-widest text-black mt-2">
+                F O R W A R D S &bull; &amp; &bull; L O S S E S
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* MIDDLE SIDE: GPT Result Landing Page (Totally Black, empty) */}
         {isAdmin && (
           <div className="w-[15%] overflow-y-auto relative bg-black custom-scrollbar print:hidden">
