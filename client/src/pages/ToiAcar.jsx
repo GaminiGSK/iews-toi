@@ -298,7 +298,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
               </div>
 
               {/* FORM TITLE */}
-              <div className="flex justify-center items-end w-full mb-8 pt-10">
+              <div className="flex justify-center items-end w-full mb-3 pt-2">
                 <div className="flex flex-col items-center justify-center">
                   <h1
                     className="text-[28px] font-normal text-black leading-none"
@@ -672,7 +672,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     </div>
                   
                   {/* Bottom Grid Rows */}
-                  <div className="flex flex-1 py-[6px] min-h-[140px]">
+                  <div className="flex flex-1 py-[4px] min-h-[100px]">
                     {/* Column 1 */}
                     <div className="w-[36%] shrink-0 pl-[6px] pr-2 flex flex-col gap-[7px]">
                       {[
