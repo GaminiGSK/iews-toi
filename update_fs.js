@@ -1,366 +1,33 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { FileText, Download, TrendingUp, AlertCircle, RefreshCw, Bot, ArrowLeft, Calendar, Layout } from 'lucide-react';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+const fs = require('fs');
+const file = 'client/src/pages/FinancialStatements.jsx';
+let content = fs.readFileSync(file, 'utf8');
 
-const FinancialStatements = ({ onBack }) => {
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [viewMode, setViewMode] = useState('annual'); // 'annual' | 'monthly'
-    const [companyNameEn, setCompanyNameEn] = useState('Your Company');
-    const [companyNameKh, setCompanyNameKh] = useState('');
-    const [inUSD, setInUSD] = useState(false);
-    const [report, setReport] = useState([]); // Annual Data
-    const [monthlyData, setMonthlyData] = useState({ pl: [], bs: [] }); // Monthly Data
-    const [activeTab, setActiveTab] = useState('pl'); // 'pl' | 'bs' | 'cf' | 'sce' | 'notes'
+// 1. Add print:hidden to top tools
+content = content.replace('overflow-x-auto">', 'overflow-x-auto print:hidden">');
+content = content.replace('shadow-md">', 'shadow-md print:hidden">');
+content = content.replace('flex gap-2 mb-0">', 'flex gap-2 mb-0 print:hidden">');
 
-    useEffect(() => {
-        if (viewMode === 'annual') {
-            fetchReport();
-        } else {
-            fetchMonthlyReport();
-        }
-    }, [viewMode]);
-
-    const fetchReport = async () => {
-        try {
-            setLoading(true);
-            const token = localStorage.getItem('token');
-            const res = await axios.get('/api/company/trial-balance', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            setReport(res.data.report || []);
-            if (res.data.companyNameEn) setCompanyNameEn(res.data.companyNameEn);
-            if (res.data.companyNameKh) setCompanyNameKh(res.data.companyNameKh);
-        } catch (err) {
-            setError("Failed to load annual financial data.");
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchMonthlyReport = async () => {
-        try {
-            setLoading(true);
-            const token = localStorage.getItem('token');
-            const res = await axios.get('/api/company/financials-monthly', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            setMonthlyData(res.data || { pl: [], bs: [] });
-            if (res.data.companyNameEn) setCompanyNameEn(res.data.companyNameEn);
-            if (res.data.companyNameKh) setCompanyNameKh(res.data.companyNameKh);
-        } catch (err) {
-            setError("Failed to load monthly financial data.");
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // --- Calculation Logic (Annual) ---
-    const exchangeRate = 4050; // Standard yearly KHR to USD exchange rate
-    const scale = inUSD ? exchangeRate : 1;
-
-    const getCr = (r) => (r.crKHR || 0) / scale;
-    const getDr = (r) => (r.drKHR || 0) / scale;
-    const getPriorCr = (r) => (r.priorCrKHR || 0) / scale;
-    const getPriorDr = (r) => (r.priorDrKHR || 0) / scale;
-
-    // 1. Profit & Loss Data (Annual)
-    const revenue = report.filter(r => r.code.startsWith('4'));
-    const costOfSales = report.filter(r => r.code.startsWith('5'));
-    const expenses = report.filter(r => ['6', '7', '8', '9'].some(p => r.code.startsWith(p)));
-
-    const totalRev = revenue.reduce((sum, r) => sum + getCr(r), 0);
-    const totalCOS = costOfSales.reduce((sum, r) => sum + getDr(r), 0);
-    const grossProfit = totalRev - totalCOS;
-    const totalExp = expenses.reduce((sum, r) => sum + getDr(r), 0);
-    const netProfit = grossProfit - totalExp;
-
-    // 2. Balance Sheet Data (Annual)
-    const assets = report.filter(r => r.code.startsWith('1'));
-    const liabilities = report.filter(r => r.code.startsWith('2'));
-    const equity = report.filter(r => r.code.startsWith('3'));
-
-    const totalAssets = assets.reduce((sum, r) => sum + (getDr(r) - getCr(r)), 0);
-    const totalLiabs = liabilities.reduce((sum, r) => sum + (getCr(r) - getDr(r)), 0);
-    const totalEquity = equity.reduce((sum, r) => sum + (getCr(r) - getDr(r)), 0);
-
-    const checkDiff = totalAssets - (totalLiabs + totalEquity + netProfit);
-
-    // --- Calculation Logic (Monthly) ---
-    // Helper to sum a row of monthly data (index 1-12)
-    const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-    // Group Monthly Data
-    const monthlyPL = monthlyData.pl || [];
-    const monthlyBS = monthlyData.bs || [];
-
-    const mRevenue = monthlyPL.filter(r => r.code.startsWith('4'));
-    const mCOS = monthlyPL.filter(r => r.code.startsWith('5'));
-    const mExpenses = monthlyPL.filter(r => ['6', '7', '8', '9'].some(p => r.code.startsWith(p)));
-
-    const mAssets = monthlyBS.filter(r => r.code.startsWith('1'));
-    const mLiabs = monthlyBS.filter(r => r.code.startsWith('2'));
-    const mEquity = monthlyBS.filter(r => r.code.startsWith('3'));
-
-    // Helpers to Sum Monthly Arrays [0..12]
-    const sumMonthlyRows = (rows) => {
-        const totals = Array(13).fill(0);
-        rows.forEach(r => {
-            for (let i = 1; i <= 12; i++) totals[i] += r.months[i];
-            totals[0] += r.months[0];
-        });
-        return totals;
-    };
-
-    const mTotalRev = sumMonthlyRows(mRevenue);
-    const mTotalCOS = sumMonthlyRows(mCOS);
-    const mGrossProfit = mTotalRev.map((v, i) => v - mTotalCOS[i]);
-    const mTotalExp = sumMonthlyRows(mExpenses);
-    const mNetProfit = mGrossProfit.map((v, i) => v - mTotalExp[i]);
-
-    // Helpers to find specific account values for Cash Flow
-    const findBalance = (keywords) => {
-        const matches = report.filter(r => keywords.some(k => (r.description?.toLowerCase() || '').includes(k.toLowerCase())));
-        return matches.reduce((sum, r) => sum + (getDr(r) - getCr(r)), 0);
-    };
-
-    const deprExp = findBalance(['depreciation', 'amortization']);
-    const intExp = findBalance(['interest expense', 'finance cost']);
-    const intInc = -findBalance(['interest income', 'investment income']); // Credit balance, so negate for display
-
-    // Working Capital Changes (Simplified: Diff between current accounts if they exist)
-    const receivables = findBalance(['receivable', 'debtor']);
-    const payables = -findBalance(['payable', 'creditor']); // Credit balance
-    const inventory = findBalance(['inventory', 'stock']);
-
-    // Helpers for Render
-    const renderRow = (label, valueCY, valuePY = 0, bold = false, indent = false) => (
-        <tr className={`border-b border-gray-100 hover:bg-gray-50 ${bold ? 'font-bold bg-gray-50' : ''}`}>
-            <td className={`p-3 ${indent ? 'pl-8' : 'pl-4'} text-gray-800 uppercase`} style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{label}</td>
-            <td className="p-3 text-center font-mono text-gray-500 w-16 text-xs border-l border-gray-100">-</td>
-            <td className="p-3 text-right font-mono w-40 border-l border-gray-200 text-gray-900">
-                {valueCY !== 0 ? valueCY.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '-'}
-            </td>
-            <td className="p-3 text-right font-mono w-40 border-l border-gray-200 text-gray-500">
-                {valuePY !== 0 ? valuePY.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '-'}
-            </td>
-        </tr>
-    );
-
-    const renderMonthRow = (label, months, bold = false, indent = false) => (
-        <tr className={`border-b border-gray-100 hover:bg-gray-50 ${bold ? 'font-bold bg-gray-50' : ''}`}>
-            <td className={`p-3 ${indent ? 'pl-8' : 'pl-4'} text-gray-800 sticky left-0 bg-white min-w-[200px] border-r border-gray-200 z-10 uppercase`} style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{label}</td>
-            {MONTHS.map((_, idx) => {
-                const val = months[idx + 1] / scale;
-                return (
-                    <td key={idx} className="p-3 text-right font-mono text-gray-900 min-w-[100px]">
-                        {val !== 0 ? val.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '-'}
-                    </td>
-                );
-            })}
-            <td className="p-3 text-right font-mono text-gray-900 font-bold bg-gray-50 border-l border-gray-200 min-w-[120px]">
-                {months[0] / scale !== 0 ? (months[0] / scale).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '-'}
-            </td>
-        </tr>
-    );
-
-    const renderSectionHeader = (title, monthly = false) => (
-        <tr className="bg-blue-50/50 border-b border-blue-100">
-            <td colSpan={monthly ? 14 : 4} className="p-3 pl-4 font-bold text-blue-800 uppercase text-xs tracking-wider sticky left-0 z-10" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{title}</td>
-        </tr>
-    );
-
-    const handleDownloadPDF = () => {
-        const doc = new jsPDF(viewMode === 'monthly' ? 'l' : 'p');
-        const titleMap = {
-            pl: "STATEMENT OF PROFIT OR LOSS",
-            bs: "STATEMENT OF FINANCIAL POSITION",
-            cf: "STATEMENT OF CASH FLOWS",
-            sce: "STATEMENT OF CHANGES IN EQUITY",
-            notes: "NOTES TO THE FINANCIAL STATEMENTS"
-        };
-
-        // Header
-        doc.setFontSize(16);
-        doc.setFont('serif', 'bold');
-        doc.text(companyNameEn.toUpperCase(), 14, 20);
-        doc.setFontSize(12);
-        doc.text(titleMap[activeTab] || "FINANCIAL REPORT", 14, 28);
-        doc.setFontSize(10);
-        doc.setFont('serif', 'normal');
-        doc.text(`For the year ended 31 December ${new Date().getFullYear()}`, 14, 34);
-        doc.text(`Expressed in ${inUSD ? "United States Dollar (USD)" : "Cambodian Riel (KHR)"}`, 14, 40);
-
-        // Content
-        if (activeTab === 'notes') {
-            doc.setFontSize(10);
-            const notesText = `
-                1. BASIS OF PREPARATION
-                These financial statements have been prepared in accordance with International Financial Reporting Standards (IFRS) as issued by the International Accounting Standards Board (IASB).
-                
-                2. SIGNIFICANT ACCOUNTING POLICIES
-                Revenue is recognized when control of goods or services is transferred to the customer. PPE is stated at cost less accumulated depreciation.
-            `;
-            const splitText = doc.splitTextToSize(notesText, 180);
-            doc.text(splitText, 14, 50);
-        } else {
-            doc.autoTable({
-                html: 'table',
-                startY: 50,
-                styles: { font: 'serif', fontSize: 9 },
-                headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-                alternateRowStyles: { fillColor: [245, 245, 245] },
-                margin: { top: 50 }
-            });
-        }
-
-        doc.save(`${companyNameEn}_${activeTab}_${viewMode}.pdf`);
-    };
-
-    if (loading) return (
-        <div className="flex flex-col items-center justify-center h-full text-gray-500 animate-pulse">
-            <RefreshCw className="animate-spin mb-2" size={32} />
-            <p>Generating {viewMode} report...</p>
-        </div>
-    );
-
-    return (
-        <div className="flex flex-col h-full bg-gray-50/50 animate-fade-in text-gray-900">
-            {/* Header / Toolbar - Left Aligned */}
-            <div className="bg-white border-b border-gray-200 px-8 py-5 flex items-center gap-8 shadow-sm overflow-x-auto print:hidden">
-                <div className="flex items-center gap-4 shrink-0">
-                    <button onClick={onBack} className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-sm font-medium transition shrink-0 shadow-md print:hidden">
-                        <ArrowLeft size={20} />
-                    </button>
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900 font-serif">Financial Statements</h1>
-                        <p className="text-sm text-gray-500 flex items-center gap-2">
-                            <Bot size={14} className="text-blue-500" />
-                            Generated by Blue Agent (CIFRS Compliant)
-                        </p>
-                    </div>
-                </div>
-
-                {/* Vertical Divider */}
-                <div className="h-10 w-px bg-gray-200 shrink-0"></div>
-
-                <div className="flex items-center gap-4 shrink-0">
-                    {/* View Mode Toggle */}
-                    <div className="bg-gray-100 p-1 rounded-lg flex border border-gray-200">
-                        <button
-                            onClick={() => setViewMode('annual')}
-                            className={`px-3 py-1.5 rounded-md text-xs font-medium transition ${viewMode === 'annual' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
-                        >
-                            Annual
-                        </button>
-                        <button
-                            onClick={() => setViewMode('monthly')}
-                            className={`px-3 py-1.5 rounded-md text-xs font-medium transition ${viewMode === 'monthly' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
-                        >
-                            Monthly Extra
-                        </button>
-                    </div>
-
-                    <label className="flex items-center gap-2 cursor-pointer select-none bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-200 transition">
-                        <input
-                            type="checkbox"
-                            checked={inUSD}
-                            onChange={(e) => setInUSD(e.target.checked)}
-                            className="rounded text-blue-600 focus:ring-blue-500 h-4 w-4"
-                        />
-                        <span className="text-gray-700 font-sans text-xs font-semibold">View in {inUSD ? "USD" : "KHR"}</span>
-                    </label>
-                    <button onClick={() => window.print()} className="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition shadow-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg> Print A4 Layout
-                    </button>
-                    <button onClick={handleDownloadPDF} className="bg-gray-900 hover:bg-black text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition shadow-md">
-                        <Download size={16} /> Export PDF
-                    </button>
-                </div>
-            </div>
-
-            {/* Insight Banner */}
-            <div className="bg-indigo-900 text-white px-8 py-3 flex justify-between items-center text-sm shadow-md">
-                <div className="flex items-center gap-3">
-                    <div className="bg-white/10 p-1.5 rounded-lg"><TrendingUp size={16} className="text-indigo-200" /></div>
-                    <span>
-                        <span className="font-bold text-indigo-200">AI Insight: </span>
-                        {viewMode === 'annual'
-                            ? `Net Profit Margin is ${(totalRev > 0 ? (netProfit / totalRev) * 100 : 0).toFixed(1)}%.`
-                            : `Displaying 12-Month breakdown.`}
-                        {viewMode === 'annual' && checkDiff !== 0 && <span className="text-red-300 ml-2 font-bold flex items-center gap-1 inline-flex"><AlertCircle size={14} /> Balance Sheet out by {checkDiff.toFixed(2)}</span>}
-                    </span>
-                </div>
-                <div className="flex gap-4 font-mono text-xs opacity-80">
-                    <span>Code Standard: TOI-2025</span>
-                    <span>Currency: {inUSD ? "USD" : "KHR"}</span>
-                </div>
-            </div>
-
-            {/* Tabs & Content */}
-            <div className={`flex-1 overflow-hidden flex flex-col mx-auto w-full p-8 ${viewMode === 'monthly' ? 'max-w-[1400px]' : 'max-w-5xl'}`}>
-                {/* Tabs */}
-                <div className="flex gap-2 mb-0 print:hidden">
-                    <button
-                        onClick={() => setActiveTab('pl')}
-                        className={`px-6 py-3 rounded-t-xl font-medium text-sm transition-all ${activeTab === 'pl' ? 'bg-white text-blue-700 shadow-sm border-t border-x border-gray-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
-                    >
-                        Income Statement
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('bs')}
-                        className={`px-6 py-3 rounded-t-xl font-medium text-sm transition-all ${activeTab === 'bs' ? 'bg-white text-blue-700 shadow-sm border-t border-x border-gray-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
-                    >
-                        Balance Sheet
-                    </button>
-                    {viewMode === 'annual' && (
-                        <>
-                            <button
-                                onClick={() => setActiveTab('cf')}
-                                className={`px-6 py-3 rounded-t-xl font-medium text-sm transition-all ${activeTab === 'cf' ? 'bg-white text-blue-700 shadow-sm border-t border-x border-gray-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
-                            >
-                                Cash Flow
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('sce')}
-                                className={`px-6 py-3 rounded-t-xl font-medium text-sm transition-all ${activeTab === 'sce' ? 'bg-white text-blue-700 shadow-sm border-t border-x border-gray-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
-                            >
-                                Equity Changes
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('notes')}
-                                className={`px-6 py-3 rounded-t-xl font-medium text-sm transition-all ${activeTab === 'notes' ? 'bg-white text-blue-700 shadow-sm border-t border-x border-gray-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
-                            >
-                                Notes (CIFRS)
-                            </button>
-                        </>
-                    )}
-                </div>
-
-                {/* Report Paper */}
-                <div className="bg-white rounded-b-xl rounded-tr-xl shadow-xl border border-gray-200 p-10 min-h-[600px] font-sans relative overflow-auto select-text print:shadow-none print:border-none print:rounded-none print:max-w-none print:w-full">
-                    <style>
-                        {`
-                            @media print {
+// 2. Add print-section CSS
+content = content.replace(
+`                            @media print {
                                 @page { size: A4 portrait !important; margin: 10mm; }
-                            }
-                        `}
-                    </style>
-                    {/* Watermark */}
-                    {error && (
-                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-50 text-[100px] font-bold rotate-45 pointer-events-none select-none uppercase">
-                            ERROR
-                        </div>
-                    )}
+                            }`,
+`                            @media print {
+                                @page { size: A4 portrait !important; margin: 10mm; }
+                                .print-section { page-break-after: always; display: block !important; }
+                                .print-section:last-child { page-break-after: auto; }
+                            }`
+);
 
-                    
+// 3. Instead of parsing the massive block, I will replace the exact block `hidden print:block pb-6` ... to `</div>` (the end of the tables)
+// It is actually safer to just do strings.
+
+const regexMatch = /<div className="hidden print:block pb-6 mb-8 border-b-2 border-black mt-2">[\s\S]*?(<div className="mt-12 pt-8 border-t border-gray-300 flex justify-between text-xs text-center text-gray-500 font-sans">)/;
+
+const newHTML = `
                     <div className="print-section">
                         {/* Page 1: Income Statement */}
-                        <div className={`${activeTab === 'pl' ? 'block' : 'hidden print:block'}`}>
+                        <div className={\`\${activeTab === 'pl' ? 'block' : 'hidden print:block'}\`}>
                             <div className="hidden print:block pb-6 mb-8 border-b-2 border-black mt-2">
                                 <div className="flex justify-between items-start mb-8">
                                     <div><h1 className="text-3xl font-bold text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{companyNameKh}</h1><h2 className="text-xl font-bold text-black uppercase tracking-widest mt-2 px-1">{companyNameEn}</h2></div>
@@ -410,7 +77,7 @@ const FinancialStatements = ({ onBack }) => {
 
                     <div className="print-section">
                         {/* Page 2: Balance Sheet */}
-                        <div className={`${activeTab === 'bs' ? 'block' : 'hidden print:block'}`}>
+                        <div className={\`\${activeTab === 'bs' ? 'block' : 'hidden print:block'}\`}>
                             <div className="hidden print:block pb-6 mb-8 border-b-2 border-black mt-2">
                                 <div className="flex justify-between items-start mb-8">
                                     <div><h1 className="text-3xl font-bold text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{companyNameKh}</h1><h2 className="text-xl font-bold text-black uppercase tracking-widest mt-2 px-1">{companyNameEn}</h2></div>
@@ -472,7 +139,7 @@ const FinancialStatements = ({ onBack }) => {
                     {viewMode === 'annual' && (
                     <div className="print-section">
                         {/* Page 3: Cash Flow */}
-                        <div className={`${activeTab === 'cf' ? 'block' : 'hidden print:block'}`}>
+                        <div className={\`\${activeTab === 'cf' ? 'block' : 'hidden print:block'}\`}>
                             <div className="hidden print:block pb-6 mb-8 border-b-2 border-black mt-2">
                                 <div className="flex justify-between items-start mb-8">
                                     <div><h1 className="text-3xl font-bold text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{companyNameKh}</h1><h2 className="text-xl font-bold text-black uppercase tracking-widest mt-2 px-1">{companyNameEn}</h2></div>
@@ -513,7 +180,7 @@ const FinancialStatements = ({ onBack }) => {
 
                                         {renderSectionHeader("លំហូរសាច់ប្រាក់ពីសកម្មភាពវិនិយោគ / CASH FLOWS FROM INVESTING ACTIVITIES")}
                                         {assets.filter(a => (a.description?.toLowerCase() || '').includes('fixed') || (a.description?.toLowerCase() || '').includes('equipment')).map(r =>
-                                            renderRow(`PURCHASE OF ${r.description}`, -(getDr(r) - getCr(r)), 0, false, true)
+                                            renderRow(\`PURCHASE OF \${r.description}\`, -(getDr(r) - getCr(r)), 0, false, true)
                                         )}
                                         {renderRow("ការប្រាក់ទទួលបាន / INTEREST RECEIVED", intInc, 0, false, true)}
                                         <tr className="border-t border-gray-300"><td colSpan="4"></td></tr>
@@ -523,7 +190,7 @@ const FinancialStatements = ({ onBack }) => {
 
                                         {renderSectionHeader("លំហូរសាច់ប្រាក់ពីសកម្មភាពហិរញ្ញប្បទាន / CASH FLOWS FROM FINANCING ACTIVITIES")}
                                         {equity.filter(e => (e.description?.toLowerCase() || '').includes('capital')).map(r =>
-                                            renderRow(`ISSUANCE OF ${r.description}`, (getCr(r) - getDr(r)), 0, false, true)
+                                            renderRow(\`ISSUANCE OF \${r.description}\`, (getCr(r) - getDr(r)), 0, false, true)
                                         )}
                                         {renderRow("ភាគលាភបានបើក / DIVIDENDS PAID", 0, 0, false, true)}
                                         {renderRow("ការប្រាក់បានបង់ / INTEREST PAID", -intExp, 0, false, true)}
@@ -559,7 +226,7 @@ const FinancialStatements = ({ onBack }) => {
                     {viewMode === 'annual' && (
                     <div className="print-section">
                         {/* Page 4: Statement of Changes in Equity */}
-                        <div className={`${activeTab === 'sce' ? 'block' : 'hidden print:block'}`}>
+                        <div className={\`\${activeTab === 'sce' ? 'block' : 'hidden print:block'}\`}>
                             <div className="hidden print:block pb-6 mb-8 border-b-2 border-black mt-2">
                                 <div className="flex justify-between items-start mb-8">
                                     <div><h1 className="text-3xl font-bold text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{companyNameKh}</h1><h2 className="text-xl font-bold text-black uppercase tracking-widest mt-2 px-1">{companyNameEn}</h2></div>
@@ -615,7 +282,7 @@ const FinancialStatements = ({ onBack }) => {
                     {viewMode === 'annual' && (
                     <div className="print-section">
                         {/* Page 5: Notes */}
-                        <div className={`${activeTab === 'notes' ? 'block' : 'hidden print:block'}`}>
+                        <div className={\`\${activeTab === 'notes' ? 'block' : 'hidden print:block'}\`}>
                             <div className="hidden print:block pb-6 mb-8 border-b-2 border-black mt-2">
                                 <div className="flex justify-between items-start mb-8">
                                     <div><h1 className="text-3xl font-bold text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{companyNameKh}</h1><h2 className="text-xl font-bold text-black uppercase tracking-widest mt-2 px-1">{companyNameEn}</h2></div>
@@ -705,27 +372,9 @@ const FinancialStatements = ({ onBack }) => {
                         </div>
                     )}
                     
-<div className="mt-12 pt-8 border-t border-gray-300 flex justify-between text-xs text-center text-gray-500 font-sans">
-                        <div className="w-1/3">
-                            <div className="h-16 border-b border-gray-300 mb-2"></div>
-                            <p>Prepared by</p>
-                            <p className="font-bold">Blue AI Agent</p>
-                        </div>
-                        <div className="w-1/3">
-                            <div className="h-16 border-b border-gray-300 mb-2"></div>
-                            <p>Reviewed by</p>
-                            <p className="font-bold">Finance Manager</p>
-                        </div>
-                        <div className="w-1/3">
-                            <div className="h-16 border-b border-gray-300 mb-2"></div>
-                            <p>Approved by</p>
-                            <p className="font-bold">Director</p>
-                        </div>
-                    </div>
-                </div >
-            </div >
-        </div >
-    );
-};
+$1`;
 
-export default FinancialStatements;
+content = content.replace(regexMatch, newHTML);
+
+fs.writeFileSync(file, content);
+console.log('Successfully updated.');
