@@ -269,8 +269,8 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   </div>
                 </div>
 
-                {/* CENTER: GDT EMBLEM / LOGO - vertically aligned with Ministry Khmer text */}
-                <div className="flex flex-col items-center w-[24%] justify-start pt-16">
+                {/* CENTER: GDT EMBLEM / LOGO - positioned near Khmer title text */}
+                <div className="flex flex-col items-center w-[24%] justify-start pt-24">
                   <img
                     src="/assets/gdt_logo.jpg"
                     alt="GDT Emblem"
