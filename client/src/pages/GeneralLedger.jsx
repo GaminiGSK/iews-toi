@@ -219,30 +219,30 @@ const GeneralLedger = ({ onBack }) => {
                 {showHeader && (
                     <thead className="bg-gray-50 text-gray-600 text-xs font-bold uppercase border-b border-gray-200 print:bg-white print:text-[8px] print:text-black print:border-b print:border-black">
                         <tr>
-                            <th className="px-6 py-4 w-[120px] print:px-1 print:py-2 print:border-b print:border-black print:w-[10%]" rowSpan="2">Date</th>
-                            <th className="px-6 py-4 w-[200px] print:px-1 print:py-2 print:border-b print:border-black print:w-[12%]" rowSpan="2">Account Code</th>
-                            <th className="px-6 py-4 w-full print:px-1 print:py-2 print:border-b print:border-black print:w-[32%]" rowSpan="2">Description</th>
-                            <th className="px-6 py-4 text-center border-l border-gray-200 print:px-1 print:py-2 print:border-black print:border-l print:text-[8px] print:w-[23%]" colSpan="3">USD ($)</th>
-                            <th className="px-6 py-4 text-center border-l border-gray-200 print:px-1 print:py-2 print:border-black print:border-l print:text-[8px] print:w-[23%]" colSpan="3">KHR (៛)</th>
+                            <th className="px-6 py-4 w-[120px] print:px-2 print:py-3 print:border-b print:border-black print:w-[11%] print:text-[12px]" rowSpan="2">Date</th>
+                            <th className="px-6 py-4 w-[200px] print:px-2 print:py-3 print:border-b print:border-black print:w-[12%] print:text-[12px]" rowSpan="2">Account Code</th>
+                            <th className="px-6 py-4 w-full print:px-2 print:py-3 print:border-b print:border-black print:w-[31%] print:text-[12px]" rowSpan="2">Description</th>
+                            <th className="px-6 py-4 text-center border-l border-gray-200 print:px-2 print:py-3 print:border-black print:border-l print:text-[12px] print:w-[23%]" colSpan="3">USD ($)</th>
+                            <th className="px-6 py-4 text-center border-l border-gray-200 print:px-2 print:py-3 print:border-black print:border-l print:text-[12px] print:w-[23%]" colSpan="3">KHR (៛)</th>
                         </tr>
                         <tr className="border-t border-gray-200 print:border-black">
-                            <th className="px-4 py-2 text-right border-l text-gray-500 print:px-1 print:py-1 print:border-l print:border-black print:text-[7px]">In</th>
-                            <th className="px-4 py-2 text-right text-gray-500 print:px-1 print:py-1 print:text-[7px]">Out</th>
-                            <th className="px-4 py-2 text-right text-gray-500 print:px-1 print:py-1 print:text-[7px]">Bal</th>
-                            <th className="px-4 py-2 text-right border-l text-gray-500 print:px-1 print:py-1 print:border-l print:border-black print:text-[7px]">In</th>
-                            <th className="px-4 py-2 text-right text-gray-500 print:px-1 print:py-1 print:text-[7px]">Out</th>
-                            <th className="px-4 py-2 text-right text-gray-500 print:px-1 print:py-1 print:text-[7px]">Bal</th>
+                            <th className="px-4 py-2 text-right border-l text-gray-500 print:px-2 print:py-2 print:border-l print:border-black print:text-[11px]">In</th>
+                            <th className="px-4 py-2 text-right text-gray-500 print:px-2 print:py-2 print:text-[11px]">Out</th>
+                            <th className="px-4 py-2 text-right text-gray-500 print:px-2 print:py-2 print:text-[11px]">Bal</th>
+                            <th className="px-4 py-2 text-right border-l text-gray-500 print:px-2 print:py-2 print:border-l print:border-black print:text-[11px]">In</th>
+                            <th className="px-4 py-2 text-right text-gray-500 print:px-2 print:py-2 print:text-[11px]">Out</th>
+                            <th className="px-4 py-2 text-right text-gray-500 print:px-2 print:py-2 print:text-[11px]">Bal</th>
                         </tr>
                     </thead>
                 )}
                 <tbody className="divide-y divide-gray-100 print:divide-y print:divide-gray-400">
                     {data.map((tx, idx) => (
-                        <tr key={idx} className="hover:bg-gray-50 transition print:break-inside-avoid print:bg-white print:border-b print:border-gray-200">
-                            <td className="px-6 py-4 text-xs text-gray-600 font-bold whitespace-nowrap align-top print:px-1 print:py-1 print:text-[8px] print:text-black">
+                        <tr key={idx} className="hover:bg-gray-50 transition print:break-inside-avoid print:bg-white print:border-b print:border-gray-400">
+                            <td className="px-6 py-4 text-xs text-gray-600 font-bold whitespace-nowrap align-top print:px-2 print:py-4 print:text-[13px] print:text-black">
                                 {formatDateSafe(tx.date)}
                                 {tx.rateUsed > 0 && <div className="text-[10px] text-teal-600 mt-1 font-normal print:hidden">@{tx.rateUsed}</div>}
                             </td>
-                            <td className="px-6 py-4 text-xs align-top print:px-1 print:py-1">
+                            <td className="px-6 py-4 text-xs align-top print:px-2 print:py-4">
                                 {/* Screen UI */}
                                 <div className="flex items-center gap-2 print:hidden">
                                     {tx.isJournalEntry ? (
@@ -276,29 +276,29 @@ const GeneralLedger = ({ onBack }) => {
                                     )}
                                 </div>
                                 {/* Print UI */}
-                                <div className="hidden print:block font-mono text-[8px] text-black font-semibold truncate max-w-[12vw]">
+                                <div className="hidden print:block font-mono text-[13px] text-black font-semibold truncate max-w-[14vw]">
                                     {codes.find(c => c._id === tx.accountCode)?.code || '---'}
                                 </div>
                             </td>
-                            <td className="px-6 py-4 text-xs text-gray-700 font-medium align-top leading-relaxed whitespace-pre-wrap print:px-1 print:py-1 print:text-[8px] print:text-black print:whitespace-normal print:leading-tight">
+                            <td className="px-6 py-4 text-xs text-gray-700 font-medium align-top leading-relaxed whitespace-pre-wrap print:px-2 print:py-4 print:text-[14px] print:text-black print:whitespace-normal print:leading-relaxed">
                                 {typeof tx.description === 'object' ? JSON.stringify(tx.description) : String(tx.description || '')}
                             </td>
-                            <td className="px-4 py-4 text-xs text-right font-bold text-green-600 align-top whitespace-nowrap border-l border-gray-100 print:border-l print:border-black print:px-1 print:py-1 print:text-[8px] print:text-black print:font-medium">
+                            <td className="px-4 py-4 text-xs text-right font-bold text-green-600 align-top whitespace-nowrap border-l border-gray-100 print:border-l print:border-black print:px-2 print:py-4 print:text-[13px] print:text-black print:font-medium">
                                 {Number(String(tx.amount).replace(/[^0-9.-]+/g,"")) > 0 ? Number(String(tx.amount).replace(/[^0-9.-]+/g,"")).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
                             </td>
-                            <td className="px-4 py-4 text-xs text-right font-bold text-red-600 align-top whitespace-nowrap print:px-1 print:py-1 print:text-[8px] print:text-black print:font-medium">
+                            <td className="px-4 py-4 text-xs text-right font-bold text-red-600 align-top whitespace-nowrap print:px-2 print:py-4 print:text-[13px] print:text-black print:font-medium">
                                 {Number(String(tx.amount).replace(/[^0-9.-]+/g,"")) < 0 ? Math.abs(Number(String(tx.amount).replace(/[^0-9.-]+/g,""))).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
                             </td>
-                            <td className="px-4 py-4 text-xs text-right text-gray-900 font-bold align-top whitespace-nowrap print:px-1 print:py-1 print:text-[8px] print:text-black print:font-semibold">
+                            <td className="px-4 py-4 text-xs text-right text-gray-900 font-bold align-top whitespace-nowrap print:px-2 print:py-4 print:text-[13px] print:text-black print:font-semibold">
                                 {tx.balance ? Number(String(tx.balance).replace(/[^0-9.-]+/g,"")).toLocaleString('en-US', { minimumFractionDigits: 2 }) : '-'}
                             </td>
-                            <td className="px-4 py-4 text-xs text-right font-bold text-teal-600 align-top whitespace-nowrap border-l border-gray-100 bg-gray-50/50 print:bg-transparent print:border-l print:border-black print:px-1 print:py-1 print:text-[8px] print:text-black print:font-medium">
+                            <td className="px-4 py-4 text-xs text-right font-bold text-teal-600 align-top whitespace-nowrap border-l border-gray-100 bg-gray-50/50 print:bg-transparent print:border-l print:border-black print:px-2 print:py-4 print:text-[13px] print:text-black print:font-medium">
                                 {Number(String(tx.amountKHR).replace(/[^0-9.-]+/g,"")) > 0 ? Number(String(tx.amountKHR).replace(/[^0-9.-]+/g,"")).toLocaleString('en-US', { maximumFractionDigits: 0 }) : ''}
                             </td>
-                            <td className="px-4 py-4 text-xs text-right font-bold text-red-400 align-top whitespace-nowrap bg-gray-50/50 print:bg-transparent print:px-1 print:py-1 print:text-[8px] print:text-black print:font-medium">
+                            <td className="px-4 py-4 text-xs text-right font-bold text-red-400 align-top whitespace-nowrap bg-gray-50/50 print:bg-transparent print:px-2 print:py-4 print:text-[13px] print:text-black print:font-medium">
                                 {Number(String(tx.amountKHR).replace(/[^0-9.-]+/g,"")) < 0 ? Math.abs(Number(String(tx.amountKHR).replace(/[^0-9.-]+/g,""))).toLocaleString('en-US', { maximumFractionDigits: 0 }) : ''}
                             </td>
-                            <td className="px-4 py-4 text-xs text-right text-gray-600 font-bold align-top whitespace-nowrap bg-gray-50/50 print:bg-transparent print:px-1 print:py-1 print:text-[8px] print:text-black print:font-semibold">
+                            <td className="px-4 py-4 text-xs text-right text-gray-600 font-bold align-top whitespace-nowrap bg-gray-50/50 print:bg-transparent print:px-2 print:py-4 print:text-[13px] print:text-black print:font-semibold">
                                 {tx.balanceKHR ? Number(String(tx.balanceKHR).replace(/[^0-9.-]+/g,"")).toLocaleString('en-US', { maximumFractionDigits: 0 }) : '-'}
                             </td>
                         </tr>
@@ -411,16 +411,23 @@ const GeneralLedger = ({ onBack }) => {
 
                 <div className="flex-1 p-8 overflow-auto print:p-0 print:overflow-visible">
                     {/* Print Only Header */}
-                    <div className="hidden print:block pb-4 mb-4 border-b-2 border-black mt-4">
+                    <div className="hidden print:block pb-6 mb-8 border-b-2 border-black mt-2">
+                        <div className="text-center mb-8">
+                            <h1 className="text-3xl font-bold text-black">ក្រុមហ៊ុន ជីខេ ស្មាត ឯ.ក</h1>
+                            <h2 className="text-xl font-bold text-black uppercase tracking-widest mt-2">GK SMART CO., LTD.</h2>
+                        </div>
                         <div className="flex justify-between items-end">
                             <div>
-                                <h2 className="text-xl font-bold uppercase tracking-widest text-black/90">General Ledger</h2>
-                                <p className="text-[10px] text-gray-600 font-medium mt-1">
+                                <h2 className="text-2xl font-bold uppercase tracking-widest text-black/90">
+                                    សៀវភៅធំ <br />
+                                    General Ledger
+                                </h2>
+                                <p className="text-[14px] text-gray-800 font-medium mt-3">
                                     {filterCode && filterCode !== 'uncategorized' ? `Code Filter: ${codes.find(c => c._id === filterCode)?.code || ''} | ` : ''} 
-                                    Fiscal Year: {fiscalYear === 'all' ? 'All Years' : fiscalYear}
+                                    Fiscal Year / ប្រចាំឆ្នាំ: <span className="font-bold">{fiscalYear === 'all' ? 'All Years' : fiscalYear}</span>
                                 </p>
                             </div>
-                            <div className="text-right text-[9px] text-gray-500 uppercase tracking-widest">
+                            <div className="text-right text-[14px] text-gray-800 font-bold uppercase tracking-widest">
                                 Report Date: {new Date().toLocaleDateString('en-GB')}
                             </div>
                         </div>
