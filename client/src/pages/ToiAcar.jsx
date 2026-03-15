@@ -650,7 +650,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   <div className="flex-1 flex flex-col">
                     {/* Top Header Row of checkboxes */}
                     <div className="flex min-h-[38px] border-b border-black">
-                      <div className="w-[36%] shrink-0 flex items-center gap-2 pl-[50px] pr-2">
+                      <div className="w-[36%] shrink-0 flex items-center gap-2 pl-[6px] pr-2">
                         <div className="w-[20px] h-[20px] border border-black shrink-0 bg-white flex items-center justify-center relative mt-[2px]">
                           {filledData?.legalForm === "Private Limited Company" && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                         </div>
@@ -674,7 +674,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   {/* Bottom Grid Rows */}
                   <div className="flex flex-1 py-[6px] min-h-[140px]">
                     {/* Column 1 */}
-                    <div className="w-[36%] shrink-0 pl-[50px] pr-2 flex flex-col gap-[7px]">
+                    <div className="w-[36%] shrink-0 pl-[6px] pr-2 flex flex-col gap-[7px]">
                       {[
                         { kh: "សហគ្រាសឯកបុគ្គល/រូបវន្តបុគ្គល", en: "Sole Proprietorship / Physical Person" },
                         { kh: "ក្រុមហ៊ុនសហកម្មសិទ្ធិទូទៅ", en: "General Partnership" },
