@@ -1605,7 +1605,14 @@ router.get('/ledger', auth, async (req, res) => {
             };
         });
 
-        res.json({ transactions: enrichedTransactions });
+        const CompanyProfile = require('../models/CompanyProfile');
+        const profile = await CompanyProfile.findOne({ user: req.user.id });
+
+        res.json({ 
+            transactions: enrichedTransactions,
+            companyNameEn: profile ? profile.companyNameEn : req.user.companyCode,
+            companyNameKh: profile ? profile.companyNameKh : ''
+        });
     } catch (err) {
         console.error('Fetch Ledger Error:', err);
         res.status(500).json({ message: 'Error fetching ledger' });
@@ -2068,14 +2075,15 @@ router.get('/trial-balance', auth, async (req, res) => {
 
         // Fetch Company Profile for Name
         const CompanyProfile = require('../models/CompanyProfile');
-        const profile = await CompanyProfile.findOne({ companyCode: req.user.companyCode });
+        const profile = await CompanyProfile.findOne({ user: req.user.id });
 
         res.json({
             report: report,
             totals: totals,
             currentYear: isAllYears ? 'all' : currentYear,
             availableYears: availableYears,
-            companyName: profile ? profile.companyNameEn : req.user.companyCode
+            companyNameEn: profile ? profile.companyNameEn : req.user.companyCode,
+            companyNameKh: profile ? profile.companyNameKh : ''
         });
 
     } catch (err) {

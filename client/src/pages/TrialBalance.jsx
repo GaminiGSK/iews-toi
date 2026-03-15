@@ -10,6 +10,8 @@ const TrialBalance = ({ onBack }) => {
     const [fiscalYear, setFiscalYear] = useState('all'); // Explicitly start with 'all' to prevent zero-data 0 rendering
     const [availableYears, setAvailableYears] = useState([]);
     const [totals, setTotals] = useState({ drUSD: 0, crUSD: 0, drKHR: 0, crKHR: 0 });
+    const [companyNameEn, setCompanyNameEn] = useState('GK SMART CO., LTD.');
+    const [companyNameKh, setCompanyNameKh] = useState('ក្រុមហ៊ុន ជីខេ ស្មាត ឯ.ក');
     const [currency, setCurrency] = useState('KHR'); // Toggle for main visual currency display
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -33,6 +35,8 @@ const TrialBalance = ({ onBack }) => {
             // Set Year if available
             if (res.data.currentYear) setFiscalYear(res.data.currentYear.toString());
             if (res.data.availableYears) setAvailableYears(res.data.availableYears);
+            if (res.data.companyNameEn) setCompanyNameEn(res.data.companyNameEn);
+            if (res.data.companyNameKh) setCompanyNameKh(res.data.companyNameKh);
             setError(null);
         } catch (err) {
             console.error(err);
@@ -190,7 +194,7 @@ const TrialBalance = ({ onBack }) => {
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900">
             {/* Header - Left Aligned */}
-            <div className="bg-white border-b border-gray-200 px-8 py-5 flex items-center gap-8 sticky top-0 z-20 shadow-sm overflow-x-auto">
+            <div className="bg-white border-b border-gray-200 px-8 py-5 flex items-center gap-8 sticky top-0 z-20 shadow-sm overflow-x-auto print:hidden">
                 <div className="flex items-center gap-4 shrink-0">
                     <button
                         onClick={onBack}
@@ -256,6 +260,11 @@ const TrialBalance = ({ onBack }) => {
                         </div>
                     </div>
 
+                    <button onClick={() => window.print()} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-sm font-medium transition flex items-center gap-2 shadow-sm border border-slate-300 mr-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                        </svg> Print A4 Layout 
+                    </button>
                     <button
                         onClick={handleDownloadPDF}
                         className="p-2 hover:bg-gray-100 rounded-full transition text-gray-500"
@@ -273,7 +282,7 @@ const TrialBalance = ({ onBack }) => {
                 </div>
             </div>
 
-            <div className="flex-1 p-8 overflow-auto">
+            <div className="flex-1 p-8 overflow-auto print:p-0 print:overflow-visible">
                 {error && (
                     <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-3">
                         <AlertCircle className="w-5 h-5" /> {error}
@@ -281,7 +290,29 @@ const TrialBalance = ({ onBack }) => {
                 )}
 
                 
-                    <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-lg border border-gray-300 overflow-hidden text-sm font-serif animate-fade-in">
+                    <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-lg border border-gray-300 overflow-hidden text-sm font-serif animate-fade-in print:shadow-none print:border-none print:rounded-none select-text print:max-w-none">
+
+                        <div className="hidden print:block pb-6 mb-8 border-b-2 border-black mt-2">
+                            <div className="flex justify-between items-start mb-8">
+                                <div>
+                                    <h1 className="text-3xl font-bold text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                        {companyNameKh}
+                                    </h1>
+                                    <h2 className="text-xl font-bold text-black uppercase tracking-widest mt-2 px-1">
+                                        {companyNameEn}
+                                    </h2>
+                                </div>
+                                <div className="text-right flex flex-col items-end gap-1">
+                                    <div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Report Detail</div>
+                                    <div className="text-sm font-bold text-black">
+                                        Trial Balance - {fiscalYear === 'all' ? 'All Years' : fiscalYear}
+                                    </div>
+                                    <div className="text-sm font-bold text-black">
+                                        Currency: {currency} {inThousands ? " (in '000s)" : ""}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                         {/* Audit Toolbar */}
                         <div className="bg-gray-100 p-2 flex justify-end items-center border-b border-gray-300 gap-4">
@@ -312,11 +343,11 @@ const TrialBalance = ({ onBack }) => {
                                                     <th className="border-r border-gray-300 p-2 text-center w-16 text-xs text-gray-500 uppercase">Note</th>
                                                     <th colSpan="2" className="border-r border-gray-300 p-2 text-center font-bold text-gray-900 bg-[#E2E8F0]/40">
                                                         For the year ended<br /><span className="text-xs font-normal">31-Dec-{fiscalYear}</span><br />
-                                                        <span className="text-xs uppercase text-gray-500">{inThousands ? "KHR'000" : "KHR"}</span>
+                                                        <span className="text-xs uppercase text-gray-500">{inThousands ? `${currency}'000` : currency}</span>
                                                     </th>
                                                     <th colSpan="2" className="border-r border-gray-300 p-2 text-center font-bold text-gray-500 bg-gray-50">
                                                         For the year ended<br /><span className="text-xs font-normal">31-Dec-{fiscalYear - 1}</span><br />
-                                                        <span className="text-xs uppercase text-gray-400">{inThousands ? "KHR'000" : "KHR"}</span>
+                                                        <span className="text-xs uppercase text-gray-400">{inThousands ? `${currency}'000` : currency}</span>
                                                     </th>
                                                     <th className="p-2 text-center w-16 text-xs text-gray-500 uppercase">Ref</th>
                                                 </tr>
@@ -381,10 +412,10 @@ const TrialBalance = ({ onBack }) => {
                                                     <td className="border-r border-gray-600"></td>
                                                     <td className="border-r border-gray-600 p-3 text-right uppercase text-xs text-gray-300">Total</td>
                                                     <td className="border-r border-gray-600"></td>
-                                                    <td className="border-r border-gray-600 p-3 text-right text-teal-400 bg-[#334155]">{(totals.drKHR / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
-                                                    <td className="border-r border-gray-600 p-3 text-right text-teal-400 bg-[#334155]">{(totals.crKHR / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
-                                                    <td className="border-r border-gray-600 p-3 text-right text-gray-300">{(totals.priorDrKHR ? (totals.priorDrKHR / (inThousands ? 1000 : 1)) : 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
-                                                    <td className="border-r border-gray-600 p-3 text-right text-gray-300">{(totals.priorCrKHR ? (totals.priorCrKHR / (inThousands ? 1000 : 1)) : 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                                    <td className="border-r border-gray-600 p-3 text-right text-teal-400 bg-[#334155]">{((currency === 'USD' ? totals.drUSD : totals.drKHR) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                                    <td className="border-r border-gray-600 p-3 text-right text-teal-400 bg-[#334155]">{((currency === 'USD' ? totals.crUSD : totals.crKHR) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                                    <td className="border-r border-gray-600 p-3 text-right text-gray-300">{((currency === 'USD' ? totals.priorDrUSD : totals.priorDrKHR) ? ((currency === 'USD' ? totals.priorDrUSD : totals.priorDrKHR) / (inThousands ? 1000 : 1)) : 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                                    <td className="border-r border-gray-600 p-3 text-right text-gray-300">{((currency === 'USD' ? totals.priorCrUSD : totals.priorCrKHR) ? ((currency === 'USD' ? totals.priorCrUSD : totals.priorCrKHR) / (inThousands ? 1000 : 1)) : 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
                                                     <td></td>
                                                 </tr>
                                             </tbody>
@@ -419,14 +450,14 @@ const TrialBalance = ({ onBack }) => {
                                                     <th className="border-r border-gray-400 p-2 text-left pl-4 uppercase">Description</th>
                                                     <th className="border-r border-gray-400 p-2"></th>
 
-                                                    <th className="border-r border-gray-400 p-2 text-right w-28 bg-slate-200">Dr (KHR)</th>
-                                                    <th className="border-r border-gray-400 p-2 text-right w-28 bg-slate-200">Cr (KHR)</th>
+                                                    <th className="border-r border-gray-400 p-2 text-right w-28 bg-slate-200">Dr ({currency})</th>
+                                                    <th className="border-r border-gray-400 p-2 text-right w-28 bg-slate-200">Cr ({currency})</th>
 
-                                                    <th className="border-r border-gray-400 p-2 text-right w-28 bg-white border-l-2 border-l-blue-500">Dr (KHR)</th>
-                                                    <th className="border-r border-gray-400 p-2 text-right w-28 bg-white">Cr (KHR)</th>
+                                                    <th className="border-r border-gray-400 p-2 text-right w-28 bg-white border-l-2 border-l-blue-500">Dr ({currency})</th>
+                                                    <th className="border-r border-gray-400 p-2 text-right w-28 bg-white">Cr ({currency})</th>
 
-                                                    <th className="border-r border-gray-400 p-2 text-right w-28 bg-slate-200 border-l-2 border-l-gray-400">Dr (KHR)</th>
-                                                    <th className="border-r border-gray-400 p-2 text-right w-28 bg-slate-200">Cr (KHR)</th>
+                                                    <th className="border-r border-gray-400 p-2 text-right w-28 bg-slate-200 border-l-2 border-l-gray-400">Dr ({currency})</th>
+                                                    <th className="border-r border-gray-400 p-2 text-right w-28 bg-slate-200">Cr ({currency})</th>
 
                                                     <th className="p-2"></th>
                                                 </tr>
@@ -451,12 +482,12 @@ const TrialBalance = ({ onBack }) => {
                                                             </tr>
                                                             {groupRows.map(row => {
                                                                 const scale = inThousands ? 1000 : 1;
-                                                                const unAdDr = (row.unadjDrKHR || 0) / scale;
-                                                                const unAdCr = (row.unadjCrKHR || 0) / scale;
-                                                                const adDr = (row.adjDrKHR || 0) / scale;
-                                                                const adCr = (row.adjCrKHR || 0) / scale;
-                                                                const dr = row.drKHR ? row.drKHR / scale : 0;
-                                                                const cr = row.crKHR ? row.crKHR / scale : 0;
+                                                                const unAdDr = currency === 'USD' ? (row.unadjDrUSD || 0) / scale : (row.unadjDrKHR || 0) / scale;
+                                                                const unAdCr = currency === 'USD' ? (row.unadjCrUSD || 0) / scale : (row.unadjCrKHR || 0) / scale;
+                                                                const adDr = currency === 'USD' ? (row.adjDrUSD || 0) / scale : (row.adjDrKHR || 0) / scale;
+                                                                const adCr = currency === 'USD' ? (row.adjCrUSD || 0) / scale : (row.adjCrKHR || 0) / scale;
+                                                                const dr = currency === 'USD' ? (row.drUSD ? row.drUSD / scale : 0) : (row.drKHR ? row.drKHR / scale : 0);
+                                                                const cr = currency === 'USD' ? (row.crUSD ? row.crUSD / scale : 0) : (row.crKHR ? row.crKHR / scale : 0);
 
                                                                 if (dr === 0 && cr === 0 && unAdDr === 0 && unAdCr === 0) return null;
 
@@ -492,14 +523,14 @@ const TrialBalance = ({ onBack }) => {
                                                     <td className="border-r border-gray-400 p-3 text-right uppercase text-xs">Total</td>
                                                     <td className="border-r border-gray-400"></td>
 
-                                                    <td className="border-r border-gray-400 p-3 text-right text-gray-600">{(report.reduce((sum, r) => sum + (r.unadjDrKHR || 0), 0) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
-                                                    <td className="border-r border-gray-400 p-3 text-right text-gray-600">{(report.reduce((sum, r) => sum + (r.unadjCrKHR || 0), 0) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                                    <td className="border-r border-gray-400 p-3 text-right text-gray-600">{(report.reduce((sum, r) => sum + (currency === 'USD' ? (r.unadjDrUSD || 0) : (r.unadjDrKHR || 0)), 0) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                                    <td className="border-r border-gray-400 p-3 text-right text-gray-600">{(report.reduce((sum, r) => sum + (currency === 'USD' ? (r.unadjCrUSD || 0) : (r.unadjCrKHR || 0)), 0) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
 
-                                                    <td className="border-r border-gray-400 p-3 text-right text-blue-800 border-l-2 border-l-blue-400">{(report.reduce((sum, r) => sum + (r.adjDrKHR || 0), 0) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
-                                                    <td className="border-r border-gray-400 p-3 text-right text-blue-800">{(report.reduce((sum, r) => sum + (r.adjCrKHR || 0), 0) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                                    <td className="border-r border-gray-400 p-3 text-right text-blue-800 border-l-2 border-l-blue-400">{(report.reduce((sum, r) => sum + (currency === 'USD' ? (r.adjDrUSD || 0) : (r.adjDrKHR || 0)), 0) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                                    <td className="border-r border-gray-400 p-3 text-right text-blue-800">{(report.reduce((sum, r) => sum + (currency === 'USD' ? (r.adjCrUSD || 0) : (r.adjCrKHR || 0)), 0) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
 
-                                                    <td className="border-r border-gray-400 p-3 text-right text-gray-900 border-l-2 border-l-gray-400">{(totals.drKHR / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
-                                                    <td className="border-r border-gray-400 p-3 text-right text-gray-900">{(totals.crKHR / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                                    <td className="border-r border-gray-400 p-3 text-right text-gray-900 border-l-2 border-l-gray-400">{((currency === 'USD' ? totals.drUSD : totals.drKHR) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                                    <td className="border-r border-gray-400 p-3 text-right text-gray-900">{((currency === 'USD' ? totals.crUSD : totals.crKHR) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
                                                     <td></td>
                                                 </tr>
                                             </tbody>
@@ -517,11 +548,11 @@ const TrialBalance = ({ onBack }) => {
                                                     <th className="border-r border-[#374151] p-2 text-center w-16 text-xs text-gray-400 uppercase">Note</th>
                                                     <th colSpan="3" className="border-r border-[#374151] p-2 text-center font-bold text-gray-100 bg-[#1f2937]">
                                                         For the period ended<br /><span className="text-xs text-[#60a5fa] font-normal">31-Dec-{fiscalYear}</span><br />
-                                                        <span className="text-xs uppercase text-gray-400">{inThousands ? "KHR'000" : "KHR"}</span>
+                                                        <span className="text-xs uppercase text-gray-400">{inThousands ? `${currency}'000` : currency}</span>
                                                     </th>
                                                     <th colSpan="3" className="border-r border-[#374151] p-2 text-center font-bold text-gray-400 bg-[#111827]">
                                                         For the period ended<br /><span className="text-xs font-normal">31-Dec-{fiscalYear - 1}</span><br />
-                                                        <span className="text-xs uppercase text-gray-500">{inThousands ? "KHR'000" : "KHR"}</span>
+                                                        <span className="text-xs uppercase text-gray-500">{inThousands ? `${currency}'000` : currency}</span>
                                                     </th>
                                                     <th className="p-2 text-center w-16 text-xs text-gray-500 uppercase">Ref</th>
                                                 </tr>
@@ -531,11 +562,11 @@ const TrialBalance = ({ onBack }) => {
                                                     <th className="border-r border-[#374151] p-2 text-left pl-4 uppercase">Description</th>
                                                     <th className="border-r border-[#374151] p-2"></th>
                                                     <th className="border-r border-[#374151] p-2 text-right w-24 text-[#9ca3af]">Quantity</th>
-                                                    <th className="border-r border-[#374151] p-2 text-right w-32 bg-[#374151]">Dr (KHR)</th>
-                                                    <th className="border-r border-[#374151] p-2 text-right w-32 bg-[#374151]">Cr (KHR)</th>
+                                                    <th className="border-r border-[#374151] p-2 text-right w-32 bg-[#374151]">Dr ({currency})</th>
+                                                    <th className="border-r border-[#374151] p-2 text-right w-32 bg-[#374151]">Cr ({currency})</th>
                                                     <th className="border-r border-[#374151] p-2 text-right w-24 text-[#9ca3af]">Quantity (units)</th>
-                                                    <th className="border-r border-[#374151] p-2 text-right w-32 bg-[#111827]">Dr (KHR)</th>
-                                                    <th className="border-r border-[#374151] p-2 text-right w-32 bg-[#111827]">Cr (KHR)</th>
+                                                    <th className="border-r border-[#374151] p-2 text-right w-32 bg-[#111827]">Dr ({currency})</th>
+                                                    <th className="border-r border-[#374151] p-2 text-right w-32 bg-[#111827]">Cr ({currency})</th>
                                                     <th className="p-2"></th>
                                                 </tr>
                                             </thead>
@@ -560,10 +591,10 @@ const TrialBalance = ({ onBack }) => {
                                                             </tr>
                                                             {groupRows.map(row => {
                                                                 const scale = inThousands ? 1000 : 1;
-                                                                const dr = row.drKHR ? row.drKHR / scale : 0;
-                                                                const cr = row.crKHR ? row.crKHR / scale : 0;
-                                                                const pDr = row.priorDrKHR ? row.priorDrKHR / scale : 0;
-                                                                const pCr = row.priorCrKHR ? row.priorCrKHR / scale : 0;
+                                                                const dr = currency === 'USD' ? (row.drUSD ? row.drUSD / scale : 0) : (row.drKHR ? row.drKHR / scale : 0);
+                                                                const cr = currency === 'USD' ? (row.crUSD ? row.crUSD / scale : 0) : (row.crKHR ? row.crKHR / scale : 0);
+                                                                const pDr = currency === 'USD' ? (row.priorDrUSD ? row.priorDrUSD / scale : 0) : (row.priorDrKHR ? row.priorDrKHR / scale : 0);
+                                                                const pCr = currency === 'USD' ? (row.priorCrUSD ? row.priorCrUSD / scale : 0) : (row.priorCrKHR ? row.priorCrKHR / scale : 0);
 
                                                                 if (dr === 0 && cr === 0 && pDr === 0 && pCr === 0) return null;
 
@@ -597,11 +628,11 @@ const TrialBalance = ({ onBack }) => {
                                                     <td className="border-r border-[#374151] p-3 text-right uppercase text-xs text-gray-400">Total</td>
                                                     <td className="border-r border-[#374151]"></td>
                                                     <td className="border-r border-[#374151]"></td>
-                                                    <td className="border-r border-[#374151] p-3 text-right text-gray-100">{(totals.drKHR / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
-                                                    <td className="border-r border-[#374151] p-3 text-right text-gray-100">{(totals.crKHR / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                                    <td className="border-r border-[#374151] p-3 text-right text-gray-100">{((currency === 'USD' ? totals.drUSD : totals.drKHR) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                                    <td className="border-r border-[#374151] p-3 text-right text-gray-100">{((currency === 'USD' ? totals.crUSD : totals.crKHR) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
                                                     <td className="border-r border-[#374151]"></td>
-                                                    <td className="border-r border-[#374151] p-3 text-right text-gray-400">{(totals.priorDrKHR ? (totals.priorDrKHR / (inThousands ? 1000 : 1)) : 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
-                                                    <td className="border-r border-[#374151] p-3 text-right text-gray-400">{(totals.priorCrKHR ? (totals.priorCrKHR / (inThousands ? 1000 : 1)) : 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                                    <td className="border-r border-[#374151] p-3 text-right text-gray-400">{((currency === 'USD' ? totals.priorDrUSD : totals.priorDrKHR) ? ((currency === 'USD' ? totals.priorDrUSD : totals.priorDrKHR) / (inThousands ? 1000 : 1)) : 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                                    <td className="border-r border-[#374151] p-3 text-right text-gray-400">{((currency === 'USD' ? totals.priorCrUSD : totals.priorCrKHR) ? ((currency === 'USD' ? totals.priorCrUSD : totals.priorCrKHR) / (inThousands ? 1000 : 1)) : 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
                                                     <td></td>
                                                 </tr>
                                             </tbody>
