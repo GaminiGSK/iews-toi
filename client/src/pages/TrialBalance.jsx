@@ -290,8 +290,14 @@ const TrialBalance = ({ onBack }) => {
                 )}
 
                 
-                    <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-lg border border-gray-300 overflow-hidden text-sm font-serif animate-fade-in print:shadow-none print:border-none print:rounded-none select-text print:max-w-none">
-
+                    <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-lg border border-gray-300 overflow-hidden text-sm font-sans animate-fade-in print:shadow-none print:border-none print:rounded-none select-text print:max-w-none print:w-full">
+                        <style>
+                            {`
+                                @media print {
+                                    @page { size: A4 landscape !important; margin: 10mm; }
+                                }
+                            `}
+                        </style>
                         <div className="hidden print:block pb-6 mb-8 border-b-2 border-black mt-2">
                             <div className="flex justify-between items-start mb-8">
                                 <div>
@@ -304,11 +310,14 @@ const TrialBalance = ({ onBack }) => {
                                 </div>
                                 <div className="text-right flex flex-col items-end gap-1">
                                     <div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Report Detail</div>
-                                    <div className="text-sm font-bold text-black">
-                                        Trial Balance - {fiscalYear === 'all' ? 'All Years' : fiscalYear}
+                                    <h3 className="text-xl font-bold text-black uppercase tracking-widest mt-1" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                        តារាងតុល្យការ / Trial Balance
+                                    </h3>
+                                    <div className="text-sm font-bold text-black mt-1">
+                                        For {fiscalYear === 'all' ? 'All Years' : fiscalYear}
                                     </div>
                                     <div className="text-sm font-bold text-black">
-                                        Currency: {currency} {inThousands ? " (in '000s)" : ""}
+                                        Reporting Currency: {currency} {inThousands ? " (in '000s)" : ""}
                                     </div>
                                 </div>
                             </div>
@@ -383,10 +392,10 @@ const TrialBalance = ({ onBack }) => {
                                                             </tr>
                                                             {groupRows.map(row => {
                                                                 const scale = inThousands ? 1000 : 1;
-                                                                const dr = row.drKHR ? row.drKHR / scale : 0;
-                                                                const cr = row.crKHR ? row.crKHR / scale : 0;
-                                                                const pDr = row.priorDrKHR ? row.priorDrKHR / scale : 0;
-                                                                const pCr = row.priorCrKHR ? row.priorCrKHR / scale : 0;
+                                                                const dr = currency === 'USD' ? (row.drUSD ? row.drUSD / scale : 0) : (row.drKHR ? row.drKHR / scale : 0);
+                                                                const cr = currency === 'USD' ? (row.crUSD ? row.crUSD / scale : 0) : (row.crKHR ? row.crKHR / scale : 0);
+                                                                const pDr = currency === 'USD' ? (row.priorDrUSD ? row.priorDrUSD / scale : 0) : (row.priorDrKHR ? row.priorDrKHR / scale : 0);
+                                                                const pCr = currency === 'USD' ? (row.priorCrUSD ? row.priorCrUSD / scale : 0) : (row.priorCrKHR ? row.priorCrKHR / scale : 0);
 
                                                                 if (dr === 0 && cr === 0 && pDr === 0 && pCr === 0) return null;
 
