@@ -438,6 +438,9 @@ const GeneralLedger = ({ onBack }) => {
                             <div className="text-right flex flex-col items-end gap-1">
                                 <div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Print Summary</div>
                                 <div className="text-sm font-bold text-black">
+                                    Opening Balance: <span className="text-indigo-600">${filteredTransactions.length > 0 ? (Number(String([...filteredTransactions].sort((a,b) => new Date(a.date) - new Date(b.date))[0]?.balance || 0).replace(/[^0-9.-]+/g, "")) - Number(String([...filteredTransactions].sort((a,b) => new Date(a.date) - new Date(b.date))[0]?.amount || 0).replace(/[^0-9.-]+/g, ""))).toLocaleString('en-US', { minimumFractionDigits: 2 }) : '0.00'}</span>
+                                </div>
+                                <div className="text-sm font-bold text-black">
                                     Total In: <span className="text-green-600">${filteredTransactions.filter(tx => !tx.isJournalEntry).reduce((acc, tx) => acc + (Number(String(tx.amount).replace(/[^0-9.-]+/g, "")) > 0 ? Number(String(tx.amount).replace(/[^0-9.-]+/g, "")) : 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                                 </div>
                                 <div className="text-sm font-bold text-black">
