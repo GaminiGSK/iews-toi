@@ -1,14 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Wand2, Calendar, Tag, Layers, ArrowLeft, Sparkles } from 'lucide-react';
+import { ArrowLeft, Tag, Sparkles, Wand2 } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import ErrorBoundary from '../components/ErrorBoundary';
 
 const GeneralLedger = ({ onBack }) => {
     const [transactions, setTransactions] = useState([]);
     const [codes, setCodes] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [tagging, setTagging] = useState(false);
-    const [error, setError] = useState(null);
+    const [taggingStatus, setTaggingStatus] = useState('');
+
+    // Fetch TOI BR Database data for Company name if available
+    const [filledData, setFilledData] = useState(() => {
+        try {
+            const saved = localStorage.getItem('toiFilledData');
+            return saved ? JSON.parse(saved) : null;
+        } catch {
+            return null;
+        }
+    });
+
+    // Helper functions for formatting datesetError] = useState(null);
     const [viewMode, setViewMode] = useState('date'); // 'date' | 'code'
     const [filterCode, setFilterCode] = useState('');
     const [fiscalYear, setFiscalYear] = useState('all');
@@ -412,9 +424,27 @@ const GeneralLedger = ({ onBack }) => {
                 <div className="flex-1 p-8 overflow-auto print:p-0 print:overflow-visible">
                     {/* Print Only Header */}
                     <div className="hidden print:block pb-6 mb-8 border-b-2 border-black mt-2">
-                        <div className="text-center mb-8">
-                            <h1 className="text-3xl font-bold text-black">ក្រុមហ៊ុន ជីខេ ស្មាត ឯ.ក</h1>
-                            <h2 className="text-xl font-bold text-black uppercase tracking-widest mt-2">GK SMART CO., LTD.</h2>
+                        <div className="flex justify-between items-start mb-8">
+                            <div>
+                                <h1 className="text-3xl font-bold text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                    {filledData ? filledData.name : 'ក្រុមហ៊ុន ជីខេ ស្មាត ឯ.ក'}
+                                </h1>
+                                <h2 className="text-xl font-bold text-black uppercase tracking-widest mt-2">
+                                    {filledData ? filledData.nameEn || filledData.name : 'GK SMART CO., LTD.'}
+                                </h2>
+                            </div>
+                            <div className="text-right flex flex-col items-end gap-1">
+                                <div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Print Summary</div>
+                                <div className="text-sm font-bold text-black">
+                                    Total In: <span className="text-green-600">${filteredTransactions.filter(tx => !tx.isJournalEntry).reduce((acc, tx) => acc + (Number(String(tx.amount).replace(/[^0-9.-]+/g, "")) > 0 ? Number(String(tx.amount).replace(/[^0-9.-]+/g, "")) : 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                                </div>
+                                <div className="text-sm font-bold text-black">
+                                    Total Out: <span className="text-red-600">${filteredTransactions.filter(tx => !tx.isJournalEntry).reduce((acc, tx) => acc + (Number(String(tx.amount).replace(/[^0-9.-]+/g, "")) < 0 ? Math.abs(Number(String(tx.amount).replace(/[^0-9.-]+/g, ""))) : 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                                </div>
+                                <div className="text-sm font-bold text-black">
+                                    Closing Balance: <span className="text-blue-600">${filteredTransactions.length > 0 ? Number(String([...filteredTransactions].sort((a,b) => new Date(b.date) - new Date(a.date))[0]?.balance || 0).replace(/[^0-9.-]+/g, "")).toLocaleString('en-US', { minimumFractionDigits: 2 }) : '0.00'}</span>
+                                </div>
+                            </div>
                         </div>
                         <div className="flex justify-between items-end">
                             <div>
