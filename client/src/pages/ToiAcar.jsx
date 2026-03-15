@@ -627,30 +627,31 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                 </div>
 
               {/* Section 14: Legal Form */}
-              <div className="flex border-b border-black bg-white min-h-[50px]">
+              <div className="flex border-b border-black bg-white min-h-[138px]">
                 <div className="w-[49px] shrink-0 border-r border-black flex flex-col items-center justify-center bg-white">
                   {/* Container to center 14 properly */}
                   <div className="h-full flex flex-col justify-center font-bold text-sm">
                     14
                   </div>
                 </div>
-                <div className="flex-1 flex bg-white">
+                {/* Right side container - full flex col */}
+                <div className="flex-1 flex flex-col bg-white">
                   
-                  {/* Left Column Label Block spanning full height */}
-                  <div className="w-[340px] shrink-0 border-r border-black pl-3 pr-2 py-1 flex flex-col justify-start pt-2 bg-white">
-                    <span className="font-bold text-[12px] leading-tight text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
-                      ទម្រង់សិទ្ធិគតិយុត្ត /ទម្រង់នៃប្រតិបត្តិការអាជីវកម្ម ៖
-                    </span>
-                    <span className="text-[9px] text-black pt-[1px] font-normal" style={{ fontFamily: '"Arial", sans-serif' }}>
-                      Legal Form or Form of Business Operations:
-                    </span>
-                  </div>
-                  
-                  {/* Right Blocks */}
-                  <div className="flex-1 flex flex-col">
-                    {/* Top Header Row of checkboxes */}
-                    <div className="flex min-h-[38px] border-b border-black">
-                      <div className="w-[36%] shrink-0 flex items-center gap-2 pl-[6px] pr-2">
+                  {/* Top Header Row of Row 14: Label + 2 Checkboxes */}
+                  <div className="flex min-h-[38px] border-b border-black">
+                    {/* Left Column Label Block */}
+                    <div className="w-[340px] shrink-0 border-r border-black pl-[10px] pr-2 py-1 flex flex-col justify-start pt-2 bg-white">
+                      <span className="font-bold text-[12px] leading-tight text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                        ទម្រង់សិទ្ធិគតិយុត្ត /ទម្រង់នៃប្រតិបត្តិការអាជីវកម្ម ៖
+                      </span>
+                      <span className="text-[9px] text-black pt-[1px] font-normal" style={{ fontFamily: '"Arial", sans-serif' }}>
+                        Legal Form or Form of Business Operations:
+                      </span>
+                    </div>
+
+                    {/* Top Checkboxes */}
+                    <div className="flex-1 flex">
+                      <div className="w-[50%] shrink-0 flex items-center gap-2 pl-[18px] pr-2">
                         <div className="w-[20px] h-[20px] border border-black shrink-0 bg-white flex items-center justify-center relative mt-[2px]">
                           {filledData?.legalForm === "Private Limited Company" && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                         </div>
@@ -659,7 +660,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                           <span className="text-[10px] text-black font-normal mt-[1px]" style={{ fontFamily: '"Arial", sans-serif', letterSpacing: '-0.2px' }}>Private Limited Company</span>
                         </div>
                       </div>
-                      <div className="w-[32%] shrink-0 flex items-center gap-2 pl-[18px] pr-2">
+                      <div className="w-[50%] shrink-0 flex items-center gap-2 pl-[18px] pr-2">
                         <div className="w-[20px] h-[20px] border border-black shrink-0 bg-white flex items-center justify-center relative mt-[2px]">
                           {filledData?.legalForm === "State Joint Venture" && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                         </div>
@@ -668,13 +669,13 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                           <span className="text-[10px] text-black font-normal mt-[1px]" style={{ fontFamily: '"Arial", sans-serif', letterSpacing: '-0.2px' }}>State Joint Venture</span>
                         </div>
                       </div>
-                      <div className="flex-1"></div>
                     </div>
+                  </div>
                   
-                  {/* Bottom Grid Rows */}
-                  <div className="flex flex-1 py-[4px] min-h-[100px]">
-                    {/* Column 1 */}
-                    <div className="w-[36%] shrink-0 pl-[6px] pr-2 flex flex-col gap-[7px]">
+                  {/* Bottom Grid Rows: 3 Columns of Checkboxes */}
+                  <div className="flex flex-1 py-[5px]">
+                    {/* Column 1 (Sits directly under Label block) */}
+                    <div className="w-[340px] shrink-0 pl-[10px] pr-2 flex flex-col gap-[7px]">
                       {[
                         { kh: "សហគ្រាសឯកបុគ្គល/រូបវន្តបុគ្គល", en: "Sole Proprietorship / Physical Person" },
                         { kh: "ក្រុមហ៊ុនសហកម្មសិទ្ធិទូទៅ", en: "General Partnership" },
@@ -692,8 +693,10 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         </div>
                       ))}
                     </div>
-                      {/* Column 2 */}
-                      <div className="w-[32%] shrink-0 pl-[18px] pr-2 flex flex-col gap-[7px]">
+
+                    <div className="flex-1 flex">
+                      {/* Column 2 (Sits directly under Private Ltd) */}
+                      <div className="w-[50%] shrink-0 pl-[18px] pr-2 flex flex-col gap-[7px]">
                         {[
                           { kh: "ក្រុមហ៊ុនមហាជនទទួលខុសត្រូវមានកម្រិត", en: "Public Limited Company" },
                           { kh: "ចំណែកក្នុងសហគ្រាសចម្រុះ", en: "Interest in Joint Venture" },
@@ -711,8 +714,9 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                           </div>
                         ))}
                       </div>
-                      {/* Column 3 */}
-                      <div className="flex-1 flex flex-col gap-[7px] pl-[18px] pr-2">
+
+                      {/* Column 3 (Sits directly under State Joint Venture) */}
+                      <div className="w-[50%] shrink-0 pl-[18px] pr-2 flex flex-col gap-[7px]">
                         {[
                           { kh: "សាខាក្រុមហ៊ុនបរទេស", en: "Foreign Company's Branch" },
                           { kh: "ការិយាល័យតំណាង", en: "Representative Office" },
