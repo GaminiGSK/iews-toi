@@ -240,54 +240,53 @@ const ToiAcar = ({ onBack, packageId, year }) => {
         {activeWorkspacePage === 1 && (
           <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
             {/* Content for the white preview */}
-            <div className="w-full flex flex-col font-sans mb-12 text-black print:toi-form-scale print:mb-0">
+            <div className="w-full flex flex-col font-sans mb-12 text-black print:toi-form-scale print:mb-0 max-w-[900px] mx-auto">
               {/* OFFICIAL GDT HEADER - Based exactly on reference image */}
-              <div className="w-full relative mb-12 text-[10px] sm:text-[11px] leading-tight pt-4 font-bold flex justify-between items-start">
+              <div className="w-full relative mb-6 text-[10px] sm:text-[11px] leading-tight pt-2 font-bold flex justify-between items-start">
 
                 {/* LEFT: TOI 01 / I and MINISTRY */}
-                <div className="flex flex-col items-start gap-12 w-[45%]">
-                  <span className="font-extrabold text-[16px] tracking-wide pl-2 font-serif">TOI 01 / I</span>
+                <div className="flex flex-col items-start w-[38%]">
+                  <span className="font-extrabold text-[16px] tracking-wide pl-2 font-serif mb-6">TOI 01 / I</span>
 
-                  <div className="flex flex-col items-center ml-16">
-                    <span className="font-bold text-[14px] tracking-wide" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ក្រសួងសេដ្ឋកិច្ចនិងហិរញ្ញវត្ថុ</span>
-                    <span className="font-semibold text-[13px] tracking-wide mb-0.5">MINISTRY OF ECONOMY AND FINANCE</span>
-                    <div className="w-[105%] h-[2.5px] bg-black my-0.5"></div>
-                    <span className="font-bold text-[14px] mt-1 tracking-wide" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>អគ្គនាយកដ្ឋានពន្ធដារ</span>
-                    <span className="font-semibold text-[13px] mb-2 tracking-wide">GENERAL DEPARTMENT OF TAXATION</span>
+                  <div className="flex flex-col items-center w-full">
+                    <span className="font-bold text-[13px] tracking-wide" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ក្រសួងសេដ្ឋកិច្ចនិងហិរញ្ញវត្ថុ</span>
+                    <span className="font-semibold text-[12px] tracking-wide mb-0.5">MINISTRY OF ECONOMY AND FINANCE</span>
+                    <div className="w-full h-[2.5px] bg-black my-0.5"></div>
+                    <span className="font-bold text-[13px] mt-1 tracking-wide" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>អគ្គនាយកដ្ឋានពន្ធដារ</span>
+                    <span className="font-semibold text-[12px] mb-2 tracking-wide">GENERAL DEPARTMENT OF TAXATION</span>
 
-                    <div className="relative">
+                    <div className="relative mt-1">
                       {/* Drop shadow box */}
                       <div className="absolute top-[3px] left-[3px] w-full h-full bg-black"></div>
                       {/* Main block */}
-                      <div className="bg-[#f2f2f2] border-[2px] border-black border-b-0 border-r-0 font-extrabold px-8 py-2 text-[15px] text-center relative z-10 w-[300px]">
+                      <div className="bg-[#f2f2f2] border-[2px] border-black border-b-0 border-r-0 font-extrabold px-6 py-1.5 text-[14px] text-center relative z-10 w-full min-w-[240px]">
                         ទម្រង់ ពបច ០១ / FORM TOI 01
                       </div>
                     </div>
 
-                    <span className="text-[11px] mt-4 font-normal text-slate-800 tracking-wide" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>( មាត្រា ២៩ ថ្មី នៃច្បាប់ស្តីពីសារពើពន្ធ )</span>
-                    <span className="text-[10px] font-normal text-slate-800 tracking-tight mt-0.5">(Article 29 New of the Law on Taxation)</span>
+                    <span className="text-[10px] mt-3 font-normal text-slate-800 tracking-wide" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>( មាត្រា ២៩ ថ្មី នៃច្បាប់ស្តីពីសារពើពន្ធ )</span>
+                    <span className="text-[9px] font-normal text-slate-800 tracking-tight mt-0.5">(Article 29 New of the Law on Taxation)</span>
                   </div>
                 </div>
 
                 {/* CENTER: GDT EMBLEM / LOGO */}
-                <div className="flex flex-col items-center w-[10%] justify-center pt-4">
+                <div className="flex flex-col items-center w-[24%] justify-start pt-0">
                   <img
                     src="/assets/gdt_logo.jpg"
                     alt="GDT Emblem"
-                    className="w-[120px] h-[120px] object-contain"
+                    className="w-[150px] h-[150px] object-contain"
                     onError={(e) => {
-                      // Fallback to existing seal PNG if JPG not found
                       e.target.src = '/assets/gdt_seal.png';
                     }}
                   />
                 </div>
 
                 {/* RIGHT: KINGDOM */}
-                <div className="flex flex-col items-center pt-24 w-[45%] pr-12">
-                  <span className="font-bold text-[16px] tracking-wider" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ព្រះរាជាណាចក្រកម្ពុជា</span>
-                  <span className="font-medium text-[15px] tracking-[0.15em] pl-1 mb-1">KINGDOM OF CAMBODIA</span>
-                  <span className="font-bold text-[15px] tracking-wide" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ជាតិ សាសនា ព្រះមហាក្សត្រ</span>
-                  <span className="font-medium text-[13px] tracking-[0.1em] mt-1">NATION &#160; RELIGION &#160; KING</span>
+                <div className="flex flex-col items-center pt-12 w-[38%] pr-4">
+                  <span className="font-bold text-[15px] tracking-wider" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ព្រះរាជាណាចក្រកម្ពុជា</span>
+                  <span className="font-medium text-[13px] tracking-[0.12em] pl-1 mb-1">KINGDOM OF CAMBODIA</span>
+                  <span className="font-bold text-[13px] tracking-wide" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ជាតិ សាសនា ព្រះមហាក្សត្រ</span>
+                  <span className="font-medium text-[12px] tracking-[0.1em] mt-1">NATION &#160; RELIGION &#160; KING</span>
                   <div className="flex items-center justify-center w-[180px] gap-1 mt-1.5 opacity-80">
                     <div className="h-px bg-black flex-1"></div>
                     <span className="text-[8px] text-black pb-0.5 inline-block -translate-y-px">&#10045;</span>
