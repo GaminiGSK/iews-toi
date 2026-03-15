@@ -248,18 +248,18 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                 <div className="flex flex-col items-start w-[38%]">
                   <span className="font-extrabold text-[16px] tracking-wide pl-2 font-serif mb-6">TOI 01 / I</span>
 
-                  <div className="flex flex-col items-center w-full">
+                  {/* Ministry block - LEFT aligned to match original */}
+                  <div className="flex flex-col items-start w-full pl-2">
                     <span className="font-bold text-[13px] tracking-wide" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ក្រសួងសេដ្ឋកិច្ចនិងហិរញ្ញវត្ថុ</span>
-                    <span className="font-semibold text-[12px] tracking-wide mb-0.5">MINISTRY OF ECONOMY AND FINANCE</span>
-                    <div className="w-full h-[2.5px] bg-black my-0.5"></div>
-                    <span className="font-bold text-[13px] mt-1 tracking-wide" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>អគ្គនាយកដ្ឋានពន្ធដារ</span>
-                    <span className="font-semibold text-[12px] mb-2 tracking-wide">GENERAL DEPARTMENT OF TAXATION</span>
+                    <span className="font-semibold text-[12px] tracking-wide underline mb-0.5">MINISTRY OF ECONOMY AND FINANCE</span>
+                    <span className="font-bold text-[13px] mt-0.5 tracking-wide" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>អគ្គនាយកដ្ឋានពន្ធដារ</span>
+                    <span className="font-semibold text-[12px] mb-3 tracking-wide">GENERAL DEPARTMENT OF TAXATION</span>
 
-                    <div className="relative mt-1">
+                    <div className="relative mt-1 self-start">
                       {/* Drop shadow box */}
                       <div className="absolute top-[3px] left-[3px] w-full h-full bg-black"></div>
                       {/* Main block */}
-                      <div className="bg-[#f2f2f2] border-[2px] border-black border-b-0 border-r-0 font-extrabold px-6 py-1.5 text-[14px] text-center relative z-10 w-full min-w-[240px]">
+                      <div className="bg-[#f2f2f2] border-[2px] border-black border-b-0 border-r-0 font-extrabold px-6 py-1.5 text-[14px] text-center relative z-10 min-w-[240px]">
                         ទម្រង់ ពបច ០១ / FORM TOI 01
                       </div>
                     </div>
