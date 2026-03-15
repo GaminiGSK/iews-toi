@@ -1,0 +1,16 @@
+Page,Field
+1,accountingRecord
+1,taxComplianceStatus
+1,statutoryAudit
+1,legalForm
+1,yearFirstRevenue
+1,yearFirstProfit
+1,priorityPeriodYear
+1,incomeTaxRate
+1,incomeTaxDue
+1,taxCreditCarriedForward
+1,taxOfficeNo
+1,taxOfficialId
+1,filedIn
+1,filingDate
+1,signatoryName

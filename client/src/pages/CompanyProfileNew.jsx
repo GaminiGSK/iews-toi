@@ -840,6 +840,30 @@ export default function CompanyProfile() {
                         <p className="text-slate-500 text-xs leading-relaxed">Manage Chart of Accounts codes and standard descriptions.</p>
                     </div>
 
+                    <div onClick={() => setView('assets')} className="group p-8 bg-slate-800/40 hover:bg-yellow-600/10 border border-white/5 hover:border-yellow-500/50 rounded-3xl transition-all duration-500 cursor-pointer">
+                        <div className="w-14 h-14 bg-yellow-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-500">
+                            <ShieldCheck size={28} className="text-yellow-500" />
+                        </div>
+                        <h3 className="text-white font-bold text-xl mb-2">Asset & Depreciation</h3>
+                        <p className="text-slate-500 text-xs leading-relaxed">Manage fixed assets, intangibles, and calculate tax depreciation pooling.</p>
+                    </div>
+
+                    <div onClick={() => setView('salary')} className="group p-8 bg-slate-800/40 hover:bg-pink-600/10 border border-white/5 hover:border-pink-500/50 rounded-3xl transition-all duration-500 cursor-pointer">
+                        <div className="w-14 h-14 bg-pink-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-500">
+                            <Users size={28} className="text-pink-500" />
+                        </div>
+                        <h3 className="text-white font-bold text-xl mb-2">Salary & TOS Recon</h3>
+                        <p className="text-slate-500 text-xs leading-relaxed">Reconcile Tax on Salary filings with annual SG&A salary expenses.</p>
+                    </div>
+
+                    <div onClick={() => setView('related_party')} className="group p-8 bg-slate-800/40 hover:bg-orange-600/10 border border-white/5 hover:border-orange-500/50 rounded-3xl transition-all duration-500 cursor-pointer">
+                        <div className="w-14 h-14 bg-orange-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-500">
+                            <Layers size={28} className="text-orange-500" />
+                        </div>
+                        <h3 className="text-white font-bold text-xl mb-2">Related Party Disclosure</h3>
+                        <p className="text-slate-500 text-xs leading-relaxed">Map intercompany transactions, director loans, and parent/subsidiary entities.</p>
+                    </div>
+
                     {/* ROW 3 */}
                     <div onClick={() => setView('currency')} className="group p-8 bg-slate-800/40 hover:bg-teal-600/10 border border-white/5 hover:border-teal-500/50 rounded-3xl transition-all duration-500 cursor-pointer">
                         <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-500">
