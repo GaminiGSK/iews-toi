@@ -79,7 +79,10 @@ const ToiAcar = ({ onBack, packageId, year }) => {
       const res = await axios.post('/api/chat/message', {
         message: currentInput,
         model: "gemini-2.0",
-        context: { route: window.location.pathname }
+        context: { 
+            route: window.location.pathname,
+            pageData: filledData
+        }
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });

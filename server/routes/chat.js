@@ -162,7 +162,7 @@ router.post('/message', auth, async (req, res) => {
             equity: summaryStats[0] ? summaryStats[0].totalEquity.toFixed(2) : "0.00"
         };
 
-        const recentTxContext = allTransactions.slice(0, 500).map(t => ({
+        const recentTxContext = allTransactions.slice(0, 5).map(t => ({
             date: t.date ? t.date.toISOString().split('T')[0] : 'No Date',
             description: t.description,
             amount: t.amount,
@@ -227,6 +227,7 @@ router.post('/message', auth, async (req, res) => {
         }
 
         const context = {
+            companyCode,
             companyName,
             profile: {
                 nameEn: profile.companyNameEn,

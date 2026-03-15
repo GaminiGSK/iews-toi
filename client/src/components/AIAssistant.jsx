@@ -118,20 +118,31 @@ const AIAssistant = () => {
 
         try {
             const token = localStorage.getItem('token');
-            // Get Package ID if in Workspace
             const searchParams = new URLSearchParams(window.location.search);
             const packageId = searchParams.get('packageId') || searchParams.get('year'); // Fallback or primary
+
+            // DYNAMIC STATE INJECTION: Read TOI Form Data natively
+            let pageStateData = null;
+            try {
+                const savedData = localStorage.getItem('toiFilledData');
+                if (savedData) {
+                    pageStateData = JSON.parse(savedData);
+                }
+            } catch (e) {
+                console.warn("Failed to read form state.");
+            }
 
             const res = await axios.post('/api/chat/message',
                 {
                     message: userMsg.text,
                     image: userMsg.image,
-                    model: selectedModel, // <--- Send Model
+                    model: selectedModel, 
                     context: {
                         route: location.pathname,
-                        packageId: packageId
-                    }, // <--- Send Context
-                    history: messages.slice(-10) // <--- Send last 10 messages for conversational awareness
+                        packageId: packageId,
+                        pageData: pageStateData // <--- Injected Form State
+                    }, 
+                    history: messages.slice(-10) 
                 },
                 { headers: { 'Authorization': `Bearer ${token}` } }
             );

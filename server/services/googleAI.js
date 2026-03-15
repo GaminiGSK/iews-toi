@@ -13,14 +13,22 @@ function getApiKey() {
 }
 
 // LAZY INITIALIZATION - Create model instance only when needed
-function getModel() {
+function getModel(withTools = false) {
     const apiKey = getApiKey();
     console.log(`[GoogleAI] Initializing with API Key ending in: ...${apiKey.slice(-4)}`);
     const genAI = new GoogleGenerativeAI(apiKey);
-    return genAI.getGenerativeModel({
+    
+    let config = {
         model: "gemini-2.0-flash", // Using 2.0 as 1.5 reported 404 not found in this environment
         systemInstruction: "You are an expert Financial AI Agent. Your job is to extract bank transaction data and tax form layouts with 100% accuracy."
-    });
+    };
+
+    if (withTools) {
+       const { agentToolsDefinitions } = require('./agentTools');
+       config.tools = agentToolsDefinitions.tools;
+    }
+
+    return genAI.getGenerativeModel(config);
 }
 
 // RETRY HELPER with Exponential Backoff
@@ -498,6 +506,7 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
 
             **App Context (User UI):**
             - **Current Page**: ${ui?.route || "Dashboard"}
+            ${ui?.pageData ? `- **Live Form State (Data currently visible to user in boxes)**: ${JSON.stringify(ui.pageData)}` : ''}
 
             **Conversation History**:
             ${historyStr}
@@ -547,7 +556,13 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
             Answer:
         `;
 
-        const inputs = [prompt];
+        // Prepare strict Content array for multi-turn function calling
+        const contents = [
+            {
+                role: 'user',
+                parts: [{ text: prompt }]
+            }
+        ];
 
         if (imageBase64) {
             // Parse Data URI
@@ -555,7 +570,7 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
             if (matches) {
                 const mimeType = matches[1];
                 const data = matches[2];
-                inputs.push({
+                contents[0].parts.push({
                     inlineData: {
                         data: data,
                         mimeType: mimeType
@@ -565,9 +580,69 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
             }
         }
 
-        const result = await callGeminiWithRetry(() => getModel().generateContent(inputs));
-        const responseText = result.response.text();
-        console.log(`[Gemini Chat]Success.Response length: ${responseText.length} `);
+        const result = await callGeminiWithRetry(() => getModel(true).generateContent({ contents }));
+        let response = result.response;
+        let responseText = response.text ? response.text() : ""; // get fallback text
+
+        // --- THE AGENTIC LOOP ---
+        // If Gemini decides to use a tool, it will return functionCall(s)
+        let loopCount = 0;
+        const maxLoops = 5; // prevent infinite loops
+
+        while (response.functionCalls() && response.functionCalls().length > 0 && loopCount < maxLoops) {
+            loopCount++;
+            console.log(`\n[Agentic Loop] Iteration ${loopCount}: AI requested tool(s).`);
+            
+            const functionCalls = response.functionCalls();
+            const { executeAgentTool } = require('./agentTools');
+            let functionResponsesParts = [];
+
+            for (const call of functionCalls) {
+                console.log(`-> Tool called: ${call.name}`);
+                try {
+                    let toolResponse = await executeAgentTool(call.name, call.args, context.companyCode);
+                    console.log(`<- Tool success. Returning data to AI.`);
+                    functionResponsesParts.push({
+                        functionResponse: {
+                            name: call.name,
+                            response: toolResponse
+                        }
+                    });
+                } catch (err) {
+                    console.error(`<- Tool error: ${err.message}`);
+                     functionResponsesParts.push({
+                        functionResponse: {
+                            name: call.name,
+                            response: { error: err.message }
+                        }
+                    });
+                }
+            }
+
+            // We must append the AI's functionCall request AND our functionResponse to the conversation manually
+            if (response.candidates && response.candidates[0]) {
+                contents.push(response.candidates[0].content); // Contains the AI's functionCall intent
+            }
+            
+            contents.push({
+                role: 'user',
+                parts: functionResponsesParts
+            }); // Contains our execution data
+
+            // Call again with the updated timeline
+            console.log(`[Agentic Loop] Yielding back to Gemini...`);
+            const followUpResult = await callGeminiWithRetry(() => getModel(true).generateContent({ contents }));
+            response = followUpResult.response;
+            if (response.text) {
+                 responseText = response.text() || responseText;
+            }
+        }
+
+        if (loopCount >= maxLoops) {
+             console.log(`[Agentic Loop] Reached MAX LOOPS (${maxLoops}). Forcing termination.`);
+        }
+
+        console.log(`[Gemini Chat] Success. Final Response length: ${responseText.length}`);
         return responseText;
 
     } catch (e) {
@@ -576,11 +651,9 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
         console.error("Error Status:", e.status);
 
         // Return real error for debugging
-        return `[AI Error]: ${e.message}.(Status: ${e.status || 'N/A'
-            }) \n\nPlease ensure the server has been restarted to load the new API key if you just changed it.`;
+        return `[AI Error]: ${e.message} (Status: ${e.status || 'N/A'})\n\nPlease ensure the server has been restarted to load the new API key if you just changed it.`;
     }
 };
-
 
 
 
