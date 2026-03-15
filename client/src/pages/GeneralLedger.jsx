@@ -7,7 +7,9 @@ import ErrorBoundary from '../components/ErrorBoundary';
 const GeneralLedger = ({ onBack }) => {
     const [transactions, setTransactions] = useState([]);
     const [codes, setCodes] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [tagging, setTagging] = useState(false);
+    const [error, setError] = useState(null);
     const [taggingStatus, setTaggingStatus] = useState('');
 
     // Fetch TOI BR Database data for Company name if available
@@ -20,7 +22,7 @@ const GeneralLedger = ({ onBack }) => {
         }
     });
 
-    // Helper functions for formatting datesetError] = useState(null);
+    // Helper functions for formatting dates
     const [viewMode, setViewMode] = useState('date'); // 'date' | 'code'
     const [filterCode, setFilterCode] = useState('');
     const [fiscalYear, setFiscalYear] = useState('all');
