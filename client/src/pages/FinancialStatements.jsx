@@ -342,7 +342,7 @@ const FinancialStatements = ({ onBack }) => {
                 </div>
 
                 {/* Report Paper */}
-                <div className="bg-white rounded-b-xl rounded-tr-xl shadow-xl border border-gray-200 p-10 min-h-[600px] font-sans relative overflow-auto select-text print:shadow-none print:border-none print:rounded-none print:max-w-none print:w-full">
+                <div className="print-container bg-white rounded-b-xl rounded-tr-xl shadow-xl border border-gray-200 p-10 min-h-[600px] font-sans relative overflow-auto select-text print:shadow-none print:border-none print:rounded-none print:max-w-none print:w-full">
                     <style>
                         {`
                             @media print {
@@ -372,7 +372,7 @@ const FinancialStatements = ({ onBack }) => {
                                 <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>របាយការណ៍លទ្ធផល / INCOME STATEMENT</h3>
                                 <p className="text-sm text-gray-500 italic">For the year ended 31 December {new Date().getFullYear()}</p>
                             </div>
-                            <div className="overflow-x-auto">
+                            <div className="overflow-x-auto print-content-wrapper">
                                 <table className="w-full text-sm border-collapse">
                                     <thead>
                                         <tr className="bg-slate-100 border-b border-gray-300">
@@ -422,7 +422,7 @@ const FinancialStatements = ({ onBack }) => {
                                 <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>របាយការណ៍ស្ថានភាពហិរញ្ញវត្ថុ / STATEMENT OF FINANCIAL POSITION</h3>
                                 <p className="text-sm text-gray-500 italic">As at 31 December {new Date().getFullYear()}</p>
                             </div>
-                            <div className="overflow-x-auto">
+                            <div className="overflow-x-auto print-content-wrapper">
                                 <table className="w-full text-sm border-collapse">
                                     <thead>
                                         <tr className="bg-slate-100 border-b border-gray-300">
@@ -484,7 +484,7 @@ const FinancialStatements = ({ onBack }) => {
                                 <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>របាយការណ៍លំហូរសាច់ប្រាក់ / STATEMENT OF CASH FLOWS</h3>
                                 <p className="text-sm text-gray-500 italic">For the year ended 31 December {new Date().getFullYear()}</p>
                             </div>
-                            <div className="overflow-x-auto">
+                            <div className="overflow-x-auto print-content-wrapper">
                                 <table className="w-full text-sm border-collapse">
                                     <thead>
                                         <tr className="bg-slate-100 border-b border-gray-300">
@@ -571,7 +571,7 @@ const FinancialStatements = ({ onBack }) => {
                                 <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>តារាងបម្រែបម្រួលមូលធន / STATEMENT OF CHANGES IN EQUITY</h3>
                                 <p className="text-sm text-gray-500 italic">For the year ended 31 December {new Date().getFullYear()}</p>
                             </div>
-                            <div className="overflow-x-auto">
+                            <div className="overflow-x-auto print-content-wrapper">
                                 <table className="w-full text-sm border-collapse">
                                     <tbody>
                                         <tr className="bg-gray-50 font-bold border-b border-gray-300">
@@ -627,11 +627,8 @@ const FinancialStatements = ({ onBack }) => {
                                 <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>កំណត់សម្គាល់លើរបាយការណ៍ហិរញ្ញវត្ថុ / NOTES TO THE FINANCIAL STATEMENTS</h3>
                                 <p className="text-sm text-gray-500 italic">For the year ended 31 December {new Date().getFullYear()}</p>
                             </div>
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-sm border-collapse">
-                                    <tbody className="font-sans">
-                                        <tr>
-                                            <td colSpan="2" className="p-6">
+                            <div className="overflow-x-auto print-content-wrapper">
+                                <div className="p-6 font-sans w-full block">
                                                 <h4 className="font-bold text-gray-900 border-b pb-2 mb-4">1. BASIS OF PREPARATION</h4>
                                                 <p className="text-gray-700 leading-relaxed mb-6">These financial statements have been prepared in accordance with the Cambodian International Financial Reporting Standards (CIFRS) and CIFRS for SMEs, as directed by the Accounting and Auditing Regulator (ACAR). The financial statements have been prepared under the historical cost convention, modified by the revaluation of certain financial instruments.</p>
 
@@ -644,10 +641,7 @@ const FinancialStatements = ({ onBack }) => {
 
                                                 <h4 className="font-bold text-gray-900 border-b pb-2 mb-4 mt-8">3. CRITICAL ACCOUNTING ESTIMATES AND JUDGEMENTS</h4>
                                                 <p className="text-gray-700 leading-relaxed">The preparation of financial statements requires the use of certain critical accounting estimates. It also requires management to exercise its judgement in the process of applying the entity's accounting policies. Related Party Transactions or special itemized expenses are explicitly reconciled with physical bank statements and invoices.</p>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                            </div>
                             </div>
                         </div>
                     </div>
@@ -661,7 +655,7 @@ const FinancialStatements = ({ onBack }) => {
                                     {activeTab === 'pl' ? 'របាយការណ៍លទ្ធផលបំបែកប្រចាំខែ / MONTHLY INCOME STATEMENT' : 'របាយការណ៍ស្ថានភាពហិរញ្ញវត្ថុ / STATEMENT OF FINANCIAL POSITION'}
                                 </h3>
                             </div>
-                            <div className="overflow-x-auto">
+                            <div className="overflow-x-auto print-content-wrapper">
                                 <table className="w-full text-sm border-collapse">
                                     <thead>
                                         <tr className="border-b border-gray-300">
