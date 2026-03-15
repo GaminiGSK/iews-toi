@@ -1,0 +1,100 @@
+﻿[dotenv@17.2.3] injecting env (6) from .env -- tip: 鈿欙笍  load multiple .env files with { path: ['.env.local', '.env'] }
+{
+  "_id": "696b1e8acb22fed0366a82e9",
+  "user": "698ee86ca61b7e7a5b415550",
+  "companyCode": "GK_SMART_AI",
+  "companyNameEn": "GK SMART",
+  "companyNameKh": "釣囜灨釣佱焷 釣熱煉釣⑨灦釣?,
+  "registrationNumber": "50015732",
+  "incorporationDate": "13 April 2021",
+  "companyType": "Sole Proprietorship",
+  "address": "釣欋灱釣撫灨釣?釣屷灨釤め煛釤?釣囜灦釣撫煁釣戓灨釤?釣⑨瀭釣夺灇釣⑨灦釣氠焿釣夺瀬釣夺灉釤夅灦 釣氠焿釤佱灍釤娽灨釣娽焷釣?釣曖煉釣涐灱釣溼瀭釤掅灅釣夺灀 釣椺灱釣樶灧釣⑨煇釣氠瀭釣羔瀶釤?釣熱瀯釤掅瀫釣夺瀼釤嬦灑釣坚灇釣斸焸釣€釣€釤掅灑釣?釣佱瀻釤掅瀸釣熱焸釣撫灍釣会瀬 釣氠灦釣囜瀿釣夺灀釣羔灄釤掅灀釤嗎灃釤佱瀴 釣€釣樶煉釣栣灮釣囜灦\nUnit D414, 4th floor, No., Arakawa Residence Block, Phsar Teuk Thla, Teuk Thla, Sen Sok, Phnom Penh, Cambodia",
+  "shareholder": "Gunasingha Kasspa Gamini ",
+  "director": "Gunasingha Kassapa Gamini",
+  "vatTin": "K009-902103452",
+  "businessActivity": "620 Computer programming, consultancy and related activities 62010 Computer programming activities(2)",
+  "businessRegistration": "",
+  "createdAt": "2026-01-17T05:30:50.939Z",
+  "updatedAt": "2026-03-11T14:25:11.513Z",
+  "__v": 29,
+  "documents": [
+    {
+      "docType": "moc_cert",
+      "originalName": "MOC Cert GK_SMART-50015732-1.jpg",
+      "path": "drive:1aqJtQdKir_TDORecOY4RJgT2NrVDeW76",
+      "data": "",
+      "status": "Verified",
+      "rawText": "釣€釤掅灇釣熱灲釣勧灃釣夺瀻釣丰瀲釤掅瀲釣€釣樶煉釣榎nMINISTRY OF COMMERCE\n釣涐焷釣?(No) MOC-47929415 釣栣瀻.釣呩灁釣朶n\n釣溼灧釣夅煉釣夅灦釣斸灀釣斸瀼釤掅灇\n釣斸瀴釤掅瀲釣夺瀫釤嬦瀫釣夺灇釣呩灮釤囜瀳釤掅灅釤勧焽釣€釤掅灀釣会瀯釣斸瀴釤掅瀲釣羔灃釣夺瀻釣丰瀲釤掅瀲釣€釣樶煉釣榎nCERTIFICATE OF INCORPORATION\n\n釣撫灦釣樶瀫釣氠瀻釤峔nNAME\n釣呩灮釤囜灁釣夅煉釣囜灨釣€釤掅灇釤勧灅釣涐焷釣乗nREGISTRATION NUMBER\n釣⑨瀼釤掅瀼釣涐焷釣佱瀰釣会焽釣斸瀴釤掅瀲釣羔瀰釣夺灍釤媆nOLD REGISTRATION NUMBER\n釣€釣夺灈釣斸灇釣丰瀰釤掅瀱釤佱瀾釣呩灮釤囜瀫釤掅灀釣会瀯釣斸瀴釤掅瀲釣羔灃釣夺瀻釣丰瀲釤掅瀲釣€釣樶煉釣榎nINCORPORATION DATE\n釣忈煉釣氠灱釣溼灁釣夺灀釣戓瀾釣结灈釣熱煉釣傖灦釣涐煁釣愥灦釣囜灦:\nIS INCORPORATED AS:\n釣囜灨釣佱焷 釣熱煉釣⑨灦釣廫nGK SMART\n50015732\n50015732\n5000058831\n5000058831\n13 釣樶焷釣熱灦 2021\n13 April 2021\n釣熱灎釣傖煉釣氠灦釣熱灟釣€釣斸灮釣傖煉釣傖灈\nSole Proprietorship\n\n釣熱煉釣愥灧釣忈瀫釤掅灇釤勧灅釣斸瀾釣斸瀴釤掅瀴釣忈煉釣忈灧釣撫焹釣呩煉釣斸灦釣斸煁釣熱煉釣忈灨釣栣灨釣溼灧釣掅灦釣撫灃釣夺瀻釣丰瀲釤掅瀲釣€釣樶煉釣樶灀釣丰瀯\n釣斸瀴釤掅瀲釣羔灃釣夺瀻釣丰瀲釤掅瀲釣€釣樶煉釣?釣呩煉釣斸灦釣斸煁釣熱煉釣忈灨釣栣灨釣熱灎釣傖煉釣氠灦釣熱灃釣夺瀻釣丰瀲釤掅瀲釣€釣樶煉釣?釣€釤掅灇釣樶灇釣娽煉釣嬦灁釤掅灁釣溼焷釣庒灨\n釣撫灧釣勧瀫釤掅灇釣樶灃釤掅灇釣犪煉釣樶瀾釣庒煉釣?釣娽焸釣涐灅釣夺灀釣囜灦釣掅灇釣樶灦釣撫灀釤冡灃釤掅灇釤囜灇釣夺瀲釣夺瀻釣夺瀰釣€釤掅灇釣€釣樶煉釣栣灮釣囜灦釤擻nUNDER THE REGULATIONS OF COMMERCIAL RULES AND REGISTER\nLAW, COMMERCIAL ENTERPRISES LAW, CIVIL CODE AND PENAL CODE\nOF THE KINGDOM OF CAMBODIA\n釣栣煉釣氠焽釣氠灦釣囜灦釣庒灦釣呩瀫釤掅灇釣€釣樶煉釣栣灮釣囜灦\n釣囜灦釣忈灧 釣熱灦釣熱灀釣?釣栣煉釣氠焽釣樶灎釣夺瀫釤掅灍釣忈煉釣歕nKINGDOM OF CAMBODIA\nNATION RELIGION KING\n\n釣椺煉釣撫焼釣栣焷釣? 13 釣樶焷釣熱灦 2021\nPHNOM PENH, 13 APRIL 2021\n釣? 釣氠瀶釤掅瀷釣樶灀釤掅瀼釤掅灇釣羔瀫釤掅灇釣熱灲釣勧灃釣夺瀻釣丰瀲釤掅瀲釣€釣樶煉釣榎nF. MINISTER OF COMMERCE\n釣撫灦釣欋瀫\n釣氠灦釣囜灦釣庒灦釣呩瀫釤掅灇rector General\n釣栣煉釣氠焽釣氠灦釣囜灦釣揬n*\n釣€釤掅灇釣熱瀯釣栣灦釣庒灧釣囜瀫\n釣犪灱-釣熱煀釣羔灉釣欋焿釣会瀯\nHO SIVYONG\n",
+      "uploadedAt": "2026-03-01T16:16:35.848Z",
+      "_id": "69a4666373b317abd7ed1f88"
+    },
+    {
+      "docType": "en_extract",
+      "originalName": "Extract english -GK_SMART-50015732-1.jpg",
+      "path": "drive:1l4GHaIqtjUiVXlbDY-oOwBRMBVz824aU",
+      "data": "",
+      "status": "Verified",
+      "rawText": "Sole Proprietorship Number - 50015732\n\nSole Proprietorship Extract\n\nGeneral Details\nSole Proprietorship Number: 50015732\nSole Proprietorship Name (Khmer): 釣囜灨釣佱焷 釣熱煉釣⑨灦釣廫nSole Proprietorship Name (English): GK SMART\nSole Proprietorship Status: Registered\nIncorporation Date: 13-Apr-2021\nRe-Registration Date: 21-Apr-2021\nTax Identification Number (TIN): K009-902103452\nTax Registration Date: 28-Jul-2021\n\nBusiness Activities:\nBusiness Objective: 620 Computer programming, consultancy and related activities\nMain Business Activities: 62010 Computer programming activities(2)\nBusiness Objective: 682 Real estate activities on a fee or contract basis\nMain Business Activities: 68209 Real estate activities on a fee or contract basis n.e.c.(7)\nBusiness Objective: 332 Installation of industrial machinery and equipment\nMain Business Activities: 33200 Installation of industrial machinery and equipment\nBusiness Objective: 692 Accounting, bookkeeping and auditing activities; tax consultancy\nMain Business Activities: 69200 Accounting, bookkeeping and auditing activities; tax consultancy\nBusiness Objective: 829 Business support service activities n.e.c.\nMain Business Activities: 82990 Other business support service activities n.e.c.\nBusiness Objective: 702 Management consultancy activities\nMain Business Activities: 70200 Management consultancy activities\nBusiness Objective: 451 Sale of motor vehicles\nMain Business Activities: 45102 Wholesale and retail of used motor vehicles\nBusiness Objective: 479 Retail trade not in stores, stalls or markets\nMain Business Activities: 47910 Retail sale via mail order houses or via Internet\n\nAddresses\nPhysical Registered Office Address: 釣欋灱釣撫灨釣?釣屷灨釤め煛釤?釣囜灦釣撫煁釣戓灨釤?釣⑨瀭釣夺灇釣⑨灦釣氠焿釣夺瀬釣夺灉釤夅灦 釣氠焿釤佱灍釤娽灨釣娽焷釣?釣曖煉釣涐灱釣溼瀭釤掅灅釣夺灀, Phsar Teuk Thla, Teuk\nThla, Sen Sok, Phnom Penh, Cambodia\nPostal Registered Office Address: Same as Physical Address\n\nContact Email: gamini.vat80@gmail.com\nContact Telephone Number: +855 92 973194\n\nOwner Details\nName (Khmer): [Missing] [Missing]\nName (English): Gunasingha KASSAPA GAMINI\nPostal Address: 306, Condo Honey Mean Truab, Phsar Teuk Thla, Teuk Thla, Sen Sok,\nPhnom Penh, Cambodia\nTelephone: +855 92 973194\n\nPage 1 of 1\nThe validation code for this Business Extract is MOC-49124665. To check the validity of this document enter https://www.businessregistration.moc.gov.kh/cambodia-br-soleproprietorships/verify/50015732/MOC-49124665.html in your\nbrowser.\nExtract generated as at 17 January 2026 12:37 PM\n",
+      "uploadedAt": "2026-03-01T16:16:52.246Z",
+      "_id": "69a4667473b317abd7ed1f8e"
+    },
+    {
+      "docType": "kh_extract",
+      "originalName": "Extract Khemer GK_SMART-50015732-1.jpg",
+      "path": "drive:1pwJwfzxap7t0FzOtwxQ5whmROmgXvMY_",
+      "data": "",
+      "status": "Verified",
+      "rawText": "```text\nSole Proprietorship Number - 50015732\n\n釣栣煇釣忈煂釣樶灦釣撫灈釣樶煉釣⑨灧釣忈瀾釣坚瀾釤匼nGeneral Information\n釣⑨瀼釤掅瀼釣涐焷釣佱灍釣犪瀭釤掅灇釣夺灍:\nBusiness ID: 50015732\n釣撫灦釣樶瀫釣氠瀻釤嶀灍釣犪瀭釤掅灇釣夺灍\nFirm Name\n釣瀫釣斸灮釣傖煉釣傖灈釣娽焸釣涐灁釣夺灀釣呩灮釤囜灁釣夅煉釣囜灨\n(釣囜灦釣椺灦釣熱灦釣佱煉釣樶焸釣?: 釣囜灨釣佱焷 釣熱煉釣⑨灦釣廫nIndividual Registered Proprietor (Khmer)\n釣撫灦釣樶瀫釣氠瀻釤嶀灍釣犪瀭釤掅灇釣夺灍\nFirm Name\n釣瀫釣斸灮釣傖煉釣傖灈釣娽焸釣涐灁釣夺灀釣呩灮釤囜灁釣夅煉釣囜灨\n(釣囜灦釣椺灦釣熱灦釣⑨瀯釤嬦瀭釤掅灈釤佱灍): GK SMART\nIndividual Registered Proprietor (English)\n釣熱煉釣愥灦釣撫灄釣夺灃釣熱灎釣傖煉釣氠灦釣焅nBusiness Status: 釣呩灮釤囜灁釣夅煉釣囜灨\nRegistered\n釣瀫釣斸灮釣傖煉釣傖灈\nIndividual\n釣€釣夺灈釣斸灇釣丰瀰釤掅瀱釤佱瀾釣呩灮釤囜灁釣夅煉釣囜灨\nDate of Registration\n釣栣灦釣庒灧釣囜煉釣囜瀫釣樶煉釣? 13-釣樶焷釣熱灦-2021\nCommerce:\n釣€釣夺灈釣斸灇釣丰瀰釤掅瀱釤佱瀾釣€釣夺灇釣呩灮釤囜灁釣夅煉釣囜灨\nDate of Re-registration\n釣♂灳釣勧灉釣丰瀴 21-釣樶焷釣熱灦-2021\n釣涐焷釣佱灑釣忈煉釣忈灍釣夅煉釣夅灦釣庒瀫釣樶煉釣榎nTax Identification Number: K009-902103452\n釣熱灦釣氠灃釣踞灃釣撫煉釣抃n釣€釣夺灈釣斸灇釣丰瀰釤掅瀱釤佱瀾釣呩灮釤囜灁釣夅煉釣囜灨\nDate of Tax Registration\n釣熱灦釣氠灃釣踞灃釣撫煉釣?28-釣€釣€釤掅瀫釣娽灦-2021\n\n釣熱灅釤掅灇釣勧煁釣€釤掅灇釣会灅釣犪煀釣会灀\nBusiness Extract\n釣熱瀫釣樶煉釣樶灄釣夺灃釣⑨灦釣囜灨釣溼瀫釣樶煉釣?\nBusiness Activities:\n釣€釣樶煉釣樶灉釣忈煉釣愥灮釣⑨灦釣囜灨釣溼瀫釣樶煉釣?\nBusiness Objectives: 620 釣€釣夺灇釣斸瀯釤掅瀫釣踞瀼釣€釣樶煉釣樶灉釣丰瀿釣羔瀫釣会焼釣栣煉釣欋灱釣戓煇釣?釣€釣夺灇釣栣灧釣傖煉釣氠焺釤囜灆釤勧灁釣涐煁 釣撫灧釣勧灍釣€釣樶煉釣樶灄釣夺灃釣栣灦釣€釤嬦灃釤愥灀釤掅瀿\nCreating computer programs, consultancy and related activities\n釣熱瀫釣樶煉釣樶灄釣夺灃釣⑨灦釣囜灨釣溼瀫釣樶煉釣樶瀰釣樶煉釣斸瀯:\nMain Business Activities: 62010 釣熱瀫釣樶煉釣樶灄釣夺灃釣斸瀯釤掅瀫釣踞瀼釣€釣樶煉釣樶灉釣丰瀿釣羔瀫釣会焼釣栣煉釣欋灱釣戓煇釣?釤?\nCreating computer programs (2)\n釣€釣樶煉釣樶灉釣忈煉釣愥灮釣⑨灦釣囜灨釣溼瀫釣樶煉釣?\nBusiness Objectives: 682 釣熱瀫釣樶煉釣樶灄釣夺灃釣⑨瀰釣涐灀釣戓煉釣氠灃釤掅灆 釣娽焺釣欋灆釣€釣愥煉釣涐焹釣堘煉釣撫灲釣涐瀲釣夺瀫釤嬦灍釤掅瀼釤傖瀯 釣瀼釣夺灅\n釣€釣丰瀰釤掅瀰釣熱灀釤掅灆釣禱nReal estate activities on a fee or contract basis\n釣熱瀫釣樶煉釣樶灄釣夺灃釣⑨灦釣囜灨釣溼瀫釣樶煉釣樶瀰釣樶煉釣斸瀯:\nMain Business Activities: 68209 釣熱瀫釣樶煉釣樶灄釣夺灃釣⑨瀰釣涐灀釣戓煉釣氠灃釤掅灆 釣娽焺釣欋灆釣€釣愥煉釣涐焹釣堘煉釣撫灲釣涐瀲釣夺瀫釤嬦灍釤掅瀼釤傖瀯 釣瀼釣夺灅釣€釣丰瀰釤掅瀰\n釣熱灀釤掅灆釣夺瀶釣戓焹釣戓焵釣?釣娽焸釣涐灃釣会焼釣斸灦釣撫灇釣夺灁釤嬦灁釣夅煉釣呩灱釣?(釤?\nOther real estate activities on a fee or contract basis (7)\n釣€釣樶煉釣樶灉釣忈煉釣愥灮釣⑨灦釣囜灨釣溼瀫釣樶煉釣?\nBusiness Objectives: 332 釣€釣夺灇釣娽焼釣♂灳釣勧灂釤掅瀼釣会焼釣囜灦釣樶焿釣夺灍釤娽灨釣撫灀釣丰瀯釣傖煉釣氠灴釣勧灁釣氠灧釣€釤掅瀬釣夺灇釣樶焿釣夺灍釤娽灨釣揬nAssembly of machines and equipment\n釣熱瀫釣樶煉釣樶灄釣夺灃釣⑨灦釣囜灨釣溼瀫釣樶煉釣樶瀰釣樶煉釣斸瀯:\nMain Business Activities: 33200 釣€釣夺灇釣娽焼釣♂灳釣勧瀭釤掅灇釣酷瀯釣樶焿釣夺灍釤娽灨釣撫灀釣丰瀯釣傖煉釣氠灴釣勧灁釣氠灧釣€釤掅瀬釣夺灇釣樶焿釣夺灍釤娽灨釣揬nAssembly of machines and equipment\n釣€釣樶煉釣樶灉釣忈煉釣愥灮釣⑨灦釣囜灨釣溼瀫釣樶煉釣?\nBusiness Objectives: 692 釣熱瀫釣樶煉釣樶灄釣夺灃釣傖瀻釣撫焷釣欋煉釣?釣€釣夺灇釣€釣忈煁釣忈煉釣氠灦釣傖瀻釣撫焷釣欋煉釣?釣撫灧釣勧灍釣溼灀釣€釣樶煉釣?\n釣€釣夺灇釣栣灧釣傖煉釣氠焺釤囜灆釤勧灁釣涐煁釣曖煉釣撫焸釣€釣栣灀釤掅瀿釣娽灦釣歕nAccounting, bookkeeping and auditing activities; tax consultancy\n釣熱瀫釣樶煉釣樶灄釣夺灃釣⑨灦釣囜灨釣溼瀫釣樶煉釣樶瀰釣樶煉釣斸瀯:\nMain Business Activities: 69200 釣熱瀫釣樶煉釣樶灄釣夺灃釣傖瀻釣撫焷釣欋煉釣?釣€釣夺灇釣€釣忈煁釣忈煉釣氠灦釣傖瀻釣撫焷釣欋煉釣?釣撫灧釣勧灍釣溼灀釣€釣樶煉釣?\n釣€釣夺灇釣栣灧釣傖煉釣氠焺釤囜灆釤勧灁釣涐煁釣曖煉釣撫焸釣€釣栣灀釤掅瀿釣娽灦釣歕nAccounting, bookkeeping and auditing activities; tax consultancy\n釣€釣樶煉釣樶灉釣忈煉釣愥灮釣⑨灦釣囜灨釣溼瀫釣樶煉釣?\nBusiness Objectives: 829 釣熱瀫釣樶煉釣樶灄釣夺灃釣熱焷釣溼灦釣€釣樶煉釣樶瀭釣夺焼釣戓煉釣氠瀶釣涐煁釣⑨灦釣囜灨釣溼瀫釣樶煉釣?釣娽瀾釤冡瀾釤€釣忈瀶釤傖灈釣栣灮釤嗎灁釣夺灀\n釣氠灦釣斸煁釣斸瀴釤掅瀰釣坚灈\nOther business support service activities n.e.c.\n釣熱瀫釣樶煉釣樶灄釣夺灃釣⑨灦釣囜灨釣溼瀫釣樶煉釣樶瀰釣樶煉釣斸瀯:\nMain Business Activities: 82990 釣熱瀫釣樶煉釣樶灄釣夺灃釣熱焷釣溼灦釣傖灦釤嗎瀾釤掅灇釣娽灈釤嬦灑釣夺瀲釣羔灉釣€釣樶煉釣?釣娽瀾釤冡瀾釤€釣忈瀶釤傖灈釣栣灮釤嗎灁釣夺灀釣氠灦釣斸煁\n釣斸瀴釤掅瀰釣坚灈\nOther business support service activities n.e.c.\n釣€釣樶煉釣樶灉釣忈煉釣愥灮釣⑨灦釣囜灨釣溼瀫釣樶煉釣?\nBusiness Objectives: 702 釣熱瀫釣樶煉釣樶灄釣夺灃釣栣灧釣傖煉釣氠焺釤囜灆釤勧灁釣涐煁釣曖煉釣撫焸釣€釣傖煉釣氠灁釤嬦瀭釤掅灇釣刓nManagement consultancy activities\n釣熱瀫釣樶煉釣樶灄釣夺灃釣⑨灦釣囜灨釣溼瀫釣樶煉釣樶瀰釣樶煉釣斸瀯:\nMain Business Activities: 70200 釣熱瀫釣樶煉釣樶灄釣夺灃釣栣灧釣傖煉釣氠焺釤囜灆釤勧灁釣涐煁釣曖煉釣撫焸釣€釣傖煉釣氠灁釤嬦瀭釤掅灇釣刓nManagement consultancy activities\n釣€釣樶煉釣樶灉釣忈煉釣愥灮釣⑨灦釣囜灨釣溼瀫釣樶煉釣?\nBusiness Objectives: 451 釣€釣夺灇釣涐瀫釤嬦灆釣夺灀釣欋灀釤掅瀼\nSale of motor vehicles\n釣熱瀫釣樶煉釣樶灄釣夺灃釣⑨灦釣囜灨釣溼瀫釣樶煉釣樶瀰釣樶煉釣斸瀯:\nMain Business Activities: 45102 釣涐瀫釤嬦瀶釣会焼釣撫灧釣勧灇釣夺灆釣撫灱釣溼灆釣夺灀釣欋灀釤掅瀼釣娽焸釣涐灁釤掅灇釣踞灁釤掅灇釣夺灍釤嬦灇釣结瀰\nWholesale and retail sale of used motor vehicles\n釣€釣樶煉釣樶灉釣忈煉釣愥灮釣⑨灦釣囜灨釣溼瀫釣樶煉釣?\nBusiness Objectives: 479 釣€釣夺灇釣涐瀫釤嬦灇釣夺灆釣樶灧釣撫灀釤呩瀫釤掅灀釣会瀯釣犪灦釣勧瀼釣坚灁釣瀾釣羔灂釤掅灍釣夺灇\nRetail sale via stalls and markets\n釣熱瀫釣樶煉釣樶灄釣夺灃釣⑨灦釣囜灨釣溼瀫釣樶煉釣樶瀰釣樶煉釣斸瀯:\nMain Business Activities: 47910 釣氠灈釣€釤嬦灇釣夺灆釣忈灦釣樶瀫釣撫煉釣涐焸釣勧灁釣夅煉釣囜灦釣戓灧釣夅瀼釣夺灅釣熱灦釣?釣瀼釣夺灅釣⑨煀釣羔灀釣掅灪釣庒焷釣廫nRetail sale via mail order houses or via Internet\n\n釣⑨灦釣熱灆釣娽煉釣嬦灦釣揬nAddresses:\n釣⑨灦釣熱灆釣娽煉釣嬦灦釣撫瀾釣羔灍釤掅灀釣夺瀫釤嬦瀫釣夺灇\nAddress of Registered Office: Unit D414, 釣囜灦釣撫煁釣戓灨釤? 釣曖煉釣涐灱釣溼瀭釤掅灅釣夺灀 釣椺灱釣樶灧釣⑨煇釣氠瀭釣羔瀶釤?釣熱瀯釤掅瀫釣夺瀼釤嬦灑釣坚灇釣斸焸釣€釣€釤掅灑釣? 釣戓灩釣€釣愥煉釣涐灦,\n釣呩灮釤囜灁釣夅煉釣囜灨\n釣熱焸釣撫灍釣会瀬, 釣氠灦釣囜瀿釣夺灀釣羔灄釤掅灀釤嗎灃釤佱瀴, 釣€釣樶煉釣栣灮釣囜灦\nUnit D414, 4th floor, No., Arakawa Residence Block, Phsar Thmey, Teuk Thla, Sen Sok, Phnom Penh, Cambodia\n釣⑨灦釣熱灆釣娽煉釣嬦灦釣撫瀾釣羔灍釤掅灀釣夺瀫釤嬦瀫釣夺灇釣呩灮釤囜灁釣夅煉釣囜灨 釣娽灱釣呩灑釣夺灍釣欋瀶釤掅瀷釣夺灀釣戓灨釣熱煉釣撫灦釣€釤嬦瀫釣夺灇\nAddress of Registered Office as above\n釣忈灦釣樶灁釤掅灇釤冡灍釣庒灨釣欋煃:\nby post\n釣⑨煀釣羔灅釤夅焸釣?\nEmail: gamini.vat80@gmail.com\n釣涐焷釣佱瀾釣坚灇釣熱煇釣栣煉釣戓瀾釤嗎灀釣夺瀫釤嬦瀾釤嗎灀釣?\nContact Number: +855 92 973194\n\n釣樶煉釣呩灦釣熱煁釣熱灎釣傖煉釣氠灦釣焅nEnterprise Owners:\n釣堘煉釣樶焺釤?(釣囜灦釣椺灦釣熱灦釣佱煉釣樶焸釣?:\nName (Khmer): [釣樶灧釣撫灁釣夺灀釣斸焼釣栣焷釣塢 [釣樶灧釣撫灁釣夺灀釣斸焼釣栣焷釣塻]\n釣堘煉釣樶焺釤?(釣囜灦釣椺灦釣熱灦釣⑨瀯釤嬦瀭釤掅灈釤佱灍):\nName (English): Gunasingha KASSAPA GAMINI\n釣⑨灦釣熱灆釣娽煉釣嬦灦釣撫灁釤掅灇釤冡灍釣庒灨釣欋煃:\nPostal Address: 306, Condo Honey Mean Truab, 釣曖煉釣熱灦釣氠瀾釣贯瀫釣愥煉釣涐灦, 釣戓灩釣€釣愥煉釣涐灦, 釣熱焸釣撫灍釣会瀬, 釣氠灦釣囜瀿釣夺灀釣竆n釣椺煉釣撫焼釣栣焷釣? 釣€釣樶煉釣栣灮釣囜灦\n306, Condo Honey Mean Truab, Phsar Thmey, Teuk Thla, Sen Sok, Phnom Penh, Cambodia\n釣涐焷釣佱瀾釣坚灇釣熱灃釤掅瀾\nPhone Number: +855 92 973194\n\n釣戓焼釣栣煇釣氠瀾釣?\nPage 1 of 1\nThe validation code for this Business Extract is MOC-15030275. To check the validity of this document enter https://www.businessregistration.moc.gov.kh/cambodia-br-soleproprietorships/verify/50015732/MOC-15030275.html in your\nbrowser. 釣熱灅釤掅灇釣勧煁釣斸灦釣撫灁釣勧煉釣€釣踞瀼釣撫焻釣€釣夺灈釣斸灇釣丰瀰釤掅瀱釤佱瀾 17 January 2026 12:33 PM\nBusiness Extract was created on 17 January 2026 12:33 PM\n```",
+      "uploadedAt": "2026-03-01T16:17:13.837Z",
+      "_id": "69a4668973b317abd7ed1f95"
+    },
+    {
+      "docType": "tax_patent",
+      "originalName": "2025 Patent -1.jpg",
+      "path": "/tmp/1772382000659-849073153.jpg",
+      "status": "Verified",
+      "rawText": "釣€釤掅灇釣熱灲釣勧灍釤佱瀶釤掅瀷釣€釣丰瀰釤掅瀰釣撫灧釣勧灎釣丰灇釣夅煉釣夅灉釣忈煉釣愥灮\nMINISTRY OF ECONOMY AND FINANCE\n釣⑨瀭釤掅瀭釣撫灦釣欋瀫釣娽煉釣嬦灦釣撫灃釣撫煉釣掅瀶釣夺灇\nGENERAL DEPARTMENT OF TAXATION\n釣涐焷釣?N掳PTM25011038829 釣⑨灃釣奬n\n釣栣灀釤掅瀿釣娽灦\nGENERAL DEPARTMENT OF TAXATION\n\n釣斸煇釣庒煉釣庒灃釣撫煉釣掅灁釤夅灦釣忈瀯釤?釣嗎煉釣撫灦釤?釤⑨煚釤⑨煡\n釣⑨煉釣撫瀫釣囜灦釣斸煁釣栣灀釤掅瀿釣樶瀿釤掅灆釣榎n\n釣栣煉釣氠焽釣氠灦釣囜灦釣庒灦釣呩瀫釤掅灇釣€釣樶煉釣栣灮釣囜灦\nKINGDOM OF CAMBODIA\n釣囜灦釣忈灧 釣熱灦釣熱灀釣?釣栣煉釣氠焽釣樶灎釣夺瀫釤掅灍釣忈煉釣歕nNATION RELIGION KING\n\n釣堘煉釣樶焺釤囜灍釣犪瀭釤掅灇釣夺灍釤?釣囜灨釣佱焷 釣熱煉釣樶灦釣廫n釣涐焷釣佱灑釣忈煉釣忈灍釣夅煉釣夅灦釣庒瀫釣樶煉釣樶灍釣夺灇釣栣灳釣栣灀釤掅瀿釤?K009-902103452\n釣呩灮釤囜灁釣夅煉釣囜灨釣撫焻釤?釣⑨瀭釤掅瀭釣撫灦釣欋瀫釣娽煉釣嬦灦釣撫灃釣撫煉釣掅瀶釣夺灇 釣熱煉釣愥灧釣忈灀釤呩瀫釤掅灇釤勧灅釣€釣夺灇釣傖煉釣氠灁釤嬦瀭釤掅灇釣勧煐 釣熱灦釣佱灦釣栣灀釤掅瀿釣娽灦釣氠瀬釣庒煉釣屷灍釤傖灀釣熱灮釣乗n釣戓煉釣氠瀯釤嬦瀾釤掅灇釣夺灆釣熱灎釣傖煉釣氠灦釣熱煐 釣熱灎釣傖煉釣氠灦釣熱灟釣€釣斸灮釣傖煉釣傖灈\n釣熱瀫釣樶煉釣樶灄釣夺灃釣⑨灦釣囜灨釣溼瀫釣樶煉釣樶瀰釣樶煉釣斸瀯釤?釣熱焷釣溼灦釣栣煇釣忈煂釣樶灦釣撫灉釣丰瀾釤掅灆釣?(釣⑨灄釣丰灉釣屷煉釣嶀灀釤嶀瀫釣樶煉釣樶灉釣丰瀿釣羔瀫釣会焼釣栣煉釣欋灱釣戓煇釣?\n釣⑨灦釣熱灆釣娽煉釣嬦灦釣撫灍釣犪瀭釤掅灇釣夺灍釤?釣欋灱釣撫灨釣?釣屷灨釤め煛釤?釣囜灦釣撫煁釣戓灨釤?釣⑨瀭釣夺灇釣⑨灦釣氠焿釣夺瀬釣夺灉釤夅灦 釣氠焿釤佱灍釤娽灨釣娽焷釣?釣曖煉釣涐灱釣溼瀭釤掅灅釣夺灀 釣椺灱釣樶灧釣⑨煇釣氠瀭釣羔瀶釤?釣熱瀯釤掅瀫釣夺瀼釤嬦灑釣坚灇釣斸焸釣€釣€釤掅灑釣?釣佱瀻釤掅瀸釣熱焸釣撫灍釣会瀬 釣氠灦釣囜瀿釣夺灀釣羔灄釤掅灀釤嗎灃釤佱瀴 釣€釣樶煉釣栣灮釣囜灦\n釣堘煉釣樶焺釤囜灅釤掅瀰釣夺灍釤嬦灍釣犪瀭釤掅灇釣夺灍釤?GUNASINGHA KASSAPA GAMINI 釣熱瀴釤掅瀲釣夺瀼釣丰煐 釣熱煉釣氠灨釣涐瀯釤掅瀫釣禱n\nPATENT TAX 2025\nMedium Taxpayer\nEnterprise's name: GK SMART\nTax Identification Number (TIN): K009-902103452\nRegistered at: General Department of Taxation Under: Sensok Tax Branch\nMain business activity(ies): Information technology service (computer software development)\nForms of business: Sole proprietorship\nOwner's name: GUNASINGHA KASSAPA GAMINI Nationality: Sri Lankan\n釣戓灩釣€釣斸煉釣氠灦釣€釤嬦灃釣撫煉釣掅灁釤夅灦釣忈瀯釤?釤⑨煚釤⑨煡\n釤?釤⑨煚釤?釤犪煚釤?釣氠焵釣沑n釣涐焷釣?SN: EABA2501101601980198\n\n釣氠灦釣囜瀿釣夺灀釣羔灄釤掅灀釤嗎灃釤佱瀴 釣愥煉釣勧焹釣戓灨釤♂煚 釣佱焸釣樶瀫釣氠灦 釣嗎煉釣撫灦釤嗎煝釤犪煝釤nPhnom Penh, 10 January 2025\n釣⑨瀭釤掅瀭釣撫灦釣欋瀫釣娽煉釣嬦灦釣撫灃釣撫煉釣掅瀶釣夺灇\nGeneral Department of Taxation\n\n釣斸焺釤囜灃釣会灅釤掅灃釣撫焻 / Printed at\n\n釣斸瀴釤掅瀲釣夺瀫釤?釤?釣斸煇釣庒煉釣庒灁釤夅灦釣忈瀯釤嬦灀釤佱焽釣忈煉釣氠灱釣溼瀶釣夺瀫釤嬦瀼釣夺焼釣?釣灃釤掅灆釣结灇 釣撫焻釣戓灨釣€釣撫煉釣涐焸釣勧灁釤掅灇釣€釣斸灑釣夺瀲釣羔灉釣€釣樶煉釣樶煍\nNote: This patent tax must be hanged or displayed at the company's office.\n",
+      "uploadedAt": "2026-03-01T16:20:15.330Z",
+      "_id": "69a4673f73b317abd7ed1fbb"
+    },
+    {
+      "docType": "br_organization",
+      "originalName": "2025 Patent -1.jpg",
+      "path": "drive:1pG0TUnWVLjpeGczsxFRGWlbfNkItHSID",
+      "data": "",
+      "status": "Verified",
+      "rawText": "釣€釤掅灇釣熱灲釣勧灍釤佱瀶釤掅瀷釣€釣丰瀰釤掅瀰釣撫灧釣勧灎釣丰灇釣夅煉釣夅灉釣忈煉釣愥灮\nMINISTRY OF ECONOMY AND FINANCE\n釣⑨瀭釤掅瀭釣撫灦釣欋瀫釣娽煉釣嬦灦釣撫灃釣撫煉釣掅瀶釣夺灇\nGENERAL DEPARTMENT OF TAXATION\n釣涐焷釣?N掳PTM25011038829 釣⑨灃釣奬n\n釣斸煇釣庒煉釣庒灃釣撫煉釣掅灁釤夅灦釣忈瀯釤?釣嗎煉釣撫灦釤?釤⑨煚釤⑨煡\n釣⑨煉釣撫瀫釣囜灦釣斸煁釣栣灀釤掅瀿釣樶瀿釤掅灆釣榎n\n釣栣煉釣氠焽釣氠灦釣囜灦釣庒灦釣呩瀫釤掅灇釣€釣樶煉釣栣灮釣囜灦\nKINGDOM OF CAMBODIA\n釣囜灦釣忈灧 釣熱灦釣熱灀釣?釣栣煉釣氠焽釣樶灎釣夺瀫釤掅灍釣忈煉釣歕nNATION RELIGION KING\n\n釣堘煉釣樶焺釤囜灍釣犪瀭釤掅灇釣夺灍釤?釣囜灨釣佱焷 釣熱煉釣樶灦釣廫n釣涐焷釣佱灑釣忈煉釣忈灍釣夅煉釣夅灦釣庒瀫釣樶煉釣樶灍釣夺灇釣栣灳釣栣灀釤掅瀿釤?K009-902103452\n釣呩灮釤囜灁釣夅煉釣囜灨釣撫焻釤?釣⑨瀭釤掅瀭釣撫灦釣欋瀫釣娽煉釣嬦灦釣撫灃釣撫煉釣掅瀶釣夺灇 釣熱煉釣愥灧釣忈灀釤呩瀫釤掅灇釤勧灅釣€釣夺灇釣傖煉釣氠灁釤嬦瀭釤掅灇釣勧煐 釣熱灦釣佱灦釣栣灀釤掅瀿釣娽灦釣氠瀬釣庒煉釣屷灍釤傖灀釣熱灮釣乗n釣戓煉釣氠瀯釤嬦瀾釤掅灇釣夺灆釣熱灎釣傖煉釣氠灦釣熱煐 釣熱灎釣傖煉釣氠灦釣熱灟釣€釣斸灮釣傖煉釣傖灈\n釣熱瀫釣樶煉釣樶灄釣夺灃釣⑨灦釣囜灨釣溼瀫釣樶煉釣樶瀰釣樶煉釣斸瀯釤?釣熱焷釣溼灦釣栣煇釣忈煂釣樶灦釣撫灉釣丰瀾釤掅灆釣?(釣⑨灄釣丰灉釣屷煉釣嶀灀釤嶀瀫釣樶煉釣樶灉釣丰瀿釣羔瀫釣会焼釣栣煉釣欋灱釣戓煇釣?\n釣⑨灦釣熱灆釣娽煉釣嬦灦釣撫灍釣犪瀭釤掅灇釣夺灍釤?釣欋灱釣撫灨釣?釣屷灨釤め煛釤?釣囜灦釣撫煁釣戓灨釤?釣⑨瀭釣夺灇釣⑨灦釣氠焿釣夺瀬釣夺灉釤夅灦 釣氠焿釤佱灍釤娽灨釣娽焷釣?釣曖煉釣涐灱釣溼瀭釤掅灅釣夺灀 釣椺灱釣樶灧釣⑨煇釣氠瀭釣羔瀶釤?釣熱瀯釤掅瀫釣夺瀼釤嬦灑釣坚灇釣斸焸釣€釣€釤掅灑釣?釣佱瀻釤掅瀸釣熱焸釣撫灍釣会瀬 釣氠灦釣囜瀿釣夺灀釣羔灄釤掅灀釤嗎灃釤佱瀴 釣€釣樶煉釣栣灮釣囜灦\n釣堘煉釣樶焺釤囜灅釤掅瀰釣夺灍釤嬦灍釣犪瀭釤掅灇釣夺灍釤?GUNASINGHA KASSAPA GAMINI 釣熱瀴釤掅瀲釣夺瀼釣丰煐 釣熱煉釣氠灨釣涐瀯釤掅瀫釣禱nPATENT TAX 2025\nMedium Taxpayer\nEnterprise's name: GK SMART\nTax Identification Number (TIN): K009-902103452\nRegistered at: General Department of Taxation Under: Sensok Tax Branch\nMain business activity(ies): Information technology service (computer software development)\nForms of business: Sole proprietorship\nOwner's name: GUNASINGHA KASSAPA GAMINI Nationality: Sri Lankan\n釣戓灩釣€釣斸煉釣氠灦釣€釤嬦灃釣撫煉釣掅灁釤夅灦釣忈瀯釤?釤⑨煚釤⑨煡\n釤?釤⑨煚釤?釤犪煚釤?釣氠焵釣沑n釣涐焷釣?SN: EABA2501101601980198\n釣氠灦釣囜瀿釣夺灀釣羔灄釤掅灀釤嗎灃釤佱瀴 釣愥煉釣勧焹釣戓灨釤♂煚 釣佱焸釣樶瀫釣氠灦 釣嗎煉釣撫灦釤嗎煝釤犪煝釤nPhnom Penh, 10 January 2025\n釣⑨瀭釤掅瀭釣撫灦釣欋瀫釣娽煉釣嬦灦釣撫灃釣撫煉釣掅瀶釣夺灇\nGeneral Department of Taxation\n釣斸焺釤囜灃釣会灅釤掅灃釣撫焻 / Printed at\n\n釣斸瀴釤掅瀲釣夺瀫釤?釤?釣斸煇釣庒煉釣庒灁釤夅灦釣忈瀯釤嬦灀釤佱焽釣忈煉釣氠灱釣溼瀶釣夺瀫釤嬦瀼釣夺焼釣?釣灃釤掅灆釣结灇 釣撫焻釣戓灨釣€釣撫煉釣涐焸釣勧灁釤掅灇釣€釣斸灑釣夺瀲釣羔灉釣€釣樶煉釣樶煍\nNote: This patent tax must be hanged or displayed at the company's office.\n",
+      "uploadedAt": "2026-03-03T12:35:14.754Z",
+      "_id": "69a6d5826190731ac59ff3d6"
+    },
+    {
+      "docType": "kh_extract",
+      "originalName": "Business Profile - Extract Khemer GK_SMART-50015732-1.md",
+      "path": "drive:1j7MBjYLpXkfa1HCN1xTyBdbKeybcPrLQ",
+      "data": "",
+      "status": "Verified",
+      "uploadedAt": "2026-03-03T13:54:33.478Z",
+      "_id": "69a6e8198279b4901abe2d0e"
+    },
+    {
+      "docType": "en_extract",
+      "originalName": "Business Profile - Extract english -GK_SMART-50015732-1.md",
+      "path": "drive:19DhcP9JmmKK0jhYEF8x5tov9Wq76zo9y",
+      "data": "",
+      "status": "Verified",
+      "uploadedAt": "2026-03-03T13:54:33.480Z",
+      "_id": "69a6e8198279b4901abe2d0f"
+    },
+    {
+      "docType": "moc_cert",
+      "originalName": "Business Profile - MOC Cert GK_SMART-50015732-1.md",
+      "path": "drive:1OnsagJQu3b6O-fkHW7vAjL2iCD62LFNm",
+      "data": "",
+      "status": "Verified",
+      "uploadedAt": "2026-03-03T13:54:33.481Z",
+      "_id": "69a6e8198279b4901abe2d10"
+    }
+  ],
+  "extractedData": {},
+  "organizedProfile": "# I. EXECUTIVE CORPORATE ARCHITECTURE\n- **Legal Name**: \n    - English: GK SMART\n    - Khmer: 釣囜灨釣佱焷 釣熱煉釣樶灦釣廫n- **Identifiers**:\n    - Tax Identification Number (TIN): K009-902103452\n    - Patent ID: PTM25011038829\n- **Legal Status**:\n    - Company Type: Sole Proprietorship (釣熱灎釣傖煉釣氠灦釣熱灟釣€釣斸灮釣傖煉釣傖灈)\n    - Incorporation Date: Not explicitly stated, but Patent Tax is for the year 2025\n\n# II. GOVERNANCE & SHAREHOLDERS\n- **Board of Directors**:\n    - Not applicable (Sole Proprietorship)\n- **Shareholders**:\n    - GUNASINGHA KASSAPA GAMINI (Sri Lankan) - 100% ownership as the sole proprietor\n\n# III. OPERATIONAL FOOTPRINT\n- **Headquarters**:\n    - English: #Arakawa Residence Block Unit D414, 4th Floor, Street , Phsar Treaung Tla Village, Teuk Thla, Sensok, Phnom Penh\n    - Khmer: 釣欋灱釣撫灨釣?釣屷灨釤め煛釤?釣囜灦釣撫煁釣戓灨釤?釣⑨瀭釣夺灇釣⑨灦釣氠焿釣夺瀬釣夺灉釤夅灦 釣氠焿釤佱灍釤娽灨釣娽焷釣?釣曖煉釣涐灱釣溼瀭釤掅灅釣夺灀 釣椺灱釣樶灧釣⑨煇釣氠瀭釣羔瀶釤?釣熱瀯釤掅瀫釣夺瀼釤嬦灑釣坚灇釣斸焸釣€釣€釤掅灑釣?釣佱瀻釤掅瀸釣熱焸釣撫灍釣会瀬 釣氠灦釣囜瀿釣夺灀釣羔灄釤掅灀釤嗎灃釤佱瀴 釣€釣樶煉釣栣灮釣囜灦\n- **Business Objectives**:\n    - Information technology service (釣熱焷釣溼灦釣栣煇釣忈煂釣樶灦釣撫灉釣丰瀾釤掅灆釣?\n    - Computer software development (釣⑨灄釣丰灉釣屷煉釣嶀灀釤嶀瀫釣樶煉釣樶灉釣丰瀿釣羔瀫釣会焼釣栣煉釣欋灱釣戓煇釣?\n\n# IV. FINANCIAL & LEGAL ASSETS\n- **Capital**:\n    - Patent Tax Amount: 1,200,000 Riel (釣戓灩釣€釣斸煉釣氠灦釣€釤嬦灃釣撫煉釣掅灁釤夅灦釣忈瀯釤?釤⑨煚釤⑨煡)\n- **Bank Details**:\n    - Not specified in the provided document.\n\n# V. ANALYST STRATEGIC DOSSIER\n\nGK SMART, a sole proprietorship registered under the General Department of Taxation and operating within the Sensok Tax Branch, demonstrates a commitment to the Cambodian market with its 2025 patent tax registration. The entity, owned and operated by Sri Lankan national GUNASINGHA KASSAPA GAMINI, focuses on providing information technology services, specifically computer software development. The location of its headquarters in the Arakawa Residence in Phnom Penh suggests a potential focus on serving the local residential and commercial community. The registration as a medium taxpayer further indicates a stable operational scale. The stated business objectives show a specialization in a high-demand sector within Cambodia's growing economy. While detailed financial information is limited to the patent tax amount, the verified leadership and defined operational footprint support a structured business model. The company's future trajectory will likely depend on its ability to leverage its IT expertise within the Cambodian market.\n"
+}
