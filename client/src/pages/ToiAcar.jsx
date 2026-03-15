@@ -504,7 +504,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
               {/* Compliance Details (Sections 11 - 18) */}
               <div className="flex flex-col border-[2px] border-black mb-2 bg-white shadow-sm">
                 <div className="flex border-b border-black min-h-[50px] bg-white">
-                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-white">
+                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-[14px] bg-[#e6e6e6] text-black">
                     11
                   </div>
                   <div className="w-[340px] shrink-0 border-r border-black px-3 py-1 flex flex-col justify-center bg-white">
@@ -545,7 +545,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   </div>
                 </div>
                 <div className="flex border-b border-black min-h-[50px]">
-                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-white">
+                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-[14px] bg-[#e6e6e6] text-black">
                     12
                   </div>
                   <div className="w-[340px] shrink-0 border-r border-black px-3 py-1 flex flex-col justify-center bg-white">
@@ -590,7 +590,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   </div>
                 </div>
                 <div className="flex min-h-[36px] bg-white border-b border-black">
-                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-white">
+                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-[14px] bg-[#e6e6e6] text-black">
                     13
                   </div>
                   <div className="w-[340px] shrink-0 border-r border-black px-3 py-1 flex flex-col justify-center bg-white">
@@ -755,7 +755,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
               <div className="flex flex-col bg-white">
                 {/* Row 15 */}
                 <div className="flex border-b border-black min-h-[36px]">
-                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-white">
+                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-[14px] bg-[#e6e6e6] text-black">
                     15
                   </div>
                   <div className="w-[340px] shrink-0 border-r border-black px-3 py-[6px] flex flex-col justify-center bg-white">
@@ -815,7 +815,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                 </div>
                 {/* Row 16 */}
                 <div className="flex border-b border-black min-h-[36px]">
-                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-white">
+                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-[14px] bg-[#e6e6e6] text-black">
                     16
                   </div>
                   <div className="w-[340px] shrink-0 border-r border-black px-3 py-[6px] flex flex-col justify-center bg-white">
@@ -880,7 +880,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                 </div>
                 {/* Row 17 & 18 */}
                 <div className="flex min-h-[36px]">
-                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-white">
+                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-[14px] bg-[#e6e6e6] text-black">
                     17
                   </div>
                   <div className="w-[340px] shrink-0 border-r border-black px-3 py-[6px] flex flex-col justify-center bg-white">
@@ -895,7 +895,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     </span>
                   </div>
                   <div className="flex-[0.6] border-r border-black bg-white flex items-center font-bold text-black uppercase tracking-widest px-4">{filledData?.incomeTaxDue ? String(filledData.incomeTaxDue).replace(/null|N\/A/ig, "") : ""}</div>
-                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-sm bg-white">
+                  <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-[14px] bg-[#e6e6e6] text-black">
                     18
                   </div>
                   <div className="w-[180px] shrink-0 border-r border-black px-3 py-[6px] flex flex-col justify-center bg-white">
