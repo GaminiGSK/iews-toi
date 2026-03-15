@@ -63,10 +63,10 @@ const FinancialStatements = ({ onBack }) => {
     const exchangeRate = 4050; // Standard yearly KHR to USD exchange rate
     const scale = inUSD ? exchangeRate : 1;
 
-    const getCr = (r) => inUSD ? (r.crUSD || 0) : (r.crKHR || 0);
-    const getDr = (r) => inUSD ? (r.drUSD || 0) : (r.drKHR || 0);
-    const getPriorCr = (r) => inUSD ? (r.priorCrUSD || 0) : (r.priorCrKHR || 0);
-    const getPriorDr = (r) => inUSD ? (r.priorDrUSD || 0) : (r.priorDrKHR || 0);
+    const getCr = (r) => (r.crKHR || 0) / scale;
+    const getDr = (r) => (r.drKHR || 0) / scale;
+    const getPriorCr = (r) => (r.priorCrKHR || 0) / scale;
+    const getPriorDr = (r) => (r.priorDrKHR || 0) / scale;
 
     // 1. Profit & Loss Data (Annual)
     const revenue = report.filter(r => r.code.startsWith('4'));
@@ -138,18 +138,22 @@ const FinancialStatements = ({ onBack }) => {
     const inventory = findBalance(['inventory', 'stock']);
 
     // Helpers for Render
-    const renderRow = (label, value, bold = false, indent = false) => (
+    const renderRow = (label, valueCY, valuePY = 0, bold = false, indent = false) => (
         <tr className={`border-b border-gray-100 hover:bg-gray-50 ${bold ? 'font-bold bg-gray-50' : ''}`}>
-            <td className={`p-3 ${indent ? 'pl-8' : 'pl-4'} text-gray-800`}>{label}</td>
-            <td className="p-3 text-right font-mono text-gray-900">
-                {value !== 0 ? value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '-'}
+            <td className={`p-3 ${indent ? 'pl-8' : 'pl-4'} text-gray-800 uppercase`} style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{label}</td>
+            <td className="p-3 text-center font-mono text-gray-500 w-16 text-xs border-l border-gray-100">-</td>
+            <td className="p-3 text-right font-mono w-40 border-l border-gray-200 text-gray-900">
+                {valueCY !== 0 ? valueCY.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '-'}
+            </td>
+            <td className="p-3 text-right font-mono w-40 border-l border-gray-200 text-gray-500">
+                {valuePY !== 0 ? valuePY.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '-'}
             </td>
         </tr>
     );
 
     const renderMonthRow = (label, months, bold = false, indent = false) => (
         <tr className={`border-b border-gray-100 hover:bg-gray-50 ${bold ? 'font-bold bg-gray-50' : ''}`}>
-            <td className={`p-3 ${indent ? 'pl-8' : 'pl-4'} text-gray-800 sticky left-0 bg-white min-w-[200px] border-r border-gray-200 z-10`}>{label}</td>
+            <td className={`p-3 ${indent ? 'pl-8' : 'pl-4'} text-gray-800 sticky left-0 bg-white min-w-[200px] border-r border-gray-200 z-10 uppercase`} style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{label}</td>
             {MONTHS.map((_, idx) => {
                 const val = months[idx + 1] / scale;
                 return (
@@ -166,7 +170,7 @@ const FinancialStatements = ({ onBack }) => {
 
     const renderSectionHeader = (title, monthly = false) => (
         <tr className="bg-blue-50/50 border-b border-blue-100">
-            <td colSpan={monthly ? 14 : 2} className="p-3 pl-4 font-bold text-blue-800 uppercase text-xs tracking-wider sticky left-0 z-10">{title}</td>
+            <td colSpan={monthly ? 14 : 4} className="p-3 pl-4 font-bold text-blue-800 uppercase text-xs tracking-wider sticky left-0 z-10" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{title}</td>
         </tr>
     );
 
@@ -380,12 +384,12 @@ const FinancialStatements = ({ onBack }) => {
 
                     <div className="text-center mb-8 print:hidden">
                         <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-widest mb-2">{companyNameEn}</h2>
-                        <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight">
-                            {activeTab === 'pl' ? 'INCOME STATEMENT'
-                                : activeTab === 'bs' ? 'STATEMENT OF FINANCIAL POSITION'
-                                    : activeTab === 'cf' ? 'STATEMENT OF CASH FLOWS'
-                                        : activeTab === 'sce' ? 'STATEMENT OF CHANGES IN EQUITY'
-                                            : 'NOTES TO THE FINANCIAL STATEMENTS'}
+                        <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                            {activeTab === 'pl' ? 'របាយការណ៍លទ្ធផល / INCOME STATEMENT'
+                                : activeTab === 'bs' ? 'របាយការណ៍ស្ថានភាពហិរញ្ញវត្ថុ / STATEMENT OF FINANCIAL POSITION'
+                                    : activeTab === 'cf' ? 'របាយការណ៍លំហូរសាច់ប្រាក់ / STATEMENT OF CASH FLOWS'
+                                        : activeTab === 'sce' ? 'តារាងបម្រែបម្រួលមូលធន / STATEMENT OF CHANGES IN EQUITY'
+                                            : 'កំណត់សម្គាល់លើរបាយការណ៍ហិរញ្ញវត្ថុ / NOTES TO THE FINANCIAL STATEMENTS'}
                         </h3>
                         <p className="text-sm text-gray-500 italic">
                             {activeTab === 'bs' ? 'As at' : 'For the year ended'} 31 December {new Date().getFullYear()}
@@ -408,109 +412,138 @@ const FinancialStatements = ({ onBack }) => {
                             )}
 
                             {/* --- ANNUAL VIEW --- */}
+                            {viewMode === 'annual' && activeTab !== 'notes' && activeTab !== 'sce' && (
+                                <thead>
+                                    <tr className="bg-slate-100 border-b border-gray-300">
+                                        <th className="p-3 text-left font-bold text-gray-600 uppercase text-xs" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បរិយាយ / DESCRIPTION</th>
+                                        <th className="p-3 text-center font-bold text-gray-600 uppercase text-xs w-20" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណាំ<br/>NOTE</th>
+                                        <th className="p-3 text-center font-bold text-gray-800 uppercase text-xs w-48 bg-white border-l border-gray-200" style={{ borderTop: '4px solid #3B82F6', fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                            សម្រាប់ឆ្នាំបញ្ជប់<br/>FOR THE YEAR ENDED<br/>
+                                            <span className="text-blue-600 text-[10px] uppercase font-mono mt-1 block">31-Dec-{new Date().getFullYear()} {inUSD ? 'USD' : 'KHR'}</span>
+                                        </th>
+                                        <th className="p-3 text-center font-bold text-gray-600 uppercase text-xs w-48 bg-slate-50 border-l border-gray-200" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                            សម្រាប់ឆ្នាំបញ្ជប់<br/>FOR THE YEAR ENDED<br/>
+                                            <span className="text-gray-500 text-[10px] uppercase font-mono mt-1 block">31-Dec-{new Date().getFullYear() - 1} {inUSD ? 'USD' : 'KHR'}</span>
+                                        </th>
+                                    </tr>
+                                </thead>
+                            )}
+
                             {viewMode === 'annual' && activeTab === 'pl' && (
                                 <tbody>
-                                    {renderSectionHeader("Revenue")}
-                                    {revenue.map(r => renderRow(r.description, getCr(r), false, true))}
-                                    {renderRow("Total Revenue", totalRev, true)}
+                                    {renderSectionHeader("ចំណូល / REVENUE")}
+                                    {revenue.map(r => renderRow(r.description, getCr(r), getPriorCr(r), false, true))}
+                                    {renderRow("ចំណូលសរុប / TOTAL REVENUE", totalRev, revenue.reduce((sum, r) => sum + getPriorCr(r), 0), true)}
 
-                                    {renderSectionHeader("Cost of Sales")}
-                                    {costOfSales.map(r => renderRow(r.description, getDr(r), false, true))}
-                                    {renderRow("Gross Profit", grossProfit, true)}
+                                    {renderSectionHeader("ថ្លៃដើមលក់ / COST OF SALES")}
+                                    {costOfSales.map(r => renderRow(r.description, getDr(r), getPriorDr(r), false, true))}
+                                    {renderRow("ប្រាក់ចំណេញដុល / GROSS PROFIT", grossProfit, revenue.reduce((sum, r) => sum + getPriorCr(r), 0) - costOfSales.reduce((sum, r) => sum + getPriorDr(r), 0), true)}
 
-                                    {renderSectionHeader("Operating Expenses")}
-                                    {expenses.map(r => renderRow(r.description, getDr(r), false, true))}
-                                    {renderRow("Total Operating Expenses", totalExp, true)}
+                                    {renderSectionHeader("ចំណាយប្រតិបត្តិការ / OPERATING EXPENSES")}
+                                    {expenses.map(r => renderRow(r.description, getDr(r), getPriorDr(r), false, true))}
+                                    {renderRow("ចំណាយប្រតិបត្តិការសរុប / TOTAL OPERATING EXPENSES", totalExp, expenses.reduce((sum, r) => sum + getPriorDr(r), 0), true)}
 
                                     <tr className="h-4"></tr>
-                                    <tr className="border-t-2 border-black border-b-2 border-double">
-                                        <td className="p-4 font-bold text-lg">NET PROFIT FOR THE YEAR</td>
-                                        <td className="p-4 text-right font-bold font-mono text-lg">{netProfit.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+                                    <tr className="border-t-4 border-gray-800 border-b-4 border-gray-800 bg-gray-50">
+                                        <td className="p-4 font-bold text-lg uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រាក់ចំណេញសុទ្ធសម្រាប់ឆ្នាំ / NET PROFIT FOR THE YEAR</td>
+                                        <td className="p-4 text-center font-mono text-gray-500">-</td>
+                                        <td className="p-4 text-right font-bold font-mono text-lg border-l border-gray-200">{netProfit.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+                                        <td className="p-4 text-right font-bold font-mono text-lg border-l border-gray-200">{(revenue.reduce((sum, r) => sum + getPriorCr(r), 0) - costOfSales.reduce((sum, r) => sum + getPriorDr(r), 0) - expenses.reduce((sum, r) => sum + getPriorDr(r), 0)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
                                     </tr>
                                 </tbody>
                             )}
 
                             {viewMode === 'annual' && activeTab === 'bs' && (
                                 <tbody>
-                                    {renderSectionHeader("ASSETS")}
-                                    {assets.map(r => renderRow(r.description, getDr(r) - getCr(r), false, true))}
-                                    {renderRow("TOTAL ASSETS", totalAssets, true)}
+                                    {renderSectionHeader("ទ្រព្យសកម្ម / ASSETS")}
+                                    {assets.map(r => renderRow(r.description, getDr(r) - getCr(r), getPriorDr(r) - getPriorCr(r), false, true))}
+                                    {renderRow("ទ្រព្យសកម្មសរុប / TOTAL ASSETS", totalAssets, assets.reduce((sum, r) => sum + (getPriorDr(r) - getPriorCr(r)), 0), true)}
 
                                     <tr className="h-6"></tr>
 
-                                    {renderSectionHeader("EQUITY & LIABILITIES")}
+                                    {renderSectionHeader("មូលធន និង បំណុល / EQUITY & LIABILITIES")}
 
-                                    {renderSectionHeader("Equity")}
-                                    {equity.map(r => renderRow(r.description, getCr(r) - getDr(r), false, true))}
-                                    {renderRow("Current Year Earnings", netProfit, false, true)} {/* Auto Inserted */}
-                                    {renderRow("Total Equity", totalEquity + netProfit, true)}
+                                    {renderSectionHeader("មូលធន / EQUITY")}
+                                    {equity.map(r => renderRow(r.description, getCr(r) - getDr(r), getPriorCr(r) - getPriorDr(r), false, true))}
+                                    {renderRow("ប្រាក់ចំណេញបច្ចុប្បន្ន / CURRENT YEAR EARNINGS", netProfit, revenue.reduce((sum, r) => sum + getPriorCr(r), 0) - costOfSales.reduce((sum, r) => sum + getPriorDr(r), 0) - expenses.reduce((sum, r) => sum + getPriorDr(r), 0), false, true)} {/* Auto Inserted */}
+                                    {renderRow("មូលធនសរុប / TOTAL EQUITY", totalEquity + netProfit, equity.reduce((sum, r) => sum + (getPriorCr(r) - getPriorDr(r)), 0) + (revenue.reduce((sum, r) => sum + getPriorCr(r), 0) - costOfSales.reduce((sum, r) => sum + getPriorDr(r), 0) - expenses.reduce((sum, r) => sum + getPriorDr(r), 0)), true)}
 
-                                    {renderSectionHeader("Liabilities")}
-                                    {liabilities.map(r => renderRow(r.description, getCr(r) - getDr(r), false, true))}
-                                    {renderRow("Total Liabilities", totalLiabs, true)}
+                                    {renderSectionHeader("បំណុល / LIABILITIES")}
+                                    {liabilities.map(r => renderRow(r.description, getCr(r) - getDr(r), getPriorCr(r) - getPriorDr(r), false, true))}
+                                    {renderRow("បំណុលសរុប / TOTAL LIABILITIES", totalLiabs, liabilities.reduce((sum, r) => sum + (getPriorCr(r) - getPriorDr(r)), 0), true)}
 
                                     <tr className="h-4"></tr>
-                                    <tr className="border-t-2 border-black border-b-2 border-double">
-                                        <td className="p-4 font-bold text-lg">TOTAL EQUITY & LIABILITIES</td>
-                                        <td className="p-4 text-right font-bold font-mono text-lg">{(totalLiabs + totalEquity + netProfit).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+                                    <tr className="border-t-4 border-gray-800 border-b-4 border-gray-800 bg-gray-50">
+                                        <td className="p-4 font-bold text-lg uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>មូលធន និង បំណុលសរុប / TOTAL EQUITY & LIABILITIES</td>
+                                        <td className="p-4 text-center font-mono text-gray-500">-</td>
+                                        <td className="p-4 text-right font-bold font-mono text-lg border-l border-gray-200">{(totalLiabs + totalEquity + netProfit).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+                                        <td className="p-4 text-right font-bold font-mono text-lg border-l border-gray-200">
+                                            {(
+                                                liabilities.reduce((sum, r) => sum + (getPriorCr(r) - getPriorDr(r)), 0) +
+                                                equity.reduce((sum, r) => sum + (getPriorCr(r) - getPriorDr(r)), 0) +
+                                                (revenue.reduce((sum, r) => sum + getPriorCr(r), 0) - costOfSales.reduce((sum, r) => sum + getPriorDr(r), 0) - expenses.reduce((sum, r) => sum + getPriorDr(r), 0))
+                                            ).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                        </td>
                                     </tr>
                                 </tbody>
                             )}
 
                             {viewMode === 'annual' && activeTab === 'cf' && (
                                 <tbody>
-                                    {renderSectionHeader("CASH FLOWS FROM OPERATING ACTIVITIES")}
-                                    {renderRow("Net Profit before Tax", netProfit, true)}
-                                    {renderRow("Adjustments for:", 0, false, true)}
-                                    {renderRow(" - Depreciation and Amortization", deprExp, false, true)}
-                                    {renderRow(" - Interest Income", -intInc, false, true)}
-                                    {renderRow(" - Interest Expense", intExp, false, true)}
+                                    {renderSectionHeader("លំហូរសាច់ប្រាក់ពីសកម្មភាពប្រតិបត្តិការ / CASH FLOWS FROM OPERATING ACTIVITIES")}
+                                    {renderRow("ប្រាក់ចំណេញសុទ្ធមុនបង់ពន្ធ / NET PROFIT BEFORE TAX", netProfit, 0, true)}
+                                    {renderRow("កែតម្រូវសម្រាប់ / ADJUSTMENTS FOR:", 0, 0, false, true)}
+                                    {renderRow(" - រំលស់ទ្រព្យសកម្ម / DEPRECIATION AND AMORTIZATION", deprExp, 0, false, true)}
+                                    {renderRow(" - ចំណូលការប្រាក់ / INTEREST INCOME", -intInc, 0, false, true)}
+                                    {renderRow(" - ចំណាយការប្រាក់ / INTEREST EXPENSE", intExp, 0, false, true)}
                                     <tr className="h-2"></tr>
-                                    {renderRow("Changes in Working Capital:", 0, false, true)}
-                                    {renderRow(" - (Increase)/Decrease in Inventories", -inventory, false, true)}
-                                    {renderRow(" - (Increase)/Decrease in Receivables", -receivables, false, true)}
-                                    {renderRow(" - Increase/(Decrease) in Payables", payables, false, true)}
-                                    <tr className="border-t border-gray-300"><td colSpan="2"></td></tr>
-                                    {renderRow("Net Cash from Operating Activities", netProfit + deprExp + intExp - intInc - inventory - receivables + payables, true)}
+                                    {renderRow("បម្រែបម្រួលទុនបង្វិល / CHANGES IN WORKING CAPITAL:", 0, 0, false, true)}
+                                    {renderRow(" - កើនឡើង ឬ ថយចុះនូវស្តុក / (INC)/DEC IN INVENTORIES", -inventory, 0, false, true)}
+                                    {renderRow(" - កើនឡើង ឬ ថយចុះនូវប្រាក់ត្រូវទទួល / (INC)/DEC IN RECEIVABLES", -receivables, 0, false, true)}
+                                    {renderRow(" - កើនឡើង ឬ ថយចុះនូវប្រាក់ត្រូវសង / INC/(DEC) IN PAYABLES", payables, 0, false, true)}
+                                    <tr className="border-t border-gray-300"><td colSpan="4"></td></tr>
+                                    {renderRow("សាច់ប្រាក់សុទ្ធពីសកម្មភាពប្រតិបត្តិ / NET CASH FROM OPERATING ACTIVITIES", netProfit + deprExp + intExp - intInc - inventory - receivables + payables, 0, true)}
 
                                     <tr className="h-6"></tr>
 
-                                    {renderSectionHeader("CASH FLOWS FROM INVESTING ACTIVITIES")}
+                                    {renderSectionHeader("លំហូរសាច់ប្រាក់ពីសកម្មភាពវិនិយោគ / CASH FLOWS FROM INVESTING ACTIVITIES")}
                                     {assets.filter(a => (a.description?.toLowerCase() || '').includes('fixed') || (a.description?.toLowerCase() || '').includes('equipment')).map(r =>
-                                        renderRow(`Purchase of ${r.description}`, -(getDr(r) - getCr(r)), false, true)
+                                        renderRow(`PURCHASE OF ${r.description}`, -(getDr(r) - getCr(r)), 0, false, true)
                                     )}
-                                    {renderRow("Interest Received", intInc, false, true)}
-                                    <tr className="border-t border-gray-300"><td colSpan="2"></td></tr>
-                                    {renderRow("Net Cash generated from/(used in) Investing Activities", assets.filter(a => (a.description?.toLowerCase() || '').includes('fixed') || (a.description?.toLowerCase() || '').includes('equipment')).reduce((sum, r) => sum - (getDr(r) - getCr(r)), 0) + intInc, true)}
+                                    {renderRow("ការប្រាក់ទទួលបាន / INTEREST RECEIVED", intInc, 0, false, true)}
+                                    <tr className="border-t border-gray-300"><td colSpan="4"></td></tr>
+                                    {renderRow("សាច់ប្រាក់សុទ្ធពីសកម្មភាពវិនិយោគ / NET CASH USED IN INVESTING ACTIVITIES", assets.filter(a => (a.description?.toLowerCase() || '').includes('fixed') || (a.description?.toLowerCase() || '').includes('equipment')).reduce((sum, r) => sum - (getDr(r) - getCr(r)), 0) + intInc, 0, true)}
 
                                     <tr className="h-6"></tr>
 
-                                    {renderSectionHeader("CASH FLOWS FROM FINANCING ACTIVITIES")}
+                                    {renderSectionHeader("លំហូរសាច់ប្រាក់ពីសកម្មភាពហិរញ្ញប្បទាន / CASH FLOWS FROM FINANCING ACTIVITIES")}
                                     {equity.filter(e => (e.description?.toLowerCase() || '').includes('capital')).map(r =>
-                                        renderRow(`Issuance of ${r.description}`, (getCr(r) - getDr(r)), false, true)
+                                        renderRow(`ISSUANCE OF ${r.description}`, (getCr(r) - getDr(r)), 0, false, true)
                                     )}
-                                    {renderRow("Dividends Paid", 0, false, true)}
-                                    {renderRow("Interest Paid", -intExp, false, true)}
-                                    <tr className="border-t border-gray-300"><td colSpan="2"></td></tr>
-                                    {renderRow("Net Cash generated from/(used in) Financing Activities", equity.filter(e => (e.description?.toLowerCase() || '').includes('capital')).reduce((sum, r) => sum + (getCr(r) - getDr(r)), 0) - intExp, true)}
+                                    {renderRow("ភាគលាភបានបើក / DIVIDENDS PAID", 0, 0, false, true)}
+                                    {renderRow("ការប្រាក់បានបង់ / INTEREST PAID", -intExp, 0, false, true)}
+                                    <tr className="border-t border-gray-300"><td colSpan="4"></td></tr>
+                                    {renderRow("សាច់ប្រាក់សុទ្ធពីសកម្មភាពហិរញ្ញប្បទាន / NET CASH USED IN FINANCING ACTIVITIES", equity.filter(e => (e.description?.toLowerCase() || '').includes('capital')).reduce((sum, r) => sum + (getCr(r) - getDr(r)), 0) - intExp, 0, true)}
 
                                     <tr className="h-8"></tr>
-                                    <tr className="border-t-2 border-black border-b-2 border-double">
-                                        <td className="p-4 font-bold text-lg">NET INCREASE IN CASH AND CASH EQUIVALENTS</td>
-                                        <td className="p-4 text-right font-bold font-mono text-lg">
+                                    <tr className="border-t-4 border-gray-800 border-b-4 border-gray-800 bg-gray-50">
+                                        <td className="p-4 font-bold text-lg uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>កំណើនសាច់ប្រាក់សុទ្ធ / NET INCREASE IN CASH</td>
+                                        <td className="p-4 text-center font-mono text-gray-500">-</td>
+                                        <td className="p-4 text-right font-bold font-mono text-lg border-l border-gray-200">
                                             {(
                                                 netProfit +
                                                 assets.filter(a => (a.description?.toLowerCase() || '').includes('fixed') || (a.description?.toLowerCase() || '').includes('equipment')).reduce((sum, r) => sum - (getDr(r) - getCr(r)), 0) +
                                                 equity.filter(e => (e.description?.toLowerCase() || '').includes('capital')).reduce((sum, r) => sum + (getCr(r) - getDr(r)), 0)
                                             ).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                                         </td>
+                                        <td className="p-4 text-right border-l border-gray-200 text-gray-400 font-mono">-</td>
                                     </tr>
-                                    {renderRow("Cash and Cash Equivalents at Beginning of Year", 0, false, true)}
-                                    {renderRow("Cash and Cash Equivalents at End of Year", (
+                                    {renderRow("សាច់ប្រាក់ដើមគ្រា / CASH AT BEGINNING OF YEAR", 0, 0, false, true)}
+                                    {renderRow("សាច់ប្រាក់ចុងគ្រា / CASH AT END OF YEAR", (
                                         netProfit +
                                         assets.filter(a => (a.description?.toLowerCase() || '').includes('fixed') || (a.description?.toLowerCase() || '').includes('equipment')).reduce((sum, r) => sum - (getDr(r) - getCr(r)), 0) +
                                         equity.filter(e => (e.description?.toLowerCase() || '').includes('capital')).reduce((sum, r) => sum + (getCr(r) - getDr(r)), 0)
-                                    ), true)}
+                                    ), 0, true)}
                                 </tbody>
                             )}
 
