@@ -269,8 +269,8 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   </div>
                 </div>
 
-                {/* CENTER: GDT EMBLEM / LOGO */}
-                <div className="flex flex-col items-center w-[24%] justify-start pt-0">
+                {/* CENTER: GDT EMBLEM / LOGO - vertically aligned with Ministry block center */}
+                <div className="flex flex-col items-center w-[24%] justify-start pt-7">
                   <img
                     src="/assets/gdt_logo.jpg"
                     alt="GDT Emblem"
@@ -281,8 +281,8 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   />
                 </div>
 
-                {/* RIGHT: KINGDOM */}
-                <div className="flex flex-col items-center pt-12 w-[38%] pr-4">
+                {/* RIGHT: KINGDOM - starts from same top as Ministry (matches original form) */}
+                <div className="flex flex-col items-center pt-3 w-[38%] pr-4">
                   <span className="font-bold text-[15px] tracking-wider" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ព្រះរាជាណាចក្រកម្ពុជា</span>
                   <span className="font-medium text-[13px] tracking-[0.12em] pl-1 mb-1">KINGDOM OF CAMBODIA</span>
                   <span className="font-bold text-[13px] tracking-wide" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ជាតិ សាសនា ព្រះមហាក្សត្រ</span>
