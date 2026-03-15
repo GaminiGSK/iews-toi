@@ -330,72 +330,72 @@ const ToiAcar = ({ onBack, packageId, year }) => {
               <div className="flex w-full mb-2 items-center pt-2 pl-[49px]">
                 {/* Left section: Text and 2 boxes */}
                 <div className="flex items-center">
-                  <div className="flex flex-col justify-center items-center">
-                    <span className="text-[14px] font-bold whitespace-nowrap text-black leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif', letterSpacing: '-0.2px' }}>
+                  <div className="flex flex-col justify-center items-start">
+                    <span className="text-[14px] font-bold whitespace-nowrap text-black leading-tight tracking-[0.2px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
                       ការិយបរិច្ឆេទជាប់ពន្ធ (ចំនួនខែ)
                     </span>
                     <span className="text-[10px] font-bold mt-[1px] whitespace-nowrap text-black uppercase tracking-widest text-left w-full" style={{ fontFamily: '"Arial", sans-serif' }}>
                       TAX PERIOD (MONTHS)
                     </span>
                   </div>
-                  <div className="flex items-center gap-[2px] ml-3">
-                    <div className="w-[28px] h-[34px] border border-black flex items-center justify-center bg-white text-lg font-bold text-black">{filledData ? filledData.taxMonths[0] : ""}</div>
-                    <div className="w-[28px] h-[34px] border border-black flex items-center justify-center bg-white text-lg font-bold text-black">{filledData ? filledData.taxMonths[1] : ""}</div>
+                  <div className="flex items-center gap-[6px] ml-[24px]">
+                    <div className="w-[20px] h-[26px] border-[1.5px] border-black flex items-center justify-center bg-white text-sm font-bold text-black">{filledData ? filledData.taxMonths[0] : ""}</div>
+                    <div className="w-[20px] h-[26px] border-[1.5px] border-black flex items-center justify-center bg-white text-sm font-bold text-black">{filledData ? filledData.taxMonths[1] : ""}</div>
                   </div>
                 </div>
 
                 {/* Right section: From / Until */}
-                <div className="flex-1 flex items-center px-4 relative">
-                  <div className="w-full flex justify-between ml-2 pb-1">
+                <div className="flex-1 flex items-center px-[30px] pr-[10px] relative">
+                  <div className="w-full flex justify-end gap-[40px] pb-[2px]">
                     {/* From Date */}
-                    <div className="flex gap-[6px] text-right">
-                      <div className="flex flex-col justify-end text-center p-1 px-1">
-                        <span className="text-[12px] font-bold leading-none mb-[2px] z-10 whitespace-nowrap text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ពីថ្ងៃ</span>
-                        <span className="text-[9px] font-bold uppercase tracking-widest leading-none z-10 text-center w-full text-black" style={{ fontFamily: '"Arial", sans-serif' }}>FROM</span>
+                    <div className="flex gap-[6px] items-end text-left">
+                      <div className="flex flex-col justify-end text-left pb-[2px] pr-1">
+                        <span className="text-[12px] font-bold leading-none mb-[2px] whitespace-nowrap text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ពីថ្ងៃ</span>
+                        <span className="text-[9px] font-bold uppercase tracking-widest leading-none block text-black" style={{ fontFamily: '"Arial", sans-serif' }}>FROM</span>
                       </div>
-                      <div className="flex items-end gap-[4px] ml-1">
+                      <div className="flex items-end gap-[2px]">
                         <div className="flex gap-[2px]">
                           {Array.from({ length: 2 }).map((_, i) => (
-                            <div key={i} className="w-[28px] h-[34px] border border-black bg-white flex items-center justify-center font-bold text-black">{filledData ? filledData.fromDate[i] : ""}</div>
+                            <div key={i} className="w-[20px] h-[26px] border-[1.5px] border-black bg-white flex items-center justify-center font-bold text-black text-[13px]">{filledData ? filledData.fromDate[i] : ""}</div>
                           ))}
                         </div>
-                        <span className="text-black font-light text-lg px-[2px] translate-y-[-2px]">/</span>
+                        <span className="text-black font-medium text-[15px] px-[1px] leading-none translate-y-[-2px]">/</span>
                         <div className="flex gap-[2px]">
                           {Array.from({ length: 2 }).map((_, i) => (
-                            <div key={i + 2} className="w-[28px] h-[34px] border border-black bg-white flex items-center justify-center font-bold text-black">{filledData ? filledData.fromDate[i + 2] : ""}</div>
+                            <div key={i + 2} className="w-[20px] h-[26px] border-[1.5px] border-black bg-white flex items-center justify-center font-bold text-black text-[13px]">{filledData ? filledData.fromDate[i + 2] : ""}</div>
                           ))}
                         </div>
-                        <span className="text-black font-light text-lg px-[2px] translate-y-[-2px]">/</span>
+                        <span className="text-black font-medium text-[15px] px-[1px] leading-none translate-y-[-2px]">/</span>
                         <div className="flex gap-[2px]">
                           {Array.from({ length: 4 }).map((_, i) => (
-                            <div key={i + 4} className="w-[28px] h-[34px] border border-black bg-white flex items-center justify-center font-bold text-black">{filledData ? filledData.fromDate[i + 4] : ""}</div>
+                            <div key={i + 4} className="w-[20px] h-[26px] border-[1.5px] border-black bg-white flex items-center justify-center font-bold text-black text-[13px]">{filledData ? filledData.fromDate[i + 4] : ""}</div>
                           ))}
                         </div>
                       </div>
                     </div>
 
                     {/* Until Date */}
-                    <div className="flex items-end gap-[6px] pr-2 text-right">
-                      <div className="flex flex-col justify-end text-center p-1 px-1">
-                        <span className="text-[12px] font-bold leading-none mb-[2px] z-10 whitespace-nowrap text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ដល់ថ្ងៃ</span>
-                        <span className="text-[9px] font-bold uppercase tracking-widest leading-none z-10 text-center w-full text-black" style={{ fontFamily: '"Arial", sans-serif' }}>UNTIL</span>
+                    <div className="flex gap-[6px] items-end text-left">
+                       <div className="flex flex-col justify-end text-left pb-[2px] pr-1">
+                        <span className="text-[12px] font-bold leading-none mb-[2px] whitespace-nowrap text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ដល់ថ្ងៃ</span>
+                        <span className="text-[9px] font-bold uppercase tracking-widest leading-none block text-black" style={{ fontFamily: '"Arial", sans-serif' }}>UNTIL</span>
                       </div>
-                      <div className="flex items-end gap-[4px] ml-1">
+                      <div className="flex items-end gap-[2px]">
                         <div className="flex gap-[2px]">
                           {Array.from({ length: 2 }).map((_, i) => (
-                            <div key={i} className="w-[28px] h-[34px] border border-black bg-white flex items-center justify-center font-bold text-black">{filledData ? filledData.untilDate[i] : ""}</div>
+                            <div key={i} className="w-[20px] h-[26px] border-[1.5px] border-black bg-white flex items-center justify-center font-bold text-black text-[13px]">{filledData ? filledData.untilDate[i] : ""}</div>
                           ))}
                         </div>
-                        <span className="text-black font-light text-lg px-[2px] translate-y-[-2px]">/</span>
+                        <span className="text-black font-medium text-[15px] px-[1px] leading-none translate-y-[-2px]">/</span>
                         <div className="flex gap-[2px]">
                           {Array.from({ length: 2 }).map((_, i) => (
-                            <div key={i + 2} className="w-[28px] h-[34px] border border-black bg-white flex items-center justify-center font-bold text-black">{filledData ? filledData.untilDate[i + 2] : ""}</div>
+                            <div key={i + 2} className="w-[20px] h-[26px] border-[1.5px] border-black bg-white flex items-center justify-center font-bold text-black text-[13px]">{filledData ? filledData.untilDate[i + 2] : ""}</div>
                           ))}
                         </div>
-                        <span className="text-black font-light text-lg px-[2px] translate-y-[-2px]">/</span>
+                        <span className="text-black font-medium text-[15px] px-[1px] leading-none translate-y-[-2px]">/</span>
                         <div className="flex gap-[2px]">
                           {Array.from({ length: 4 }).map((_, i) => (
-                            <div key={i + 4} className="w-[28px] h-[34px] border border-black bg-white flex items-center justify-center font-bold text-black">{filledData ? filledData.untilDate[i + 4] : ""}</div>
+                            <div key={i + 4} className="w-[20px] h-[26px] border-[1.5px] border-black bg-white flex items-center justify-center font-bold text-black text-[13px]">{filledData ? filledData.untilDate[i + 4] : ""}</div>
                           ))}
                         </div>
                       </div>
@@ -474,22 +474,19 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     </div>
                     {row.numBox ? (
                       <div className="flex-1 flex bg-white justify-between">
-                        <div className="flex items-center px-4">
-                          <span className="font-bold text-[13px] text-black uppercase tracking-widest leading-none translate-y-px whitespace-pre-wrap py-2">{filledData ? cleanVal(filledData[row.valKey]) : ""}</span>
+                        <div className="flex items-center px-4 w-[50%] overflow-hidden">
+                          <span className="font-bold text-[13px] text-black uppercase tracking-widest leading-none translate-y-px whitespace-normal break-words py-2">{filledData ? cleanVal(filledData[row.valKey]) : ""}</span>
                         </div>
-                        <div className="flex items-center px-4 gap-2 border-l border-black shrink-0">
-                          <div className="flex flex-col justify-center items-center text-center w-[220px]">
-                            <span
-                              className="font-bold text-[11px] leading-tight text-black"
-                              style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}
-                            >
-                              លេខសម្គាល់ភ្នាក់ងារសេវាកម្មពន្ធដារ ៖
-                            </span>
-                            <span className="text-[9px] text-black leading-none pt-[1px]">
+                        <div className="flex flex-col justify-center items-start text-left pt-[2px] w-[50%] border-l border-black pl-[14px] pr-3">
+                          <span className="font-bold text-[11px] leading-tight text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                            លេខសម្គាល់ភ្នាក់ងារសេវាកម្មពន្ធដារ ៖
+                          </span>
+                          <div className="flex items-end w-full mt-[1px]">
+                            <span className="text-[9.5px] text-black leading-none shrink-0 border-b border-transparent pb-[1px]" style={{ fontFamily: '"Arial", sans-serif' }}>
                               Tax Service Agent License Number:
                             </span>
+                            <div className="flex-1 ml-[6px] border-b-[1.5px] border-black text-[13px] font-bold text-center leading-[14px]">{filledData ? cleanVal(filledData.agentLicense) : ""}</div>
                           </div>
-                          <div className="w-[200px] h-[22px] flex items-center justify-center font-bold text-black text-sm tracking-widest border-b border-black pb-1 mr-4">{filledData ? cleanVal(filledData.agentLicense) : ""}</div>
                         </div>
                       </div>
                     ) : (
@@ -638,7 +635,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                 <div className="flex-1 flex flex-col bg-white">
                   
                   {/* Top Header Row of Row 14: Label + 2 Checkboxes */}
-                  <div className="flex min-h-[38px] border-b border-black">
+                  <div className="flex min-h-[38px]">
                     {/* Left Column Label Block */}
                     <div className="w-[340px] shrink-0 border-r border-black pl-[10px] pr-2 py-1 flex flex-col justify-start pt-2 bg-white">
                       <span className="font-bold text-[12px] leading-tight text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
