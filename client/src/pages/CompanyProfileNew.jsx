@@ -806,7 +806,7 @@ export default function CompanyProfile() {
                             <div className="w-14 h-14 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-500">
                                 <Layers size={28} className="text-emerald-500" />
                             </div>
-                            <h3 className="text-white font-bold text-xl mb-2">Bank Statements V2</h3>
+                            <h3 className="text-white font-bold text-xl mb-2">Bank Statements VAT Recon</h3>
                             <p className="text-slate-500 text-xs leading-relaxed">Create isolated statement baskets for multiple separate bank accounts.</p>
                         </div>
 

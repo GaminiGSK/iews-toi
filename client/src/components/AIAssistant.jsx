@@ -278,7 +278,7 @@ const AIAssistant = () => {
                             <div className="flex flex-col min-w-0">
                                 <h3 className="font-bold text-[30px] tracking-tight text-white flex items-center gap-4">
                                     <div className="relative flex items-center justify-center w-[52px] h-[52px] rounded-full bg-blue-600 shadow-[0_0_25px_rgba(37,99,235,0.7)] border-[2.5px] border-blue-400 shrink-0">
-                                        <Bot size={28} className="text-white" strokeWidth={2.5} />
+                                        <img src="/assets/ba_audit_logo.jpg" alt="BA Audit Logo" className="w-full h-full rounded-full object-cover" />
                                         <span className={`absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-[#0a0f18] ${isConnected ? 'bg-teal-400 shadow-[0_0_12px_rgba(45,212,191,1)]' : 'bg-red-500'} transition-colors duration-300`}></span>
                                     </div>
                                     <span className="font-sans">the blue agent Auditor</span>
@@ -505,10 +505,10 @@ const AIAssistant = () => {
             {!isOpen && (
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="pointer-events-auto bg-blue-600 hover:bg-blue-500 text-white p-5 rounded-full shadow-2xl hover:shadow-blue-500/50 hover:scale-110 transition-all duration-300 group relative ring-4 ring-slate-900 border border-white/10"
+                    className="pointer-events-auto bg-blue-600 hover:bg-blue-500 text-white p-2 rounded-full shadow-2xl hover:shadow-blue-500/50 hover:scale-110 transition-all duration-300 group relative ring-4 ring-slate-900 border border-white/10"
                 >
-                    <div className="relative">
-                        <Bot size={36} />
+                    <div className="relative flex items-center justify-center w-[52px] h-[52px]">
+                        <img src="/assets/ba_audit_logo.jpg" alt="BA Audit Logo" className="w-full h-full rounded-full object-cover" />
                         <span className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-900 animate-pulse"></span>
                     </div>
                 </button>
