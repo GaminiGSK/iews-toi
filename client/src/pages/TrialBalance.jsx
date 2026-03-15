@@ -346,29 +346,29 @@ const TrialBalance = ({ onBack }) => {
                                         <>
                                             <thead>
                                                 <tr className="bg-slate-50 border-b border-gray-300">
-                                                    <th className="border-r border-gray-300 p-2 text-center w-20 text-xs text-gray-500 uppercase">Code</th>
-                                                    <th className="border-r border-gray-300 p-2 text-center w-24 text-xs text-gray-500 uppercase">TOI Code</th>
+                                                    <th className="border-r border-gray-300 p-2 text-center w-24 text-xs text-gray-500 font-bold uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខកូដ<br />CODE</th>
+                                                    <th className="border-r border-gray-300 p-2 text-center w-28 text-xs text-gray-500 font-bold uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខកូដ TOI<br />TOI CODE</th>
                                                     <th className="border-r border-gray-300 p-2 text-left"></th>
-                                                    <th className="border-r border-gray-300 p-2 text-center w-16 text-xs text-gray-500 uppercase">Note</th>
-                                                    <th colSpan="2" className="border-r border-gray-300 p-2 text-center font-bold text-gray-900 bg-[#E2E8F0]/40">
-                                                        For the year ended<br /><span className="text-xs font-normal">31-Dec-{fiscalYear}</span><br />
-                                                        <span className="text-xs uppercase text-gray-500">{inThousands ? `${currency}'000` : currency}</span>
+                                                    <th className="border-r border-gray-300 p-2 text-center w-20 text-xs text-gray-500 font-bold uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណាំ<br />NOTE</th>
+                                                    <th colSpan="2" className="border-r border-gray-300 p-2 text-center font-bold text-gray-900 bg-[#E2E8F0]/40 uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                                        <span className="text-xs">សម្រាប់ឆ្នាំបញ្ចប់ / FOR THE YEAR ENDED</span><br /><span className="text-xs font-normal">31-Dec-{fiscalYear}</span><br />
+                                                        <span className="text-xs text-gray-500">{inThousands ? `${currency}'000` : currency}</span>
                                                     </th>
-                                                    <th colSpan="2" className="border-r border-gray-300 p-2 text-center font-bold text-gray-500 bg-gray-50">
-                                                        For the year ended<br /><span className="text-xs font-normal">31-Dec-{fiscalYear - 1}</span><br />
-                                                        <span className="text-xs uppercase text-gray-400">{inThousands ? `${currency}'000` : currency}</span>
+                                                    <th colSpan="2" className="border-r border-gray-300 p-2 text-center font-bold text-gray-500 bg-gray-50 uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                                        <span className="text-xs">សម្រាប់ឆ្នាំបញ្ចប់ / FOR THE YEAR ENDED</span><br /><span className="text-xs font-normal">31-Dec-{fiscalYear - 1}</span><br />
+                                                        <span className="text-xs text-gray-400">{inThousands ? `${currency}'000` : currency}</span>
                                                     </th>
-                                                    <th className="p-2 text-center w-16 text-xs text-gray-500 uppercase">Ref</th>
+                                                    <th className="p-2 text-center w-20 text-xs text-gray-500 font-bold uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>យោង<br />REF</th>
                                                 </tr>
                                                 <tr className="bg-[#1e293b] text-xs font-bold text-gray-300 border-b border-gray-400">
                                                     <th className="border-r border-gray-600 p-2 text-center"></th>
                                                     <th className="border-r border-gray-600 p-2 text-center"></th>
-                                                    <th className="border-r border-gray-600 p-2 text-left pl-4 uppercase">Description</th>
+                                                    <th className="border-r border-gray-600 p-2 text-left pl-4 uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បរិយាយ / DESCRIPTION</th>
                                                     <th className="border-r border-gray-600 p-2"></th>
-                                                    <th className="border-r border-gray-600 p-2 text-right w-32 bg-[#334155]">Dr</th>
-                                                    <th className="border-r border-gray-600 p-2 text-right w-32 bg-[#334155]">Cr</th>
-                                                    <th className="border-r border-gray-600 p-2 text-right w-32 bg-[#1e293b]">Dr</th>
-                                                    <th className="border-r border-gray-600 p-2 text-right w-32 bg-[#1e293b]">Cr</th>
+                                                    <th className="border-r border-gray-600 p-2 text-right w-32 bg-[#334155]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឥណពន្ធ<br />DR</th>
+                                                    <th className="border-r border-gray-600 p-2 text-right w-32 bg-[#334155]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឥណទាន<br />CR</th>
+                                                    <th className="border-r border-gray-600 p-2 text-right w-32 bg-[#1e293b]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឥណពន្ធ<br />DR</th>
+                                                    <th className="border-r border-gray-600 p-2 text-right w-32 bg-[#1e293b]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឥណទាន<br />CR</th>
                                                     <th className="p-2"></th>
                                                 </tr>
                                             </thead>
@@ -403,8 +403,8 @@ const TrialBalance = ({ onBack }) => {
                                                                     <tr key={row.code} className="hover:bg-blue-50/50 transition border-b border-gray-200 text-sm bg-white group">
                                                                         <td className="border-r border-gray-300 p-2 text-center text-xs font-mono text-gray-500">{row.code}</td>
                                                                         <td className="border-r border-gray-300 p-2 text-center text-xs font-mono text-gray-400">{row.toiCode}</td>
-                                                                        <td className="border-r border-gray-300 p-2 pl-4 text-gray-800 font-medium">{row.description}</td>
-                                                                        <td className="border-r border-gray-300 p-2 text-center text-xs text-blue-600 font-bold">{row.note}</td>
+                                                                        <td className="border-r border-gray-300 p-2 pl-4 text-gray-800 font-medium uppercase min-w-[300px]">{row.description}</td>
+                                                                        <td className="border-r border-gray-300 p-2 text-center text-xs text-blue-600 font-bold uppercase">{row.note}</td>
                                                                         <td className="border-r border-gray-300 p-2 text-right font-mono text-gray-900 bg-slate-50">{dr > 0 ? dr.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '-'}</td>
                                                                         <td className="border-r border-gray-300 p-2 text-right font-mono text-gray-900 bg-slate-50">{cr > 0 ? cr.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '-'}</td>
                                                                         <td className="border-r border-gray-300 p-2 text-right font-mono text-gray-500 bg-white">{pDr > 0 ? pDr.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '-'}</td>
@@ -419,7 +419,7 @@ const TrialBalance = ({ onBack }) => {
                                                 <tr className="bg-[#1e293b] font-bold border-t-2 border-gray-400 text-white">
                                                     <td className="border-r border-gray-600"></td>
                                                     <td className="border-r border-gray-600"></td>
-                                                    <td className="border-r border-gray-600 p-3 text-right uppercase text-xs text-gray-300">Total</td>
+                                                    <td className="border-r border-gray-600 p-3 text-right uppercase text-xs text-gray-300" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សរុប / TOTAL</td>
                                                     <td className="border-r border-gray-600"></td>
                                                     <td className="border-r border-gray-600 p-3 text-right text-teal-400 bg-[#334155]">{((currency === 'USD' ? totals.drUSD : totals.drKHR) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
                                                     <td className="border-r border-gray-600 p-3 text-right text-teal-400 bg-[#334155]">{((currency === 'USD' ? totals.crUSD : totals.crKHR) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
@@ -436,37 +436,37 @@ const TrialBalance = ({ onBack }) => {
                                         <>
                                             <thead>
                                                 <tr className="bg-slate-100 border-b border-gray-300">
-                                                    <th className="border-r border-gray-300 p-2 text-center w-20 text-xs text-gray-500 uppercase">Code</th>
-                                                    <th className="border-r border-gray-300 p-2 text-center w-24 text-xs text-gray-500 uppercase">TOI Code</th>
+                                                    <th className="border-r border-gray-300 p-2 text-center w-24 text-xs text-gray-500 font-bold uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខកូដ<br />CODE</th>
+                                                    <th className="border-r border-gray-300 p-2 text-center w-28 text-xs text-gray-500 font-bold uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខកូដ TOI<br />TOI CODE</th>
                                                     <th className="border-r border-gray-300 p-2 text-left"></th>
-                                                    <th className="border-r border-gray-300 p-2 text-center w-16 text-xs text-gray-500 uppercase">Note</th>
+                                                    <th className="border-r border-gray-300 p-2 text-center w-20 text-xs text-gray-500 font-bold uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណាំ<br />NOTE</th>
 
-                                                    <th colSpan="2" className="border-r border-gray-300 p-2 text-center font-bold text-gray-600 bg-slate-200 uppercase text-xs">
-                                                        Unadjusted ({fiscalYear})
+                                                    <th colSpan="2" className="border-r border-gray-300 p-2 text-center font-bold text-gray-600 bg-slate-200 uppercase text-xs" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                                        មិនទាន់កែតម្រូវ<br />UNADJUSTED ({fiscalYear})
                                                     </th>
-                                                    <th colSpan="2" className="border-r border-gray-300 p-2 text-center font-bold text-gray-800 bg-white uppercase text-xs" style={{ borderTop: '4px solid #3B82F6' }}>
-                                                        Adjustments ({fiscalYear})
+                                                    <th colSpan="2" className="border-r border-gray-300 p-2 text-center font-bold text-gray-800 bg-white uppercase text-xs" style={{ borderTop: '4px solid #3B82F6', fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                                        កែតម្រូវ<br />ADJUSTMENTS ({fiscalYear})
                                                     </th>
-                                                    <th colSpan="2" className="border-r border-gray-300 p-2 text-center font-bold text-gray-600 bg-slate-200 uppercase text-xs">
-                                                        Adjusted ({fiscalYear})
+                                                    <th colSpan="2" className="border-r border-gray-300 p-2 text-center font-bold text-gray-600 bg-slate-200 uppercase text-xs" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                                        កែតម្រូវរួច<br />ADJUSTED ({fiscalYear})
                                                     </th>
 
-                                                    <th className="p-2 text-center w-16 text-xs text-gray-500 uppercase">Ref</th>
+                                                    <th className="p-2 text-center w-20 text-xs text-gray-500 font-bold uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>យោង<br />REF</th>
                                                 </tr>
                                                 <tr className="bg-slate-300 text-xs font-bold text-gray-700 border-b border-gray-400">
                                                     <th className="border-r border-gray-400 p-2 text-center"></th>
                                                     <th className="border-r border-gray-400 p-2 text-center"></th>
-                                                    <th className="border-r border-gray-400 p-2 text-left pl-4 uppercase">Description</th>
+                                                    <th className="border-r border-gray-400 p-2 text-left pl-4 uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បរិយាយ / DESCRIPTION</th>
                                                     <th className="border-r border-gray-400 p-2"></th>
 
-                                                    <th className="border-r border-gray-400 p-2 text-right w-28 bg-slate-200">Dr ({currency})</th>
-                                                    <th className="border-r border-gray-400 p-2 text-right w-28 bg-slate-200">Cr ({currency})</th>
+                                                    <th className="border-r border-gray-400 p-2 text-right w-28 bg-slate-200" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឥណពន្ធ<br />DR ({currency})</th>
+                                                    <th className="border-r border-gray-400 p-2 text-right w-28 bg-slate-200" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឥណទាន<br />CR ({currency})</th>
 
-                                                    <th className="border-r border-gray-400 p-2 text-right w-28 bg-white border-l-2 border-l-blue-500">Dr ({currency})</th>
-                                                    <th className="border-r border-gray-400 p-2 text-right w-28 bg-white">Cr ({currency})</th>
+                                                    <th className="border-r border-gray-400 p-2 text-right w-28 bg-white border-l-2 border-l-blue-500" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឥណពន្ធ<br />DR ({currency})</th>
+                                                    <th className="border-r border-gray-400 p-2 text-right w-28 bg-white" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឥណទាន<br />CR ({currency})</th>
 
-                                                    <th className="border-r border-gray-400 p-2 text-right w-28 bg-slate-200 border-l-2 border-l-gray-400">Dr ({currency})</th>
-                                                    <th className="border-r border-gray-400 p-2 text-right w-28 bg-slate-200">Cr ({currency})</th>
+                                                    <th className="border-r border-gray-400 p-2 text-right w-28 bg-slate-200 border-l-2 border-l-gray-400" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឥណពន្ធ<br />DR ({currency})</th>
+                                                    <th className="border-r border-gray-400 p-2 text-right w-28 bg-slate-200" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឥណទាន<br />CR ({currency})</th>
 
                                                     <th className="p-2"></th>
                                                 </tr>
@@ -504,8 +504,8 @@ const TrialBalance = ({ onBack }) => {
                                                                     <tr key={row.code} className="hover:bg-blue-50 transition border-b border-gray-200 text-sm group">
                                                                         <td className="border-r border-gray-300 p-2 text-center text-xs font-mono text-gray-600">{row.code}</td>
                                                                         <td className="border-r border-gray-300 p-2 text-center text-xs font-mono text-gray-500">{row.toiCode}</td>
-                                                                        <td className="border-r border-gray-300 p-2 pl-4 text-gray-800 font-medium">{row.description}</td>
-                                                                        <td className="border-r border-gray-300 p-2 text-center text-xs text-blue-600 font-bold">{row.note}</td>
+                                                                        <td className="border-r border-gray-300 p-2 pl-4 text-gray-800 font-medium uppercase min-w-[300px]">{row.description}</td>
+                                                                        <td className="border-r border-gray-300 p-2 text-center text-xs text-blue-600 font-bold uppercase">{row.note}</td>
 
                                                                         {/* Unadjusted */}
                                                                         <td className="border-r border-gray-300 p-2 text-right font-mono text-gray-500 bg-slate-100">{unAdDr > 0 ? unAdDr.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '-'}</td>
@@ -529,7 +529,7 @@ const TrialBalance = ({ onBack }) => {
                                                 <tr className="bg-slate-300 font-bold border-t-2 border-gray-400">
                                                     <td className="border-r border-gray-400"></td>
                                                     <td className="border-r border-gray-400"></td>
-                                                    <td className="border-r border-gray-400 p-3 text-right uppercase text-xs">Total</td>
+                                                    <td className="border-r border-gray-400 p-3 text-right uppercase text-xs" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សរុប / TOTAL</td>
                                                     <td className="border-r border-gray-400"></td>
 
                                                     <td className="border-r border-gray-400 p-3 text-right text-gray-600">{(report.reduce((sum, r) => sum + (currency === 'USD' ? (r.unadjDrUSD || 0) : (r.unadjDrKHR || 0)), 0) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
@@ -551,31 +551,31 @@ const TrialBalance = ({ onBack }) => {
                                         <>
                                             <thead>
                                                 <tr className="bg-[#111827] border-b border-[#374151]">
-                                                    <th className="border-r border-[#374151] p-2 text-center w-20 text-xs text-gray-400 uppercase">Code</th>
-                                                    <th className="border-r border-[#374151] p-2 text-center w-24 text-xs text-gray-400 uppercase">TOI Code</th>
+                                                    <th className="border-r border-[#374151] p-2 text-center w-24 text-xs text-gray-400 font-bold uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខកូដ<br />CODE</th>
+                                                    <th className="border-r border-[#374151] p-2 text-center w-28 text-xs text-gray-400 font-bold uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខកូដ TOI<br />TOI CODE</th>
                                                     <th className="border-r border-[#374151] p-2 text-left"></th>
-                                                    <th className="border-r border-[#374151] p-2 text-center w-16 text-xs text-gray-400 uppercase">Note</th>
-                                                    <th colSpan="3" className="border-r border-[#374151] p-2 text-center font-bold text-gray-100 bg-[#1f2937]">
-                                                        For the period ended<br /><span className="text-xs text-[#60a5fa] font-normal">31-Dec-{fiscalYear}</span><br />
-                                                        <span className="text-xs uppercase text-gray-400">{inThousands ? `${currency}'000` : currency}</span>
+                                                    <th className="border-r border-[#374151] p-2 text-center w-20 text-xs text-gray-400 font-bold uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណាំ<br />NOTE</th>
+                                                    <th colSpan="3" className="border-r border-[#374151] p-2 text-center font-bold text-gray-100 bg-[#1f2937] uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                                        <span className="text-xs">សម្រាប់រយៈពេលបញ្ចប់ / FOR THE PERIOD ENDED</span><br /><span className="text-xs text-[#60a5fa] font-normal">31-Dec-{fiscalYear}</span><br />
+                                                        <span className="text-xs text-gray-400">{inThousands ? `${currency}'000` : currency}</span>
                                                     </th>
-                                                    <th colSpan="3" className="border-r border-[#374151] p-2 text-center font-bold text-gray-400 bg-[#111827]">
-                                                        For the period ended<br /><span className="text-xs font-normal">31-Dec-{fiscalYear - 1}</span><br />
-                                                        <span className="text-xs uppercase text-gray-500">{inThousands ? `${currency}'000` : currency}</span>
+                                                    <th colSpan="3" className="border-r border-[#374151] p-2 text-center font-bold text-gray-400 bg-[#111827] uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                                        <span className="text-xs">សម្រាប់រយៈពេលបញ្ចប់ / FOR THE PERIOD ENDED</span><br /><span className="text-xs font-normal">31-Dec-{fiscalYear - 1}</span><br />
+                                                        <span className="text-xs text-gray-500">{inThousands ? `${currency}'000` : currency}</span>
                                                     </th>
-                                                    <th className="p-2 text-center w-16 text-xs text-gray-500 uppercase">Ref</th>
+                                                    <th className="p-2 text-center w-20 text-xs text-gray-500 font-bold uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>យោង<br />REF</th>
                                                 </tr>
                                                 <tr className="bg-[#1f2937] text-xs font-bold text-gray-300 border-b border-[#4b5563]">
                                                     <th className="border-r border-[#374151] p-2 text-center"></th>
                                                     <th className="border-r border-[#374151] p-2 text-center"></th>
-                                                    <th className="border-r border-[#374151] p-2 text-left pl-4 uppercase">Description</th>
+                                                    <th className="border-r border-[#374151] p-2 text-left pl-4 uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បរិយាយ / DESCRIPTION</th>
                                                     <th className="border-r border-[#374151] p-2"></th>
-                                                    <th className="border-r border-[#374151] p-2 text-right w-24 text-[#9ca3af]">Quantity</th>
-                                                    <th className="border-r border-[#374151] p-2 text-right w-32 bg-[#374151]">Dr ({currency})</th>
-                                                    <th className="border-r border-[#374151] p-2 text-right w-32 bg-[#374151]">Cr ({currency})</th>
-                                                    <th className="border-r border-[#374151] p-2 text-right w-24 text-[#9ca3af]">Quantity (units)</th>
-                                                    <th className="border-r border-[#374151] p-2 text-right w-32 bg-[#111827]">Dr ({currency})</th>
-                                                    <th className="border-r border-[#374151] p-2 text-right w-32 bg-[#111827]">Cr ({currency})</th>
+                                                    <th className="border-r border-[#374151] p-2 text-right w-24 text-[#9ca3af]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បរិមាណ<br />QUANTITY</th>
+                                                    <th className="border-r border-[#374151] p-2 text-right w-32 bg-[#374151]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឥណពន្ធ<br />DR ({currency})</th>
+                                                    <th className="border-r border-[#374151] p-2 text-right w-32 bg-[#374151]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឥណទាន<br />CR ({currency})</th>
+                                                    <th className="border-r border-[#374151] p-2 text-right w-24 text-[#9ca3af]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បរិមាណ<br />QUANTITY (units)</th>
+                                                    <th className="border-r border-[#374151] p-2 text-right w-32 bg-[#111827]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឥណពន្ធ<br />DR ({currency})</th>
+                                                    <th className="border-r border-[#374151] p-2 text-right w-32 bg-[#111827]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឥណទាន<br />CR ({currency})</th>
                                                     <th className="p-2"></th>
                                                 </tr>
                                             </thead>
@@ -616,8 +616,8 @@ const TrialBalance = ({ onBack }) => {
                                                                     <tr key={row.code} className="hover:bg-[#111827] transition border-b border-[#1f2937] text-sm group">
                                                                         <td className="border-r border-[#1f2937] p-2 text-center text-xs font-mono text-gray-500">{row.code}</td>
                                                                         <td className="border-r border-[#1f2937] p-2 text-center text-xs font-mono text-gray-600">{row.toiCode}</td>
-                                                                        <td className="border-r border-[#1f2937] p-2 pl-4 text-gray-300 group-hover:text-white font-medium">{row.description}</td>
-                                                                        <td className="border-r border-[#1f2937] p-2 text-left pl-4 text-xs text-gray-400">{row.description}</td>
+                                                                        <td className="border-r border-[#1f2937] p-2 pl-4 text-gray-300 group-hover:text-white font-medium uppercase min-w-[300px]">{row.description}</td>
+                                                                        <td className="border-r border-[#1f2937] p-2 text-center text-xs text-blue-500 font-bold uppercase">{row.note}</td>
                                                                         <td className="border-r border-[#1f2937] p-2 text-right font-mono text-[#9ca3af]">{mockedQuantity !== '-' ? mockedQuantity.toLocaleString() : '-'}</td>
                                                                         <td className="border-r border-[#1f2937] p-2 text-right font-mono text-gray-100">{dr > 0 ? dr.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '-'}</td>
                                                                         <td className="border-r border-[#1f2937] p-2 text-right font-mono text-gray-100">{cr > 0 ? cr.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '-'}</td>
@@ -634,7 +634,7 @@ const TrialBalance = ({ onBack }) => {
                                                 <tr className="bg-[#111827] font-bold border-t border-[#4b5563] text-white">
                                                     <td className="border-r border-[#374151]"></td>
                                                     <td className="border-r border-[#374151]"></td>
-                                                    <td className="border-r border-[#374151] p-3 text-right uppercase text-xs text-gray-400">Total</td>
+                                                    <td className="border-r border-[#374151] p-3 text-right uppercase text-xs text-gray-400" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សរុប / TOTAL</td>
                                                     <td className="border-r border-[#374151]"></td>
                                                     <td className="border-r border-[#374151]"></td>
                                                     <td className="border-r border-[#374151] p-3 text-right text-gray-100">{((currency === 'USD' ? totals.drUSD : totals.drKHR) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
