@@ -242,7 +242,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
             {/* Content for the white preview */}
             <div className="w-full flex flex-col font-sans mb-12 text-black print:toi-form-scale print:mb-0 max-w-[900px] mx-auto">
               {/* OFFICIAL GDT HEADER - Based exactly on reference image */}
-              <div className="w-full relative mb-6 text-[10px] sm:text-[11px] leading-tight pt-2 font-bold flex justify-between items-start">
+              <div className="w-full relative mb-2 text-[10px] sm:text-[11px] leading-tight pt-2 font-bold flex justify-between items-start">
 
                 {/* LEFT: TOI 01 / I and MINISTRY */}
                 <div className="flex flex-col items-start w-[38%]">
@@ -270,7 +270,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                 </div>
 
                 {/* CENTER: GDT EMBLEM / LOGO */}
-                <div className="flex flex-col items-center w-[24%] justify-start pt-10">
+                <div className="flex flex-col items-center w-[24%] justify-start pt-6">
                   <img
                     src="/assets/gdt_logo.jpg"
                     alt="GDT Emblem"
