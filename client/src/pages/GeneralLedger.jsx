@@ -214,40 +214,37 @@ const GeneralLedger = ({ onBack }) => {
     };
 
     const renderTable = (data, showHeader = true) => {
-        // No special total calculation needed anymore for "Bank Balance" row since it's removed.
-        // We can keep a simplified viewTotals if we want footer totals later, or remove it.
-        // For now, let's keep it simple.
-
         return (
-            <table className="w-full text-left">
+            <table className="w-full text-left print:text-black print:table-fixed">
                 {showHeader && (
-                    <thead className="bg-gray-50 text-gray-600 text-xs font-bold uppercase border-b border-gray-200">
+                    <thead className="bg-gray-50 text-gray-600 text-xs font-bold uppercase border-b border-gray-200 print:bg-white print:text-[8px] print:text-black print:border-b print:border-black">
                         <tr>
-                            <th className="px-6 py-4 w-[120px]" rowSpan="2">Date</th>
-                            <th className="px-6 py-4 w-[200px]" rowSpan="2">Account Code</th>
-                            <th className="px-6 py-4 w-full" rowSpan="2">Description</th>
-                            <th className="px-6 py-4 text-center border-l border-gray-200" colSpan="3">USD ($)</th>
-                            <th className="px-6 py-4 text-center border-l border-gray-200" colSpan="3">KHR (៛)</th>
+                            <th className="px-6 py-4 w-[120px] print:px-1 print:py-2 print:border-b print:border-black print:w-[10%]" rowSpan="2">Date</th>
+                            <th className="px-6 py-4 w-[200px] print:px-1 print:py-2 print:border-b print:border-black print:w-[12%]" rowSpan="2">Account Code</th>
+                            <th className="px-6 py-4 w-full print:px-1 print:py-2 print:border-b print:border-black print:w-[32%]" rowSpan="2">Description</th>
+                            <th className="px-6 py-4 text-center border-l border-gray-200 print:px-1 print:py-2 print:border-black print:border-l print:text-[8px] print:w-[23%]" colSpan="3">USD ($)</th>
+                            <th className="px-6 py-4 text-center border-l border-gray-200 print:px-1 print:py-2 print:border-black print:border-l print:text-[8px] print:w-[23%]" colSpan="3">KHR (៛)</th>
                         </tr>
-                        <tr className="border-t border-gray-200">
-                            <th className="px-4 py-2 text-right border-l text-gray-500">In</th>
-                            <th className="px-4 py-2 text-right text-gray-500">Out</th>
-                            <th className="px-4 py-2 text-right text-gray-500">Bal</th>
-                            <th className="px-4 py-2 text-right border-l text-gray-500">In</th>
-                            <th className="px-4 py-2 text-right text-gray-500">Out</th>
-                            <th className="px-4 py-2 text-right text-gray-500">Bal</th>
+                        <tr className="border-t border-gray-200 print:border-black">
+                            <th className="px-4 py-2 text-right border-l text-gray-500 print:px-1 print:py-1 print:border-l print:border-black print:text-[7px]">In</th>
+                            <th className="px-4 py-2 text-right text-gray-500 print:px-1 print:py-1 print:text-[7px]">Out</th>
+                            <th className="px-4 py-2 text-right text-gray-500 print:px-1 print:py-1 print:text-[7px]">Bal</th>
+                            <th className="px-4 py-2 text-right border-l text-gray-500 print:px-1 print:py-1 print:border-l print:border-black print:text-[7px]">In</th>
+                            <th className="px-4 py-2 text-right text-gray-500 print:px-1 print:py-1 print:text-[7px]">Out</th>
+                            <th className="px-4 py-2 text-right text-gray-500 print:px-1 print:py-1 print:text-[7px]">Bal</th>
                         </tr>
                     </thead>
                 )}
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-gray-100 print:divide-y print:divide-gray-400">
                     {data.map((tx, idx) => (
-                        <tr key={idx} className="hover:bg-gray-50 transition">
-                            <td className="px-6 py-4 text-xs text-gray-600 font-bold whitespace-nowrap align-top">
+                        <tr key={idx} className="hover:bg-gray-50 transition print:break-inside-avoid print:bg-white print:border-b print:border-gray-200">
+                            <td className="px-6 py-4 text-xs text-gray-600 font-bold whitespace-nowrap align-top print:px-1 print:py-1 print:text-[8px] print:text-black">
                                 {formatDateSafe(tx.date)}
-                                {tx.rateUsed > 0 && <div className="text-[10px] text-teal-600 mt-1 font-normal">@{tx.rateUsed}</div>}
+                                {tx.rateUsed > 0 && <div className="text-[10px] text-teal-600 mt-1 font-normal print:hidden">@{tx.rateUsed}</div>}
                             </td>
-                            <td className="px-6 py-4 text-xs align-top">
-                                <div className="flex items-center gap-2">
+                            <td className="px-6 py-4 text-xs align-top print:px-1 print:py-1">
+                                {/* Screen UI */}
+                                <div className="flex items-center gap-2 print:hidden">
                                     {tx.isJournalEntry ? (
                                         <div className="flex-1 px-2 py-1 text-xs font-mono bg-orange-50 text-orange-800 border-orange-200 border rounded-lg flex items-center gap-1 shadow-sm">
                                             <Tag size={12} className="text-orange-500" />
@@ -278,26 +275,30 @@ const GeneralLedger = ({ onBack }) => {
                                         </div>
                                     )}
                                 </div>
+                                {/* Print UI */}
+                                <div className="hidden print:block font-mono text-[8px] text-black font-semibold truncate max-w-[12vw]">
+                                    {codes.find(c => c._id === tx.accountCode)?.code || '---'}
+                                </div>
                             </td>
-                            <td className="px-6 py-4 text-xs text-gray-700 font-medium align-top leading-relaxed whitespace-pre-wrap">
+                            <td className="px-6 py-4 text-xs text-gray-700 font-medium align-top leading-relaxed whitespace-pre-wrap print:px-1 print:py-1 print:text-[8px] print:text-black print:whitespace-normal print:leading-tight">
                                 {typeof tx.description === 'object' ? JSON.stringify(tx.description) : String(tx.description || '')}
                             </td>
-                            <td className="px-4 py-4 text-xs text-right font-bold text-green-600 align-top whitespace-nowrap border-l border-gray-100">
+                            <td className="px-4 py-4 text-xs text-right font-bold text-green-600 align-top whitespace-nowrap border-l border-gray-100 print:border-l print:border-black print:px-1 print:py-1 print:text-[8px] print:text-black print:font-medium">
                                 {Number(String(tx.amount).replace(/[^0-9.-]+/g,"")) > 0 ? Number(String(tx.amount).replace(/[^0-9.-]+/g,"")).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
                             </td>
-                            <td className="px-4 py-4 text-xs text-right font-bold text-red-600 align-top whitespace-nowrap">
+                            <td className="px-4 py-4 text-xs text-right font-bold text-red-600 align-top whitespace-nowrap print:px-1 print:py-1 print:text-[8px] print:text-black print:font-medium">
                                 {Number(String(tx.amount).replace(/[^0-9.-]+/g,"")) < 0 ? Math.abs(Number(String(tx.amount).replace(/[^0-9.-]+/g,""))).toLocaleString('en-US', { minimumFractionDigits: 2 }) : ''}
                             </td>
-                            <td className="px-4 py-4 text-xs text-right text-gray-900 font-bold align-top whitespace-nowrap">
+                            <td className="px-4 py-4 text-xs text-right text-gray-900 font-bold align-top whitespace-nowrap print:px-1 print:py-1 print:text-[8px] print:text-black print:font-semibold">
                                 {tx.balance ? Number(String(tx.balance).replace(/[^0-9.-]+/g,"")).toLocaleString('en-US', { minimumFractionDigits: 2 }) : '-'}
                             </td>
-                            <td className="px-4 py-4 text-xs text-right font-bold text-teal-600 align-top whitespace-nowrap border-l border-gray-100 bg-gray-50/50">
+                            <td className="px-4 py-4 text-xs text-right font-bold text-teal-600 align-top whitespace-nowrap border-l border-gray-100 bg-gray-50/50 print:bg-transparent print:border-l print:border-black print:px-1 print:py-1 print:text-[8px] print:text-black print:font-medium">
                                 {Number(String(tx.amountKHR).replace(/[^0-9.-]+/g,"")) > 0 ? Number(String(tx.amountKHR).replace(/[^0-9.-]+/g,"")).toLocaleString('en-US', { maximumFractionDigits: 0 }) : ''}
                             </td>
-                            <td className="px-4 py-4 text-xs text-right font-bold text-red-400 align-top whitespace-nowrap bg-gray-50/50">
+                            <td className="px-4 py-4 text-xs text-right font-bold text-red-400 align-top whitespace-nowrap bg-gray-50/50 print:bg-transparent print:px-1 print:py-1 print:text-[8px] print:text-black print:font-medium">
                                 {Number(String(tx.amountKHR).replace(/[^0-9.-]+/g,"")) < 0 ? Math.abs(Number(String(tx.amountKHR).replace(/[^0-9.-]+/g,""))).toLocaleString('en-US', { maximumFractionDigits: 0 }) : ''}
                             </td>
-                            <td className="px-4 py-4 text-xs text-right text-gray-600 font-bold align-top whitespace-nowrap bg-gray-50/50">
+                            <td className="px-4 py-4 text-xs text-right text-gray-600 font-bold align-top whitespace-nowrap bg-gray-50/50 print:bg-transparent print:px-1 print:py-1 print:text-[8px] print:text-black print:font-semibold">
                                 {tx.balanceKHR ? Number(String(tx.balanceKHR).replace(/[^0-9.-]+/g,"")).toLocaleString('en-US', { maximumFractionDigits: 0 }) : '-'}
                             </td>
                         </tr>
@@ -311,7 +312,7 @@ const GeneralLedger = ({ onBack }) => {
         <ErrorBoundary>
             <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900">
                 {/* Header - Left Aligned */}
-                <div className="bg-white border-b border-gray-200 px-8 py-5 flex items-center gap-8 sticky top-0 z-20 shadow-sm overflow-x-auto">
+                <div className="bg-white border-b border-gray-200 px-8 py-5 flex items-center gap-8 sticky top-0 z-20 shadow-sm overflow-x-auto print:hidden">
                     <div className="flex items-center gap-4 shrink-0">
                         <button
                             onClick={onBack}
@@ -394,15 +395,40 @@ const GeneralLedger = ({ onBack }) => {
                             className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-lg text-sm font-medium transition flex items-center gap-2 shadow-sm disabled:opacity-50"
                         >
                             <Wand2 className={`w-4 h-4 ${tagging ? 'animate-spin' : ''}`} />
-                            {tagging ? 'AI Analyzing...' : 'Auto-Tag with AI'}
+                            {tagging ? 'AI Analyzing...' : 'Auto-Tag'}
+                        </button>
+                        <button
+                            onClick={() => window.print()}
+                            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-sm font-medium transition flex items-center gap-2 shadow-sm border border-slate-300 ml-2"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                            </svg>
+                            Print A4 Layout
                         </button>
                     </div>
                 </div>
 
-                <div className="flex-1 p-8 overflow-auto">
+                <div className="flex-1 p-8 overflow-auto print:p-0 print:overflow-visible">
+                    {/* Print Only Header */}
+                    <div className="hidden print:block pb-4 mb-4 border-b-2 border-black mt-4">
+                        <div className="flex justify-between items-end">
+                            <div>
+                                <h2 className="text-xl font-bold uppercase tracking-widest text-black/90">General Ledger</h2>
+                                <p className="text-[10px] text-gray-600 font-medium mt-1">
+                                    {filterCode && filterCode !== 'uncategorized' ? `Code Filter: ${codes.find(c => c._id === filterCode)?.code || ''} | ` : ''} 
+                                    Fiscal Year: {fiscalYear === 'all' ? 'All Years' : fiscalYear}
+                                </p>
+                            </div>
+                            <div className="text-right text-[9px] text-gray-500 uppercase tracking-widest">
+                                Report Date: {new Date().toLocaleDateString('en-GB')}
+                            </div>
+                        </div>
+                    </div>
+
                     {/* Summary Cards */}
                     {!loading && (
-                        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 text-center">
+                        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 text-center print:hidden">
                             <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
                                 <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
                                     {filterCode === 'uncategorized' ? 'Unassigned Money In' : 'Total Money In'}
@@ -493,16 +519,16 @@ const GeneralLedger = ({ onBack }) => {
                         ) : filteredTransactions.length === 0 ? (
                             <div className="bg-white p-12 text-center text-gray-500 rounded-xl border border-gray-200">No transactions found for this selection.</div>
                         ) : viewMode === 'date' ? (
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden print:border-none print:shadow-none print:w-full">
                                 {renderTable(filteredTransactions)}
                             </div>
                         ) : (
                             // CODE VIEW RENDER
                             getGroupedTransactions().map((group, idx) => (
-                                <div key={idx} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden animate-fade-in">
-                                    <div className={`px-6 py-4 border-b border-gray-200 flex justify-between items-center ${group.codeInfo._id === 'uncategorized' ? 'bg-red-50' : 'bg-gray-50'}`}>
+                                <div key={idx} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden animate-fade-in print:border-none print:break-inside-avoid print:shadow-none print:mb-4">
+                                    <div className={`px-6 py-4 border-b border-gray-200 flex justify-between items-center ${group.codeInfo._id === 'uncategorized' ? 'bg-red-50' : 'bg-gray-50'} print:bg-white print:border-black print:px-2 print:py-2`}>
                                         <div className="flex items-center gap-3">
-                                            <div className={`p-2 rounded-lg ${group.codeInfo._id === 'uncategorized' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
+                                            <div className={`p-2 rounded-lg ${group.codeInfo._id === 'uncategorized' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'} print:hidden`}>
                                                 <Tag size={18} />
                                             </div>
                                             <div>
