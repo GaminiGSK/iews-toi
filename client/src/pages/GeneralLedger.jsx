@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { ArrowLeft, Tag, Sparkles, Wand2 } from 'lucide-react';
+import { ArrowLeft, Tag, Sparkles, Wand2, Calendar, Layers } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import ErrorBoundary from '../components/ErrorBoundary';
 
