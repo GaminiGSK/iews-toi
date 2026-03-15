@@ -269,12 +269,12 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   </div>
                 </div>
 
-                {/* CENTER: GDT EMBLEM / LOGO - vertically aligned with Ministry block center */}
-                <div className="flex flex-col items-center w-[24%] justify-start pt-7">
+                {/* CENTER: GDT EMBLEM / LOGO - vertically aligned with Ministry Khmer text */}
+                <div className="flex flex-col items-center w-[24%] justify-start pt-16">
                   <img
                     src="/assets/gdt_logo.jpg"
                     alt="GDT Emblem"
-                    className="w-[150px] h-[150px] object-contain"
+                    className="w-[180px] h-[180px] object-contain"
                     onError={(e) => {
                       e.target.src = '/assets/gdt_seal.png';
                     }}
