@@ -246,5 +246,6 @@ module.exports = {
     createFolder,
     findFolder,
     uploadFileMetadataOnly,
-    moveFile
+    moveFile,
+    getDrive
 };

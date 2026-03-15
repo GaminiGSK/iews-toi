@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 async function downloadLogo() {
-  const drive = await driveAuth.getDriveClient();
+  const drive = await driveAuth.getDrive();
   console.log("Searching for 'BA Audit .jpg'...");
   const res = await drive.files.list({
     q: "name='BA Audit .jpg'",
