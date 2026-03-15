@@ -241,7 +241,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
       <div className="flex-1 flex overflow-hidden print:overflow-visible">
         {/* NEW LEFT SIDE: WHITE PREVIEW (ONLY PAGE 1) */}
         {activeWorkspacePage === 1 && (
-          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
+          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} min-w-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
             {/* Content for the white preview */}
             <div className="w-full flex flex-col font-sans mb-12 text-black print:toi-form-scale print:mb-0 max-w-[900px] mx-auto">
               {/* OFFICIAL GDT HEADER - Based exactly on reference image */}
@@ -1097,7 +1097,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
 
         {/* NEW LEFT SIDE: WHITE PREVIEW (PAGE 2 - ENTERPRISE INFO & EMPLOYEES) */}
         {activeWorkspacePage === 2 && (
-          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
+          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} min-w-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
             {/* Content for the white preview */}
             <div className="w-full flex flex-col font-sans mb-12 text-black print:toi-form-scale print:mb-0">
                {/* -----------------HEADER----------------- */}
@@ -1413,7 +1413,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
 
         {/* NEW LEFT SIDE: WHITE PREVIEW (PAGE 3 - BALANCE SHEET ASSETS) */}
         {activeWorkspacePage === 3 && (
-          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
+          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} min-w-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
             {/* Content for the white preview */}
             <div className="w-full flex flex-col font-sans mb-12 text-black print:toi-form-scale print:mb-0">
                {/* -----------------HEADER----------------- */}
@@ -1553,7 +1553,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
 
         {/* NEW LEFT SIDE: WHITE PREVIEW (PAGE 4 - BALANCE SHEET LIABILITIES & EQUITY) */}
         {activeWorkspacePage === 4 && (
-          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
+          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} min-w-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
             {/* Content for the white preview */}
             <div className="w-full flex flex-col font-sans mb-12 text-black print:toi-form-scale print:mb-0">
                {/* -----------------HEADER----------------- */}
@@ -1671,7 +1671,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
 
         {/* NEW LEFT SIDE: WHITE PREVIEW (PAGE 5 - INCOME STATEMENT) */}
         {activeWorkspacePage === 5 && (
-          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
+          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} min-w-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
             {/* Content for the white preview */}
             <div className="w-full flex flex-col font-sans mb-12 text-black print:toi-form-scale print:mb-0">
                {/* -----------------HEADER----------------- */}
@@ -1814,7 +1814,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
 
         {/* NEW LEFT SIDE: WHITE PREVIEW (PAGE 6 - INCOME STATEMENT CONT) */}
         {activeWorkspacePage === 6 && (
-          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
+          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} min-w-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
             {/* Content for the white preview */}
             <div className="w-full flex flex-col font-sans mb-12 text-black print:toi-form-scale print:mb-0">
                {/* -----------------HEADER----------------- */}
@@ -1939,7 +1939,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
 
         {/* NEW LEFT SIDE: WHITE PREVIEW (PAGE 7 - COSTS OF PRODUCTS SOLD) */}
         {activeWorkspacePage === 7 && (
-          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
+          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} min-w-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
             {/* Content for the white preview */}
             <div className="w-full flex flex-col font-sans mb-12 text-black print:toi-form-scale print:mb-0">
                {/* -----------------HEADER----------------- */}
@@ -2090,7 +2090,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
 
         {/* NEW LEFT SIDE: WHITE PREVIEW (PAGE 8 - COSTS OF GOODS SOLD) */}
         {activeWorkspacePage === 8 && (
-          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
+          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} min-w-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
             {/* Content for the white preview */}
             <div className="w-full flex flex-col font-sans mb-12 text-black print:toi-form-scale print:mb-0">
                {/* -----------------HEADER----------------- */}
@@ -2222,7 +2222,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
 
         {/* NEW LEFT SIDE: WHITE PREVIEW (PAGE 9 - TABLE OF INCOME TAX CALCULATION) */}
         {activeWorkspacePage === 9 && (
-          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
+          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} min-w-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
             {/* Content for the white preview */}
             <div className="w-full flex flex-col font-sans mb-12 text-black print:toi-form-scale print:mb-0">
                {/* -----------------HEADER----------------- */}
@@ -2441,7 +2441,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
 
         {/* NEW LEFT SIDE: WHITE PREVIEW (PAGE 10 - TABLE OF INCOME TAX CALCULATION CONT) */}
         {activeWorkspacePage === 10 && (
-          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
+          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} min-w-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
             {/* Content for the white preview */}
             <div className="w-full flex flex-col font-sans mb-12 text-black print:toi-form-scale print:mb-0">
                {/* -----------------HEADER----------------- */}
@@ -2726,7 +2726,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
 
         {/* NEW LEFT SIDE: WHITE PREVIEW (PAGE 11 - CHARITABLE CONTRIBUTIONS AND INTEREST EXPENSE) */}
         {activeWorkspacePage === 11 && (
-          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
+          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} min-w-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
             {/* Content for the white preview */}
             <div className="w-full flex flex-col font-sans mb-12 text-black print:toi-form-scale print:mb-0">
                {/* -----------------HEADER----------------- */}
@@ -2929,7 +2929,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
 
         {/* NEW LEFT SIDE: WHITE PREVIEW (PAGE 12 - INTEREST EXPENSE & LOSSES CARRIED FORWARD) */}
         {activeWorkspacePage === 12 && (
-          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
+          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} min-w-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
             {/* Content for the white preview */}
             <div className="w-full flex flex-col font-sans mb-12 text-black print:toi-form-scale print:mb-0">
                {/* -----------------HEADER----------------- */}
@@ -3200,7 +3200,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
 
         {/* NEW LEFT SIDE: WHITE PREVIEW (PAGE 13 - DEPRECIATION TABLE AS PER LOT) */}
         {activeWorkspacePage === 13 && (
-          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-slate-100 border-r border-slate-300 overflow-y-auto overflow-x-auto custom-scrollbar shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:p-0 print:overflow-visible flex items-start justify-start p-8`}>
+          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} min-w-0 bg-slate-100 border-r border-slate-300 overflow-y-auto overflow-x-auto custom-scrollbar shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:p-0 print:overflow-visible flex items-start justify-start p-8`}>
             {/* Content for the white preview */}
             <div className={`min-w-[1240px] w-full max-w-[1400px] bg-white border border-slate-300 shadow-sm p-12 flex flex-col font-sans my-auto shrink-0 print:my-0 print:w-full print:max-w-none print:border-none print:shadow-none print:p-0`}>
                {/* -----------------HEADER----------------- */}
@@ -3730,7 +3730,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
 
         {/* NEW LEFT SIDE: WHITE PREVIEW (PAGE 14 - SPECIAL DEPRECIATION TABLE PER LOT) */}
         {activeWorkspacePage === 14 && (
-          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-slate-100 border-r border-slate-300 overflow-y-auto overflow-x-auto custom-scrollbar shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:p-0 print:overflow-visible flex items-start justify-start p-8`}>
+          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} min-w-0 bg-slate-100 border-r border-slate-300 overflow-y-auto overflow-x-auto custom-scrollbar shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:p-0 print:overflow-visible flex items-start justify-start p-8`}>
             {/* Content for the white preview */}
             <div className={`min-w-[1240px] w-full max-w-[1400px] bg-white border border-slate-300 shadow-sm p-12 flex flex-col font-sans my-auto shrink-0 print:my-0 print:w-full print:max-w-none print:border-none print:shadow-none print:p-0`}>
                {/* -----------------HEADER----------------- */}
@@ -4003,7 +4003,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
 
         {/* NEW LEFT SIDE: WHITE PREVIEW (PAGE 15 - TABLE OF GAIN/LOSS ON DISPOSAL OR SALES) */}
         {activeWorkspacePage === 15 && (
-          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-slate-100 border-r border-slate-300 overflow-y-auto overflow-x-auto custom-scrollbar shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:p-0 print:overflow-visible flex items-start justify-start p-8`}>
+          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} min-w-0 bg-slate-100 border-r border-slate-300 overflow-y-auto overflow-x-auto custom-scrollbar shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:p-0 print:overflow-visible flex items-start justify-start p-8`}>
             {/* Content for the white preview */}
             <div className={`min-w-[1240px] w-full max-w-[1400px] bg-white border border-slate-300 shadow-sm p-12 flex flex-col font-sans my-auto shrink-0 print:my-0 print:w-full print:max-w-none print:border-none print:shadow-none print:p-0`}>
                {/* -----------------HEADER----------------- */}
@@ -4227,7 +4227,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
 
         {/* NEW LEFT SIDE: WHITE PREVIEW (PAGE 16 - PROVISION CALCULATION TABLE) */}
         {activeWorkspacePage === 16 && (
-          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-slate-100 border-r border-slate-300 overflow-y-auto overflow-x-auto custom-scrollbar shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:p-0 print:overflow-visible flex items-start justify-start p-8`}>
+          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} min-w-0 bg-slate-100 border-r border-slate-300 overflow-y-auto overflow-x-auto custom-scrollbar shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:p-0 print:overflow-visible flex items-start justify-start p-8`}>
             {/* Content for the white preview */}
             <div className={`min-w-[1240px] w-full max-w-[1400px] bg-white border border-slate-300 shadow-sm p-12 flex flex-col font-sans my-auto shrink-0 print:my-0 print:w-full print:max-w-none print:border-none print:shadow-none print:p-0`}>
                {/* -----------------HEADER----------------- */}
@@ -4400,7 +4400,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
 
         {/* NEW LEFT SIDE: WHITE PREVIEW (PAGE 17 - ANNEX 1 - LIST OF RELATED-PARTY TRANSACTIONS) */}
         {activeWorkspacePage === 17 && (
-          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
+          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} min-w-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
             {/* Content for the white preview */}
             <div className="w-full flex flex-col font-sans mb-12 text-black print:toi-form-scale print:mb-0 max-w-[950px] mx-auto">
                
@@ -4778,7 +4778,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
 
         {/* NEW LEFT SIDE: WHITE PREVIEW (PAGE 18 - ANNEX 2 - FIXED ASSETS) */}
         {activeWorkspacePage === 18 && (
-          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
+          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} min-w-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
             {/* Content for the white preview */}
             <div className="w-full flex flex-col font-sans mb-12 text-black print:toi-form-scale print:mb-0 max-w-[950px] mx-auto">
                
@@ -5027,7 +5027,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
 
         {/* NEW LEFT SIDE: WHITE PREVIEW (PAGE 19 - ANNEX 3 - LOCAL BRANCH) */}
         {activeWorkspacePage === 19 && (
-          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
+          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} min-w-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
             {/* Content for the white preview */}
             <div className="w-full flex flex-col font-sans mb-12 text-black print:toi-form-scale print:mb-0 max-w-[950px] mx-auto">
                
@@ -5419,7 +5419,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
 
         {/* NEW LEFT SIDE: WHITE PREVIEW (PAGE 20 - ANNEX 3 CON'T) */}
         {activeWorkspacePage === 20 && (
-          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
+          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} min-w-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
             {/* Content for the white preview */}
             <div className="w-full flex flex-col font-sans mb-12 text-black print:toi-form-scale print:mb-0 max-w-[950px] mx-auto">
                
@@ -5565,7 +5565,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
 
         {/* NEW LEFT SIDE: WHITE PREVIEW (PAGE 21 - ANNEX 4 - EXCESS INCOME TAX ON MINING/OIL) */}
         {activeWorkspacePage === 21 && (
-          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} shrink-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
+          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} min-w-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
             {/* Content for the white preview */}
             <div className="w-full flex flex-col font-sans mb-12 text-black print:toi-form-scale print:mb-0 max-w-[950px] mx-auto">
                
