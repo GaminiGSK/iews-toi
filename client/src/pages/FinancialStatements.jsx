@@ -8,7 +8,8 @@ const FinancialStatements = ({ onBack }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [viewMode, setViewMode] = useState('annual'); // 'annual' | 'monthly'
-    const [companyName, setCompanyName] = useState('Your Company');
+    const [companyNameEn, setCompanyNameEn] = useState('Your Company');
+    const [companyNameKh, setCompanyNameKh] = useState('');
     const [inUSD, setInUSD] = useState(false);
     const [report, setReport] = useState([]); // Annual Data
     const [monthlyData, setMonthlyData] = useState({ pl: [], bs: [] }); // Monthly Data
@@ -30,7 +31,8 @@ const FinancialStatements = ({ onBack }) => {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             setReport(res.data.report || []);
-            if (res.data.companyName) setCompanyName(res.data.companyName);
+            if (res.data.companyNameEn) setCompanyNameEn(res.data.companyNameEn);
+            if (res.data.companyNameKh) setCompanyNameKh(res.data.companyNameKh);
         } catch (err) {
             setError("Failed to load annual financial data.");
             console.error(err);
@@ -47,7 +49,8 @@ const FinancialStatements = ({ onBack }) => {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             setMonthlyData(res.data || { pl: [], bs: [] });
-            if (res.data.companyName) setCompanyName(res.data.companyName);
+            if (res.data.companyNameEn) setCompanyNameEn(res.data.companyNameEn);
+            if (res.data.companyNameKh) setCompanyNameKh(res.data.companyNameKh);
         } catch (err) {
             setError("Failed to load monthly financial data.");
             console.error(err);
@@ -60,15 +63,20 @@ const FinancialStatements = ({ onBack }) => {
     const exchangeRate = 4050; // Standard yearly KHR to USD exchange rate
     const scale = inUSD ? exchangeRate : 1;
 
+    const getCr = (r) => inUSD ? (r.crUSD || 0) : (r.crKHR || 0);
+    const getDr = (r) => inUSD ? (r.drUSD || 0) : (r.drKHR || 0);
+    const getPriorCr = (r) => inUSD ? (r.priorCrUSD || 0) : (r.priorCrKHR || 0);
+    const getPriorDr = (r) => inUSD ? (r.priorDrUSD || 0) : (r.priorDrKHR || 0);
+
     // 1. Profit & Loss Data (Annual)
     const revenue = report.filter(r => r.code.startsWith('4'));
     const costOfSales = report.filter(r => r.code.startsWith('5'));
     const expenses = report.filter(r => ['6', '7', '8', '9'].some(p => r.code.startsWith(p)));
 
-    const totalRev = revenue.reduce((sum, r) => sum + r.crKHR, 0) / scale;
-    const totalCOS = costOfSales.reduce((sum, r) => sum + r.drKHR, 0) / scale;
+    const totalRev = revenue.reduce((sum, r) => sum + getCr(r), 0);
+    const totalCOS = costOfSales.reduce((sum, r) => sum + getDr(r), 0);
     const grossProfit = totalRev - totalCOS;
-    const totalExp = expenses.reduce((sum, r) => sum + r.drKHR, 0) / scale;
+    const totalExp = expenses.reduce((sum, r) => sum + getDr(r), 0);
     const netProfit = grossProfit - totalExp;
 
     // 2. Balance Sheet Data (Annual)
@@ -76,9 +84,9 @@ const FinancialStatements = ({ onBack }) => {
     const liabilities = report.filter(r => r.code.startsWith('2'));
     const equity = report.filter(r => r.code.startsWith('3'));
 
-    const totalAssets = assets.reduce((sum, r) => sum + (r.drKHR - r.crKHR), 0) / scale;
-    const totalLiabs = liabilities.reduce((sum, r) => sum + (r.crKHR - r.drKHR), 0) / scale;
-    const totalEquity = equity.reduce((sum, r) => sum + (r.crKHR - r.drKHR), 0) / scale;
+    const totalAssets = assets.reduce((sum, r) => sum + (getDr(r) - getCr(r)), 0);
+    const totalLiabs = liabilities.reduce((sum, r) => sum + (getCr(r) - getDr(r)), 0);
+    const totalEquity = equity.reduce((sum, r) => sum + (getCr(r) - getDr(r)), 0);
 
     const checkDiff = totalAssets - (totalLiabs + totalEquity + netProfit);
 
@@ -117,7 +125,7 @@ const FinancialStatements = ({ onBack }) => {
     // Helpers to find specific account values for Cash Flow
     const findBalance = (keywords) => {
         const matches = report.filter(r => keywords.some(k => (r.description?.toLowerCase() || '').includes(k.toLowerCase())));
-        return matches.reduce((sum, r) => sum + (r.drKHR - r.crKHR), 0) / scale;
+        return matches.reduce((sum, r) => sum + (getDr(r) - getCr(r)), 0);
     };
 
     const deprExp = findBalance(['depreciation', 'amortization']);
@@ -175,7 +183,7 @@ const FinancialStatements = ({ onBack }) => {
         // Header
         doc.setFontSize(16);
         doc.setFont('serif', 'bold');
-        doc.text(companyName.toUpperCase(), 14, 20);
+        doc.text(companyNameEn.toUpperCase(), 14, 20);
         doc.setFontSize(12);
         doc.text(titleMap[activeTab] || "FINANCIAL REPORT", 14, 28);
         doc.setFontSize(10);
@@ -206,7 +214,7 @@ const FinancialStatements = ({ onBack }) => {
             });
         }
 
-        doc.save(`${companyName}_${activeTab}_${viewMode}.pdf`);
+        doc.save(`${companyNameEn}_${activeTab}_${viewMode}.pdf`);
     };
 
     if (loading) return (
@@ -262,6 +270,9 @@ const FinancialStatements = ({ onBack }) => {
                         />
                         <span className="text-gray-700 font-sans text-xs font-semibold">View in {inUSD ? "USD" : "KHR"}</span>
                     </label>
+                    <button onClick={() => window.print()} className="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg> Print A4 Layout
+                    </button>
                     <button onClick={handleDownloadPDF} className="bg-gray-900 hover:bg-black text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition shadow-md">
                         <Download size={16} /> Export PDF
                     </button>
@@ -327,7 +338,14 @@ const FinancialStatements = ({ onBack }) => {
                 </div>
 
                 {/* Report Paper */}
-                <div className="bg-white rounded-b-xl rounded-tr-xl shadow-xl border border-gray-200 p-10 min-h-[600px] font-serif relative overflow-auto">
+                <div className="bg-white rounded-b-xl rounded-tr-xl shadow-xl border border-gray-200 p-10 min-h-[600px] font-sans relative overflow-auto select-text print:shadow-none print:border-none print:rounded-none print:max-w-none print:w-full">
+                    <style>
+                        {`
+                            @media print {
+                                @page { size: A4 portrait !important; margin: 10mm; }
+                            }
+                        `}
+                    </style>
                     {/* Watermark */}
                     {error && (
                         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-50 text-[100px] font-bold rotate-45 pointer-events-none select-none uppercase">
@@ -335,8 +353,33 @@ const FinancialStatements = ({ onBack }) => {
                         </div>
                     )}
 
-                    <div className="text-center mb-8">
-                        <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-widest mb-2">{companyName}</h2>
+                    <div className="hidden print:block pb-6 mb-8 border-b-2 border-black mt-2">
+                        <div className="flex justify-between items-start mb-8">
+                            <div>
+                                <h1 className="text-3xl font-bold text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                    {companyNameKh}
+                                </h1>
+                                <h2 className="text-xl font-bold text-black uppercase tracking-widest mt-2 px-1">
+                                    {companyNameEn}
+                                </h2>
+                            </div>
+                            <div className="text-right flex flex-col items-end gap-1">
+                                <div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Report Detail</div>
+                                <h3 className="text-xl font-bold text-black uppercase tracking-widest mt-1">
+                                    {activeTab === 'pl' ? 'INCOME STATEMENT' : activeTab === 'bs' ? 'STATEMENT OF FINANCIAL POSITION' : activeTab === 'cf' ? 'STATEMENT OF CASH FLOWS' : activeTab === 'sce' ? 'STATEMENT OF CHANGES IN EQUITY' : 'NOTES TO THE FINANCIAL STATEMENTS'}
+                                </h3>
+                                <div className="text-sm font-bold text-black mt-1">
+                                    {activeTab === 'bs' ? 'As at' : 'For the year ended'} 31 December {new Date().getFullYear()}
+                                </div>
+                                <div className="text-sm font-bold text-black">
+                                    Reporting Currency: {inUSD ? "USD" : "KHR"}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="text-center mb-8 print:hidden">
+                        <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-widest mb-2">{companyNameEn}</h2>
                         <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight">
                             {activeTab === 'pl' ? 'INCOME STATEMENT'
                                 : activeTab === 'bs' ? 'STATEMENT OF FINANCIAL POSITION'
@@ -368,15 +411,15 @@ const FinancialStatements = ({ onBack }) => {
                             {viewMode === 'annual' && activeTab === 'pl' && (
                                 <tbody>
                                     {renderSectionHeader("Revenue")}
-                                    {revenue.map(r => renderRow(r.description, r.crKHR / scale, false, true))}
+                                    {revenue.map(r => renderRow(r.description, getCr(r), false, true))}
                                     {renderRow("Total Revenue", totalRev, true)}
 
                                     {renderSectionHeader("Cost of Sales")}
-                                    {costOfSales.map(r => renderRow(r.description, r.drKHR / scale, false, true))}
+                                    {costOfSales.map(r => renderRow(r.description, getDr(r), false, true))}
                                     {renderRow("Gross Profit", grossProfit, true)}
 
                                     {renderSectionHeader("Operating Expenses")}
-                                    {expenses.map(r => renderRow(r.description, r.drKHR / scale, false, true))}
+                                    {expenses.map(r => renderRow(r.description, getDr(r), false, true))}
                                     {renderRow("Total Operating Expenses", totalExp, true)}
 
                                     <tr className="h-4"></tr>
@@ -390,7 +433,7 @@ const FinancialStatements = ({ onBack }) => {
                             {viewMode === 'annual' && activeTab === 'bs' && (
                                 <tbody>
                                     {renderSectionHeader("ASSETS")}
-                                    {assets.map(r => renderRow(r.description, (r.drKHR - r.crKHR) / scale, false, true))}
+                                    {assets.map(r => renderRow(r.description, getDr(r) - getCr(r), false, true))}
                                     {renderRow("TOTAL ASSETS", totalAssets, true)}
 
                                     <tr className="h-6"></tr>
@@ -398,12 +441,12 @@ const FinancialStatements = ({ onBack }) => {
                                     {renderSectionHeader("EQUITY & LIABILITIES")}
 
                                     {renderSectionHeader("Equity")}
-                                    {equity.map(r => renderRow(r.description, (r.crKHR - r.drKHR) / scale, false, true))}
+                                    {equity.map(r => renderRow(r.description, getCr(r) - getDr(r), false, true))}
                                     {renderRow("Current Year Earnings", netProfit, false, true)} {/* Auto Inserted */}
                                     {renderRow("Total Equity", totalEquity + netProfit, true)}
 
                                     {renderSectionHeader("Liabilities")}
-                                    {liabilities.map(r => renderRow(r.description, (r.crKHR - r.drKHR) / scale, false, true))}
+                                    {liabilities.map(r => renderRow(r.description, getCr(r) - getDr(r), false, true))}
                                     {renderRow("Total Liabilities", totalLiabs, true)}
 
                                     <tr className="h-4"></tr>
@@ -434,22 +477,22 @@ const FinancialStatements = ({ onBack }) => {
 
                                     {renderSectionHeader("CASH FLOWS FROM INVESTING ACTIVITIES")}
                                     {assets.filter(a => (a.description?.toLowerCase() || '').includes('fixed') || (a.description?.toLowerCase() || '').includes('equipment')).map(r =>
-                                        renderRow(`Purchase of ${r.description}`, -(r.drKHR - r.crKHR) / scale, false, true)
+                                        renderRow(`Purchase of ${r.description}`, -(getDr(r) - getCr(r)), false, true)
                                     )}
                                     {renderRow("Interest Received", intInc, false, true)}
                                     <tr className="border-t border-gray-300"><td colSpan="2"></td></tr>
-                                    {renderRow("Net Cash generated from/(used in) Investing Activities", assets.filter(a => (a.description?.toLowerCase() || '').includes('fixed') || (a.description?.toLowerCase() || '').includes('equipment')).reduce((sum, r) => sum - ((r.drKHR - r.crKHR) / scale), 0) + intInc, true)}
+                                    {renderRow("Net Cash generated from/(used in) Investing Activities", assets.filter(a => (a.description?.toLowerCase() || '').includes('fixed') || (a.description?.toLowerCase() || '').includes('equipment')).reduce((sum, r) => sum - (getDr(r) - getCr(r)), 0) + intInc, true)}
 
                                     <tr className="h-6"></tr>
 
                                     {renderSectionHeader("CASH FLOWS FROM FINANCING ACTIVITIES")}
                                     {equity.filter(e => (e.description?.toLowerCase() || '').includes('capital')).map(r =>
-                                        renderRow(`Issuance of ${r.description}`, (r.crKHR - r.drKHR) / scale, false, true)
+                                        renderRow(`Issuance of ${r.description}`, (getCr(r) - getDr(r)), false, true)
                                     )}
                                     {renderRow("Dividends Paid", 0, false, true)}
                                     {renderRow("Interest Paid", -intExp, false, true)}
                                     <tr className="border-t border-gray-300"><td colSpan="2"></td></tr>
-                                    {renderRow("Net Cash generated from/(used in) Financing Activities", equity.filter(e => (e.description?.toLowerCase() || '').includes('capital')).reduce((sum, r) => sum + ((r.crKHR - r.drKHR) / scale), 0) - intExp, true)}
+                                    {renderRow("Net Cash generated from/(used in) Financing Activities", equity.filter(e => (e.description?.toLowerCase() || '').includes('capital')).reduce((sum, r) => sum + (getCr(r) - getDr(r)), 0) - intExp, true)}
 
                                     <tr className="h-8"></tr>
                                     <tr className="border-t-2 border-black border-b-2 border-double">
@@ -457,16 +500,16 @@ const FinancialStatements = ({ onBack }) => {
                                         <td className="p-4 text-right font-bold font-mono text-lg">
                                             {(
                                                 netProfit +
-                                                assets.filter(a => (a.description?.toLowerCase() || '').includes('fixed') || (a.description?.toLowerCase() || '').includes('equipment')).reduce((sum, r) => sum - ((r.drKHR - r.crKHR) / scale), 0) +
-                                                equity.filter(e => (e.description?.toLowerCase() || '').includes('capital')).reduce((sum, r) => sum + ((r.crKHR - r.drKHR) / scale), 0)
+                                                assets.filter(a => (a.description?.toLowerCase() || '').includes('fixed') || (a.description?.toLowerCase() || '').includes('equipment')).reduce((sum, r) => sum - (getDr(r) - getCr(r)), 0) +
+                                                equity.filter(e => (e.description?.toLowerCase() || '').includes('capital')).reduce((sum, r) => sum + (getCr(r) - getDr(r)), 0)
                                             ).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                                         </td>
                                     </tr>
                                     {renderRow("Cash and Cash Equivalents at Beginning of Year", 0, false, true)}
                                     {renderRow("Cash and Cash Equivalents at End of Year", (
                                         netProfit +
-                                        assets.filter(a => (a.description?.toLowerCase() || '').includes('fixed') || (a.description?.toLowerCase() || '').includes('equipment')).reduce((sum, r) => sum - ((r.drKHR - r.crKHR) / scale), 0) +
-                                        equity.filter(e => (e.description?.toLowerCase() || '').includes('capital')).reduce((sum, r) => sum + ((r.crKHR - r.drKHR) / scale), 0)
+                                        assets.filter(a => (a.description?.toLowerCase() || '').includes('fixed') || (a.description?.toLowerCase() || '').includes('equipment')).reduce((sum, r) => sum - (getDr(r) - getCr(r)), 0) +
+                                        equity.filter(e => (e.description?.toLowerCase() || '').includes('capital')).reduce((sum, r) => sum + (getCr(r) - getDr(r)), 0)
                                     ), true)}
                                 </tbody>
                             )}
@@ -482,15 +525,15 @@ const FinancialStatements = ({ onBack }) => {
                                     </tr>
                                     <tr className="border-b border-gray-100">
                                         <td className="p-3 pl-4">Opening Balance</td>
-                                        <td className="p-3 text-right font-mono">{(equity.reduce((sum, e) => sum + ((e.priorCr || 0) - (e.priorDr || 0)), 0) / scale).toLocaleString()}</td>
+                                        <td className="p-3 text-right font-mono">{(equity.reduce((sum, e) => sum + (getPriorCr(e) - getPriorDr(e)), 0)).toLocaleString()}</td>
                                         <td className="p-3 text-right font-mono">0</td>
-                                        <td className="p-3 text-right font-mono">{(equity.reduce((sum, e) => sum + ((e.priorCr || 0) - (e.priorDr || 0)), 0) / scale).toLocaleString()}</td>
+                                        <td className="p-3 text-right font-mono">{(equity.reduce((sum, e) => sum + (getPriorCr(e) - getPriorDr(e)), 0)).toLocaleString()}</td>
                                     </tr>
                                     <tr className="border-b border-gray-100">
                                         <td className="p-3 pl-4">Capital Injections / (Drawings)</td>
-                                        <td className="p-3 text-right font-mono">{(equity.reduce((sum, e) => sum + ((e.periodCr || 0) - (e.periodDr || 0)), 0) / scale).toLocaleString()}</td>
+                                        <td className="p-3 text-right font-mono">{(equity.reduce((sum, e) => sum + (getCr(e) - getDr(e) - (getPriorCr(e) - getPriorDr(e))), 0)).toLocaleString()}</td>
                                         <td className="p-3 text-right font-mono">-</td>
-                                        <td className="p-3 text-right font-mono">{(equity.reduce((sum, e) => sum + ((e.periodCr || 0) - (e.periodDr || 0)), 0) / scale).toLocaleString()}</td>
+                                        <td className="p-3 text-right font-mono">{(equity.reduce((sum, e) => sum + (getCr(e) - getDr(e) - (getPriorCr(e) - getPriorDr(e))), 0)).toLocaleString()}</td>
                                     </tr>
                                     <tr className="border-b border-gray-100">
                                         <td className="p-3 pl-4">Profit for the year</td>
