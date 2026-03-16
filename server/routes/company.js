@@ -2097,7 +2097,6 @@ router.get('/trial-balance', auth, async (req, res) => {
 router.get('/financials-monthly', auth, async (req, res) => {
     try {
         const companyCode = req.user.companyCode;
-        const currentYear = new Date().getFullYear();
 
         const AccountCode = require('../models/AccountCode');
         const Transaction = require('../models/Transaction');
@@ -2114,6 +2113,19 @@ router.get('/financials-monthly', auth, async (req, res) => {
 
         const allTransactions = await Transaction.find({ companyCode }).lean();
         const allJournals = await JournalEntry.find({ companyCode }).lean();
+
+        // 2.5 Resolve Reporting Year
+        const availableYears = [...new Set([
+            ...allTransactions.map(t => new Date(t.date).getFullYear()),
+            ...allJournals.map(je => new Date(je.date).getFullYear())
+        ])].sort((a, b) => b - a);
+        
+        let currentYear;
+        if (req.query.year) {
+            currentYear = parseInt(req.query.year);
+        } else {
+            currentYear = availableYears.length > 0 ? availableYears[0] : new Date().getFullYear();
+        }
 
         // Data Models
         // plData[code] = { 1: val, 2: val ... 12: val }
