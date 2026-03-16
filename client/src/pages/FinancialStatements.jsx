@@ -155,22 +155,25 @@ const FinancialStatements = ({ onBack }) => {
         </tr>
     );
 
-    const renderMonthRow = (label, months, bold = false, indent = false) => (
-        <tr className={`border-b border-gray-100 hover:bg-gray-50 ${bold ? 'font-bold bg-gray-50' : ''}`}>
-            <td className={`p-3 ${indent ? 'pl-8' : 'pl-4'} text-gray-800 sticky left-0 bg-white min-w-[200px] border-r border-gray-200 z-10 uppercase`} style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{label}</td>
-            {MONTHS.map((_, idx) => {
-                const val = months[idx + 1] / scale;
-                return (
-                    <td key={idx} className="p-3 text-right font-mono text-gray-900 min-w-[100px]">
-                        {val !== 0 ? val.toLocaleString(undefined, { minimumFractionDigits: inUSD ? 2 : 0, maximumFractionDigits: inUSD ? 2 : 0 }) : '-'}
-                    </td>
-                );
-            })}
-            <td className="p-3 text-right font-mono text-gray-900 font-bold bg-gray-50 border-l border-gray-200 min-w-[120px]">
-                {months[0] / scale !== 0 ? (months[0] / scale).toLocaleString(undefined, { minimumFractionDigits: inUSD ? 2 : 0, maximumFractionDigits: inUSD ? 2 : 0 }) : '-'}
-            </td>
-        </tr>
-    );
+    const renderMonthRow = (label, months, bold = false, indent = false) => {
+        const mScale = inUSD ? 1 : exchangeRate;
+        return (
+            <tr className={`border-b border-gray-100 hover:bg-gray-50 ${bold ? 'font-bold bg-gray-50' : ''}`}>
+                <td className={`p-3 ${indent ? 'pl-8' : 'pl-4'} text-gray-800 sticky left-0 bg-white min-w-[200px] border-r border-gray-200 z-10 uppercase`} style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{label}</td>
+                {MONTHS.map((_, idx) => {
+                    const val = months[idx + 1] * mScale;
+                    return (
+                        <td key={idx} className="p-3 text-right font-mono text-gray-900 min-w-[100px]">
+                            {val !== 0 ? val.toLocaleString(undefined, { minimumFractionDigits: inUSD ? 2 : 0, maximumFractionDigits: inUSD ? 2 : 0 }) : '-'}
+                        </td>
+                    );
+                })}
+                <td className="p-3 text-right font-mono text-gray-900 font-bold bg-gray-50 border-l border-gray-200 min-w-[120px]">
+                    {months[0] * mScale !== 0 ? (months[0] * mScale).toLocaleString(undefined, { minimumFractionDigits: inUSD ? 2 : 0, maximumFractionDigits: inUSD ? 2 : 0 }) : '-'}
+                </td>
+            </tr>
+        );
+    };
 
     const renderSectionHeader = (title, monthly = false) => (
         <tr className="bg-blue-50/50 border-b border-blue-100">
