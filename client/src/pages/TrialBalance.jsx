@@ -355,7 +355,7 @@ const TrialBalance = ({ onBack }) => {
                                                         <span className="text-xs text-gray-500">{inThousands ? `${currency}'000` : currency}</span>
                                                     </th>
                                                     <th colSpan="2" className="border-r border-gray-300 p-2 text-center font-bold text-gray-500 bg-gray-50 uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
-                                                        <span className="text-xs">សម្រាប់ឆ្នាំបញ្ចប់ / FOR THE YEAR ENDED</span><br /><span className="text-xs font-normal">31-Dec-{fiscalYear - 1}</span><br />
+                                                        <span className="text-xs">សម្រាប់ឆ្នាំបញ្ចប់ / FOR THE YEAR ENDED</span><br /><span className="text-xs font-normal">31-Dec-{fiscalYear === 'all' ? 'PRIOR' : fiscalYear - 1}</span><br />
                                                         <span className="text-xs text-gray-400">{inThousands ? `${currency}'000` : currency}</span>
                                                     </th>
                                                     <th className="p-2 text-center w-20 text-xs text-gray-500 font-bold uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>យោង<br />REF</th>
