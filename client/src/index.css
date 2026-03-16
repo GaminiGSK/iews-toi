@@ -11,13 +11,15 @@
 @media print {
   @page {
     size: A4 portrait;
-    margin: 10mm;
+    margin: 0;
   }
   body {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
     background-color: white !important;
     font-size: 10pt; /* Default print size */
+    margin: 0;
+    padding: 0;
   }
 
   /* AG Fixed A4 Document Protocol */

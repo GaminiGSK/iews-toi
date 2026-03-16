@@ -4574,11 +4574,11 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   </div>
                   {[1, 2, 3].map((_, i) => (
                     <div key={`A-${i}`} className="flex border-b border-black h-[22px] items-center">
-                       <div className="w-[5%] border-r border-black h-full"></div>
-                       <div className="w-[25%] border-r border-black h-full"></div>
-                       <div className="w-[25%] border-r border-black h-full"></div>
-                       <div className="w-[25%] border-r border-black h-full"></div>
-                       <div className="w-[20%] h-full flex items-center justify-end px-2 text-[9px]">-</div>
+                       <div className="w-[5%] border-r border-black h-full flex items-center justify-center font-mono text-[9px]">{i === 0 ? "1" : ""}</div>
+                       <div className="w-[25%] border-r border-black h-full flex items-center justify-center font-bold text-[9px] text-gray-500">{i === 0 ? "None / NIL" : ""}</div>
+                       <div className="w-[25%] border-r border-black h-full flex items-center justify-center font-bold text-[9px] text-gray-500">{i === 0 ? "N/A" : ""}</div>
+                       <div className="w-[25%] border-r border-black h-full flex items-center justify-center font-bold text-[8px] text-gray-500">{i === 0 ? "No Related Party Transactions" : ""}</div>
+                       <div className="w-[20%] h-full flex items-center justify-end px-2 text-[10px] font-bold font-mono text-gray-500">{i === 0 ? "0" : "-"}</div>
                     </div>
                   ))}
                   <div className="flex h-[28px] items-center bg-[#f7f7f7]">
@@ -4623,11 +4623,11 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   </div>
                   {[1, 2, 3].map((_, i) => (
                     <div key={`B-${i}`} className="flex border-b border-black h-[22px] items-center">
-                       <div className="w-[5%] border-r border-black h-full"></div>
-                       <div className="w-[25%] border-r border-black h-full"></div>
-                       <div className="w-[25%] border-r border-black h-full"></div>
-                       <div className="w-[25%] border-r border-black h-full"></div>
-                       <div className="w-[20%] h-full flex items-center justify-end px-2 text-[9px]">-</div>
+                       <div className="w-[5%] border-r border-black h-full flex items-center justify-center font-mono text-[9px]">{i === 0 ? "1" : ""}</div>
+                       <div className="w-[25%] border-r border-black h-full flex items-center justify-center font-bold text-[9px] text-gray-500">{i === 0 ? "None / NIL" : ""}</div>
+                       <div className="w-[25%] border-r border-black h-full flex items-center justify-center font-bold text-[9px] text-gray-500">{i === 0 ? "N/A" : ""}</div>
+                       <div className="w-[25%] border-r border-black h-full flex items-center justify-center font-bold text-[8px] text-gray-500">{i === 0 ? "No Related Party Transactions" : ""}</div>
+                       <div className="w-[20%] h-full flex items-center justify-end px-2 text-[10px] font-bold font-mono text-gray-500">{i === 0 ? "0" : "-"}</div>
                     </div>
                   ))}
                   <div className="flex h-[28px] items-center bg-[#f7f7f7]">
@@ -4672,11 +4672,11 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   </div>
                   {[1, 2, 3].map((_, i) => (
                     <div key={`C-${i}`} className="flex border-b border-black h-[22px] items-center">
-                       <div className="w-[5%] border-r border-black h-full"></div>
-                       <div className="w-[25%] border-r border-black h-full"></div>
-                       <div className="w-[25%] border-r border-black h-full"></div>
-                       <div className="w-[25%] border-r border-black h-full flex items-center justify-end px-2 text-[9px]">-</div>
-                       <div className="w-[20%] h-full flex items-center justify-end px-2 text-[9px]">-</div>
+                       <div className="w-[5%] border-r border-black h-full flex items-center justify-center font-mono text-[9px]">{i === 0 ? "1" : ""}</div>
+                       <div className="w-[25%] border-r border-black h-full flex items-center justify-center font-bold text-[9px] text-gray-500">{i === 0 ? "None / NIL" : ""}</div>
+                       <div className="w-[25%] border-r border-black h-full flex items-center justify-center font-bold text-[9px] text-gray-500">{i === 0 ? "N/A" : ""}</div>
+                       <div className="w-[25%] border-r border-black h-full flex items-center justify-center font-bold text-[8px] text-gray-500">{i === 0 ? "No Related Party Transactions" : ""}</div>
+                       <div className="w-[20%] h-full flex items-center justify-end px-2 text-[10px] font-bold font-mono text-gray-500">{i === 0 ? "0" : "-"}</div>
                     </div>
                   ))}
                </div>
@@ -4710,11 +4710,11 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   </div>
                   {[1, 2, 3].map((_, i) => (
                     <div key={`D-${i}`} className="flex border-b border-black h-[22px] items-center">
-                       <div className="w-[5%] border-r border-black h-full"></div>
-                       <div className="w-[25%] border-r border-black h-full"></div>
-                       <div className="w-[25%] border-r border-black h-full"></div>
-                       <div className="w-[25%] border-r border-black h-full flex items-center justify-end px-2 text-[9px]">-</div>
-                       <div className="w-[20%] h-full flex items-center justify-end px-2 text-[9px]">-</div>
+                       <div className="w-[5%] border-r border-black h-full flex items-center justify-center font-mono text-[9px]">{i === 0 ? "1" : ""}</div>
+                       <div className="w-[25%] border-r border-black h-full flex items-center justify-center font-bold text-[9px] text-gray-500">{i === 0 ? "None / NIL" : ""}</div>
+                       <div className="w-[25%] border-r border-black h-full flex items-center justify-center font-bold text-[9px] text-gray-500">{i === 0 ? "N/A" : ""}</div>
+                       <div className="w-[25%] border-r border-black h-full flex items-center justify-center font-bold text-[8px] text-gray-500">{i === 0 ? "No Related Party Transactions" : ""}</div>
+                       <div className="w-[20%] h-full flex items-center justify-end px-2 text-[10px] font-bold font-mono text-gray-500">{i === 0 ? "0" : "-"}</div>
                     </div>
                   ))}
                </div>

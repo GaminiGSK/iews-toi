@@ -2244,8 +2244,8 @@ router.get('/financials-monthly', auth, async (req, res) => {
         const profile = await CompanyProfile.findOne({ companyCode });
 
         res.json({
-            pl: Object.values(plData).filter(r => r.months[0] !== 0), // Filter rows with activity
-            bs: Object.values(bsData).filter(r => Math.abs(r.months[0]) > 0.001 || r.months.some(m => Math.abs(m) > 0.001)),
+            pl: Object.values(plData).filter(r => r.months[0] !== 0 || ['41000','51000','61000'].includes(r.code)), 
+            bs: Object.values(bsData), // ALWAYS SHOW ALL Accounts for standard view, do not filter empty rows
             currentYear,
             companyName: profile ? profile.companyNameEn : companyCode
         });
