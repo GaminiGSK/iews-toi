@@ -347,8 +347,7 @@ const FinancialStatements = ({ onBack }) => {
                         {`
                             @media print {
                                 @page { 
-                                    size: A4 ${viewMode === 'annual' ? 'portrait' : 'landscape'} !important;
-                                    margin: 10mm; 
+                                    size: ${viewMode === 'annual' ? 'A4 portrait !important' : 'A4 landscape !important'}; margin: 10mm; 
                                 }
                                 body * { visibility: hidden !important; }
                                 .print-container, .print-container * { visibility: visible !important; }
