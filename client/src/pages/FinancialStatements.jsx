@@ -122,6 +122,10 @@ const FinancialStatements = ({ onBack }) => {
     const mTotalExp = sumMonthlyRows(mExpenses);
     const mNetProfit = mGrossProfit.map((v, i) => v - mTotalExp[i]);
 
+    const mTotalAssets = sumMonthlyRows(mAssets);
+    const mTotalLiabs = sumMonthlyRows(mLiabs);
+    const mTotalEquity = sumMonthlyRows(mEquity);
+
     // Helpers to find specific account values for Cash Flow
     const findBalance = (keywords) => {
         const matches = report.filter(r => keywords.some(k => (r.description?.toLowerCase() || '').includes(k.toLowerCase())));
