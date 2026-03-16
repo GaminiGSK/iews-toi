@@ -384,6 +384,7 @@ const FinancialStatements = ({ onBack }) => {
                     )}
 
                     
+                    {viewMode === 'annual' && (
                     <div className="print-section">
                         {/* Page 1: Income Statement */}
                         <div className={`${activeTab === 'pl' ? 'block' : 'hidden print:block'}`}>
@@ -433,7 +434,9 @@ const FinancialStatements = ({ onBack }) => {
                             </div>
                         </div>
                     </div>
+                    )}
 
+                    {viewMode === 'annual' && (
                     <div className="print-section">
                         {/* Page 2: Balance Sheet */}
                         <div className={`${activeTab === 'bs' ? 'block' : 'hidden print:block'}`}>
@@ -494,6 +497,7 @@ const FinancialStatements = ({ onBack }) => {
                             </div>
                         </div>
                     </div>
+                    )}
 
                     {viewMode === 'annual' && (
                     <div className="print-section">
