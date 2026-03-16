@@ -185,7 +185,12 @@ const ToiAcar = ({ onBack, packageId, year }) => {
         {/* YEAR SELECTOR & PRINT */}
         <div className="flex items-center gap-4 pr-6 shrink-0">
           <button
-            onClick={() => window.print()}
+            onClick={() => {
+              // Override activeWorkspacePage to render a special "print all" layout
+              // Currently TOI does NOT have a "print all" mapped state.
+              // So, we just tell the browser to print the current active page cleanly.
+              window.print();
+            }}
             title="Print Preview"
             className="flex items-center gap-2 px-[14px] py-[6px] bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg text-white text-[12px] font-bold transition shadow-md hover:shadow-lg active:scale-95 group"
           >
@@ -241,7 +246,37 @@ const ToiAcar = ({ onBack, packageId, year }) => {
       <div className="flex-1 flex overflow-hidden print:overflow-visible">
         {/* NEW LEFT SIDE: WHITE PREVIEW (ONLY PAGE 1) */}
         {activeWorkspacePage === 1 && (
-          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} min-w-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible`}>
+          <div className={`${isAdmin ? "w-[50%]" : "flex-1"} min-w-0 bg-white border-r border-slate-300 overflow-y-auto custom-scrollbar px-10 py-12 shadow-2xl z-10 text-black print:w-full print:border-none print:shadow-none print:px-0 print:py-0 print:overflow-visible print-container`}>
+<style>
+{`
+   @media print {
+        @page { size: A4 portrait !important; margin: 10mm; }
+        body * { visibility: hidden !important; }
+        .print-container, .print-container * { visibility: visible !important; }
+        .print-container { 
+            position: absolute !important; 
+            left: 0 !important; 
+            top: 0 !important; 
+            width: 100% !important; 
+            border: none !important; 
+            box-shadow: none !important; 
+            margin: 0 !important; 
+            padding: 0 !important; 
+            background: white !important;
+            overflow: visible !important;
+        }
+        .toi-form-scale {
+            page-break-inside: avoid;
+            background: white !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            width: 100% !important;
+            height: auto !important;
+        }
+        .print\\:hidden { display: none !important; }
+   }
+`}
+</style>
             {/* Content for the white preview */}
             <div className="w-full flex flex-col font-sans mb-12 text-black print:toi-form-scale print:mb-0 max-w-[900px] mx-auto">
               {/* OFFICIAL GDT HEADER - Based exactly on reference image */}
