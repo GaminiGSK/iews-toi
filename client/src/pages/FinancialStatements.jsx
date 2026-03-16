@@ -143,10 +143,10 @@ const FinancialStatements = ({ onBack }) => {
             <td className={`p-3 ${indent ? 'pl-8' : 'pl-4'} text-gray-800 uppercase`} style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{label}</td>
             <td className="p-3 text-center font-mono text-gray-500 w-16 text-xs border-l border-gray-100">-</td>
             <td className="p-3 text-right font-mono w-40 border-l border-gray-200 text-gray-900">
-                {valueCY !== 0 ? valueCY.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '-'}
+                {valueCY !== 0 ? valueCY.toLocaleString(undefined, { minimumFractionDigits: inUSD ? 2 : 0, maximumFractionDigits: inUSD ? 2 : 0 }) : '-'}
             </td>
             <td className="p-3 text-right font-mono w-40 border-l border-gray-200 text-gray-500">
-                {valuePY !== 0 ? valuePY.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '-'}
+                {valuePY !== 0 ? valuePY.toLocaleString(undefined, { minimumFractionDigits: inUSD ? 2 : 0, maximumFractionDigits: inUSD ? 2 : 0 }) : '-'}
             </td>
         </tr>
     );
@@ -158,12 +158,12 @@ const FinancialStatements = ({ onBack }) => {
                 const val = months[idx + 1] / scale;
                 return (
                     <td key={idx} className="p-3 text-right font-mono text-gray-900 min-w-[100px]">
-                        {val !== 0 ? val.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '-'}
+                        {val !== 0 ? val.toLocaleString(undefined, { minimumFractionDigits: inUSD ? 2 : 0, maximumFractionDigits: inUSD ? 2 : 0 }) : '-'}
                     </td>
                 );
             })}
             <td className="p-3 text-right font-mono text-gray-900 font-bold bg-gray-50 border-l border-gray-200 min-w-[120px]">
-                {months[0] / scale !== 0 ? (months[0] / scale).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '-'}
+                {months[0] / scale !== 0 ? (months[0] / scale).toLocaleString(undefined, { minimumFractionDigits: inUSD ? 2 : 0, maximumFractionDigits: inUSD ? 2 : 0 }) : '-'}
             </td>
         </tr>
     );
@@ -425,8 +425,8 @@ const FinancialStatements = ({ onBack }) => {
                                         <tr className="border-t-4 border-gray-800 border-b-4 border-gray-800 bg-gray-50">
                                             <td className="p-4 font-bold text-lg uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រាក់ចំណេញសុទ្ធសម្រាប់ឆ្នាំ / NET PROFIT FOR THE YEAR</td>
                                             <td className="p-4 text-center font-mono text-gray-500">-</td>
-                                            <td className="p-4 text-right font-bold font-mono text-lg border-l border-gray-200">{netProfit.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
-                                            <td className="p-4 text-right font-bold font-mono text-lg border-l border-gray-200">{(revenue.reduce((sum, r) => sum + getPriorCr(r), 0) - costOfSales.reduce((sum, r) => sum + getPriorDr(r), 0) - expenses.reduce((sum, r) => sum + getPriorDr(r), 0)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+                                            <td className="p-4 text-right font-bold font-mono text-lg border-l border-gray-200">{netProfit.toLocaleString(undefined, { minimumFractionDigits: inUSD ? 2 : 0, maximumFractionDigits: inUSD ? 2 : 0 })}</td>
+                                            <td className="p-4 text-right font-bold font-mono text-lg border-l border-gray-200">{(revenue.reduce((sum, r) => sum + getPriorCr(r), 0) - costOfSales.reduce((sum, r) => sum + getPriorDr(r), 0) - expenses.reduce((sum, r) => sum + getPriorDr(r), 0)).toLocaleString(undefined, { minimumFractionDigits: inUSD ? 2 : 0, maximumFractionDigits: inUSD ? 2 : 0 })}</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -482,13 +482,13 @@ const FinancialStatements = ({ onBack }) => {
                                         <tr className="border-t-4 border-gray-800 border-b-4 border-gray-800 bg-gray-50">
                                             <td className="p-4 font-bold text-lg uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>មូលធន និង បំណុលសរុប / TOTAL EQUITY & LIABILITIES</td>
                                             <td className="p-4 text-center font-mono text-gray-500">-</td>
-                                            <td className="p-4 text-right font-bold font-mono text-lg border-l border-gray-200">{(totalLiabs + totalEquity + netProfit).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+                                            <td className="p-4 text-right font-bold font-mono text-lg border-l border-gray-200">{(totalLiabs + totalEquity + netProfit).toLocaleString(undefined, { minimumFractionDigits: inUSD ? 2 : 0, maximumFractionDigits: inUSD ? 2 : 0 })}</td>
                                             <td className="p-4 text-right font-bold font-mono text-lg border-l border-gray-200">
                                                 {(
                                                     liabilities.reduce((sum, r) => sum + (getPriorCr(r) - getPriorDr(r)), 0) +
                                                     equity.reduce((sum, r) => sum + (getPriorCr(r) - getPriorDr(r)), 0) +
                                                     (revenue.reduce((sum, r) => sum + getPriorCr(r), 0) - costOfSales.reduce((sum, r) => sum + getPriorDr(r), 0) - expenses.reduce((sum, r) => sum + getPriorDr(r), 0))
-                                                ).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                                ).toLocaleString(undefined, { minimumFractionDigits: inUSD ? 2 : 0, maximumFractionDigits: inUSD ? 2 : 0 })}
                                             </td>
                                         </tr>
                                     </tbody>
@@ -568,7 +568,7 @@ const FinancialStatements = ({ onBack }) => {
                                                     netProfit +
                                                     assets.filter(a => (a.description?.toLowerCase() || '').includes('fixed') || (a.description?.toLowerCase() || '').includes('equipment')).reduce((sum, r) => sum - (getDr(r) - getCr(r)), 0) +
                                                     equity.filter(e => (e.description?.toLowerCase() || '').includes('capital')).reduce((sum, r) => sum + (getCr(r) - getDr(r)), 0)
-                                                ).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                                ).toLocaleString(undefined, { minimumFractionDigits: inUSD ? 2 : 0, maximumFractionDigits: inUSD ? 2 : 0 })}
                                             </td>
                                             <td className="p-4 text-right border-l border-gray-200 text-gray-400 font-mono">-</td>
                                         </tr>
@@ -611,28 +611,28 @@ const FinancialStatements = ({ onBack }) => {
                                         </tr>
                                         <tr className="border-b border-gray-100">
                                             <td className="p-3 pl-4">Opening Balance</td>
-                                            <td className="p-3 text-right font-mono">{(equity.reduce((sum, e) => sum + (getPriorCr(e) - getPriorDr(e)), 0)).toLocaleString()}</td>
+                                            <td className="p-3 text-right font-mono">{(equity.reduce((sum, e) => sum + (getPriorCr(e) - getPriorDr(e)), 0)).toLocaleString(undefined, { minimumFractionDigits: inUSD ? 2 : 0, maximumFractionDigits: inUSD ? 2 : 0 })}</td>
                                             <td className="p-3 text-right font-mono">0</td>
-                                            <td className="p-3 text-right font-mono">{(equity.reduce((sum, e) => sum + (getPriorCr(e) - getPriorDr(e)), 0)).toLocaleString()}</td>
+                                            <td className="p-3 text-right font-mono">{(equity.reduce((sum, e) => sum + (getPriorCr(e) - getPriorDr(e)), 0)).toLocaleString(undefined, { minimumFractionDigits: inUSD ? 2 : 0, maximumFractionDigits: inUSD ? 2 : 0 })}</td>
                                         </tr>
                                         <tr className="border-b border-gray-100">
                                             <td className="p-3 pl-4">Capital Injections / (Drawings)</td>
-                                            <td className="p-3 text-right font-mono">{(equity.reduce((sum, e) => sum + (getCr(e) - getDr(e) - (getPriorCr(e) - getPriorDr(e))), 0)).toLocaleString()}</td>
+                                            <td className="p-3 text-right font-mono">{(equity.reduce((sum, e) => sum + (getCr(e) - getDr(e) - (getPriorCr(e) - getPriorDr(e))), 0)).toLocaleString(undefined, { minimumFractionDigits: inUSD ? 2 : 0, maximumFractionDigits: inUSD ? 2 : 0 })}</td>
                                             <td className="p-3 text-right font-mono">-</td>
-                                            <td className="p-3 text-right font-mono">{(equity.reduce((sum, e) => sum + (getCr(e) - getDr(e) - (getPriorCr(e) - getPriorDr(e))), 0)).toLocaleString()}</td>
+                                            <td className="p-3 text-right font-mono">{(equity.reduce((sum, e) => sum + (getCr(e) - getDr(e) - (getPriorCr(e) - getPriorDr(e))), 0)).toLocaleString(undefined, { minimumFractionDigits: inUSD ? 2 : 0, maximumFractionDigits: inUSD ? 2 : 0 })}</td>
                                         </tr>
                                         <tr className="border-b border-gray-100">
                                             <td className="p-3 pl-4">Profit for the year</td>
                                             <td className="p-3 text-right font-mono">-</td>
-                                            <td className="p-3 text-right font-mono">{netProfit.toLocaleString()}</td>
-                                            <td className="p-3 text-right font-mono">{netProfit.toLocaleString()}</td>
+                                            <td className="p-3 text-right font-mono">{netProfit.toLocaleString(undefined, { minimumFractionDigits: inUSD ? 2 : 0, maximumFractionDigits: inUSD ? 2 : 0 })}</td>
+                                            <td className="p-3 text-right font-mono">{netProfit.toLocaleString(undefined, { minimumFractionDigits: inUSD ? 2 : 0, maximumFractionDigits: inUSD ? 2 : 0 })}</td>
                                         </tr>
                                         <tr className="h-4"></tr>
                                         <tr className="border-t-2 border-black border-b-2 border-double bg-gray-50 font-bold">
                                             <td className="p-3">Balance at 31 December {new Date().getFullYear()}</td>
-                                            <td className="p-3 text-right font-mono">{totalEquity.toLocaleString()}</td>
-                                            <td className="p-3 text-right font-mono">{netProfit.toLocaleString()}</td>
-                                            <td className="p-3 text-right font-mono">{(totalEquity + netProfit).toLocaleString()}</td>
+                                            <td className="p-3 text-right font-mono">{totalEquity.toLocaleString(undefined, { minimumFractionDigits: inUSD ? 2 : 0, maximumFractionDigits: inUSD ? 2 : 0 })}</td>
+                                            <td className="p-3 text-right font-mono">{netProfit.toLocaleString(undefined, { minimumFractionDigits: inUSD ? 2 : 0, maximumFractionDigits: inUSD ? 2 : 0 })}</td>
+                                            <td className="p-3 text-right font-mono">{(totalEquity + netProfit).toLocaleString(undefined, { minimumFractionDigits: inUSD ? 2 : 0, maximumFractionDigits: inUSD ? 2 : 0 })}</td>
                                         </tr>
                                     </tbody>
                                 </table>
