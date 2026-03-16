@@ -10,7 +10,7 @@ const FinancialStatements = ({ onBack }) => {
     const [viewMode, setViewMode] = useState('annual'); // 'annual' | 'monthly'
     const [companyNameEn, setCompanyNameEn] = useState('Your Company');
     const [companyNameKh, setCompanyNameKh] = useState('');
-    const [inUSD, setInUSD] = useState(false);
+    const [inUSD, setInUSD] = useState(true);
     const [report, setReport] = useState([]); // Annual Data
     const [monthlyData, setMonthlyData] = useState({ pl: [], bs: [] }); // Monthly Data
     const [activeTab, setActiveTab] = useState('pl'); // 'pl' | 'bs' | 'cf' | 'sce' | 'notes'
@@ -271,16 +271,16 @@ const FinancialStatements = ({ onBack }) => {
                             Monthly Extra
                         </button>
                     </div>
-
-                    <label className="flex items-center gap-2 cursor-pointer select-none bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-200 transition">
-                        <input
-                            type="checkbox"
-                            checked={inUSD}
-                            onChange={(e) => setInUSD(e.target.checked)}
-                            className="rounded text-blue-600 focus:ring-blue-500 h-4 w-4"
-                        />
-                        <span className="text-gray-700 font-sans text-xs font-semibold">View in {inUSD ? "USD" : "KHR"}</span>
-                    </label>
+                    <div className="flex items-center gap-2 cursor-pointer select-none bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-200 transition">
+                        <select
+                            value={inUSD ? "USD" : "KHR"}
+                            onChange={(e) => setInUSD(e.target.value === 'USD')}
+                            className="bg-transparent border-none text-xs font-semibold text-gray-700 outline-none cursor-pointer w-full"
+                        >
+                            <option value="USD">View in USD</option>
+                            <option value="KHR">View in KHR</option>
+                        </select>
+                    </div>
                     <button onClick={() => window.print()} className="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition shadow-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg> Print A4 Layout
                     </button>
