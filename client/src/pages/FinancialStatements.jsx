@@ -715,12 +715,18 @@ const FinancialStatements = ({ onBack }) => {
                                         <tbody>
                                             {renderSectionHeader("ASSETS", true)}
                                             {mAssets.map(r => renderMonthRow(r.description, r.months, false, true))}
+                                            {renderMonthRow("Total Assets", mTotalAssets, true)}
                                             <tr className="h-6"></tr>
                                             {renderSectionHeader("EQUITY & LIABILITIES", true)}
                                             {renderSectionHeader("Equity", true)}
                                             {mEquity.map(r => renderMonthRow(r.description, r.months, false, true))}
+                                            {renderMonthRow("Current Year Earnings", mNetProfit, false, true)}
+                                            {renderMonthRow("Total Equity", mTotalEquity.map((v, i) => v + mNetProfit[i]), true)}
                                             {renderSectionHeader("Liabilities", true)}
                                             {mLiabs.map(r => renderMonthRow(r.description, r.months, false, true))}
+                                            {renderMonthRow("Total Liabilities", mTotalLiabs, true)}
+                                            <tr className="h-4"></tr>
+                                            {renderMonthRow("TOTAL EQUITY & LIABILITIES", mTotalLiabs.map((v, i) => v + mTotalEquity[i] + mNetProfit[i]), true)}
                                         </tbody>
                                     )}
                                 </table>

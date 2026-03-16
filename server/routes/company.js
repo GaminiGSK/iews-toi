@@ -2245,7 +2245,7 @@ router.get('/financials-monthly', auth, async (req, res) => {
 
         res.json({
             pl: Object.values(plData).filter(r => r.months[0] !== 0), // Filter rows with activity
-            bs: Object.values(bsData).filter(r => r.months[0] !== 0 && r.months[12] !== 0), // Simplified Filter
+            bs: Object.values(bsData).filter(r => Math.abs(r.months[0]) > 0.001 || r.months.some(m => Math.abs(m) > 0.001)),
             currentYear,
             companyName: profile ? profile.companyNameEn : companyCode
         });
