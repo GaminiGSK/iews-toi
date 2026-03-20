@@ -336,7 +336,18 @@ const GeneralLedger = ({ onBack }) => {
 
     return (
         <ErrorBoundary>
-            <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900">
+            <style>{`
+                @media print {
+                    @page { size: A4 landscape; margin: 10mm 8mm; }
+                    body * { visibility: hidden !important; }
+                    .gl-print-root, .gl-print-root * { visibility: visible !important; }
+                    .gl-print-root { position: absolute; top: 0; left: 0; width: 100%; background: white !important; }
+                    .print\:hidden { display: none !important; }
+                    thead { display: table-header-group; }
+                    tr { page-break-inside: avoid; }
+                }
+            `}</style>
+            <div className="gl-print-root min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900">
                 {/* Header - Left Aligned */}
                 <div className="bg-white border-b border-gray-200 px-8 py-5 flex items-center gap-8 sticky top-0 z-20 shadow-sm overflow-x-auto print:hidden">
                     <div className="flex items-center gap-4 shrink-0">
@@ -435,9 +446,9 @@ const GeneralLedger = ({ onBack }) => {
                     </div>
                 </div>
 
-                <div className="flex-1 p-8 overflow-auto print:p-0 print:overflow-visible">
+                <div className="flex-1 p-8 overflow-auto print:p-0 print:overflow-visible print:m-0">
                     {/* Print Only Header */}
-                    <div className="hidden print:block pb-6 mb-8 border-b-2 border-black mt-2">
+                    <div className="hidden print:block pb-4 mb-6 border-b-2 border-black mt-0">
                         <div className="flex justify-between items-start mb-8">
                             <div>
                                 <h1 className="text-3xl font-bold text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
@@ -565,7 +576,7 @@ const GeneralLedger = ({ onBack }) => {
                             </div>
                         </div>
                     )}
-                    <div className="max-w-7xl mx-auto space-y-8">
+                    <div className="max-w-7xl mx-auto space-y-8 print:max-w-full print:w-full print:space-y-2">
                         {loading ? (
                             <div className="bg-white p-12 text-center text-gray-500 rounded-xl border border-gray-200">Loading Ledger...</div>
                         ) : error ? (
@@ -605,6 +616,24 @@ const GeneralLedger = ({ onBack }) => {
                                 </div>
                             ))
                         )}
+                    </div>
+                    {/* Print Footer — Signature Lines */}
+                    <div className="hidden print:flex justify-between mt-12 pt-6 border-t border-gray-400 text-xs text-center text-gray-700 font-sans">
+                        <div className="w-1/4">
+                            <div className="h-12 border-b border-gray-400 mb-2"></div>
+                            <p className="font-bold uppercase">Prepared by</p>
+                            <p>Finance Officer</p>
+                        </div>
+                        <div className="w-1/4">
+                            <div className="h-12 border-b border-gray-400 mb-2"></div>
+                            <p className="font-bold uppercase">Reviewed by</p>
+                            <p>Finance Manager</p>
+                        </div>
+                        <div className="w-1/4">
+                            <div className="h-12 border-b border-gray-400 mb-2"></div>
+                            <p className="font-bold uppercase">Approved by</p>
+                            <p>Director</p>
+                        </div>
                     </div>
                 </div>
             </div>
