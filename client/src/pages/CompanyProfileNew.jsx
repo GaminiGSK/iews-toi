@@ -1839,8 +1839,8 @@ export default function CompanyProfile() {
                         </span>
                     </div>
 
-                    <span className="bg-red-600/20 text-red-500 border border-red-500/30 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest hidden sm:flex items-center shadow-inner">
-                        v2.3 Night
+                    <span className="bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest hidden sm:flex items-center shadow-inner gap-1.5">
+                        GK SMART & AI · V1.0 Public
                     </span>
 
                     <button
