@@ -8,7 +8,13 @@ const { uploadFile, getFileStream, deleteFile } = require('../services/googleDri
 const fs = require('fs'); // For cleanup 
 
 const auth = require('../middleware/auth');
-const ProfileTemplate = require('../models/ProfileTemplate');
+const ProfileTemplate    = require('../models/ProfileTemplate');
+const AssetModule        = require('../models/AssetModule');
+const SalaryModule       = require('../models/SalaryModule');
+const RelatedPartyModule = require('../models/RelatedPartyModule');
+const AccountCode        = require('../models/AccountCode');
+const Transaction        = require('../models/Transaction');
+const JournalEntry       = require('../models/JournalEntry');
 
 // --- TEMPLATE ROUTES ---
 
@@ -2579,7 +2585,6 @@ router.post('/transactions/auto-tag', auth, async (req, res) => {
 // =====================================================
 // TOI MODULE ROUTES: Asset & Depreciation
 // =====================================================
-const AssetModule = require('../models/AssetModule');
 
 router.get('/toi/assets', auth, async (req, res) => {
     try {
@@ -2625,7 +2630,6 @@ router.post('/toi/assets', auth, async (req, res) => {
 // =====================================================
 // TOI MODULE ROUTES: Salary & TOS Recon
 // =====================================================
-const SalaryModule = require('../models/SalaryModule');
 
 router.get('/toi/salary', auth, async (req, res) => {
     try {
@@ -2666,7 +2670,6 @@ router.post('/toi/salary', auth, async (req, res) => {
 // =====================================================
 // TOI MODULE ROUTES: Related Party Disclosure
 // =====================================================
-const RelatedPartyModule = require('../models/RelatedPartyModule');
 
 router.get('/toi/related-party', auth, async (req, res) => {
     try {
@@ -2711,12 +2714,6 @@ router.post('/toi/related-party', auth, async (req, res) => {
 // GET /api/company/toi/autofill
 // Returns a full formData map for all 21 TOI pages
 // =====================================================
-const AssetModule       = require('../models/AssetModule');
-const SalaryModule      = require('../models/SalaryModule');
-const RelatedPartyModule= require('../models/RelatedPartyModule');
-const AccountCode       = require('../models/AccountCode');
-const Transaction       = require('../models/Transaction');
-const JournalEntry      = require('../models/JournalEntry');
 
 router.get('/toi/autofill', auth, async (req, res) => {
     try {
