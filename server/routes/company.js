@@ -2575,4 +2575,136 @@ router.post('/transactions/auto-tag', auth, async (req, res) => {
     }
 });
 
+
+// =====================================================
+// TOI MODULE ROUTES: Asset & Depreciation
+// =====================================================
+const AssetModule = require('../models/AssetModule');
+
+router.get('/toi/assets', auth, async (req, res) => {
+    try {
+        const companyCode = req.user.companyCode;
+        const record = await AssetModule.findOne({ companyCode });
+        res.json({ data: record || null });
+    } catch (err) {
+        console.error('TOI Assets GET error:', err);
+        res.status(500).json({ message: 'Error loading asset data' });
+    }
+});
+
+router.post('/toi/assets', auth, async (req, res) => {
+    try {
+        const companyCode = req.user.companyCode;
+        const { hasAssets, depMethod, isFirstYear, assets, uploads } = req.body;
+
+        // Compute dep amounts server-side for integrity
+        const GDT_RATES = {
+            'Building': 0.05, 'Furniture': 0.10, 'Computer': 0.25,
+            'Vehicle': 0.20, 'Other': 0.20
+        };
+        const processedAssets = (assets || []).map(a => {
+            const rate = GDT_RATES[a.category] || 0.10;
+            const taxableBase = (parseFloat(a.cost) || 0) + (parseFloat(a.additions) || 0) - (parseFloat(a.disposals) || 0);
+            const depThisYear = parseFloat((taxableBase * rate).toFixed(2));
+            const nbv = parseFloat((taxableBase - (parseFloat(a.accDepOpening) || 0) - depThisYear).toFixed(2));
+            return { ...a, rate: rate * 100, depThisYear, nbv };
+        });
+
+        const record = await AssetModule.findOneAndUpdate(
+            { companyCode },
+            { companyCode, hasAssets, depMethod, isFirstYear, assets: processedAssets, uploads: uploads || [], lastSaved: new Date(), savedBy: req.user.username },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+        res.json({ message: 'Asset register saved', data: record });
+    } catch (err) {
+        console.error('TOI Assets POST error:', err);
+        res.status(500).json({ message: 'Error saving asset data' });
+    }
+});
+
+// =====================================================
+// TOI MODULE ROUTES: Salary & TOS Recon
+// =====================================================
+const SalaryModule = require('../models/SalaryModule');
+
+router.get('/toi/salary', auth, async (req, res) => {
+    try {
+        const companyCode = req.user.companyCode;
+        const record = await SalaryModule.findOne({ companyCode });
+        res.json({ data: record || null });
+    } catch (err) {
+        console.error('TOI Salary GET error:', err);
+        res.status(500).json({ message: 'Error loading salary data' });
+    }
+});
+
+router.post('/toi/salary', auth, async (req, res) => {
+    try {
+        const companyCode = req.user.companyCode;
+        const { hasEmployees, tosFiledMonthly, hasNonResident, hasFringe, directorSalary,
+                shareholderEmployees, nonShareholderEmployees, monthlyTOS, uploads } = req.body;
+
+        const record = await SalaryModule.findOneAndUpdate(
+            { companyCode },
+            {
+                companyCode, hasEmployees, tosFiledMonthly, hasNonResident, hasFringe, directorSalary,
+                shareholderEmployees: shareholderEmployees || [],
+                nonShareholderEmployees: nonShareholderEmployees || [],
+                monthlyTOS: monthlyTOS || [],
+                uploads: uploads || [],
+                lastSaved: new Date(), savedBy: req.user.username
+            },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+        res.json({ message: 'Salary & TOS data saved', data: record });
+    } catch (err) {
+        console.error('TOI Salary POST error:', err);
+        res.status(500).json({ message: 'Error saving salary data' });
+    }
+});
+
+// =====================================================
+// TOI MODULE ROUTES: Related Party Disclosure
+// =====================================================
+const RelatedPartyModule = require('../models/RelatedPartyModule');
+
+router.get('/toi/related-party', auth, async (req, res) => {
+    try {
+        const companyCode = req.user.companyCode;
+        const record = await RelatedPartyModule.findOne({ companyCode });
+        res.json({ data: record || null });
+    } catch (err) {
+        console.error('TOI RelatedParty GET error:', err);
+        res.status(500).json({ message: 'Error loading related party data' });
+    }
+});
+
+router.post('/toi/related-party', auth, async (req, res) => {
+    try {
+        const companyCode = req.user.companyCode;
+        const { hasParent, hasSubsidiary, hasTransactions, hasDirectorLoans, hasMgmtFees,
+                hasRoyalties, hasDividends, parties, transactions, directorLoans, dividends, uploads } = req.body;
+
+        const record = await RelatedPartyModule.findOneAndUpdate(
+            { companyCode },
+            {
+                companyCode, hasParent, hasSubsidiary, hasTransactions, hasDirectorLoans,
+                hasMgmtFees, hasRoyalties, hasDividends,
+                parties: parties || [],
+                transactions: transactions || [],
+                directorLoans: directorLoans || [],
+                dividends: dividends || [],
+                uploads: uploads || [],
+                lastSaved: new Date(), savedBy: req.user.username
+            },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+        res.json({ message: 'Related party data saved', data: record });
+    } catch (err) {
+        console.error('TOI RelatedParty POST error:', err);
+        res.status(500).json({ message: 'Error saving related party data' });
+    }
+});
+
 module.exports = router;
+

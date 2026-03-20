@@ -8,6 +8,9 @@ import CurrencyExchange from './CurrencyExchange';
 import TrialBalance from './TrialBalance';
 import FinancialStatements from './FinancialStatements';
 import ToiAcar from './ToiAcar';
+import AssetDepreciation from './AssetDepreciation';
+import SalaryTOSRecon from './SalaryTOSRecon';
+import RelatedPartyDisclosure from './RelatedPartyDisclosure';
 import BankStatementV2Workspace from '../components/BankStatementV2Workspace';
 import MOCCertificate from '../components/MOCCertificate';
 import ErrorBoundary from '../components/ErrorBoundary';
@@ -826,7 +829,7 @@ export default function CompanyProfile() {
                             <p className="text-slate-500 text-xs leading-relaxed">Reconcile Tax on Salary filings with annual SG&A salary expenses.</p>
                         </div>
 
-                        <div onClick={() => setView('related_party')} className="group p-8 bg-slate-800/40 hover:bg-orange-600/10 border border-white/5 hover:border-orange-500/50 rounded-3xl transition-all duration-500 cursor-pointer">
+                        <div onClick={() => setView('related')} className="group p-8 bg-slate-800/40 hover:bg-orange-600/10 border border-white/5 hover:border-orange-500/50 rounded-3xl transition-all duration-500 cursor-pointer">
                             <div className="w-14 h-14 bg-orange-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-500">
                                 <Layers size={28} className="text-orange-500" />
                             </div>
@@ -1871,6 +1874,9 @@ export default function CompanyProfile() {
                 {view === 'financials' && <ErrorBoundary><FinancialStatements onBack={() => setView('home')} /></ErrorBoundary>}
                 {view === 'currency' && <CurrencyExchange onBack={() => setView('home')} />}
                 {view === 'toi_acar' && <ToiAcar onBack={() => setView('home')} />}
+                {view === 'assets' && <AssetDepreciation onBack={() => setView('home')} />}
+                {view === 'salary' && <SalaryTOSRecon onBack={() => setView('home')} />}
+                {view === 'related' && <RelatedPartyDisclosure onBack={() => setView('home')} />}
             </main>
 
             {/* DOCUMENT INSPECTOR MODAL */}
