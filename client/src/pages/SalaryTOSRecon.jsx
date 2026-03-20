@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import { ArrowLeft, Plus, Trash2, Save, Upload, CheckCircle, AlertCircle, Loader2, FileText } from 'lucide-react';
+import NumericInput from '../components/NumericInput';
 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const EMPTY_EMP = { position:'', count:'', annualSalary:'', fringeBenefits:'' };
 const EMPTY_MONTH = (m) => ({ month: m, grossSalary:'', tosFiled:'', tosPaid:'' });
 function fmtN(n) { return (parseFloat(n)||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 
-// ⚠️ CRITICAL: EmpTable MUST be defined outside SalaryTOSRecon to prevent
-// remount-on-keystroke (which caused focus loss after typing 1 character)
+const NI_BASE = 'bg-slate-700 border border-slate-600 rounded px-2 py-1 text-white outline-none focus:border-blue-400 text-xs';
+
+// EmpTable & YN MUST be outside to prevent focus-loss remount bug
 function EmpTable({ label, rows, setRows, color }) {
     const addEmp = () => setRows(prev => [...prev, { ...EMPTY_EMP }]);
     const remEmp = (i) => setRows(prev => prev.filter((_, idx) => idx !== i));
@@ -35,44 +37,20 @@ function EmpTable({ label, rows, setRows, color }) {
                         {rows.map((e, i) => (
                             <tr key={i} className="group hover:bg-white/5">
                                 <td className="px-2 py-2">
-                                    <input
-                                        value={e.position}
-                                        onChange={ev => updEmp(i, 'position', ev.target.value)}
-                                        placeholder="Position"
-                                        className="w-40 bg-slate-700 border border-slate-600 rounded px-2 py-1 text-white outline-none focus:border-blue-400 text-xs"
-                                    />
+                                    <input value={e.position} onChange={ev => updEmp(i, 'position', ev.target.value)} placeholder="Position"
+                                        className="w-40 bg-slate-700 border border-slate-600 rounded px-2 py-1 text-white outline-none focus:border-blue-400 text-xs" />
                                 </td>
                                 <td className="px-2 py-2">
-                                    <input
-                                        type="text" inputMode="decimal"
-                                        value={e.count}
-                                        onChange={ev => updEmp(i, 'count', ev.target.value)}
-                                        placeholder="0"
-                                        className="w-16 bg-slate-700 border border-slate-600 rounded px-2 py-1 text-white outline-none focus:border-blue-400 text-xs text-center"
-                                    />
+                                    <NumericInput value={e.count} onChange={v => updEmp(i, 'count', v)} placeholder="0" className={`w-16 text-center ${NI_BASE}`} />
                                 </td>
                                 <td className="px-2 py-2">
-                                    <input
-                                        type="text" inputMode="decimal"
-                                        value={e.annualSalary}
-                                        onChange={ev => updEmp(i, 'annualSalary', ev.target.value)}
-                                        placeholder="0.00"
-                                        className="w-28 bg-slate-700 border border-slate-600 rounded px-2 py-1 text-white outline-none focus:border-blue-400 text-xs text-right"
-                                    />
+                                    <NumericInput value={e.annualSalary} onChange={v => updEmp(i, 'annualSalary', v)} placeholder="0.00" className={`w-36 text-right ${NI_BASE}`} />
                                 </td>
                                 <td className="px-2 py-2">
-                                    <input
-                                        type="text" inputMode="decimal"
-                                        value={e.fringeBenefits}
-                                        onChange={ev => updEmp(i, 'fringeBenefits', ev.target.value)}
-                                        placeholder="0.00"
-                                        className="w-28 bg-slate-700 border border-slate-600 rounded px-2 py-1 text-white outline-none focus:border-blue-400 text-xs text-right"
-                                    />
+                                    <NumericInput value={e.fringeBenefits} onChange={v => updEmp(i, 'fringeBenefits', v)} placeholder="0.00" className={`w-36 text-right ${NI_BASE}`} />
                                 </td>
                                 <td className="px-2 py-2">
-                                    <button onClick={() => remEmp(i)} className="text-slate-600 hover:text-red-500 opacity-0 group-hover:opacity-100">
-                                        <Trash2 size={12} />
-                                    </button>
+                                    <button onClick={() => remEmp(i)} className="text-slate-600 hover:text-red-500 opacity-0 group-hover:opacity-100"><Trash2 size={12} /></button>
                                 </td>
                             </tr>
                         ))}
@@ -92,7 +70,6 @@ function EmpTable({ label, rows, setRows, color }) {
     );
 }
 
-// YN also moved outside to avoid recreation on each render
 function YN({ val, set, label }) {
     return (
         <div>
@@ -116,18 +93,14 @@ export default function SalaryTOSRecon({ onBack }) {
     const fileInputRef            = useRef(null);
     const [uploadMonth, setUploadMonth] = useState('');
 
-    // Section A
     const [hasEmployees, setHasEmployees]       = useState('yes');
     const [tosFiledMonthly, setTosFiledMonthly] = useState('yes');
     const [hasNonResident, setHasNonResident]   = useState('no');
     const [hasFringe, setHasFringe]             = useState('no');
     const [directorSalary, setDirectorSalary]   = useState('no');
-    // Section B
     const [shEmployees, setShEmployees]         = useState([{ ...EMPTY_EMP, position: 'Managing Director' }]);
     const [nonShEmployees, setNonShEmployees]   = useState([{ ...EMPTY_EMP, position: 'Staff' }]);
-    // Section C
     const [monthlyTOS, setMonthlyTOS]           = useState(MONTHS.map(EMPTY_MONTH));
-    // Uploads
     const [uploads, setUploads]                 = useState([]);
 
     useEffect(() => {
@@ -163,10 +136,8 @@ export default function SalaryTOSRecon({ onBack }) {
                 setUploads(prev => [...prev, {
                     label: uploadMonth ? `TOS Return — ${uploadMonth}` : file.name,
                     month: uploadMonth || 'Annual',
-                    fileName: file.name,
-                    mimeType: file.type,
-                    data: ev.target.result,
-                    uploadedAt: new Date().toISOString()
+                    fileName: file.name, mimeType: file.type,
+                    data: ev.target.result, uploadedAt: new Date().toISOString()
                 }]);
             };
             reader.readAsDataURL(file);
@@ -192,42 +163,41 @@ export default function SalaryTOSRecon({ onBack }) {
         }
     };
 
-    // Totals
-    const shTotal  = shEmployees.reduce((a, e) => ({ sal: a.sal + (parseFloat(e.annualSalary) || 0), fri: a.fri + (parseFloat(e.fringeBenefits) || 0), cnt: a.cnt + (parseInt(e.count) || 0) }), { sal: 0, fri: 0, cnt: 0 });
-    const nonTotal = nonShEmployees.reduce((a, e) => ({ sal: a.sal + (parseFloat(e.annualSalary) || 0), fri: a.fri + (parseFloat(e.fringeBenefits) || 0), cnt: a.cnt + (parseInt(e.count) || 0) }), { sal: 0, fri: 0, cnt: 0 });
+    const shTotal  = shEmployees.reduce((a, e) => ({ sal: a.sal+(parseFloat(e.annualSalary)||0), fri: a.fri+(parseFloat(e.fringeBenefits)||0), cnt: a.cnt+(parseInt(e.count)||0) }), {sal:0,fri:0,cnt:0});
+    const nonTotal = nonShEmployees.reduce((a, e) => ({ sal: a.sal+(parseFloat(e.annualSalary)||0), fri: a.fri+(parseFloat(e.fringeBenefits)||0), cnt: a.cnt+(parseInt(e.count)||0) }), {sal:0,fri:0,cnt:0});
     const grandSal    = shTotal.sal + nonTotal.sal;
     const grandFri    = shTotal.fri + nonTotal.fri;
-    const annualGross = monthlyTOS.reduce((a, m) => a + (parseFloat(m.grossSalary) || 0), 0);
-    const annualFiled = monthlyTOS.reduce((a, m) => a + (parseFloat(m.tosFiled) || 0), 0);
-    const annualPaid  = monthlyTOS.reduce((a, m) => a + (parseFloat(m.tosPaid) || 0), 0);
+    const annualGross = monthlyTOS.reduce((a, m) => a+(parseFloat(m.grossSalary)||0), 0);
+    const annualFiled = monthlyTOS.reduce((a, m) => a+(parseFloat(m.tosFiled)||0), 0);
+    const annualPaid  = monthlyTOS.reduce((a, m) => a+(parseFloat(m.tosPaid)||0), 0);
     const matched     = Math.abs(grandSal - annualGross) < 0.01;
 
-    if (loading) return <div className="min-h-screen bg-slate-900 flex items-center justify-center"><Loader2 className="animate-spin text-blue-400" size={40} /></div>;
+    const NI_M = `w-28 text-right ${NI_BASE}`;
+
+    if (loading) return <div className="min-h-screen bg-slate-900 flex items-center justify-center"><Loader2 className="animate-spin text-blue-400" size={40}/></div>;
 
     return (
         <div className="min-h-screen bg-slate-900 text-white font-sans">
-            {/* Header */}
             <div className="bg-slate-900/90 border-b border-white/10 px-6 py-4 flex items-center gap-4 sticky top-0 z-30 backdrop-blur">
-                <button onClick={onBack} className="p-2 bg-white/5 hover:bg-white/10 rounded-xl transition"><ArrowLeft size={18} /></button>
+                <button onClick={onBack} className="p-2 bg-white/5 hover:bg-white/10 rounded-xl transition"><ArrowLeft size={18}/></button>
                 <div>
                     <h1 className="text-lg font-black uppercase tracking-widest flex items-center gap-2"><span className="text-blue-400">👥</span> Salary & TOS Reconciliation</h1>
                     <p className="text-[11px] text-slate-500">Tax on Salary · Employee Summary · Year Ended 31 Dec 2025</p>
                 </div>
-                <div className="ml-auto flex items-center gap-3">
+                <div className="ml-auto">
                     <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-5 py-2 bg-blue-500 hover:bg-blue-400 text-white rounded-lg text-xs font-black transition disabled:opacity-60">
-                        {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Save Data
+                        {saving ? <Loader2 size={14} className="animate-spin"/> : <Save size={14}/>} Save Data
                     </button>
                 </div>
             </div>
 
             {msg && (
-                <div className={`mx-6 mt-4 px-4 py-3 rounded-xl flex items-center gap-3 text-sm font-bold ${msgType === 'ok' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}>
-                    {msgType === 'ok' ? <CheckCircle size={16} /> : <AlertCircle size={16} />} {msg}
+                <div className={`mx-6 mt-4 px-4 py-3 rounded-xl flex items-center gap-3 text-sm font-bold ${msgType==='ok' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}>
+                    {msgType==='ok' ? <CheckCircle size={16}/> : <AlertCircle size={16}/>} {msg}
                 </div>
             )}
 
             <div className="p-6 space-y-6 max-w-[1400px] mx-auto">
-                {/* SECTION A */}
                 <div className="bg-slate-800/60 border border-white/10 rounded-2xl p-6">
                     <h2 className="text-xs font-black uppercase tracking-widest text-blue-400 mb-5">Section A — General Setup</h2>
                     <div className="grid grid-cols-5 gap-4">
@@ -240,53 +210,50 @@ export default function SalaryTOSRecon({ onBack }) {
                 </div>
 
                 {hasEmployees === 'yes' && (<>
-                    {/* SECTION B */}
                     <div className="bg-slate-800/60 border border-white/10 rounded-2xl p-6 space-y-6">
                         <h2 className="text-xs font-black uppercase tracking-widest text-blue-400">Section B — Employee Summary (feeds into TOI Page 2)</h2>
                         <EmpTable label="Shareholder / Director Employees" rows={shEmployees} setRows={setShEmployees} color="#f59e0b" />
                         <EmpTable label="Non-Shareholder Staff Employees"  rows={nonShEmployees} setRows={setNonShEmployees} color="#60a5fa" />
-                        {/* Grand Total */}
                         <div className="grid grid-cols-4 gap-4 pt-2 border-t border-white/10">
-                            <div className="bg-slate-700/50 rounded-xl p-4 text-center"><p className="text-[10px] text-slate-400 uppercase font-bold">Total Headcount</p><p className="text-2xl font-black text-white">{shTotal.cnt + nonTotal.cnt}</p></div>
+                            <div className="bg-slate-700/50 rounded-xl p-4 text-center"><p className="text-[10px] text-slate-400 uppercase font-bold">Total Headcount</p><p className="text-2xl font-black text-white">{shTotal.cnt+nonTotal.cnt}</p></div>
                             <div className="bg-slate-700/50 rounded-xl p-4 text-center"><p className="text-[10px] text-slate-400 uppercase font-bold">Total Annual Salary</p><p className="text-xl font-black text-blue-400">${fmtN(grandSal)}</p></div>
                             <div className="bg-slate-700/50 rounded-xl p-4 text-center"><p className="text-[10px] text-slate-400 uppercase font-bold">Total Fringe Benefits</p><p className="text-xl font-black text-yellow-400">${fmtN(grandFri)}</p></div>
                             <div className={`rounded-xl p-4 text-center border ${matched ? 'bg-green-500/10 border-green-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
                                 <p className="text-[10px] uppercase font-bold text-slate-400">vs Monthly Total</p>
-                                <p className={`text-xl font-black ${matched ? 'text-green-400' : 'text-red-400'}`}>{matched ? '✅ Matched' : `$${fmtN(Math.abs(grandSal - annualGross))} Gap`}</p>
+                                <p className={`text-xl font-black ${matched ? 'text-green-400' : 'text-red-400'}`}>{matched ? '✅ Matched' : `$${fmtN(Math.abs(grandSal-annualGross))} Gap`}</p>
                             </div>
                         </div>
                     </div>
 
-                    {/* SECTION C — Monthly TOS */}
                     <div className="bg-slate-800/60 border border-white/10 rounded-2xl p-6">
                         <h2 className="text-xs font-black uppercase tracking-widest text-blue-400 mb-5">Section C — Monthly TOS Reconciliation (Jan–Dec 2025)</h2>
                         <div className="overflow-x-auto">
                             <table className="w-full text-xs">
                                 <thead>
                                     <tr className="border-b border-white/10">
-                                        {['Month', 'Gross Salary Paid (USD)', 'TOS Filed with GDT (USD)', 'TOS Paid to GDT (USD)', 'Effective Rate', 'Variance'].map(h => (
+                                        {['Month','Gross Salary Paid (USD)','TOS Filed with GDT (USD)','TOS Paid to GDT (USD)','Effective Rate','Variance'].map(h => (
                                             <th key={h} className="text-left px-3 py-3 text-[10px] font-black uppercase tracking-wider text-slate-500">{h}</th>
                                         ))}
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/5">
                                     {monthlyTOS.map((m, i) => {
-                                        const g = parseFloat(m.grossSalary) || 0;
-                                        const f = parseFloat(m.tosFiled) || 0;
-                                        const p = parseFloat(m.tosPaid) || 0;
-                                        const rate = g > 0 ? ((f / g) * 100).toFixed(1) : '-';
+                                        const g = parseFloat(m.grossSalary)||0;
+                                        const f = parseFloat(m.tosFiled)||0;
+                                        const p = parseFloat(m.tosPaid)||0;
+                                        const rate = g > 0 ? ((f/g)*100).toFixed(1) : '-';
                                         const var_ = f - p;
                                         return (
                                             <tr key={i} className="hover:bg-white/5 transition">
                                                 <td className="px-3 py-2 font-black text-slate-300">{m.month}</td>
-                                                <td className="px-3 py-2"><input type="text" inputMode="decimal" value={m.grossSalary} onChange={ev => updMonth(i, 'grossSalary', ev.target.value)} placeholder="0.00" className="w-28 bg-slate-700 border border-slate-600 rounded px-2 py-1 text-white outline-none focus:border-blue-400 text-xs text-right" /></td>
-                                                <td className="px-3 py-2"><input type="text" inputMode="decimal" value={m.tosFiled}    onChange={ev => updMonth(i, 'tosFiled',    ev.target.value)} placeholder="0.00" className="w-28 bg-slate-700 border border-slate-600 rounded px-2 py-1 text-white outline-none focus:border-blue-400 text-xs text-right" /></td>
-                                                <td className="px-3 py-2"><input type="text" inputMode="decimal" value={m.tosPaid}     onChange={ev => updMonth(i, 'tosPaid',     ev.target.value)} placeholder="0.00" className="w-28 bg-slate-700 border border-slate-600 rounded px-2 py-1 text-white outline-none focus:border-blue-400 text-xs text-right" /></td>
-                                                <td className="px-3 py-2 text-center"><span className="px-2 py-0.5 bg-blue-500/10 text-blue-400 rounded font-bold">{rate}{rate !== '-' ? '%' : ''}</span></td>
+                                                <td className="px-3 py-2"><NumericInput value={m.grossSalary} onChange={v => updMonth(i,'grossSalary',v)} placeholder="0.00" className={NI_M}/></td>
+                                                <td className="px-3 py-2"><NumericInput value={m.tosFiled}    onChange={v => updMonth(i,'tosFiled',v)}    placeholder="0.00" className={NI_M}/></td>
+                                                <td className="px-3 py-2"><NumericInput value={m.tosPaid}     onChange={v => updMonth(i,'tosPaid',v)}     placeholder="0.00" className={NI_M}/></td>
+                                                <td className="px-3 py-2 text-center"><span className="px-2 py-0.5 bg-blue-500/10 text-blue-400 rounded font-bold">{rate}{rate!=='-'?'%':''}</span></td>
                                                 <td className="px-3 py-2 text-right">
-                                                    {var_ === 0 ? <span className="text-green-400 font-bold">✅</span> :
-                                                     var_ > 0 ? <span className="text-red-400 font-bold">-${fmtN(var_)} unpaid</span> :
-                                                     <span className="text-yellow-400 font-bold">+${fmtN(Math.abs(var_))} overpaid</span>}
+                                                    {var_===0 ? <span className="text-green-400 font-bold">✅</span> :
+                                                     var_>0   ? <span className="text-red-400 font-bold">-${fmtN(var_)} unpaid</span> :
+                                                                <span className="text-yellow-400 font-bold">+${fmtN(Math.abs(var_))} overpaid</span>}
                                                 </td>
                                             </tr>
                                         );
@@ -300,7 +267,7 @@ export default function SalaryTOSRecon({ onBack }) {
                                         <td className="px-3 py-3 text-right font-black text-white text-xs">{fmtN(annualPaid)}</td>
                                         <td></td>
                                         <td className="px-3 py-3 text-right">
-                                            {Math.abs(annualFiled - annualPaid) < 0.01 ? <span className="text-green-400 font-black text-xs">✅ All Clear</span> : <span className="text-red-400 font-black text-xs">❌ ${fmtN(Math.abs(annualFiled - annualPaid))} gap</span>}
+                                            {Math.abs(annualFiled-annualPaid)<0.01 ? <span className="text-green-400 font-black text-xs">✅ All Clear</span> : <span className="text-red-400 font-black text-xs">❌ ${fmtN(Math.abs(annualFiled-annualPaid))} gap</span>}
                                         </td>
                                     </tr>
                                 </tfoot>
@@ -309,7 +276,6 @@ export default function SalaryTOSRecon({ onBack }) {
                     </div>
                 </>)}
 
-                {/* SECTION D — Uploads */}
                 <div className="bg-slate-800/60 border border-white/10 rounded-2xl p-6">
                     <h2 className="text-xs font-black uppercase tracking-widest text-blue-400 mb-5">Section D — Document Uploads</h2>
                     <div className="flex items-end gap-3 mb-4">
@@ -321,17 +287,17 @@ export default function SalaryTOSRecon({ onBack }) {
                             </select>
                         </div>
                         <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 px-4 py-2 border border-dashed border-blue-500/40 text-blue-400 rounded-xl text-xs font-bold hover:bg-blue-500/10 transition">
-                            <Upload size={14} /> Upload TOS Return / Payroll Doc
+                            <Upload size={14}/> Upload TOS Return / Payroll Doc
                         </button>
-                        <input ref={fileInputRef} type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.xlsx" className="hidden" onChange={handleFileUpload} />
+                        <input ref={fileInputRef} type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.xlsx" className="hidden" onChange={handleFileUpload}/>
                     </div>
                     {uploads.length > 0 && (
                         <div className="grid grid-cols-3 gap-2">
                             {uploads.map((u, i) => (
                                 <div key={i} className="flex items-center gap-3 bg-slate-700/50 px-3 py-2 rounded-lg">
-                                    <FileText size={14} className="text-blue-400 shrink-0" />
+                                    <FileText size={14} className="text-blue-400 shrink-0"/>
                                     <div className="min-w-0"><p className="text-xs text-white truncate">{u.label}</p><p className="text-[10px] text-slate-500">{u.month}</p></div>
-                                    <button onClick={() => setUploads(prev => prev.filter((_, idx) => idx !== i))} className="ml-auto text-slate-500 hover:text-red-400 shrink-0"><Trash2 size={12} /></button>
+                                    <button onClick={() => setUploads(prev => prev.filter((_,idx) => idx!==i))} className="ml-auto text-slate-500 hover:text-red-400 shrink-0"><Trash2 size={12}/></button>
                                 </div>
                             ))}
                         </div>
