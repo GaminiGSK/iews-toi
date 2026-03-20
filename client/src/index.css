@@ -8,6 +8,21 @@
   }
 }
 
+
+/* =============================================
+   GLOBAL: Hide number input spinner arrows
+   Users can type any value directly
+   ============================================= */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
 @media print {
   @page {
     size: A4 portrait;

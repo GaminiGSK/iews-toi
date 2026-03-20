@@ -220,16 +220,16 @@ export default function AssetDepreciation({ onBack }) {
                                                     <input type="date" value={a.purchaseDate} onChange={e => updateAsset(i,'purchaseDate',e.target.value)} className="bg-slate-700 border border-slate-600 rounded px-2 py-1 text-white outline-none focus:border-yellow-400 text-xs" />
                                                 </td>
                                                 <td className="px-2 py-2">
-                                                    <input type="number" value={a.cost} onChange={e => updateAsset(i,'cost',e.target.value)} placeholder="0.00" className="w-24 bg-slate-700 border border-slate-600 rounded px-2 py-1 text-white outline-none focus:border-yellow-400 text-xs text-right" />
+                                                    <input type="text" inputMode="decimal" value={a.cost} onChange={e => updateAsset(i,'cost',e.target.value)} placeholder="0.00" className="w-24 bg-slate-700 border border-slate-600 rounded px-2 py-1 text-white outline-none focus:border-yellow-400 text-xs text-right" />
                                                 </td>
                                                 <td className="px-2 py-2">
-                                                    <input type="number" value={a.accDepOpening} onChange={e => updateAsset(i,'accDepOpening',e.target.value)} placeholder="0.00" className="w-24 bg-slate-700 border border-slate-600 rounded px-2 py-1 text-white outline-none focus:border-yellow-400 text-xs text-right" />
+                                                    <input type="text" inputMode="decimal" value={a.accDepOpening} onChange={e => updateAsset(i,'accDepOpening',e.target.value)} placeholder="0.00" className="w-24 bg-slate-700 border border-slate-600 rounded px-2 py-1 text-white outline-none focus:border-yellow-400 text-xs text-right" />
                                                 </td>
                                                 <td className="px-2 py-2">
-                                                    <input type="number" value={a.additions} onChange={e => updateAsset(i,'additions',e.target.value)} placeholder="0.00" className="w-20 bg-slate-700 border border-slate-600 rounded px-2 py-1 text-white outline-none focus:border-yellow-400 text-xs text-right" />
+                                                    <input type="text" inputMode="decimal" value={a.additions} onChange={e => updateAsset(i,'additions',e.target.value)} placeholder="0.00" className="w-20 bg-slate-700 border border-slate-600 rounded px-2 py-1 text-white outline-none focus:border-yellow-400 text-xs text-right" />
                                                 </td>
                                                 <td className="px-2 py-2">
-                                                    <input type="number" value={a.disposals} onChange={e => updateAsset(i,'disposals',e.target.value)} placeholder="0.00" className="w-20 bg-slate-700 border border-slate-600 rounded px-2 py-1 text-white outline-none focus:border-yellow-400 text-xs text-right" />
+                                                    <input type="text" inputMode="decimal" value={a.disposals} onChange={e => updateAsset(i,'disposals',e.target.value)} placeholder="0.00" className="w-20 bg-slate-700 border border-slate-600 rounded px-2 py-1 text-white outline-none focus:border-yellow-400 text-xs text-right" />
                                                 </td>
                                                 <td className="px-2 py-2 text-center">
                                                     <span className="px-2 py-0.5 bg-yellow-500/10 text-yellow-400 rounded font-bold">{c.rate}%</span>
