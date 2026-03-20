@@ -2706,5 +2706,339 @@ router.post('/toi/related-party', auth, async (req, res) => {
     }
 });
 
+// =====================================================
+// TOI AUTO-FILL ENGINE — Aggregates ALL data sources
+// GET /api/company/toi/autofill
+// Returns a full formData map for all 21 TOI pages
+// =====================================================
+const AssetModule       = require('../models/AssetModule');
+const SalaryModule      = require('../models/SalaryModule');
+const RelatedPartyModule= require('../models/RelatedPartyModule');
+const AccountCode       = require('../models/AccountCode');
+const Transaction       = require('../models/Transaction');
+const JournalEntry      = require('../models/JournalEntry');
+
+router.get('/toi/autofill', auth, async (req, res) => {
+    try {
+        const userId      = req.user.id;
+        const companyCode = req.user.companyCode;
+        const year        = parseInt(req.query.year) || 2025;
+
+        // ── 1. Company Profile ──────────────────────────────────────────
+        const profile = await CompanyProfile.findOne({ user: userId });
+
+        const p = profile || {};
+        // Helper: extract extracted data value safely
+        const ext = (key) => p.extractedData?.get?.(key) || p.extractedData?.[key] || '';
+
+        // ── 2. Load TOI Modules ───────────────────────────────────────────
+        const assetRec  = await AssetModule.findOne({ companyCode });
+        const salaryRec = await SalaryModule.findOne({ companyCode });
+        const rpRec     = await RelatedPartyModule.findOne({ companyCode });
+
+        const assets       = assetRec?.assets       || [];
+        const shEmps       = salaryRec?.shareholderEmployees    || [];
+        const nonShEmps    = salaryRec?.nonShareholderEmployees || [];
+        const monthlyTOS   = salaryRec?.monthlyTOS  || [];
+        const parties      = rpRec?.parties          || [];
+        const transactions = rpRec?.transactions     || [];
+        const dirLoans     = rpRec?.directorLoans    || [];
+        const dividends    = rpRec?.dividends        || [];
+
+        // ── 3. GL / Financial Summary (Account Code + Transactions) ──────
+        const codes = await AccountCode.find({ companyCode });
+
+        // Build GL balances by toiCode
+        // We sum dr/cr from Transactions (bank) + JournalEntries
+        const glMap = {}; // toiCode => { dr, cr }
+        const accumulate = (toiCode, dr, cr) => {
+            if (!toiCode) return;
+            if (!glMap[toiCode]) glMap[toiCode] = { dr: 0, cr: 0 };
+            glMap[toiCode].dr += dr || 0;
+            glMap[toiCode].cr += cr || 0;
+        };
+
+        // Bank transactions
+        const startDate = new Date(`${year}-01-01`);
+        const endDate   = new Date(`${year}-12-31`);
+        const txns = await Transaction.find({ companyCode, date: { $gte: startDate, $lte: endDate } }).populate('accountCode');
+        for (const tx of txns) {
+            const tc = tx.accountCode?.toiCode;
+            if (!tc) continue;
+            const amt = Math.abs(tx.amount);
+            if (tx.amount > 0) accumulate(tc, amt, 0);
+            else               accumulate(tc, 0, amt);
+        }
+
+        // Journal entries
+        const jes = await JournalEntry.find({ companyCode, date: { $gte: startDate, $lte: endDate } }).populate('lines.accountCode');
+        for (const je of jes) {
+            for (const ln of je.lines) {
+                const tc = ln.accountCode?.toiCode;
+                accumulate(tc, ln.debit, ln.credit);
+            }
+        }
+
+        // Helper: get net value for a TOI code
+        const glNet = (tc) => {
+            if (!glMap[tc]) return 0;
+            return glMap[tc].dr - glMap[tc].cr;
+        };
+        const glDr = (tc) => glMap[tc]?.dr || 0;
+        const glCr = (tc) => glMap[tc]?.cr || 0;
+        const fmt  = (n) => n === 0 ? '' : Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+        // ── 4. Salary calculations ───────────────────────────────────────
+        const allEmps = [...shEmps, ...nonShEmps];
+        const totalSalary     = allEmps.reduce((a, e) => a + (parseFloat(e.annualSalary) || 0), 0);
+        const totalFringe     = allEmps.reduce((a, e) => a + (parseFloat(e.fringeBenefits) || 0), 0);
+        const totalHeadcount  = allEmps.reduce((a, e) => a + (parseInt(e.count) || 0), 0);
+        const shSalary        = shEmps.reduce((a, e) => a + (parseFloat(e.annualSalary) || 0), 0);
+        const nonShSalary     = nonShEmps.reduce((a, e) => a + (parseFloat(e.annualSalary) || 0), 0);
+        const shCount         = shEmps.reduce((a, e) => a + (parseInt(e.count) || 0), 0);
+        const nonShCount      = nonShEmps.reduce((a, e) => a + (parseInt(e.count) || 0), 0);
+        const tosFiled        = monthlyTOS.reduce((a, m) => a + (parseFloat(m.tosFiled) || 0), 0);
+        const tosPaid         = monthlyTOS.reduce((a, m) => a + (parseFloat(m.tosPaid) || 0), 0);
+
+        // ── 5. Asset calculations ─────────────────────────────────────────
+        const calcDep = (a) => {
+            const rates = { Building: 5, Furniture: 10, Computer: 25, Vehicle: 20, Other: 20 };
+            const rate  = rates[a.category] || 10;
+            const base  = (parseFloat(a.cost) || 0) + (parseFloat(a.additions) || 0) - (parseFloat(a.disposals) || 0);
+            return base * rate / 100;
+        };
+        const totalAssetCost = assets.reduce((a, x) => a + (parseFloat(x.cost) || 0), 0);
+        const totalDep       = assets.reduce((a, x) => a + calcDep(x), 0);
+        const totalNBV       = assets.reduce((a, x) => {
+            const base = (parseFloat(x.cost)||0) + (parseFloat(x.additions)||0) - (parseFloat(x.disposals)||0);
+            const open = parseFloat(x.accDepOpening) || 0;
+            return a + base - open - calcDep(x);
+        }, 0);
+
+        // ── 6. Revenue / Expense from GL ─────────────────────────────────
+        // Key TOI codes to map (based on standard Cambodia TOI form structure)
+        // A-codes = Revenue, B/C/D = Expenses, E = Adjustments
+        const revenue        = glDr('A1') || glCr('A1');  // Turnover
+        const costOfSales    = glDr('D1') || glCr('D1');
+        const grossProfit    = revenue - costOfSales;
+
+        // P&L summary fields
+        const salaryExpGL    = glDr('E1') || glCr('E1');
+        const rentExpGL      = glDr('E2') || glCr('E2');
+        const depExpGL       = glDr('E3') || glCr('E3');
+        const interestExpGL  = glDr('E4') || glCr('E4');
+        const bankChargesGL  = glDr('E5') || glCr('E5');
+        const marketingGL    = glDr('E6') || glCr('E6');
+        const travelGL       = glDr('E7') || glCr('E7');
+        const otherExpGL     = glDr('E8') || glCr('E8');
+
+        // Balance Sheet  
+        const cashGL         = glDr('B1') - glCr('B1');   // Cash & Bank
+        const arGL           = glDr('B2') - glCr('B2');   // Accounts Receivable
+        const inventoryGL    = glDr('B3') - glCr('B3');   // Inventory
+        const ppneGL         = glDr('B4') - glCr('B4');   // PP&E
+        const totalAssetsGL  = cashGL + arGL + inventoryGL + ppneGL;
+        const apGL           = glCr('C1') - glDr('C1');   // Accounts Payable
+        const loanGL         = glCr('C2') - glDr('C2');   // Loans / Borrowing
+        const equityGL       = glCr('C3') - glDr('C3');   // Equity
+
+        // ── 7. Related Party data ─────────────────────────────────────────
+        const totalRelatedTx = transactions.reduce((a, t) => a + (parseFloat(t.amount) || 0), 0);
+        const totalDividends = dividends.reduce((a, d) => a + (parseFloat(d.amount) || 0), 0);
+        const totalLoanBal   = dirLoans.reduce((a, l) => {
+            return a + (parseFloat(l.openingBal) || 0) + (parseFloat(l.newLoans) || 0) - (parseFloat(l.repayments) || 0);
+        }, 0);
+
+        // ── 8. Build full formData map (21 pages) ─────────────────────────
+        const today       = new Date();
+        const yearStr     = year.toString();
+        const fromDateStr = `0101${yearStr}`;
+        const untilDateStr= `3112${yearStr}`;
+
+        const formData = {
+            // ── PAGE 1: Cover / TIN / Identification ─────────────────────
+            taxMonths:         '12',
+            fromDate:          fromDateStr,
+            untilDate:         untilDateStr,
+            tin:               p.vatTin?.replace(/[^0-9A-Z]/g, '') || '',
+            enterpriseName:    p.companyNameEn || '',
+            directorName:      p.director || ext('director') || '',
+            mainActivity:      p.businessActivity || ext('businessActivity') || '',
+            telephone:         ext('telephone') || '',
+            email:             ext('email') || '',
+            registeredAddress: p.address || ext('address') || '',
+            registrationDate:  p.incorporationDate || '',
+            legalForm:         'Private Limited Company',
+            accountingRecord:  'Using Software',
+            softwareName:      'GK SMART AI',
+            taxComplianceStatus:'Gold',
+            incomeTaxRate:     '20%',
+            branchCount:       p.oldRegistrationNumber ? '1' : '1',
+            filingDate:        `3103${yearStr}`,
+
+            // ── PAGE 2: Shareholders / Directors ─────────────────────────
+            // Shareholder employees from Salary Module
+            ...(shEmps.length > 0 && {
+                [`shareholder_name_1`]:               shEmps[0]?.position || p.director || '',
+                [`shareholder_nationality_1`]:        parties[0]?.nationality || 'Cambodian',
+                [`shareholder_ownership_pct_1`]:      parties[0]?.ownershipPct || '100',
+                [`employee_description_1`]:           shEmps[0]?.position || 'Managing Director',
+                [`employee_position_1`]:              shEmps[0]?.position || 'Managing Director',
+                [`employee_number_1`]:                String(parseInt(shEmps[0]?.count) || 1),
+                [`employee_salary_1`]:                fmt(parseFloat(shEmps[0]?.annualSalary) || 0),
+                [`employee_fringe_benefits_1`]:       fmt(parseFloat(shEmps[0]?.fringeBenefits) || 0),
+            }),
+            ...(shEmps.length > 1 && {
+                [`employee_description_2`]:           shEmps[1]?.position || '',
+                [`employee_number_2`]:                String(parseInt(shEmps[1]?.count) || 0),
+                [`employee_salary_2`]:                fmt(parseFloat(shEmps[1]?.annualSalary) || 0),
+            }),
+            total_employees_workers:                  String(shCount + nonShCount),
+            taxable_salary_employees_workers:         fmt(totalSalary),
+            taxable_salary_shareholders:              fmt(shSalary),
+            taxable_salary_staff:                     fmt(nonShSalary),
+            total_fringe_benefits:                    fmt(totalFringe),
+
+            // ── PAGE 3–4: Staff Employees ─────────────────────────────────
+            ...(nonShEmps[0] && {
+                staff_position_1:                      nonShEmps[0]?.position || 'Staff',
+                staff_count_1:                         String(parseInt(nonShEmps[0]?.count) || 0),
+                staff_salary_1:                        fmt(parseFloat(nonShEmps[0]?.annualSalary) || 0),
+                staff_fringe_1:                        fmt(parseFloat(nonShEmps[0]?.fringeBenefits) || 0),
+            }),
+            total_staff_salary:                       fmt(nonShSalary),
+            total_staff_headcount:                    String(nonShCount),
+
+            // ── PAGE 5–6: TOS (Tax on Salary) Monthly ────────────────────
+            tos_total_filed:                          fmt(tosFiled),
+            tos_total_paid:                           fmt(tosPaid),
+            tos_variance:                             fmt(Math.abs(tosFiled - tosPaid)),
+            ...Object.fromEntries(monthlyTOS.map((m, i) => ([
+                [`tos_gross_${m.month.toLowerCase()}`]:   fmt(parseFloat(m.grossSalary) || 0),
+                [`tos_filed_${m.month.toLowerCase()}`]:   fmt(parseFloat(m.tosFiled) || 0),
+                [`tos_paid_${m.month.toLowerCase()}`]:    fmt(parseFloat(m.tosPaid) || 0),
+            ])).flat().reduce((acc, obj) => ({...acc, ...obj}), {})),
+
+            // ── PAGE 7: COGS / Revenue ────────────────────────────────────
+            d1_n:  fmt(costOfSales),
+            e1_amount: fmt(revenue),
+
+            // ── PAGE 8–9: Financial Statements (IS) ──────────────────────
+            fs_revenue:                               fmt(revenue),
+            fs_cost_of_sales:                         fmt(costOfSales),
+            fs_gross_profit:                          fmt(grossProfit),
+            fs_salary_expense:                        fmt(salaryExpGL || totalSalary),
+            fs_rental_expense:                        fmt(rentExpGL),
+            fs_depreciation_expense:                  fmt(depExpGL || totalDep),
+            fs_interest_expense:                      fmt(interestExpGL),
+            fs_bank_charges:                          fmt(bankChargesGL),
+            fs_marketing:                             fmt(marketingGL),
+            fs_travel:                                fmt(travelGL),
+            fs_other_expense:                         fmt(otherExpGL),
+
+            // ── PAGE 10–11: Tax Adjustments ────────────────────────────────
+            // Non-deductible items
+            e2_amount:  '', // Late filing penalty — user inputs
+            e3_amount:  '', // Entertainment — user inputs
+            e4_amount:  fmt(Math.max(0, totalFringe)),   // Fringe benefits disallowed portion
+            e9_amount:  fmt(totalDep),   // Depreciation per register
+            e10_amount: fmt(totalDep),   // GDT depreciation allowed (same since using GDT method)
+
+            // ── PAGE 12: Interest carry-forward ──────────────────────────
+            g1: fmt(revenue),
+            g2: fmt(interestExpGL),
+            g3: fmt(Math.max(0, revenue * 0.5)),
+
+            // ── PAGE 13: Related Party Transactions ──────────────────────
+            rp_has_transactions:      rpRec?.hasTransactions || 'no',
+            rp_has_loans:             rpRec?.hasDirectorLoans || 'no',
+            rp_has_dividends:         rpRec?.hasDividends || 'no',
+            rp_total_transactions:    fmt(totalRelatedTx),
+            rp_total_dividends:       fmt(totalDividends),
+            rp_total_loan_balance:    fmt(totalLoanBal),
+            ...Object.fromEntries(parties.slice(0, 5).flatMap((p2, i) => [
+                [`rp_party_name_${i+1}`,          p2.name         || ''],
+                [`rp_party_relation_${i+1}`,      p2.relationship || ''],
+                [`rp_party_ownership_${i+1}`,     p2.ownershipPct || ''],
+            ])),
+            ...Object.fromEntries(transactions.slice(0, 5).flatMap((t, i) => [
+                [`rp_tx_type_${i+1}`,     t.txType      || ''],
+                [`rp_tx_party_${i+1}`,    t.partyName   || ''],
+                [`rp_tx_amount_${i+1}`,   fmt(parseFloat(t.amount) || 0)],
+            ])),
+            ...Object.fromEntries(dirLoans.slice(0, 3).flatMap((l, i) => [
+                [`rp_loan_party_${i+1}`,  l.partyName   || ''],
+                [`rp_loan_bal_${i+1}`,    fmt((parseFloat(l.openingBal)||0) + (parseFloat(l.newLoans)||0) - (parseFloat(l.repayments)||0))],
+                [`rp_loan_rate_${i+1}`,   l.interestRate || ''],
+            ])),
+            ...Object.fromEntries(dividends.slice(0, 3).flatMap((d, i) => [
+                [`rp_div_name_${i+1}`,    d.shareholderName || ''],
+                [`rp_div_pct_${i+1}`,     d.pct || ''],
+                [`rp_div_amount_${i+1}`,  fmt(parseFloat(d.amount) || 0)],
+            ])),
+
+            // ── PAGE 14–15: Balance Sheet ───────────────────────────────────
+            bs_cash:                 fmt(Math.max(0, cashGL)),
+            bs_accounts_receivable:  fmt(Math.max(0, arGL)),
+            bs_inventory:            fmt(Math.max(0, inventoryGL)),
+            bs_ppe_gross:            fmt(totalAssetCost),
+            bs_ppe_acc_dep:          fmt(totalDep),
+            bs_ppe_nbv:              fmt(totalNBV),
+            bs_total_assets:         fmt(totalAssetsGL > 0 ? totalAssetsGL : totalAssetCost + cashGL + arGL),
+            bs_accounts_payable:     fmt(Math.max(0, apGL)),
+            bs_loans:                fmt(Math.max(0, loanGL)),
+            bs_equity:               fmt(Math.max(0, equityGL)),
+
+            // ── PAGE 16–17: Asset Register ────────────────────────────────
+            asset_total_cost:        fmt(totalAssetCost),
+            asset_total_dep:         fmt(totalDep),
+            asset_total_nbv:         fmt(totalNBV),
+            ...Object.fromEntries(assets.slice(0, 10).flatMap((a, i) => [
+                [`asset_desc_${i+1}`,       a.description  || ''],
+                [`asset_category_${i+1}`,   a.category     || ''],
+                [`asset_date_${i+1}`,       a.purchaseDate || ''],
+                [`asset_cost_${i+1}`,       fmt(parseFloat(a.cost) || 0)],
+                [`asset_dep_${i+1}`,        fmt(calcDep(a))],
+                [`asset_nbv_${i+1}`,        fmt((parseFloat(a.cost)||0) - (parseFloat(a.accDepOpening)||0) - calcDep(a))],
+            ])),
+
+            // ── PAGE 18–19: Minimum Tax / Prepayment ─────────────────────
+            min_tax_turnover:        fmt(revenue),
+            min_tax_1pct:            fmt(revenue * 0.01),
+            prepayment_tax:          fmt(revenue * 0.01),  // 1% monthly prepayment
+
+            // ── PAGE 20: VAT / Patent ─────────────────────────────────────
+            vat_registration_no:     p.vatTin || '',
+            patent_tax_year:         yearStr,
+            business_activity:       p.businessActivity || '',
+
+            // ── PAGE 21: Declaration / Signature ─────────────────────────
+            declaration_date:        `${today.getDate().toString().padStart(2,'0')}${(today.getMonth()+1).toString().padStart(2,'0')}${yearStr}`,
+            signatory_name:          p.director || '',
+            signatory_position:      'Managing Director',
+            filing_location:         'Phnom Penh',
+        };
+
+        res.json({
+            ok:       true,
+            year,
+            sources: {
+                profile:       !!profile,
+                assets:        assets.length,
+                employees:     allEmps.length,
+                monthlyTOS:    monthlyTOS.length,
+                relatedParties:parties.length,
+                transactions:  txns.length,
+                journalEntries:jes.length,
+            },
+            formData,
+        });
+
+    } catch (err) {
+        console.error('TOI AutoFill error:', err);
+        res.status(500).json({ message: 'TOI auto-fill engine failed', error: err.message });
+    }
+});
+
 module.exports = router;
 

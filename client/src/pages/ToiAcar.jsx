@@ -14,6 +14,8 @@ import LiveTaxWorkspace from "./LiveTaxWorkspace";
 const ToiAcar = ({ onBack, packageId, year }) => {
   const [activeWorkspacePage, setActiveWorkspacePage] = useState(1);
   const [selectedYear, setSelectedYear] = useState(year || new Date().getFullYear().toString());
+  const [autoFilling, setAutoFilling] = useState(false);
+  const [fillStatus, setFillStatus] = useState(null); // { ok, msg, sources }
 
   // Role Check
   const userStr = localStorage.getItem("user");
@@ -130,6 +132,47 @@ const ToiAcar = ({ onBack, packageId, year }) => {
     setIsTyping(false);
   };
 
+  // ── SMART AUTO-FILL ENGINE ────────────────────────────────────────────────
+  const handleAutoFill = async () => {
+    if (autoFilling) return;
+    setAutoFilling(true);
+    setFillStatus(null);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`/api/company/toi/autofill?year=${selectedYear}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data.ok && res.data.formData) {
+        const fd = res.data.formData;
+        // Remove empty strings so they don't wipe existing user data
+        const clean = {};
+        Object.keys(fd).forEach(k => { if (fd[k] !== '' && fd[k] !== null && fd[k] !== undefined) clean[k] = fd[k]; });
+        setFilledData(prev => ({ ...(prev || {}), ...clean }));
+        const s = res.data.sources || {};
+        const fieldCount = Object.keys(clean).length;
+        setFillStatus({
+          ok: true,
+          msg: `✅ ${fieldCount} fields filled across 21 pages`,
+          detail: `Profile: ${s.profile ? '✓' : '✗'}  |  Employees: ${s.employees}  |  Assets: ${s.assets}  |  TOS months: ${s.monthlyTOS}  |  Related parties: ${s.relatedParties}  |  GL txns: ${s.transactions}`,
+        });
+        setChatMessages(prev => [...prev, {
+          role: 'agent',
+          text: `<b>Smart Fill Complete</b> for year <span class="text-blue-400">${selectedYear}</span>.<br/><br/>` +
+                `<b>${fieldCount} fields</b> populated across all 21 TOI pages from: Company Profile, GL / Financial Statements, Salary & TOS module, Asset Register, and Related Party disclosures.<br/><br/>` +
+                `Data sources: Employees: <b>${s.employees}</b> | Assets: <b>${s.assets}</b> | TOS months: <b>${s.monthlyTOS}/12</b> | Related parties: <b>${s.relatedParties}</b> | GL transactions: <b>${s.transactions}</b>`
+        }]);
+      } else {
+        setFillStatus({ ok: false, msg: '❌ Auto-fill returned no data' });
+      }
+    } catch (err) {
+      console.error('AutoFill error', err);
+      setFillStatus({ ok: false, msg: `❌ ${err.response?.data?.message || 'Auto-fill failed'}` });
+    } finally {
+      setAutoFilling(false);
+      setTimeout(() => setFillStatus(null), 8000);
+    }
+  };
+
   const handleTestBridge = async () => {
     const pin = prompt("Admin Authentication: Enter 6-digit PIN to manually trigger Bridge");
     if (pin !== "999999") {
@@ -213,6 +256,34 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                 </option>
               ))}
             </select>
+
+            {/* ── SMART FILL BUTTON ───────────────────────────── */}
+            <button
+              onClick={handleAutoFill}
+              disabled={autoFilling}
+              title="Auto-fill all 21 TOI pages from GL, FS, Salary, Assets & Related Party modules"
+              className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all active:scale-95 border shadow-md disabled:opacity-60 ${
+                autoFilling
+                  ? 'bg-emerald-700 border-emerald-500 text-white animate-pulse'
+                  : 'bg-emerald-600 hover:bg-emerald-500 border-emerald-400 text-white hover:shadow-emerald-900/30 hover:shadow-lg'
+              }`}
+            >
+              {autoFilling ? (
+                <><svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>Filling…</>
+              ) : (
+                <><Sparkles size={13}/> Smart Fill All Pages</>
+              )}
+            </button>
+
+            {/* Status Banner */}
+            {fillStatus && (
+              <div className={`flex flex-col gap-0.5 px-3 py-1.5 rounded-lg text-[10px] font-bold max-w-xs border ${
+                fillStatus.ok ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30' : 'bg-red-500/10 text-red-300 border-red-500/30'
+              }`}>
+                <span>{fillStatus.msg}</span>
+                {fillStatus.detail && <span className="text-[9px] font-medium opacity-70">{fillStatus.detail}</span>}
+              </div>
+            )}
           </div>
         </div>
 
