@@ -20,7 +20,14 @@ const TrialBalance = ({ onBack }) => {
     const [inThousands, setInThousands] = useState(false);
 
     useEffect(() => {
-        fetchReport();
+        const loadData = () => {
+            fetchReport();
+        };
+        
+        loadData();
+        
+        window.addEventListener('ledger:refresh', loadData);
+        return () => window.removeEventListener('ledger:refresh', loadData);
     }, [fiscalYear]);
 
     const fetchReport = async () => {
@@ -204,7 +211,13 @@ const TrialBalance = ({ onBack }) => {
                     </button>
                     <div>
                         <h1 className="text-2xl font-bold text-teal-800 flex items-center gap-2">
-                            <Scale className="w-6 h-6" /> Trial Balance <span className="text-sm font-normal text-gray-400 bg-gray-100 px-2 py-1 rounded-full">AI Enhanced</span>
+                            <Scale className="w-6 h-6" /> Trial Balance 
+                            <span className="bg-teal-100 text-teal-800 text-sm px-2 py-0.5 rounded font-bold">
+                                {reportFormat === 'comparative' ? 'TB1' : reportFormat === 'accounting_cycle' ? 'TB2' : 'TB3'}
+                            </span>
+                            <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded-full border border-gray-200 shadow-inner group cursor-help transition-all">
+                                AI Enhanced
+                            </span>
                         </h1>
                         <p className="text-xs text-gray-500 mt-1">Dynamic financial visualization.</p>
                     </div>
@@ -311,7 +324,9 @@ const TrialBalance = ({ onBack }) => {
                                 <div className="text-right flex flex-col items-end gap-1">
                                     <div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Report Detail</div>
                                     <h3 className="text-xl font-bold text-black uppercase tracking-widest mt-1" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
-                                        តារាងតុល្យការ / Trial Balance
+                                        តារាងតុល្យការ / Trial Balance <span className="bg-blue-100 text-blue-600 px-2 py-0.5 rounded text-sm ml-2">
+                                            {reportFormat === 'comparative' ? 'TB1' : reportFormat === 'accounting_cycle' ? 'TB2' : 'TB3'}
+                                        </span>
                                     </h3>
                                     <div className="text-sm font-bold text-black mt-1">
                                         For {fiscalYear === 'all' ? 'All Years' : fiscalYear}

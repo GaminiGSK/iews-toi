@@ -1809,11 +1809,21 @@ router.post('/transactions/tag', auth, async (req, res) => {
         const { transactionId, accountCodeId } = req.body;
 
         if (!transactionId) return res.status(400).json({ message: 'Transaction ID required' });
+        let targetCode = '';
+        if (accountCodeId) {
+            const AccountCode = require('../models/AccountCode');
+            const ac = await AccountCode.findById(accountCodeId);
+            if (ac) targetCode = ac.code;
+        }
+
+        const updatePayload = accountCodeId 
+            ? { accountCode: accountCodeId, code: targetCode }
+            : { $unset: { accountCode: 1, code: 1 } };
 
         // Update the transaction
         const updatedTx = await Transaction.findOneAndUpdate(
             { _id: transactionId, companyCode: req.user.companyCode },
-            { accountCode: accountCodeId }, // null removes the tag
+            updatePayload,
             { new: true }
         ).populate('accountCode');
 
@@ -2029,32 +2039,59 @@ router.get('/trial-balance', auth, async (req, res) => {
             });
         });
 
-        // Apply Control Total to Bank Account (10130 ABA)
+        // Apply REAL Bank Account (10130 ABA) Balance — from the last transaction's balance snapshot.
+        // The netControl approach (summing amounts) was fabricating a value that didn't match the GL.
+        // The 'balance' field on each Transaction is the actual printed balance from the imported PDF.
         const bankCode = codes.find(c => c.code === '10130');
         if (bankCode && reportMap[bankCode._id]) {
-            // Current Year
-            if (netControlUSD > 0) {
-                reportMap[bankCode._id].drUSD += netControlUSD;
-                reportMap[bankCode._id].drKHR += netControlKHR;
-                reportMap[bankCode._id].unadjDrUSD += netControlUSD;
-                reportMap[bankCode._id].unadjDrKHR += netControlKHR;
-            } else {
-                reportMap[bankCode._id].crUSD += Math.abs(netControlUSD);
-                reportMap[bankCode._id].crKHR += Math.abs(netControlKHR);
-                reportMap[bankCode._id].unadjCrUSD += Math.abs(netControlUSD);
-                reportMap[bankCode._id].unadjCrKHR += Math.abs(netControlKHR);
-            }
-            // Prior Year
-            if (!isAllYears) {
-                if (netControlPriorUSD > 0) {
-                    reportMap[bankCode._id].priorDrUSD += netControlPriorUSD;
-                    reportMap[bankCode._id].priorDrKHR += netControlPriorKHR;
+            // Sort all transactions by date to find the last one per year scope
+            const sortedTx = [...transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            let realBalanceUSD = null;
+            let realPriorBalanceUSD = null;
+
+            sortedTx.forEach(tx => {
+                const txYear = new Date(tx.date).getFullYear();
+                if (tx.balance != null) {
+                    if (isAllYears || txYear === currentYear) {
+                        realBalanceUSD = parseFloat(tx.balance);
+                    } else if (!isAllYears && txYear === currentYear - 1) {
+                        realPriorBalanceUSD = parseFloat(tx.balance);
+                    }
+                }
+            });
+
+            // Apply real balance to the ABA row in Trial Balance (net debit position = asset)
+            if (realBalanceUSD !== null) {
+                const rate = getRate(new Date().toISOString());
+                if (realBalanceUSD >= 0) {
+                    reportMap[bankCode._id].drUSD = realBalanceUSD;
+                    reportMap[bankCode._id].drKHR = realBalanceUSD * rate;
+                    reportMap[bankCode._id].crUSD = 0;
+                    reportMap[bankCode._id].crKHR = 0;
                 } else {
-                    reportMap[bankCode._id].priorCrUSD += Math.abs(netControlPriorUSD);
-                    reportMap[bankCode._id].priorCrKHR += Math.abs(netControlPriorKHR);
+                    reportMap[bankCode._id].crUSD = Math.abs(realBalanceUSD);
+                    reportMap[bankCode._id].crKHR = Math.abs(realBalanceUSD) * rate;
+                    reportMap[bankCode._id].drUSD = 0;
+                    reportMap[bankCode._id].drKHR = 0;
+                }
+                reportMap[bankCode._id].unadjDrUSD = reportMap[bankCode._id].drUSD;
+                reportMap[bankCode._id].unadjDrKHR = reportMap[bankCode._id].drKHR;
+            }
+
+            // Prior year ABA balance
+            if (!isAllYears && realPriorBalanceUSD !== null) {
+                const priorRate = getRate(new Date(currentYear - 1, 11, 31).toISOString());
+                if (realPriorBalanceUSD >= 0) {
+                    reportMap[bankCode._id].priorDrUSD = realPriorBalanceUSD;
+                    reportMap[bankCode._id].priorDrKHR = realPriorBalanceUSD * priorRate;
+                } else {
+                    reportMap[bankCode._id].priorCrUSD = Math.abs(realPriorBalanceUSD);
+                    reportMap[bankCode._id].priorCrKHR = Math.abs(realPriorBalanceUSD) * priorRate;
                 }
             }
         }
+
 
         const report = Object.values(reportMap).sort((a, b) => a.code.localeCompare(b.code));
 
@@ -2120,10 +2157,13 @@ router.get('/financials-monthly', auth, async (req, res) => {
             ...allJournals.map(je => new Date(je.date).getFullYear())
         ])].sort((a, b) => b - a);
         
+        // Monthly view ALWAYS needs a specific year — mixing 2024+2025 into the same month slots
+        // produces wrong running balances on BS and wrong cumulative totals on P&L.
         let currentYear;
-        if (req.query.year) {
+        if (req.query.year && req.query.year !== 'all') {
             currentYear = parseInt(req.query.year);
         } else {
+            // Default to the most recent year in the data
             currentYear = availableYears.length > 0 ? availableYears[0] : new Date().getFullYear();
         }
 
@@ -2174,8 +2214,8 @@ router.get('/financials-monthly', auth, async (req, res) => {
                 netControlBS[0] += amount;
             } else if (year === currentYear) {
                 if (plData[code]) {
-                    plData[code].months[month] += signedAmount;
-                    plData[code].months[0] += signedAmount; // Total
+                    plData[code].months[month] += Math.abs(signedAmount); // Expenses stored as positive amounts
+                    plData[code].months[0] += Math.abs(signedAmount);
                 } else if (bsData[code]) {
                     bsData[code].months[month] += signedAmount;
                 }
@@ -2183,13 +2223,45 @@ router.get('/financials-monthly', auth, async (req, res) => {
             }
         });
 
-        // Add to Bank Account (10130)
+        // Fetch Company Profile (needed for abaOpeningBalance anchor below)
+        const CompanyProfile = require('../models/CompanyProfile');
+        const profile = await CompanyProfile.findOne({ companyCode });
+
+        // ABA (10130) — GL-First Cumulative Balance Rule
+        // Since tx.balance is not stored, compute from GL transaction amounts directly:
+        //   Opening = pre-import anchor (from CompanyProfile.abaOpeningBalance) + net sum of ALL bank transactions BEFORE currentYear
+        //   Month N = Opening + sum of ALL bank transactions from Jan 1 to end of Month N
         if (bsData['10130']) {
-            openingBalances['10130'] += netControlBS[0];
+            const sortedAllTx = [...allTransactions].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            // Pre-import anchor balance (e.g. $148.85 for GK SMART — verified from physical bank statement)
+            const abaAnchor = (profile && profile.abaOpeningBalance) ? parseFloat(profile.abaOpeningBalance) : 0;
+
+            // Opening balance = anchor + net of all transactions from prior years
+            let openingABA = abaAnchor;
+            sortedAllTx.forEach(tx => {
+                const txYear = new Date(tx.date).getFullYear();
+                if (txYear < currentYear) {
+                    openingABA += parseFloat(tx.amount || 0);
+                }
+            });
+            openingBalances['10130'] = openingABA;
+
+            // Monthly activity for current year (net in/out per month)
             for (let m = 1; m <= 12; m++) {
-                bsData['10130'].months[m] += netControlBS[m];
+                const monthTxs = sortedAllTx.filter(tx => {
+                    const d = new Date(tx.date);
+                    return d.getFullYear() === currentYear && (d.getMonth() + 1) === m;
+                });
+                bsData['10130'].months[m] = monthTxs.reduce((sum, tx) => sum + parseFloat(tx.amount || 0), 0);
             }
+            // Total = full year net
+            bsData['10130'].months[0] = sortedAllTx
+                .filter(tx => new Date(tx.date).getFullYear() === currentYear)
+                .reduce((sum, tx) => sum + parseFloat(tx.amount || 0), 0);
         }
+
+
 
         // 4.5 Process Journal Entries
         allJournals.forEach(je => {
@@ -2217,8 +2289,9 @@ router.get('/financials-monthly', auth, async (req, res) => {
                     if (bsData[code]) openingBalances[code] += signedAmount;
                 } else if (year === currentYear) {
                     if (plData[code]) {
-                        plData[code].months[month] += signedAmount;
-                        plData[code].months[0] += signedAmount;
+                        const expenseAmt = Math.abs(signedAmount); // Store as positive
+                        plData[code].months[month] += expenseAmt;
+                        plData[code].months[0] += expenseAmt;
                     } else if (bsData[code]) {
                         bsData[code].months[month] += signedAmount;
                     }
@@ -2226,28 +2299,35 @@ router.get('/financials-monthly', auth, async (req, res) => {
             });
         });
 
-        // 5. Calculate Running Balance for BS
-        // Month N Balance = Opening + (Activity 1..N)
+        // 5a. Save monthly activity BEFORE converting to running balance (for FS6 activity view)
+        const bsActivity = {};
+        Object.keys(bsData).forEach(code => {
+            bsActivity[code] = [...bsData[code].months]; // snapshot of raw monthly changes
+        });
+
+        // 5b. Calculate Running Balance for BS (FS7 standard presentation)
+        // Month N = Opening + cumulative activity through Month N
         Object.keys(bsData).forEach(code => {
             let running = openingBalances[code];
-            // Set Opening Balance as "Month 0"? No, usually reports show "Ending Balance" per month.
-            // Jan End = Opening + Jan Activity
             for (let m = 1; m <= 12; m++) {
                 running += bsData[code].months[m];
-                bsData[code].months[m] = running; // Replace Activity with Balance
+                bsData[code].months[m] = running; // Replace Activity with Ending Balance
             }
             bsData[code].months[0] = running; // Total/Ending Balance
         });
 
-        // Fetch Company Profile Name too
-        const CompanyProfile = require('../models/CompanyProfile');
-        const profile = await CompanyProfile.findOne({ companyCode });
+        // Build final BS rows, merging running balance with monthly activity
+        const bsRows = Object.values(bsData).map(r => ({
+            ...r,
+            activityMonths: bsActivity[r.code] || Array(13).fill(0)
+        }));
 
         res.json({
             pl: Object.values(plData).filter(r => r.months[0] !== 0 || ['41000','51000','61000'].includes(r.code)), 
-            bs: Object.values(bsData), // ALWAYS SHOW ALL Accounts for standard view, do not filter empty rows
+            bs: bsRows, // Include ALL BS accounts including 10130 (ABA bank cash)
             currentYear,
-            companyName: profile ? profile.companyNameEn : companyCode
+            companyNameEn: profile ? profile.companyNameEn : companyCode,
+            companyNameKh: profile ? profile.companyNameKh : ''
         });
 
     } catch (err) {

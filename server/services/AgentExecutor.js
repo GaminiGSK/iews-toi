@@ -40,6 +40,11 @@ class AgentExecutor {
                     await this.escalateToAntigravity(socket, params);
                     break;
 
+                case 'refresh_reports':
+                    console.log(`[AgentExecutor] AI triggered manual refresh of all reports for ${params.companyCode || 'user'}.`);
+                    socket.emit('ledger:updated');
+                    break;
+
                 default:
                     console.log(`[AgentExecutor] Unknown action: ${action}`);
                     socket.emit('agent:message', { text: `Sorry, I don't know how to perform the action: ${action}` });
@@ -75,7 +80,11 @@ class AgentExecutor {
             else if (condition === 'money_out') query.amount = { $lt: 0 };
             // if 'all', just leave the query as { companyCode }
 
-            const result = await Transaction.updateMany(query, { accountCode: targetCodeObj._id, tagSource: 'ai' });
+            const result = await Transaction.updateMany(query, { 
+                accountCode: targetCodeObj._id, 
+                code: targetCodeObj.code, 
+                tagSource: 'ai' 
+            });
             console.log(`[AgentExecutor] Tagged ${result.modifiedCount} transactions.`);
 
             socket.emit('agent:message', {
@@ -114,7 +123,11 @@ class AgentExecutor {
             if (sugg.transactionId && sugg.accountCode) {
                 const ac = codes.find(c => c.code === sugg.accountCode);
                 if (ac) {
-                    await Transaction.findByIdAndUpdate(sugg.transactionId, { accountCode: ac._id, tagSource: 'ai' });
+                    await Transaction.findByIdAndUpdate(sugg.transactionId, { 
+                        accountCode: ac._id, 
+                        code: ac.code, 
+                        tagSource: 'ai' 
+                    });
                     count++;
                 }
             }

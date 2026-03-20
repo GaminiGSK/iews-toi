@@ -188,7 +188,10 @@ export default function BankStatementV2Workspace({ onBack }) {
                         <ArrowLeft size={20} />
                     </button>
                     <div>
-                        <h1 className="text-3xl font-black text-white tracking-tighter uppercase">Bank Statements V2 (Multi-Account)</h1>
+                        <h1 className="text-3xl font-black text-white tracking-tighter uppercase flex items-center gap-3">
+                            Bank Statements V2 (Multi-Account)
+                            <span className="bg-emerald-500/20 text-emerald-400 text-sm px-2 py-0.5 rounded border border-emerald-500/30">BS1</span>
+                        </h1>
                         <p className="text-slate-500 font-medium text-sm mt-1">Create isolated statement baskets for exact synchronization to Google Drive.</p>
                     </div>
                 </div>

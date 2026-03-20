@@ -1,0 +1,38 @@
+Total AI TXs: 34
+2024-06-26 | 10110 | 1490.16 | Outward Check Release. Release
+2024-07-22 | 10110 | 400 | TRF from/to other A/C in ABA. 
+2024-07-22 | 10110 | 200 | TRF from/to other A/C in ABA. 
+2024-08-04 | 61070 | 165 | TRF from/to other A/C in ABA. 
+2024-08-04 | 61070 | 150 | TRF from/to other A/C in ABA. 
+2024-08-23 | 10110 | 785 | TRF from foreign bank. INTERNA
+2024-10-28 | 10110 | 960 | TRF from Cambodian bank. FUNDS
+2024-11-01 | 17230 | 0.01 | Interest PMNT or CAPT(ACCR DE1
+2024-12-01 | 10110 | 0.06 | Interest PMNT or CAPT(ACCR DE1
+2024-12-19 | 10110 | 800 | TRF from/to other A/C in ABA. 
+2025-02-10 | 10110 | 10700 | TRF from/to other A/C in ABA. 
+2025-03-01 | 10110 | 0.05 | Interest PMNT or CAPT(ACCR DE1
+2025-03-10 | 10110 | 3700 | TRF from/to other A/C in ABA. 
+2025-03-11 | 10110 | 2090 | TRF from/to other A/C in ABA. 
+2025-04-10 | 10110 | 5600 | TRF from/to other A/C in ABA. 
+2025-05-10 | 10110 | 5500 | TRF from/to other A/C in ABA. 
+2025-05-19 | 10110 | 5000 | TRF from/to other A/C in ABA. 
+2025-06-01 | 10110 | 0.1 | Interest PMNT or CAPT(ACCR DE1
+2025-06-01 | 10110 | 0.1 | Interest PMNT or CAPT(ACCR DE1
+2025-06-05 | 10110 | 1500 | Cardless deposit by QR. CASH D
+2025-07-01 | 10110 | 0.6 | Interest PMNT or CAPT(ACCR DE1
+2025-07-01 | 10110 | 1450 | TRF from/to other A/C in ABA.
+
+2025-07-02 | 10110 | 1600 | TRF from/to other A/C in ABA.
+
+2025-07-04 | 10110 | 1550 | TRF from/to other A/C in ABA.
+
+2025-08-01 | 10110 | 0.49 | Interest PMNT or CAPT(ACCR DE1
+2025-08-11 | 10110 | 8600 | TRF from/to other A/C in ABA. 
+2025-09-01 | 10110 | 0.11 | Interest PMNT or CAPT(ACCR DE1
+2025-09-10 | 10110 | 6200 | TRF from/to other A/C in ABA. 
+2025-09-18 | 10110 | 2000 | TRF from/to other A/C in ABA. 
+2025-10-11 | 10110 | 6000 | TRF from/to other A/C in ABA. 
+2025-10-20 | 10110 | 4 | TRF from/to other A/C in ABA. 
+2025-10-20 | 10110 | 49.5 | TRF from/to other A/C in ABA. 
+2025-11-11 | 10110 | 5900 | TRF from/to other A/C in ABA. 
+2025-12-11 | 10110 | 6000 | TRF from/to other A/C in ABA. 

@@ -34,7 +34,8 @@ const CompanyProfileSchema = new mongoose.Schema({
     bankAccountNumber: { type: String },
     bankCurrency: { type: String },
     organizedProfile: { type: String }, // AI-generated natural language summary
-    extractedData: { type: Map, of: String } // For flexibility
+    extractedData: { type: Map, of: String }, // For flexibility
+    abaOpeningBalance: { type: Number, default: 0 } // Pre-import bank balance anchor (e.g. $148.85 for GK SMART)
 }, { timestamps: true });
 
 module.exports = mongoose.model('CompanyProfile', CompanyProfileSchema);

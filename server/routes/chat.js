@@ -9,6 +9,10 @@ const User = require('../models/User');
 const CompanyProfile = require('../models/CompanyProfile');
 const BankStatement = require('../models/BankStatement');
 const Bridge = require('../models/Bridge');
+const AuditSession = require('../models/AuditSession');
+const upload = require('../middleware/upload');
+const fs = require('fs');
+const path = require('path');
 
 // POST /api/chat/message
 router.post('/message', auth, async (req, res) => {
@@ -226,6 +230,12 @@ router.post('/message', auth, async (req, res) => {
                 }));
         }
 
+        // Fetch stored audit sessions so BA retains bank statement memory across chats
+        const auditSessions = await AuditSession.find({ companyCode })
+            .sort({ parsedAt: -1 })
+            .limit(8)
+            .lean();
+
         const context = {
             companyCode,
             companyName,
@@ -242,6 +252,17 @@ router.post('/message', auth, async (req, res) => {
             recentTransactions: recentTxContext,
             accountBalances, /* NEW: Full Trial Balance Aggregation */
             harvestedBankStatements: harvestedBankContext,
+            // Persistent audit sessions from physical bank statement drops
+            auditSessions: auditSessions.map(s => ({
+                quarter: s.quarter,
+                period: s.statementPeriod,
+                openingBalance: s.openingBalance,
+                totalIn: s.totalMoneyIn,
+                totalOut: s.totalMoneyOut,
+                endingBalance: s.endingBalance,
+                txCount: s.transactions.length,
+                transactions: s.transactions // Full transaction list
+            })),
             summary,
             monthlyStats,
             yearlyStats,
@@ -349,6 +370,182 @@ router.post('/message', auth, async (req, res) => {
         console.error("Chat API Error:", err);
         // Return the error as a chat message so the user sees it
         res.json({ text: `⚠️ System Error: ${err.message || 'Unknown error occurred in AI service.'}` });
+    }
+});
+
+// ============================================================
+// POST /api/chat/parse-bank-statement
+// BA Auditor File Drop — reads ONLY the transactions visible
+// on the DROPPED PAGE. Appends page by page to AuditSession.
+// Does NOT invent data. Does NOT compare against cover totals.
+// ============================================================
+router.post('/parse-bank-statement', auth, upload.single('file'), async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+
+        const companyCode = req.user.companyCode;
+        const userId = req.user.id;
+        const filePath = req.file.path;
+        const quarter = req.body.quarter || null; // Optional: 'Q1-2025', etc.
+
+        console.log(`[BA Audit] Parsing bank statement: ${req.file.originalname} for ${companyCode}`);
+
+        // Use Gemini Vision with a BA-specific audit extraction prompt
+        const { GoogleGenerativeAI } = require('@google/generative-ai');
+        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY);
+        const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+
+        const fileBuffer = fs.readFileSync(filePath);
+        const mimeType = req.file.mimetype;
+
+        // CRITICAL: Only extract transactions physically visible on this page.
+        // The cover/summary box shows FULL QUARTER totals — do not use those as transaction data.
+        const prompt = `You are a bank statement page parser. Read ONLY what is physically on this specific image/page.
+
+YOUR JOB:
+1. If this page has an ACCOUNT SUMMARY box (Opening Balance, Total Money In, Total Money Out, Ending Balance) — extract those as the expected quarter totals.
+2. Extract ONLY the transaction rows in the ACCOUNT ACTIVITY table on THIS page. Do not invent, estimate, or fabricate transactions not visually present.
+3. If this is a continuation page (no summary box), set openingBalance/totalMoneyIn/totalMoneyOut/endingBalance to null.
+
+Return ONLY valid JSON:
+{
+  "statementPeriod": "Jan 01, 2025 - Mar 31, 2025",
+  "accountNumber": "003 102 780",
+  "bankName": "ABA Bank",
+  "openingBalance": 49.08,
+  "totalMoneyIn": 16490.05,
+  "totalMoneyOut": 12360.00,
+  "endingBalance": 4179.13,
+  "pageTransactions": [
+    {
+      "date": "2025-02-10",
+      "description": "Exact verbatim text from the row",
+      "moneyIn": 10700.00,
+      "moneyOut": 0,
+      "balance": 10749.08
+    }
+  ]
+}
+
+STRICT RULES:
+- pageTransactions = ONLY rows physically in the ACCOUNT ACTIVITY table on this exact page
+- Do NOT add transactions from the summary/cover section
+- Do NOT guess what is on other pages
+- Use YYYY-MM-DD for dates
+- moneyIn = 0 for withdrawal rows, moneyOut = 0 for deposit rows
+- Fields not on this page = null
+- Return ONLY raw JSON, no markdown`;
+
+        const result = await model.generateContent([
+            { text: prompt },
+            { inlineData: { data: fileBuffer.toString('base64'), mimeType } }
+        ]);
+
+        const rawText = result.response.text();
+        console.log(`[BA Audit] Raw extraction length: ${rawText.length}`);
+
+        // Parse the extracted JSON
+        let parsed = null;
+        try {
+            const clean = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+            const match = clean.match(/\{[\s\S]*\}/);
+            if (match) parsed = JSON.parse(match[0]);
+        } catch (pe) {
+            console.error('[BA Audit] JSON parse error:', pe.message);
+        }
+
+        if (!parsed) {
+            try { fs.unlinkSync(filePath); } catch(e) {}
+            return res.status(422).json({ error: 'Could not parse this page. Please ensure file is clear and readable.' });
+        }
+
+        // Use pageTransactions (strict page-only) or fall back to transactions key
+        const pageTxs = parsed.pageTransactions || parsed.transactions || [];
+        console.log(`[BA Audit] Transactions on this page: ${pageTxs.length}`);
+
+        // Determine quarter label from period if not provided
+        let quarterLabel = quarter;
+        if (!quarterLabel && parsed.statementPeriod) {
+            const p = parsed.statementPeriod.toLowerCase();
+            const yearMatch = p.match(/(\d{4})/);
+            const yr = yearMatch ? yearMatch[1] : new Date().getFullYear();
+            if (p.includes('jan') || p.includes('feb') || p.includes('mar')) quarterLabel = `Q1-${yr}`;
+            else if (p.includes('apr') || p.includes('may') || p.includes('jun')) quarterLabel = `Q2-${yr}`;
+            else if (p.includes('jul') || p.includes('aug') || p.includes('sep')) quarterLabel = `Q3-${yr}`;
+            else if (p.includes('oct') || p.includes('nov') || p.includes('dec')) quarterLabel = `Q4-${yr}`;
+            else quarterLabel = `Unknown-${yr}`;
+        }
+
+        // Only update quarter-level summary if this page has those fields (cover page).
+        // Never overwrite existing good data with nulls.
+        const summaryUpdate = {};
+        if (parsed.statementPeriod) summaryUpdate.statementPeriod = parsed.statementPeriod;
+        if (parsed.bankName) summaryUpdate.bankName = parsed.bankName;
+        if (parsed.accountNumber) summaryUpdate.accountNumber = parsed.accountNumber;
+        if (parsed.openingBalance != null) summaryUpdate.openingBalance = parsed.openingBalance;
+        if (parsed.totalMoneyIn != null) summaryUpdate.totalMoneyIn = parsed.totalMoneyIn;
+        if (parsed.totalMoneyOut != null) summaryUpdate.totalMoneyOut = parsed.totalMoneyOut;
+        if (parsed.endingBalance != null) summaryUpdate.endingBalance = parsed.endingBalance;
+
+        let existingSession = await AuditSession.findOne({ companyCode, quarter: quarterLabel });
+
+        if (existingSession) {
+            // APPEND new transactions — deduplicate by date+amounts
+            const existingKeys = new Set(
+                existingSession.transactions.map(t => `${t.date}|${t.moneyIn}|${t.moneyOut}`)
+            );
+            const newTxs = pageTxs.filter(t => !existingKeys.has(`${t.date}|${t.moneyIn}|${t.moneyOut}`));
+            existingSession.transactions.push(...newTxs);
+            Object.assign(existingSession, summaryUpdate);
+            existingSession.parsedAt = new Date();
+            await existingSession.save();
+        } else {
+            await AuditSession.create({
+                user: userId, companyCode, quarter: quarterLabel,
+                transactions: pageTxs,
+                rawExtraction: rawText.substring(0, 2000),
+                parsedAt: new Date(),
+                ...summaryUpdate
+            });
+        }
+
+        // Clean up temp file
+        try { fs.unlinkSync(filePath); } catch(e) {}
+
+        // Reload accumulated session state
+        const session = await AuditSession.findOne({ companyCode, quarter: quarterLabel });
+        const allTxs = session.transactions;
+        const totalAccIn = allTxs.reduce((s, t) => s + (parseFloat(t.moneyIn) || 0), 0);
+        const totalAccOut = allTxs.reduce((s, t) => s + (parseFloat(t.moneyOut) || 0), 0);
+        const lastTx = allTxs[allTxs.length - 1];
+        const lastBalance = lastTx ? (parseFloat(lastTx.balance) || null) : null;
+        const quarterComplete = session.endingBalance != null && lastBalance != null &&
+            Math.abs(lastBalance - session.endingBalance) < 0.02;
+
+        res.json({
+            success: true,
+            quarter: quarterLabel,
+            period: session.statementPeriod,
+            thisPageTransactions: pageTxs.length,
+            totalTransactionsSoFar: allTxs.length,
+            lastBalance,
+            quarterComplete,
+            expectedSummary: {
+                openingBalance: session.openingBalance,
+                totalMoneyIn: session.totalMoneyIn,
+                totalMoneyOut: session.totalMoneyOut,
+                endingBalance: session.endingBalance
+            },
+            accumulatedActual: {
+                totalIn: totalAccIn.toFixed(2),
+                totalOut: totalAccOut.toFixed(2),
+                lastBalance
+            }
+        });
+
+    } catch (err) {
+        console.error('[BA Audit] Parse error:', err);
+        res.status(500).json({ error: 'Failed to process bank statement: ' + err.message });
     }
 });
 

@@ -93,18 +93,18 @@ content = content.replace(/\(r\.adjCrKHR \|\| 0\)/g, `(currency === 'USD' ? (r.a
 // Fix syntax in the print blocks (div wrapper issue inside \`return\` where \`overflow-auto print:p-0 print:overflow-visible\` is missing)
 content = content.replace(
     /className="flex-1 p-8 overflow-auto"/,
-    \`className="flex-1 p-8 overflow-auto print:p-0 print:overflow-visible"\`
+    `className="flex-1 p-8 overflow-auto print:p-0 print:overflow-visible"`
 );
 
 // We should also remove the 'hidden print:block' outer div if needed from table wrapper, but it is fine.
 content = content.replace(
     /className="max-w-7xl mx-auto bg-white rounded-xl shadow-lg border border-gray-300 overflow-hidden text-sm font-serif animate-fade-in"/,
-    \`className="max-w-7xl mx-auto bg-white rounded-xl shadow-lg border border-gray-300 overflow-hidden text-sm font-serif animate-fade-in print:shadow-none print:border-none print:rounded-none select-text"\`
+    `className="max-w-7xl mx-auto bg-white rounded-xl shadow-lg border border-gray-300 overflow-hidden text-sm font-serif animate-fade-in print:shadow-none print:border-none print:rounded-none select-text"`
 );
 // In print we want to make tables readable like A4. 
 content = content.replace(
     /className="overflow-x-auto"/g,
-    \`className="overflow-x-auto print:overflow-visible"\`
+    `className="overflow-x-auto print:overflow-visible"`
 );
 
 fs.writeFileSync(file, content);

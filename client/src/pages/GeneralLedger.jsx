@@ -75,6 +75,7 @@ const GeneralLedger = ({ onBack }) => {
             }, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
+            window.dispatchEvent(new Event('ledger:refresh'));
         } catch (err) {
             console.error(err);
             alert('Failed to update tag');
@@ -110,6 +111,7 @@ const GeneralLedger = ({ onBack }) => {
 
             await Promise.all(promises);
             alert('ABA transactions reset to Uncategorized.');
+            window.dispatchEvent(new Event('ledger:refresh'));
             fetchLedger();
         } catch (err) {
             console.error(err);
@@ -151,6 +153,7 @@ const GeneralLedger = ({ onBack }) => {
 
             alert('Unbalance assigned successfully.');
             setBulkTargetCode('');
+            window.dispatchEvent(new Event('ledger:refresh'));
             fetchLedger();
         } catch (err) {
             console.error(err);
@@ -169,6 +172,7 @@ const GeneralLedger = ({ onBack }) => {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             alert(res.data.message);
+            window.dispatchEvent(new Event('ledger:refresh'));
             fetchLedger(); // Refresh to see changes
         } catch (err) {
             console.error(err);
@@ -188,14 +192,22 @@ const GeneralLedger = ({ onBack }) => {
         } catch { return '-'; }
     };
 
+    const bankCodeObj = codes.find(c => c.code === '10130');
+    const abaCodeId = bankCodeObj ? bankCodeObj._id : null;
+
     // Filter transactions
     const filteredTransactions = transactions.filter(t => {
-        if (filterCode && filterCode !== 'uncategorized' && t.accountCode !== filterCode) return false;
-        if (filterCode === 'uncategorized' && t.accountCode && t.accountCode !== 'uncategorized') return false;
         if (fiscalYear !== 'all') {
             const y = t.date ? new Date(t.date).getFullYear() : null;
             if (y && y.toString() !== fiscalYear) return false;
         }
+
+        if (filterCode === 'uncategorized') {
+            return !t.accountCode || t.accountCode === 'uncategorized';
+        } else if (filterCode) {
+            return t.accountCode === filterCode;
+        }
+        
         return true;
     });
 
@@ -335,8 +347,8 @@ const GeneralLedger = ({ onBack }) => {
                             <ArrowLeft size={20} />
                         </button>
                         <div>
-                            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-700 to-blue-900 bg-clip-text text-transparent">
-                                General Ledger
+                            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-700 to-blue-900 bg-clip-text text-transparent flex items-center gap-2">
+                                General Ledger <span className="bg-blue-100 text-blue-800 text-sm px-2 py-0.5 rounded font-bold">GL1</span>
                             </h1>
                             <p className="text-xs text-gray-500 mt-1">Full chronological financial history.</p>
                         </div>
@@ -455,7 +467,7 @@ const GeneralLedger = ({ onBack }) => {
                             <div>
                                 <h2 className="text-2xl font-bold uppercase tracking-widest text-black/90">
                                     សៀវភៅធំ <br />
-                                    General Ledger
+                                    General Ledger <span className="bg-blue-100 text-blue-600 px-2 py-0.5 rounded text-sm ml-2">GL1</span>
                                 </h2>
                                 <p className="text-[14px] text-gray-800 font-medium mt-3">
                                     {filterCode && filterCode !== 'uncategorized' ? `Code Filter: ${codes.find(c => c._id === filterCode)?.code || ''} | ` : ''} 

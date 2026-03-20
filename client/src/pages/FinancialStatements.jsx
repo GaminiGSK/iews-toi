@@ -14,20 +14,30 @@ const FinancialStatements = ({ onBack }) => {
     const [report, setReport] = useState([]); // Annual Data
     const [monthlyData, setMonthlyData] = useState({ pl: [], bs: [] }); // Monthly Data
     const [activeTab, setActiveTab] = useState('pl'); // 'pl' | 'bs' | 'cf' | 'sce' | 'notes'
+    const [fiscalYear, setFiscalYear] = useState('all');
+    const [bsActivityMode, setBsActivityMode] = useState(false); // false=Balance view, true=Activity (monthly change) view
 
     useEffect(() => {
-        if (viewMode === 'annual') {
-            fetchReport();
-        } else {
-            fetchMonthlyReport();
-        }
-    }, [viewMode]);
+        const loadData = () => {
+            if (viewMode === 'annual') {
+                fetchReport();
+            } else {
+                fetchMonthlyReport();
+            }
+        };
+        
+        loadData();
+        
+        window.addEventListener('ledger:refresh', loadData);
+        return () => window.removeEventListener('ledger:refresh', loadData);
+    }, [viewMode, fiscalYear]);
 
     const fetchReport = async () => {
         try {
             setLoading(true);
             const token = localStorage.getItem('token');
             const res = await axios.get('/api/company/trial-balance', {
+                params: { year: fiscalYear !== 'all' ? fiscalYear : undefined },
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             setReport(res.data.report || []);
@@ -45,7 +55,12 @@ const FinancialStatements = ({ onBack }) => {
         try {
             setLoading(true);
             const token = localStorage.getItem('token');
+            // When 'all' is selected, DO NOT send a year �?let the backend find the most recent year
+            // with actual data. Sending displayYear (2026) causes ALL 2024/2025 data to become
+            // "opening balances", which stamps the flat total across every month.
+            const yearParam = (fiscalYear && fiscalYear !== 'all') ? fiscalYear : undefined;
             const res = await axios.get('/api/company/financials-monthly', {
+                params: { year: yearParam },
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             setMonthlyData(res.data || { pl: [], bs: [] });
@@ -62,6 +77,8 @@ const FinancialStatements = ({ onBack }) => {
     // --- Calculation Logic (Annual) ---
     const exchangeRate = 4050; // Standard yearly KHR to USD exchange rate
     const scale = inUSD ? exchangeRate : 1;
+    const displayYear = fiscalYear === 'all' ? new Date().getFullYear() : parseInt(fiscalYear);
+    const displayPriorYear = fiscalYear === 'all' ? 'PRIOR' : displayYear - 1;
 
     const getCr = (r) => (r.crKHR || 0) / scale;
     const getDr = (r) => (r.drKHR || 0) / scale;
@@ -106,6 +123,9 @@ const FinancialStatements = ({ onBack }) => {
     const mLiabs = monthlyBS.filter(r => r.code.startsWith('2'));
     const mEquity = monthlyBS.filter(r => r.code.startsWith('3'));
 
+    // Helper: get months based on balance mode or activity mode
+    const getBSMonths = (r) => bsActivityMode ? (r.activityMonths || r.months) : r.months;
+
     // Helpers to Sum Monthly Arrays [0..12]
     const sumMonthlyRows = (rows) => {
         const totals = Array(13).fill(0);
@@ -120,7 +140,17 @@ const FinancialStatements = ({ onBack }) => {
     const mTotalCOS = sumMonthlyRows(mCOS);
     const mGrossProfit = mTotalRev.map((v, i) => v - mTotalCOS[i]);
     const mTotalExp = sumMonthlyRows(mExpenses);
-    const mNetProfit = mGrossProfit.map((v, i) => v - mTotalExp[i]);
+    const mNetProfit = mGrossProfit.map((v, i) => v - mTotalExp[i]); // monthly net (used in FS6 P&L)
+
+    // FS7 Balance Sheet: Current Year Earnings must be CUMULATIVE (running total Jan→MonthN)
+    // e.g. if Jan=-100, Feb=-200 then Feb column = -300, not -200
+    const mNetProfitCumulative = Array(13).fill(0);
+    let runningPL = 0;
+    for (let m = 1; m <= 12; m++) {
+        runningPL += mNetProfit[m];
+        mNetProfitCumulative[m] = runningPL;
+    }
+    mNetProfitCumulative[0] = runningPL; // Total = YTD
 
     const mTotalAssets = sumMonthlyRows(mAssets);
     const mTotalLiabs = sumMonthlyRows(mLiabs);
@@ -159,16 +189,16 @@ const FinancialStatements = ({ onBack }) => {
         const mScale = inUSD ? 1 : exchangeRate;
         return (
             <tr className={`border-b border-gray-100 hover:bg-gray-50 ${bold ? 'font-bold bg-gray-50' : ''}`}>
-                <td className={`p-3 ${indent ? 'pl-8' : 'pl-4'} text-gray-800 sticky left-0 bg-white min-w-[200px] border-r border-gray-200 z-10 uppercase`} style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{label}</td>
+                <td className={`p-2 ${indent ? 'pl-6' : 'pl-3'} text-gray-800 sticky left-0 bg-white min-w-[150px] max-w-[200px] whitespace-normal md:whitespace-nowrap border-r border-gray-200 z-10 uppercase text-xs`} style={{ fontFamily: '"Kantumruy Pro", sans-serif', wordWrap: 'break-word' }}>{label}</td>
                 {MONTHS.map((_, idx) => {
                     const val = months[idx + 1] * mScale;
                     return (
-                        <td key={idx} className="p-3 text-right font-mono text-gray-900 min-w-[100px]">
+                        <td key={idx} className="p-2 text-right font-mono text-gray-900 border-r border-gray-50 text-xs">
                             {val !== 0 ? val.toLocaleString(undefined, { minimumFractionDigits: inUSD ? 2 : 0, maximumFractionDigits: inUSD ? 2 : 0 }) : '-'}
                         </td>
                     );
                 })}
-                <td className="p-3 text-right font-mono text-gray-900 font-bold bg-gray-50 border-l border-gray-200 min-w-[120px]">
+                <td className="p-2 text-right font-mono text-gray-900 font-bold bg-gray-50 border-l border-gray-200 text-xs shadow-[inset_4px_0_4px_-4px_rgba(0,0,0,0.1)]">
                     {months[0] * mScale !== 0 ? (months[0] * mScale).toLocaleString(undefined, { minimumFractionDigits: inUSD ? 2 : 0, maximumFractionDigits: inUSD ? 2 : 0 }) : '-'}
                 </td>
             </tr>
@@ -199,7 +229,7 @@ const FinancialStatements = ({ onBack }) => {
         doc.text(titleMap[activeTab] || "FINANCIAL REPORT", 14, 28);
         doc.setFontSize(10);
         doc.setFont('serif', 'normal');
-        doc.text(`For the year ended 31 December ${new Date().getFullYear()}`, 14, 34);
+        doc.text(`For the year ended 31 December ${displayYear}`, 14, 34);
         doc.text(`Expressed in ${inUSD ? "United States Dollar (USD)" : "Cambodian Riel (KHR)"}`, 14, 40);
 
         // Content
@@ -244,7 +274,12 @@ const FinancialStatements = ({ onBack }) => {
                         <ArrowLeft size={20} />
                     </button>
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900 font-serif">Financial Statements</h1>
+                        <h1 className="text-2xl font-bold text-gray-900 font-serif flex items-center gap-2">
+                            Financial Statements
+                            <span className="bg-blue-100 text-blue-700 text-xs font-black px-2 py-0.5 rounded ml-1">FS1-FS5</span>
+                            <span className="bg-indigo-100 text-indigo-700 text-xs font-black px-2 py-0.5 rounded">FS6</span>
+                            <span className="bg-purple-100 text-purple-700 text-xs font-black px-2 py-0.5 rounded">FS7</span>
+                        </h1>
                         <p className="text-sm text-gray-500 flex items-center gap-2">
                             <Bot size={14} className="text-blue-500" />
                             Generated by Blue Agent (CIFRS Compliant)
@@ -270,6 +305,22 @@ const FinancialStatements = ({ onBack }) => {
                         >
                             Monthly Extra
                         </button>
+                    </div>
+                    
+                    {/* Year Selector */}
+                    <div className="flex items-center gap-2 cursor-pointer select-none bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-200 transition">
+                        <Calendar size={14} className="text-gray-500" />
+                        <select
+                            value={fiscalYear}
+                            onChange={(e) => setFiscalYear(e.target.value)}
+                            className="bg-transparent border-none text-xs font-semibold text-gray-700 outline-none cursor-pointer w-full"
+                        >
+                            <option value="all">All Years</option>
+                            <option value="2026">2026</option>
+                            <option value="2025">2025</option>
+                            <option value="2024">2024</option>
+                            <option value="2023">2023</option>
+                        </select>
                     </div>
                     <div className="flex items-center gap-2 cursor-pointer select-none bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-200 transition">
                         <select
@@ -349,7 +400,7 @@ const FinancialStatements = ({ onBack }) => {
                 </div>
 
                 {/* Report Paper */}
-                <div className="print-container bg-white rounded-b-xl rounded-tr-xl shadow-xl border border-gray-200 p-10 print:p-0 min-h-[600px] font-sans relative overflow-auto print:overflow-visible select-text print:shadow-none print:border-none print:bg-transparent print:rounded-none print:max-w-none print:w-full print:m-0">
+                <div className="print-container bg-white rounded-b-xl rounded-tr-xl shadow-xl border border-gray-200 p-10 print:p-0 min-h-[600px] font-sans relative overflow-auto print:overflow-visible select-text print:shadow-none print:border-none print:bg-transparent print:rounded-none print:w-full print:m-0 w-full">
                     <style>
                         {`
                             @media print {
@@ -397,32 +448,32 @@ const FinancialStatements = ({ onBack }) => {
                             <div className="hidden print:block pb-6 mb-8 border-b-2 border-black mt-2">
                                 <div className="flex justify-between items-start mb-8">
                                     <div><h1 className="text-3xl font-bold text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{companyNameKh}</h1><h2 className="text-xl font-bold text-black uppercase tracking-widest mt-2 px-1">{companyNameEn}</h2></div>
-                                    <div className="text-right flex flex-col items-end gap-1"><div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Report Detail</div><h3 className="text-xl font-bold text-black uppercase tracking-widest mt-1">របាយការណ៍លទ្ធផល / INCOME STATEMENT</h3><div className="text-sm font-bold text-black mt-1">For the year ended 31 December {new Date().getFullYear()}</div><div className="text-sm font-bold text-black">Reporting Currency: {inUSD ? "USD" : "KHR"}</div></div>
+                                    <div className="text-right flex flex-col items-end gap-1"><div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Report Detail</div><h3 className="text-xl font-bold text-black uppercase tracking-widest mt-1">របាយការណ៍លទ្ធផល / INCOME STATEMENT <span className="text-blue-600 bg-blue-100 px-2 py-0.5 rounded ml-2">FS1</span></h3><div className="text-sm font-bold text-black mt-1">For the year ended 31 December {displayYear}</div><div className="text-sm font-bold text-black">Reporting Currency: {inUSD ? "USD" : "KHR"}</div></div>
                                 </div>
                             </div>
                             <div className="text-center mb-8 print:hidden">
                                 <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-widest mb-2">{companyNameEn}</h2>
-                                <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>របាយការណ៍លទ្ធផល / INCOME STATEMENT</h3>
-                                <p className="text-sm text-gray-500 italic">For the year ended 31 December {new Date().getFullYear()}</p>
+                                <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase flex items-center justify-center gap-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>របាយការណ៍លទ្ធផល / INCOME STATEMENT <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">FS1</span></h3>
+                                <p className="text-sm text-gray-500 italic">For the year ended 31 December {displayYear}</p>
                             </div>
                             <div className="overflow-x-auto print-content-wrapper">
                                 <table className="w-full text-sm border-collapse">
                                     <thead>
                                         <tr className="bg-slate-100 border-b border-gray-300">
                                             <th className="p-3 text-left font-bold text-gray-600 uppercase text-xs" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បរិយាយ / DESCRIPTION</th>
-                                            <th className="p-3 text-center font-bold text-gray-600 uppercase text-xs w-20" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណាំ<br/>NOTE</th>
-                                            <th className="p-3 text-center font-bold text-gray-800 uppercase text-xs w-48 bg-white border-l border-gray-200" style={{ borderTop: '4px solid #3B82F6', fontFamily: '"Kantumruy Pro", sans-serif' }}>សម្រាប់ឆ្នាំបញ្ជប់<br/>FOR THE YEAR ENDED<br/><span className="text-blue-600 text-[10px] uppercase font-mono mt-1 block">31-Dec-{new Date().getFullYear()} {inUSD ? 'USD' : 'KHR'}</span></th>
-                                            <th className="p-3 text-center font-bold text-gray-600 uppercase text-xs w-48 bg-slate-50 border-l border-gray-200" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សម្រាប់ឆ្នាំបញ្ជប់<br/>FOR THE YEAR ENDED<br/><span className="text-gray-500 text-[10px] uppercase font-mono mt-1 block">31-Dec-{new Date().getFullYear() - 1} {inUSD ? 'USD' : 'KHR'}</span></th>
+                                            <th className="p-3 text-center font-bold text-gray-600 uppercase text-xs w-20" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណា�?br/>NOTE</th>
+                                            <th className="p-3 text-center font-bold text-gray-800 uppercase text-xs w-48 bg-white border-l border-gray-200" style={{ borderTop: '4px solid #3B82F6', fontFamily: '"Kantumruy Pro", sans-serif' }}>សម្រាប់ឆ្នាំបញ្ជប់<br/>FOR THE YEAR ENDED<br/><span className="text-blue-600 text-[10px] uppercase font-mono mt-1 block">31-Dec-{displayYear} {inUSD ? 'USD' : 'KHR'}</span></th>
+                                            <th className="p-3 text-center font-bold text-gray-600 uppercase text-xs w-48 bg-slate-50 border-l border-gray-200" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សម្រាប់ឆ្នាំបញ្ជប់<br/>FOR THE YEAR ENDED<br/><span className="text-gray-500 text-[10px] uppercase font-mono mt-1 block">31-Dec-{displayPriorYear} {inUSD ? 'USD' : 'KHR'}</span></th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {renderSectionHeader("ចំណូល / REVENUE")}
+                                        {renderSectionHeader("ចំណូ�?/ REVENUE")}
                                         {revenue.map(r => renderRow(r.description, getCr(r), getPriorCr(r), false, true))}
-                                        {renderRow("ចំណូលសរុប / TOTAL REVENUE", totalRev, revenue.reduce((sum, r) => sum + getPriorCr(r), 0), true)}
+                                        {renderRow("ចំណូលសរុ�?/ TOTAL REVENUE", totalRev, revenue.reduce((sum, r) => sum + getPriorCr(r), 0), true)}
 
-                                        {renderSectionHeader("ថ្លៃដើមលក់ / COST OF SALES")}
+                                        {renderSectionHeader("ថ្លៃដើមលក�?/ COST OF SALES")}
                                         {costOfSales.map(r => renderRow(r.description, getDr(r), getPriorDr(r), false, true))}
-                                        {renderRow("ប្រាក់ចំណេញដុល / GROSS PROFIT", grossProfit, revenue.reduce((sum, r) => sum + getPriorCr(r), 0) - costOfSales.reduce((sum, r) => sum + getPriorDr(r), 0), true)}
+                                        {renderRow("ប្រាក់ចំណេញដុ�?/ GROSS PROFIT", grossProfit, revenue.reduce((sum, r) => sum + getPriorCr(r), 0) - costOfSales.reduce((sum, r) => sum + getPriorDr(r), 0), true)}
 
                                         {renderSectionHeader("ចំណាយប្រតិបត្តិការ / OPERATING EXPENSES")}
                                         {expenses.map(r => renderRow(r.description, getDr(r), getPriorDr(r), false, true))}
@@ -430,7 +481,7 @@ const FinancialStatements = ({ onBack }) => {
 
                                         <tr className="h-4"></tr>
                                         <tr className="border-t-4 border-gray-800 border-b-4 border-gray-800 bg-gray-50">
-                                            <td className="p-4 font-bold text-lg uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រាក់ចំណេញសុទ្ធសម្រាប់ឆ្នាំ / NET PROFIT FOR THE YEAR</td>
+                                            <td className="p-4 font-bold text-lg uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រាក់ចំណេញសុទ្ធសម្រាប់ឆ្នា�?/ NET PROFIT FOR THE YEAR</td>
                                             <td className="p-4 text-center font-mono text-gray-500">-</td>
                                             <td className="p-4 text-right font-bold font-mono text-lg border-l border-gray-200">{netProfit.toLocaleString(undefined, { minimumFractionDigits: inUSD ? 2 : 0, maximumFractionDigits: inUSD ? 2 : 0 })}</td>
                                             <td className="p-4 text-right font-bold font-mono text-lg border-l border-gray-200">{(revenue.reduce((sum, r) => sum + getPriorCr(r), 0) - costOfSales.reduce((sum, r) => sum + getPriorDr(r), 0) - expenses.reduce((sum, r) => sum + getPriorDr(r), 0)).toLocaleString(undefined, { minimumFractionDigits: inUSD ? 2 : 0, maximumFractionDigits: inUSD ? 2 : 0 })}</td>
@@ -449,45 +500,45 @@ const FinancialStatements = ({ onBack }) => {
                             <div className="hidden print:block pb-6 mb-8 border-b-2 border-black mt-2">
                                 <div className="flex justify-between items-start mb-8">
                                     <div><h1 className="text-3xl font-bold text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{companyNameKh}</h1><h2 className="text-xl font-bold text-black uppercase tracking-widest mt-2 px-1">{companyNameEn}</h2></div>
-                                    <div className="text-right flex flex-col items-end gap-1"><div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Report Detail</div><h3 className="text-xl font-bold text-black uppercase tracking-widest mt-1">របាយការណ៍ស្ថានភាពហិរញ្ញវត្ថុ / STATEMENT OF FINANCIAL POSITION</h3><div className="text-sm font-bold text-black mt-1">As at 31 December {new Date().getFullYear()}</div><div className="text-sm font-bold text-black">Reporting Currency: {inUSD ? "USD" : "KHR"}</div></div>
+                                    <div className="text-right flex flex-col items-end gap-1"><div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Report Detail</div><h3 className="text-xl font-bold text-black uppercase tracking-widest mt-1">របាយការណ៍ស្ថានភាពហិរញ្ញវត្ថ�?/ STATEMENT OF FINANCIAL POSITION <span className="text-blue-600 bg-blue-100 px-2 py-0.5 rounded ml-2">FS2</span></h3><div className="text-sm font-bold text-black mt-1">As at 31 December {displayYear}</div><div className="text-sm font-bold text-black">Reporting Currency: {inUSD ? "USD" : "KHR"}</div></div>
                                 </div>
                             </div>
                             <div className="text-center mb-8 print:hidden">
                                 <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-widest mb-2">{companyNameEn}</h2>
-                                <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>របាយការណ៍ស្ថានភាពហិរញ្ញវត្ថុ / STATEMENT OF FINANCIAL POSITION</h3>
-                                <p className="text-sm text-gray-500 italic">As at 31 December {new Date().getFullYear()}</p>
+                                <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase flex items-center justify-center gap-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>របាយការណ៍ស្ថានភាពហិរញ្ញវត្ថ�?/ STATEMENT OF FINANCIAL POSITION <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">FS2</span></h3>
+                                <p className="text-sm text-gray-500 italic">As at 31 December {displayYear}</p>
                             </div>
                             <div className="overflow-x-auto print-content-wrapper">
                                 <table className="w-full text-sm border-collapse">
                                     <thead>
                                         <tr className="bg-slate-100 border-b border-gray-300">
                                             <th className="p-3 text-left font-bold text-gray-600 uppercase text-xs" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បរិយាយ / DESCRIPTION</th>
-                                            <th className="p-3 text-center font-bold text-gray-600 uppercase text-xs w-20" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណាំ<br/>NOTE</th>
-                                            <th className="p-3 text-center font-bold text-gray-800 uppercase text-xs w-48 bg-white border-l border-gray-200" style={{ borderTop: '4px solid #3B82F6', fontFamily: '"Kantumruy Pro", sans-serif' }}>សម្រាប់ឆ្នាំបញ្ជប់<br/>FOR THE YEAR ENDED<br/><span className="text-blue-600 text-[10px] uppercase font-mono mt-1 block">31-Dec-{new Date().getFullYear()} {inUSD ? 'USD' : 'KHR'}</span></th>
-                                            <th className="p-3 text-center font-bold text-gray-600 uppercase text-xs w-48 bg-slate-50 border-l border-gray-200" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សម្រាប់ឆ្នាំបញ្ជប់<br/>FOR THE YEAR ENDED<br/><span className="text-gray-500 text-[10px] uppercase font-mono mt-1 block">31-Dec-{new Date().getFullYear() - 1} {inUSD ? 'USD' : 'KHR'}</span></th>
+                                            <th className="p-3 text-center font-bold text-gray-600 uppercase text-xs w-20" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណា�?br/>NOTE</th>
+                                            <th className="p-3 text-center font-bold text-gray-800 uppercase text-xs w-48 bg-white border-l border-gray-200" style={{ borderTop: '4px solid #3B82F6', fontFamily: '"Kantumruy Pro", sans-serif' }}>សម្រាប់ឆ្នាំបញ្ជប់<br/>FOR THE YEAR ENDED<br/><span className="text-blue-600 text-[10px] uppercase font-mono mt-1 block">31-Dec-{displayYear} {inUSD ? 'USD' : 'KHR'}</span></th>
+                                            <th className="p-3 text-center font-bold text-gray-600 uppercase text-xs w-48 bg-slate-50 border-l border-gray-200" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សម្រាប់ឆ្នាំបញ្ជប់<br/>FOR THE YEAR ENDED<br/><span className="text-gray-500 text-[10px] uppercase font-mono mt-1 block">31-Dec-{displayPriorYear} {inUSD ? 'USD' : 'KHR'}</span></th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {renderSectionHeader("ទ្រព្យសកម្ម / ASSETS")}
+                                        {renderSectionHeader("ទ្រព្យសកម្�?/ ASSETS")}
                                         {assets.map(r => renderRow(r.description, getDr(r) - getCr(r), getPriorDr(r) - getPriorCr(r), false, true))}
-                                        {renderRow("ទ្រព្យសកម្មសរុប / TOTAL ASSETS", totalAssets, assets.reduce((sum, r) => sum + (getPriorDr(r) - getPriorCr(r)), 0), true)}
+                                        {renderRow("ទ្រព្យសកម្មសរុ�?/ TOTAL ASSETS", totalAssets, assets.reduce((sum, r) => sum + (getPriorDr(r) - getPriorCr(r)), 0), true)}
 
                                         <tr className="h-6"></tr>
 
-                                        {renderSectionHeader("មូលធន និង បំណុល / EQUITY & LIABILITIES")}
+                                        {renderSectionHeader("មូលធ�?និ�?បំណុ�?/ EQUITY & LIABILITIES")}
 
-                                        {renderSectionHeader("មូលធន / EQUITY")}
+                                        {renderSectionHeader("មូលធ�?/ EQUITY")}
                                         {equity.map(r => renderRow(r.description, getCr(r) - getDr(r), getPriorCr(r) - getPriorDr(r), false, true))}
-                                        {renderRow("ប្រាក់ចំណេញបច្ចុប្បន្ន / CURRENT YEAR EARNINGS", netProfit, revenue.reduce((sum, r) => sum + getPriorCr(r), 0) - costOfSales.reduce((sum, r) => sum + getPriorDr(r), 0) - expenses.reduce((sum, r) => sum + getPriorDr(r), 0), false, true)} {/* Auto Inserted */}
-                                        {renderRow("មូលធនសរុប / TOTAL EQUITY", totalEquity + netProfit, equity.reduce((sum, r) => sum + (getPriorCr(r) - getPriorDr(r)), 0) + (revenue.reduce((sum, r) => sum + getPriorCr(r), 0) - costOfSales.reduce((sum, r) => sum + getPriorDr(r), 0) - expenses.reduce((sum, r) => sum + getPriorDr(r), 0)), true)}
+                                        {renderRow("ប្រាក់ចំណេញបច្ចុប្បន្�?/ CURRENT YEAR EARNINGS", netProfit, revenue.reduce((sum, r) => sum + getPriorCr(r), 0) - costOfSales.reduce((sum, r) => sum + getPriorDr(r), 0) - expenses.reduce((sum, r) => sum + getPriorDr(r), 0), false, true)} {/* Auto Inserted */}
+                                        {renderRow("មូលធនសរុ�?/ TOTAL EQUITY", totalEquity + netProfit, equity.reduce((sum, r) => sum + (getPriorCr(r) - getPriorDr(r)), 0) + (revenue.reduce((sum, r) => sum + getPriorCr(r), 0) - costOfSales.reduce((sum, r) => sum + getPriorDr(r), 0) - expenses.reduce((sum, r) => sum + getPriorDr(r), 0)), true)}
 
-                                        {renderSectionHeader("បំណុល / LIABILITIES")}
+                                        {renderSectionHeader("បំណុ�?/ LIABILITIES")}
                                         {liabilities.map(r => renderRow(r.description, getCr(r) - getDr(r), getPriorCr(r) - getPriorDr(r), false, true))}
-                                        {renderRow("បំណុលសរុប / TOTAL LIABILITIES", totalLiabs, liabilities.reduce((sum, r) => sum + (getPriorCr(r) - getPriorDr(r)), 0), true)}
+                                        {renderRow("បំណុលសរុ�?/ TOTAL LIABILITIES", totalLiabs, liabilities.reduce((sum, r) => sum + (getPriorCr(r) - getPriorDr(r)), 0), true)}
 
                                         <tr className="h-4"></tr>
                                         <tr className="border-t-4 border-gray-800 border-b-4 border-gray-800 bg-gray-50">
-                                            <td className="p-4 font-bold text-lg uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>មូលធន និង បំណុលសរុប / TOTAL EQUITY & LIABILITIES</td>
+                                            <td className="p-4 font-bold text-lg uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>មូលធ�?និ�?បំណុលសរុ�?/ TOTAL EQUITY & LIABILITIES</td>
                                             <td className="p-4 text-center font-mono text-gray-500">-</td>
                                             <td className="p-4 text-right font-bold font-mono text-lg border-l border-gray-200">{(totalLiabs + totalEquity + netProfit).toLocaleString(undefined, { minimumFractionDigits: inUSD ? 2 : 0, maximumFractionDigits: inUSD ? 2 : 0 })}</td>
                                             <td className="p-4 text-right font-bold font-mono text-lg border-l border-gray-200">
@@ -512,48 +563,48 @@ const FinancialStatements = ({ onBack }) => {
                             <div className="hidden print:block pb-6 mb-8 border-b-2 border-black mt-2">
                                 <div className="flex justify-between items-start mb-8">
                                     <div><h1 className="text-3xl font-bold text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{companyNameKh}</h1><h2 className="text-xl font-bold text-black uppercase tracking-widest mt-2 px-1">{companyNameEn}</h2></div>
-                                    <div className="text-right flex flex-col items-end gap-1"><div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Report Detail</div><h3 className="text-xl font-bold text-black uppercase tracking-widest mt-1">របាយការណ៍លំហូរសាច់ប្រាក់ / STATEMENT OF CASH FLOWS</h3><div className="text-sm font-bold text-black mt-1">For the year ended 31 December {new Date().getFullYear()}</div><div className="text-sm font-bold text-black">Reporting Currency: {inUSD ? "USD" : "KHR"}</div></div>
+                                    <div className="text-right flex flex-col items-end gap-1"><div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Report Detail</div><h3 className="text-xl font-bold text-black uppercase tracking-widest mt-1">របាយការណ៍លំហូរសាច់ប្រាក�?/ STATEMENT OF CASH FLOWS <span className="text-blue-600 bg-blue-100 px-2 py-0.5 rounded ml-2">FS3</span></h3><div className="text-sm font-bold text-black mt-1">For the year ended 31 December {displayYear}</div><div className="text-sm font-bold text-black">Reporting Currency: {inUSD ? "USD" : "KHR"}</div></div>
                                 </div>
                             </div>
                             <div className="text-center mb-8 print:hidden">
                                 <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-widest mb-2">{companyNameEn}</h2>
-                                <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>របាយការណ៍លំហូរសាច់ប្រាក់ / STATEMENT OF CASH FLOWS</h3>
-                                <p className="text-sm text-gray-500 italic">For the year ended 31 December {new Date().getFullYear()}</p>
+                                <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase flex items-center justify-center gap-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>របាយការណ៍លំហូរសាច់ប្រាក�?/ STATEMENT OF CASH FLOWS <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">FS3</span></h3>
+                                <p className="text-sm text-gray-500 italic">For the year ended 31 December {displayYear}</p>
                             </div>
                             <div className="overflow-x-auto print-content-wrapper">
                                 <table className="w-full text-sm border-collapse">
                                     <thead>
                                         <tr className="bg-slate-100 border-b border-gray-300">
                                             <th className="p-3 text-left font-bold text-gray-600 uppercase text-xs" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បរិយាយ / DESCRIPTION</th>
-                                            <th className="p-3 text-center font-bold text-gray-600 uppercase text-xs w-20" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណាំ<br/>NOTE</th>
-                                            <th className="p-3 text-center font-bold text-gray-800 uppercase text-xs w-48 bg-white border-l border-gray-200" style={{ borderTop: '4px solid #3B82F6', fontFamily: '"Kantumruy Pro", sans-serif' }}>សម្រាប់ឆ្នាំបញ្ជប់<br/>FOR THE YEAR ENDED<br/><span className="text-blue-600 text-[10px] uppercase font-mono mt-1 block">31-Dec-{new Date().getFullYear()} {inUSD ? 'USD' : 'KHR'}</span></th>
-                                            <th className="p-3 text-center font-bold text-gray-600 uppercase text-xs w-48 bg-slate-50 border-l border-gray-200" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សម្រាប់ឆ្នាំបញ្ជប់<br/>FOR THE YEAR ENDED<br/><span className="text-gray-500 text-[10px] uppercase font-mono mt-1 block">31-Dec-{new Date().getFullYear() - 1} {inUSD ? 'USD' : 'KHR'}</span></th>
+                                            <th className="p-3 text-center font-bold text-gray-600 uppercase text-xs w-20" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណា�?br/>NOTE</th>
+                                            <th className="p-3 text-center font-bold text-gray-800 uppercase text-xs w-48 bg-white border-l border-gray-200" style={{ borderTop: '4px solid #3B82F6', fontFamily: '"Kantumruy Pro", sans-serif' }}>សម្រាប់ឆ្នាំបញ្ជប់<br/>FOR THE YEAR ENDED<br/><span className="text-blue-600 text-[10px] uppercase font-mono mt-1 block">31-Dec-{displayYear} {inUSD ? 'USD' : 'KHR'}</span></th>
+                                            <th className="p-3 text-center font-bold text-gray-600 uppercase text-xs w-48 bg-slate-50 border-l border-gray-200" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សម្រាប់ឆ្នាំបញ្ជប់<br/>FOR THE YEAR ENDED<br/><span className="text-gray-500 text-[10px] uppercase font-mono mt-1 block">31-Dec-{displayPriorYear} {inUSD ? 'USD' : 'KHR'}</span></th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {renderSectionHeader("លំហូរសាច់ប្រាក់ពីសកម្មភាពប្រតិបត្តិការ / CASH FLOWS FROM OPERATING ACTIVITIES")}
-                                        {renderRow("ប្រាក់ចំណេញសុទ្ធមុនបង់ពន្ធ / NET PROFIT BEFORE TAX", netProfit, 0, true)}
+                                        {renderRow("ប្រាក់ចំណេញសុទ្ធមុនបង់ពន្�?/ NET PROFIT BEFORE TAX", netProfit, 0, true)}
                                         {renderRow("កែតម្រូវសម្រាប់ / ADJUSTMENTS FOR:", 0, 0, false, true)}
-                                        {renderRow(" - រំលស់ទ្រព្យសកម្ម / DEPRECIATION AND AMORTIZATION", deprExp, 0, false, true)}
-                                        {renderRow(" - ចំណូលការប្រាក់ / INTEREST INCOME", -intInc, 0, false, true)}
-                                        {renderRow(" - ចំណាយការប្រាក់ / INTEREST EXPENSE", intExp, 0, false, true)}
+                                        {renderRow(" - រំលស់ទ្រព្យសកម្�?/ DEPRECIATION AND AMORTIZATION", deprExp, 0, false, true)}
+                                        {renderRow(" - ចំណូលការប្រាក�?/ INTEREST INCOME", -intInc, 0, false, true)}
+                                        {renderRow(" - ចំណាយការប្រាក�?/ INTEREST EXPENSE", intExp, 0, false, true)}
                                         <tr className="h-2"></tr>
                                         {renderRow("បម្រែបម្រួលទុនបង្វិល / CHANGES IN WORKING CAPITAL:", 0, 0, false, true)}
-                                        {renderRow(" - កើនឡើង ឬ ថយចុះនូវស្តុក / (INC)/DEC IN INVENTORIES", -inventory, 0, false, true)}
-                                        {renderRow(" - កើនឡើង ឬ ថយចុះនូវប្រាក់ត្រូវទទួល / (INC)/DEC IN RECEIVABLES", -receivables, 0, false, true)}
-                                        {renderRow(" - កើនឡើង ឬ ថយចុះនូវប្រាក់ត្រូវសង / INC/(DEC) IN PAYABLES", payables, 0, false, true)}
+                                        {renderRow(" - កើនឡើ�?�?ថយចុះនូវស្តុក / (INC)/DEC IN INVENTORIES", -inventory, 0, false, true)}
+                                        {renderRow(" - កើនឡើ�?�?ថយចុះនូវប្រាក់ត្រូវទទួល / (INC)/DEC IN RECEIVABLES", -receivables, 0, false, true)}
+                                        {renderRow(" - កើនឡើ�?�?ថយចុះនូវប្រាក់ត្រូវសង / INC/(DEC) IN PAYABLES", payables, 0, false, true)}
                                         <tr className="border-t border-gray-300"><td colSpan="4"></td></tr>
                                         {renderRow("សាច់ប្រាក់សុទ្ធពីសកម្មភាពប្រតិបត្តិ / NET CASH FROM OPERATING ACTIVITIES", netProfit + deprExp + intExp - intInc - inventory - receivables + payables, 0, true)}
 
                                         <tr className="h-6"></tr>
 
-                                        {renderSectionHeader("លំហូរសាច់ប្រាក់ពីសកម្មភាពវិនិយោគ / CASH FLOWS FROM INVESTING ACTIVITIES")}
+                                        {renderSectionHeader("លំហូរសាច់ប្រាក់ពីសកម្មភាពវិនិយោ�?/ CASH FLOWS FROM INVESTING ACTIVITIES")}
                                         {assets.filter(a => (a.description?.toLowerCase() || '').includes('fixed') || (a.description?.toLowerCase() || '').includes('equipment')).map(r =>
                                             renderRow(`PURCHASE OF ${r.description}`, -(getDr(r) - getCr(r)), 0, false, true)
                                         )}
                                         {renderRow("ការប្រាក់ទទួលបាន / INTEREST RECEIVED", intInc, 0, false, true)}
                                         <tr className="border-t border-gray-300"><td colSpan="4"></td></tr>
-                                        {renderRow("សាច់ប្រាក់សុទ្ធពីសកម្មភាពវិនិយោគ / NET CASH USED IN INVESTING ACTIVITIES", assets.filter(a => (a.description?.toLowerCase() || '').includes('fixed') || (a.description?.toLowerCase() || '').includes('equipment')).reduce((sum, r) => sum - (getDr(r) - getCr(r)), 0) + intInc, 0, true)}
+                                        {renderRow("សាច់ប្រាក់សុទ្ធពីសកម្មភាពវិនិយោ�?/ NET CASH USED IN INVESTING ACTIVITIES", assets.filter(a => (a.description?.toLowerCase() || '').includes('fixed') || (a.description?.toLowerCase() || '').includes('equipment')).reduce((sum, r) => sum - (getDr(r) - getCr(r)), 0) + intInc, 0, true)}
 
                                         <tr className="h-6"></tr>
 
@@ -562,7 +613,7 @@ const FinancialStatements = ({ onBack }) => {
                                             renderRow(`ISSUANCE OF ${r.description}`, (getCr(r) - getDr(r)), 0, false, true)
                                         )}
                                         {renderRow("ភាគលាភបានបើក / DIVIDENDS PAID", 0, 0, false, true)}
-                                        {renderRow("ការប្រាក់បានបង់ / INTEREST PAID", -intExp, 0, false, true)}
+                                        {renderRow("ការប្រាក់បានបង�?/ INTEREST PAID", -intExp, 0, false, true)}
                                         <tr className="border-t border-gray-300"><td colSpan="4"></td></tr>
                                         {renderRow("សាច់ប្រាក់សុទ្ធពីសកម្មភាពហិរញ្ញប្បទាន / NET CASH USED IN FINANCING ACTIVITIES", equity.filter(e => (e.description?.toLowerCase() || '').includes('capital')).reduce((sum, r) => sum + (getCr(r) - getDr(r)), 0) - intExp, 0, true)}
 
@@ -599,13 +650,13 @@ const FinancialStatements = ({ onBack }) => {
                             <div className="hidden print:block pb-6 mb-8 border-b-2 border-black mt-2">
                                 <div className="flex justify-between items-start mb-8">
                                     <div><h1 className="text-3xl font-bold text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{companyNameKh}</h1><h2 className="text-xl font-bold text-black uppercase tracking-widest mt-2 px-1">{companyNameEn}</h2></div>
-                                    <div className="text-right flex flex-col items-end gap-1"><div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Report Detail</div><h3 className="text-xl font-bold text-black uppercase tracking-widest mt-1">តារាងបម្រែបម្រួលមូលធន / STATEMENT OF CHANGES IN EQUITY</h3><div className="text-sm font-bold text-black mt-1">For the year ended 31 December {new Date().getFullYear()}</div><div className="text-sm font-bold text-black">Reporting Currency: {inUSD ? "USD" : "KHR"}</div></div>
+                                    <div className="text-right flex flex-col items-end gap-1"><div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Report Detail</div><h3 className="text-xl font-bold text-black uppercase tracking-widest mt-1">តារាងបម្រែបម្រួលមូលធ�?/ STATEMENT OF CHANGES IN EQUITY <span className="text-blue-600 bg-blue-100 px-2 py-0.5 rounded ml-2">FS4</span></h3><div className="text-sm font-bold text-black mt-1">For the year ended 31 December {displayYear}</div><div className="text-sm font-bold text-black">Reporting Currency: {inUSD ? "USD" : "KHR"}</div></div>
                                 </div>
                             </div>
                             <div className="text-center mb-8 print:hidden">
                                 <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-widest mb-2">{companyNameEn}</h2>
-                                <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>តារាងបម្រែបម្រួលមូលធន / STATEMENT OF CHANGES IN EQUITY</h3>
-                                <p className="text-sm text-gray-500 italic">For the year ended 31 December {new Date().getFullYear()}</p>
+                                <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase flex items-center justify-center gap-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>តារាងបម្រែបម្រួលមូលធ�?/ STATEMENT OF CHANGES IN EQUITY <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">FS4</span></h3>
+                                <p className="text-sm text-gray-500 italic">For the year ended 31 December {displayYear}</p>
                             </div>
                             <div className="overflow-x-auto print-content-wrapper">
                                 <table className="w-full text-sm border-collapse">
@@ -636,7 +687,7 @@ const FinancialStatements = ({ onBack }) => {
                                         </tr>
                                         <tr className="h-4"></tr>
                                         <tr className="border-t-2 border-black border-b-2 border-double bg-gray-50 font-bold">
-                                            <td className="p-3">Balance at 31 December {new Date().getFullYear()}</td>
+                                            <td className="p-3">Balance at 31 December {displayYear}</td>
                                             <td className="p-3 text-right font-mono">{totalEquity.toLocaleString(undefined, { minimumFractionDigits: inUSD ? 2 : 0, maximumFractionDigits: inUSD ? 2 : 0 })}</td>
                                             <td className="p-3 text-right font-mono">{netProfit.toLocaleString(undefined, { minimumFractionDigits: inUSD ? 2 : 0, maximumFractionDigits: inUSD ? 2 : 0 })}</td>
                                             <td className="p-3 text-right font-mono">{(totalEquity + netProfit).toLocaleString(undefined, { minimumFractionDigits: inUSD ? 2 : 0, maximumFractionDigits: inUSD ? 2 : 0 })}</td>
@@ -655,13 +706,13 @@ const FinancialStatements = ({ onBack }) => {
                             <div className="hidden print:block pb-6 mb-8 border-b-2 border-black mt-2">
                                 <div className="flex justify-between items-start mb-8">
                                     <div><h1 className="text-3xl font-bold text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{companyNameKh}</h1><h2 className="text-xl font-bold text-black uppercase tracking-widest mt-2 px-1">{companyNameEn}</h2></div>
-                                    <div className="text-right flex flex-col items-end gap-1"><div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Report Detail</div><h3 className="text-xl font-bold text-black uppercase tracking-widest mt-1">កំណត់សម្គាល់លើរបាយការណ៍ហិរញ្ញវត្ថុ / NOTES TO THE FINANCIAL STATEMENTS</h3><div className="text-sm font-bold text-black mt-1">For the year ended 31 December {new Date().getFullYear()}</div><div className="text-sm font-bold text-black">Reporting Currency: {inUSD ? "USD" : "KHR"}</div></div>
+                                    <div className="text-right flex flex-col items-end gap-1"><div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Report Detail</div><h3 className="text-xl font-bold text-black uppercase tracking-widest mt-1">កំណត់សម្គាល់លើរបាយការណ៍ហិរញ្ញវត្ថ�?/ NOTES TO THE FINANCIAL STATEMENTS <span className="text-blue-600 bg-blue-100 px-2 py-0.5 rounded ml-2">FS5</span></h3><div className="text-sm font-bold text-black mt-1">For the year ended 31 December {displayYear}</div><div className="text-sm font-bold text-black">Reporting Currency: {inUSD ? "USD" : "KHR"}</div></div>
                                 </div>
                             </div>
                             <div className="text-center mb-8 print:hidden">
                                 <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-widest mb-2">{companyNameEn}</h2>
-                                <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>កំណត់សម្គាល់លើរបាយការណ៍ហិរញ្ញវត្ថុ / NOTES TO THE FINANCIAL STATEMENTS</h3>
-                                <p className="text-sm text-gray-500 italic">For the year ended 31 December {new Date().getFullYear()}</p>
+                                <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase flex items-center justify-center gap-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>កំណត់សម្គាល់លើរបាយការណ៍ហិរញ្ញវត្ថ�?/ NOTES TO THE FINANCIAL STATEMENTS <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">FS5</span></h3>
+                                <p className="text-sm text-gray-500 italic">For the year ended 31 December {displayYear}</p>
                             </div>
                             <div className="overflow-x-auto print-content-wrapper">
                                 <div className="p-6 font-sans w-full block">
@@ -688,16 +739,37 @@ const FinancialStatements = ({ onBack }) => {
                             <div className="text-center mb-8 print:hidden">
                                 <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-widest mb-2">{companyNameEn}</h2>
                                 <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
-                                    {activeTab === 'pl' ? 'របាយការណ៍លទ្ធផលបំបែកប្រចាំខែ / MONTHLY INCOME STATEMENT' : 'របាយការណ៍ស្ថានភាពហិរញ្ញវត្ថុ / STATEMENT OF FINANCIAL POSITION'}
+                                    {activeTab === 'pl' ? (
+                                        <span className="flex items-center gap-2">របាយការណ៍លទ្ធផលបំបែកប្រចាំខែ / MONTHLY INCOME STATEMENT <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">FS6</span></span>
+                                    ) : (
+                                        <span className="flex items-center gap-2">របាយការណ៍ស្ថានភាពហិរញ្ញវត្ថ�?/ STATEMENT OF FINANCIAL POSITION <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">FS7</span></span>
+                                    )}
                                 </h3>
+                                {/* FS7 Balance / Activity toggle */}
+                                {activeTab === 'bs' && (
+                                    <div className="flex justify-center gap-2 mt-3">
+                                        <button
+                                            onClick={() => setBsActivityMode(false)}
+                                            className={`px-4 py-1.5 rounded-full text-xs font-bold transition ${!bsActivityMode ? 'bg-indigo-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                                        >
+                                            📊 Balance (Running Total)
+                                        </button>
+                                        <button
+                                            onClick={() => setBsActivityMode(true)}
+                                            className={`px-4 py-1.5 rounded-full text-xs font-bold transition ${bsActivityMode ? 'bg-emerald-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                                        >
+                                            📅 Activity (This Month Only)
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                             <div className="overflow-x-auto print-content-wrapper">
                                 <table className="w-full text-sm border-collapse">
                                     <thead>
                                         <tr className="border-b border-gray-300">
-                                            <th className="p-2 text-left bg-gray-50 sticky left-0 z-10 border-r border-gray-200">Account</th>
-                                            {MONTHS.map(m => <th key={m} className="p-2 text-right min-w-[100px] text-gray-600 font-sans font-medium">{m}</th>)}
-                                            <th className="p-2 text-right min-w-[120px] font-bold bg-gray-50 border-l border-gray-200">TOTAL</th>
+                                            <th className="p-2 text-left bg-gray-50 sticky left-0 z-10 border-r border-gray-200 min-w-[150px] shadow-[4px_0_4px_-4px_rgba(0,0,0,0.1)]">Account</th>
+                                            {MONTHS.map(m => <th key={m} className="p-2 text-right text-gray-500 font-sans text-xs uppercase tracking-wider">{m}</th>)}
+                                            <th className="p-2 text-right font-bold bg-gray-50 border-l border-gray-200 text-xs shadow-[inset_4px_0_4px_-4px_rgba(0,0,0,0.1)]">TOTAL</th>
                                         </tr>
                                     </thead>
                                     {activeTab === 'pl' && (
@@ -721,19 +793,25 @@ const FinancialStatements = ({ onBack }) => {
                                     {activeTab === 'bs' && (
                                         <tbody>
                                             {renderSectionHeader("ASSETS", true)}
-                                            {mAssets.map(r => renderMonthRow(r.description, r.months, false, true))}
-                                            {renderMonthRow("Total Assets", mTotalAssets, true)}
+                                            {mAssets.map(r => renderMonthRow(r.description, getBSMonths(r), false, true))}
+                                            {renderMonthRow("Total Assets", sumMonthlyRows(mAssets.map(r => ({ months: getBSMonths(r) }))), true)}
                                             <tr className="h-6"></tr>
                                             {renderSectionHeader("EQUITY & LIABILITIES", true)}
                                             {renderSectionHeader("Equity", true)}
-                                            {mEquity.map(r => renderMonthRow(r.description, r.months, false, true))}
-                                            {renderMonthRow("Current Year Earnings", mNetProfit, false, true)}
-                                            {renderMonthRow("Total Equity", mTotalEquity.map((v, i) => v + mNetProfit[i]), true)}
+                                            {mEquity.map(r => renderMonthRow(r.description, getBSMonths(r), false, true))}
+                                            {renderMonthRow("Current Year Earnings", mNetProfitCumulative, false, true)}
+                                            {renderMonthRow("Total Equity", sumMonthlyRows(mEquity.map(r => ({ months: getBSMonths(r) }))).map((v, i) => v + mNetProfitCumulative[i]), true)}
                                             {renderSectionHeader("Liabilities", true)}
-                                            {mLiabs.map(r => renderMonthRow(r.description, r.months, false, true))}
-                                            {renderMonthRow("Total Liabilities", mTotalLiabs, true)}
+                                            {mLiabs.map(r => renderMonthRow(r.description, getBSMonths(r), false, true))}
+                                            {renderMonthRow("Total Liabilities", sumMonthlyRows(mLiabs.map(r => ({ months: getBSMonths(r) }))), true)}
                                             <tr className="h-4"></tr>
-                                            {renderMonthRow("TOTAL EQUITY & LIABILITIES", mTotalLiabs.map((v, i) => v + mTotalEquity[i] + mNetProfit[i]), true)}
+                                            {renderMonthRow("TOTAL EQUITY & LIABILITIES",
+                                                sumMonthlyRows([
+                                                    ...mEquity.map(r => ({ months: getBSMonths(r) })),
+                                                    ...mLiabs.map(r => ({ months: getBSMonths(r) }))
+                                                ]).map((v, i) => v + mNetProfitCumulative[i]),
+                                                true
+                                            )}
                                         </tbody>
                                     )}
                                 </table>

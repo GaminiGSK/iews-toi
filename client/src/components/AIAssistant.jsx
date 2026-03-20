@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquare, X, Send, Sparkles, Bot, Paperclip, Minus, ChevronDown, PieChart as PieChartIcon } from 'lucide-react';
+import { MessageSquare, X, Send, Sparkles, Bot, Paperclip, Minus, ChevronDown, PieChart as PieChartIcon, Upload, CheckCircle, FileText } from 'lucide-react';
 
 import { useLocation } from 'react-router-dom';
 import { useSocket } from '../context/SocketContext'; // Import Context
@@ -20,12 +20,27 @@ const AIAssistant = () => {
     // STATE
     const [isOpen, setIsOpen] = useState(true); // Default Open
     const [selectedModel, setSelectedModel] = useState('gemini-2.0'); // Default
-    const [messages, setMessages] = useState([
-        { role: 'assistant', text: 'Hello! I am the blue agent Auditor. Describe your request or paste an image for analysis.' }
-    ]);
+    const [messages, setMessages] = useState(() => {
+        try {
+            const saved = localStorage.getItem('ba_chat_history');
+            if (saved) return JSON.parse(saved);
+        } catch (e) {
+            console.warn("Could not load chat history", e);
+        }
+        return [
+            { role: 'assistant', text: 'Hello! I am the blue agent Auditor. Describe your request or paste an image for analysis.' }
+        ];
+    });
+
+    useEffect(() => {
+        localStorage.setItem('ba_chat_history', JSON.stringify(messages));
+    }, [messages]);
     const [input, setInput] = useState('');
     const [image, setImage] = useState(null); // Base64 string
     const [isThinking, setIsThinking] = useState(false);
+    const [bankDropActive, setBankDropActive] = useState(false); // Drop zone highlight
+    const [auditSessions, setAuditSessions] = useState([]); // Loaded quarters
+    const bankDropRef = useRef(null);
 
     // REFS
     const messagesEndRef = useRef(null);
@@ -211,6 +226,75 @@ const AIAssistant = () => {
         }
     };
 
+    // Bank Statement Drop Handler - uploads file to BA parse endpoint (page by page)
+    const handleBankStatementDrop = async (e) => {
+        e.preventDefault();
+        setBankDropActive(false);
+        const file = e.dataTransfer?.files?.[0] || e.target?.files?.[0];
+        if (!file) return;
+
+        if (!['application/pdf', 'image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+            setMessages(prev => [...prev, { role: 'assistant', text: 'Please drop a PDF or image file.', isSystem: true }]);
+            return;
+        }
+
+        setMessages(prev => [...prev,
+            { role: 'user', text: 'Dropped: ' + file.name },
+            { role: 'assistant', text: 'Reading page... extracting only the transactions visible on this page.', isSystem: true }
+        ]);
+        setIsThinking(true);
+
+        try {
+            const token = localStorage.getItem('token');
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const res = await axios.post('/api/chat/parse-bank-statement', formData, {
+                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'multipart/form-data' }
+            });
+
+            const { quarter, period, thisPageTransactions, totalTransactionsSoFar,
+                    lastBalance, quarterComplete, expectedSummary, accumulatedActual } = res.data;
+
+            setAuditSessions(prev => {
+                const filtered = prev.filter(s => s.quarter !== quarter);
+                return [...filtered, { quarter, period, summary: expectedSummary }];
+            });
+
+            const icon = quarterComplete ? '\u2705' : '\ud83d\udcc4';
+            const statusLine = quarterComplete
+                ? 'Quarter COMPLETE! Last balance $' + lastBalance + ' matches ending $' + (expectedSummary && expectedSummary.endingBalance) + '.'
+                : 'Page recorded. Last balance on this page: $' + (lastBalance != null ? lastBalance : 'N/A') + '. Drop the next page to continue.';
+
+            const targetLine = (expectedSummary && expectedSummary.endingBalance)
+                ? 'Quarter Target: In $' + expectedSummary.totalMoneyIn + ' | Out $' + expectedSummary.totalMoneyOut + ' | Ending $' + expectedSummary.endingBalance
+                : '';
+
+            const msgParts = [
+                icon + ' ' + (quarter || '') + ' - page read.',
+                'Period: ' + (period || 'See cover page'),
+                'This page: ' + thisPageTransactions + ' transaction(s)',
+                'Total so far: ' + totalTransactionsSoFar + ' accumulated',
+                targetLine || null,
+                'Accumulated In: $' + (accumulatedActual && accumulatedActual.totalIn) + ' | Out: $' + (accumulatedActual && accumulatedActual.totalOut),
+                '',
+                statusLine
+            ].filter(p => p !== null).join('\n');
+
+            setMessages(prev => [...prev, { role: 'assistant', text: msgParts, isSystem: false }]);
+
+        } catch (err) {
+            console.error('Bank statement upload error:', err);
+            setMessages(prev => [...prev, {
+                role: 'assistant',
+                text: 'Failed to read page: ' + ((err.response && err.response.data && err.response.data.error) || err.message),
+                isSystem: true
+            }]);
+        } finally {
+            setIsThinking(false);
+        }
+    };
+
     const handleKeyDown = (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -289,6 +373,18 @@ const AIAssistant = () => {
                                         <span className={`text-xs font-black uppercase tracking-widest ${isConnected ? 'text-teal-300' : 'text-red-400'}`}>{isConnected ? 'Online' : 'Offline'}</span>
                                     </div>
 
+                        {/* Audit Session Badges */}
+                        {auditSessions.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                                {auditSessions.map(s => (
+                                    <div key={s.quarter} className="flex items-center gap-1.5 bg-emerald-900/40 border border-emerald-500/40 text-emerald-300 text-xs px-2.5 py-1 rounded-full">
+                                        <CheckCircle size={10} />
+                                        <span>{s.quarter}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                                     
                                     {/* Model Selector - Refined */}
                                     <div className="relative group min-w-0 flex-1">
                                         <select
@@ -454,6 +550,39 @@ const AIAssistant = () => {
 
                     {/* Input Area - Larger Typing Space */}
                     <div className="p-6 bg-slate-900 border-t border-slate-700 shrink-0 shadow-[0_-5px_20px_rgba(0,0,0,0.3)] z-20">
+
+                        {/* Bank Statement Drop Zone */}
+                        <div
+                            className={`mb-4 border-2 border-dashed rounded-2xl p-4 text-center cursor-pointer transition-all duration-200 ${
+                                bankDropActive
+                                    ? 'border-blue-400 bg-blue-900/30 shadow-[0_0_20px_rgba(59,130,246,0.3)]'
+                                    : 'border-slate-600 hover:border-blue-500/50 hover:bg-slate-800/50'
+                            }`}
+                            onDragOver={(e) => { e.preventDefault(); setBankDropActive(true); }}
+                            onDragLeave={() => setBankDropActive(false)}
+                            onDrop={handleBankStatementDrop}
+                            onClick={() => bankDropRef.current?.click()}
+                        >
+                            <input
+                                ref={bankDropRef}
+                                type="file"
+                                accept=".pdf,.jpg,.jpeg,.png,.webp"
+                                className="hidden"
+                                onChange={handleBankStatementDrop}
+                            />
+                            <div className="flex items-center justify-center gap-3">
+                                <Upload size={18} className={bankDropActive ? 'text-blue-400' : 'text-slate-500'} />
+                                <span className={`text-sm font-semibold ${bankDropActive ? 'text-blue-300' : 'text-slate-400'}`}>
+                                    {bankDropActive ? 'Release to upload bank statement...' : 'Drop bank statement here (PDF or Image) — Quarter by Quarter'}
+                                </span>
+                                {auditSessions.length > 0 && (
+                                    <span className="flex items-center gap-1 text-xs text-emerald-400 bg-emerald-900/30 px-2 py-0.5 rounded-full">
+                                        <FileText size={10} /> {auditSessions.length} loaded
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+
                         {/* Pending Image Preview */}
                         {image && (
                             <div className="mb-4 relative inline-block group animate-in slide-in-from-bottom-5 fade-in">

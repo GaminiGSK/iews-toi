@@ -1,0 +1,88 @@
+--- FAKE DATA ---
+2025-02-10 | Code: 61220 | Amt: -30 | OTT Charge (Our Fee). INTERNATIONAL OUTW
+2025-02-10 | Code: 61220 | Amt: -15 | OTT Charge Fee (Commission). INTERNATION
+2025-02-10 | Code: 61220 | Amt: -15 | OTT Charge Cable. CABLE FEE FOR INTERNAT
+2025-02-10 | Code: 17290 | Amt: -5000 | OTT Single. INTERNATIONAL FUNDS TRANSFER
+2025-02-12 | Code: 17290 | Amt: -1600 | Single transfer from/to ABA account. FUN
+2025-02-17 | Code: 17250 | Amt: -1000 | Single transfer from/to ABA account. FUN
+2025-02-18 | Code: 17250 | Amt: -500 | Single transfer from/to ABA account. FUN
+2025-02-21 | Code: 17290 | Amt: -2000 | Single transfer from/to ABA account. FUN
+2025-03-11 | Code: 17290 | Amt: -1200 | Single transfer from/to ABA account. FUN
+2025-03-20 | Code: 17250 | Amt: -1000 | Single transfer from/to ABA account. FUN
+2025-04-02 | Code: 17290 | Amt: -2020 | Single transfer from/to ABA account. FUN
+2025-04-11 | Code: 17250 | Amt: -1000 | Single transfer from/to ABA account. FUN
+2025-04-15 | Code: 17290 | Amt: -2000 | Single transfer from/to ABA account. FUN
+2025-04-19 | Code: 17250 | Amt: -300 | Single transfer from/to ABA account. FUN
+2025-05-06 | Code: 61041 | Amt: -10.65 | Tax Revenue Collection by Account. TAX P
+2025-05-10 | Code: 17250 | Amt: -1100 | Single transfer from/to ABA account. FUN
+2025-05-12 | Code: 17250 | Amt: -700 | Single transfer from/to ABA account. FUN
+2025-05-15 | Code: 17290 | Amt: -1500 | Single transfer from/to ABA account. FUN
+2025-05-22 | Code: 17290 | Amt: -4000 | Single transfer from/to ABA account. FUN
+2025-05-28 | Code: 30100 | Amt: -1000 | Single transfer from/to ABA account. FUN
+2025-06-01 | Code: 30100 | Amt: -600 | Single transfer from/to ABA account. FUN
+2025-06-03 | Code: 30100 | Amt: -400 | Single transfer from/to ABA account. FUN
+2025-06-10 | Code: 30100 | Amt: -540 | Single transfer from/to ABA account. FUN
+2025-07-01 | Code: 61041 | Amt: -0.02 | INT Withhold Tax(PMNT or CAPT).
+Withhold
+2025-07-04 | Code: 17250 | Amt: -530 | Single transfer from/to ABA account.
+FUN
+2025-07-06 | Code: 17250 | Amt: -400 | Single transfer from/to ABA account. FUN
+2025-07-10 | Code: 17250 | Amt: -4500 | Single transfer from/to ABA account. FUN
+2025-07-15 | Code: 61241 | Amt: -800 | Single transfer from/to ABA account. FUN
+2025-07-18 | Code: 61241 | Amt: -1400 | Single transfer from/to ABA account. FUN
+2025-08-01 | Code: 61220 | Amt: -0.02 | INT Withhold Tax(PMNT or CAPT). Withhold
+2025-08-07 | Code: 61041 | Amt: -30 | OTT Charge (Our Fee). INTERNATIONAL OUTW
+2025-08-07 | Code: 61041 | Amt: -15 | OTT Charge Fee (Commission). INTERNATION
+2025-08-07 | Code: 61220 | Amt: -15 | OTT Charge Cable. CABLE FEE FOR INTERNAT
+2025-08-07 | Code: 17250 | Amt: -2500 | OTT Single. INTERNATIONAL FUNDS TRANSFER
+2025-08-13 | Code: 61241 | Amt: -400 | Single transfer from/to ABA account. FUN
+2025-08-14 | Code: 61041 | Amt: -30 | OTT Charge (Our Fee). INTERNATIONAL OUTW
+2025-08-14 | Code: 61041 | Amt: -15 | OTT Charge Cable. CABLE FEE FOR INTERNAT
+2025-08-14 | Code: 17250 | Amt: -12000 | OTT Single. INTERNATIONAL FUNDS TRANSFER
+2025-08-14 | Code: 61041 | Amt: -18 | OTT Charge Fee (Commission). INTERNATION
+2025-09-10 | Code: 61241 | Amt: -3500 | Single transfer from/to ABA account. FUN
+2025-09-11 | Code: 61241 | Amt: -1000 | Single transfer from/to ABA account. FUN
+2025-09-19 | Code: 61041 | Amt: -100 | Merchant installation/configuration fee.
+2025-09-20 | Code: 61241 | Amt: -400 | Single transfer from/to ABA account. FUN
+2025-09-21 | Code: 61241 | Amt: -1200 | Single transfer from/to ABA account. FUN
+2025-09-24 | Code: 61241 | Amt: -1010 | Single transfer from/to ABA account. FUN
+2025-10-11 | Code: 61241 | Amt: -3000 | Single transfer from/to ABA account. FUN
+2025-10-20 | Code: 61241 | Amt: -1000 | Single transfer from/to ABA account. FUN
+2025-11-11 | Code: 61241 | Amt: -4400 | Single transfer from/to ABA account. FUN
+2025-11-13 | Code: 61241 | Amt: -2000 | Single transfer from/to ABA account. FUN
+2025-11-17 | Code: 61041 | Amt: -100 | Single transfer from/to ABA account. FUN
+2025-11-21 | Code: 61241 | Amt: -500 | Single transfer from/to ABA account. FUN
+2025-11-23 | Code: 61041 | Amt: -100 | Single transfer from/to ABA account. FUN
+2025-11-25 | Code: 61241 | Amt: -500 | Single transfer from/to ABA account. FUN
+2025-12-11 | Code: 61241 | Amt: -3000 | Single transfer from/to ABA account. FUN
+2025-12-30 | Code: 61241 | Amt: -1000 | Single transfer from/to ABA account. FUN
+
+--- REAL DATA (AI EXTRACTED) ---
+2025-02-10 | Code: 10110 | Amt: 10700 | TRF from/to other A/C in ABA. FUNDS RECE
+2025-03-01 | Code: 10110 | Amt: 0.05 | Interest PMNT or CAPT(ACCR DE1). Interes
+2025-03-10 | Code: 10110 | Amt: 3700 | TRF from/to other A/C in ABA. FUNDS RECE
+2025-03-11 | Code: 10110 | Amt: 2090 | TRF from/to other A/C in ABA. FUNDS RECE
+2025-04-10 | Code: 10110 | Amt: 5600 | TRF from/to other A/C in ABA. FUNDS RECE
+2025-05-10 | Code: 10110 | Amt: 5500 | TRF from/to other A/C in ABA. FUNDS RECE
+2025-05-19 | Code: 10110 | Amt: 5000 | TRF from/to other A/C in ABA. FUNDS RECE
+2025-06-01 | Code: 10110 | Amt: 0.1 | Interest PMNT or CAPT(ACCR DE1). Interes
+2025-06-01 | Code: 10110 | Amt: 0.1 | Interest PMNT or CAPT(ACCR DE1). Interes
+2025-06-05 | Code: 10110 | Amt: 1500 | Cardless deposit by QR. CASH DEPOSIT FRO
+2025-07-01 | Code: 10110 | Amt: 0.6 | Interest PMNT or CAPT(ACCR DE1).
+Interes
+2025-07-01 | Code: 10110 | Amt: 1450 | TRF from/to other A/C in ABA.
+FUNDS RECE
+2025-07-02 | Code: 10110 | Amt: 1600 | TRF from/to other A/C in ABA.
+FUNDS RECE
+2025-07-04 | Code: 10110 | Amt: 1550 | TRF from/to other A/C in ABA.
+FUNDS RECE
+2025-08-01 | Code: 10110 | Amt: 0.49 | Interest PMNT or CAPT(ACCR DE1). Interes
+2025-08-11 | Code: 10110 | Amt: 8600 | TRF from/to other A/C in ABA. FUNDS RECE
+2025-09-01 | Code: 10110 | Amt: 0.11 | Interest PMNT or CAPT(ACCR DE1). Interes
+2025-09-10 | Code: 10110 | Amt: 6200 | TRF from/to other A/C in ABA. FUNDS RECE
+2025-09-18 | Code: 10110 | Amt: 2000 | TRF from/to other A/C in ABA. FUNDS RECE
+2025-10-11 | Code: 10110 | Amt: 6000 | TRF from/to other A/C in ABA. FUNDS RECE
+2025-10-20 | Code: 10110 | Amt: 49.5 | TRF from/to other A/C in ABA. FUNDS RECE
+2025-10-20 | Code: 10110 | Amt: 4 | TRF from/to other A/C in ABA. FUNDS RECE
+2025-11-11 | Code: 10110 | Amt: 5900 | TRF from/to other A/C in ABA. FUNDS RECE
+2025-12-11 | Code: 10110 | Amt: 6000 | TRF from/to other A/C in ABA. FUNDS RECE
