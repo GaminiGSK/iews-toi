@@ -13,7 +13,7 @@ import LiveTaxWorkspace from "./LiveTaxWorkspace";
 
 const ToiAcar = ({ onBack, packageId, year }) => {
   const [activeWorkspacePage, setActiveWorkspacePage] = useState(1);
-  const [selectedYear, setSelectedYear] = useState(year || new Date().getFullYear().toString());
+  const [selectedYear, setSelectedYear] = useState(year || (new Date().getFullYear() - 1).toString());
   const [autoFilling, setAutoFilling] = useState(false);
   const [fillStatus, setFillStatus] = useState(null); // { ok, msg, sources }
 

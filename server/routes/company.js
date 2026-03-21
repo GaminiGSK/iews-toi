@@ -2858,12 +2858,18 @@ router.get('/toi/autofill', auth, async (req, res) => {
             fromDate:          fromDateStr,
             untilDate:         untilDateStr,
             tin:               p.vatTin?.replace(/[^0-9A-Z]/g, '') || '',
+            // Keys used by ToiAcar.jsx print preview (must match exactly)
+            companyNameEN:     p.companyNameEn || '',
+            companyNameKH:     p.companyNameKh || '',
+            signatoryName:     p.director || ext('director') || '',
+            // Legacy key kept for backward compat with other pages
             enterpriseName:    p.companyNameEn || '',
             directorName:      p.director || ext('director') || '',
             mainActivity:      p.businessActivity || ext('businessActivity') || '',
             telephone:         ext('telephone') || '',
             email:             ext('email') || '',
             registeredAddress: p.address || ext('address') || '',
+            address:           p.address || ext('address') || '',
             registrationDate:  p.incorporationDate || '',
             legalForm:         'Private Limited Company',
             accountingRecord:  'Using Software',
@@ -2872,6 +2878,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
             incomeTaxRate:     '20%',
             branchCount:       p.oldRegistrationNumber ? '1' : '1',
             filingDate:        `3103${yearStr}`,
+            filedIn:           p.address || ext('address') || 'Phnom Penh',
 
             // ── PAGE 2: SMART Shareholders Array ─────────────────────────
             // Build shareholders[] from ALL sources, dedup by name, sort by pct desc
