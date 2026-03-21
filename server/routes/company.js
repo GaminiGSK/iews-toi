@@ -2870,28 +2870,28 @@ router.get('/toi/autofill', auth, async (req, res) => {
         const shareCapitalOpeningFinal = equityAccCodes.reduce((s, c) =>
             s + Math.max(0, (c.priorYearCr || 0) - (c.priorYearDr || 0)), 0);
 
-        // Closing = sum of all CR-DR transactions for this year on equity accounts
-        // (from already-fetched txns + journal entries)
-        let equityCrYear = 0, equityDrYear = 0;
+        // Closing = fetch ALL-TIME journal entries to find share capital (recorded at incorporation)
+        // Account 30100 was credited when company was incorporated (2021), not in 2025
         const equityCodeIds = new Set(equityAccCodes.map(c => c._id.toString()));
-        for (const tx of txns) {
+        let equityCrAll = 0, equityDrAll = 0;
+        const jesAllTime = await JournalEntry.find({ companyCode }).populate('lines.accountCode').lean();
+        const txnsAllTime = await Transaction.find({ companyCode }).populate('accountCode').lean();
+        for (const tx of txnsAllTime) {
             if (!equityCodeIds.has(tx.accountCode?._id?.toString())) continue;
-            if (tx.amount > 0) equityDrYear += Math.abs(tx.amount);
-            else               equityCrYear += Math.abs(tx.amount);
+            if (tx.amount > 0) equityDrAll += Math.abs(tx.amount);
+            else               equityCrAll += Math.abs(tx.amount);
         }
-        for (const je of jes) {
+        for (const je of jesAllTime) {
             for (const ln of je.lines) {
                 if (!equityCodeIds.has(ln.accountCode?._id?.toString())) continue;
-                equityDrYear += ln.debit || 0;
-                equityCrYear += ln.credit || 0;
+                equityDrAll += ln.debit || 0;
+                equityCrAll += ln.credit || 0;
             }
         }
-        // Closing = opening + this year's net credits
-        const shareCapitalFromTxns = Math.max(0, equityCrYear - equityDrYear);
-        // Also check if AccountCode itself has priorYearCr as a proxy for current closing
-        // (for accounts that store the balance directly, not movements)
-        const shareCapitalFinal = shareCapitalFromTxns > 0
-            ? shareCapitalOpeningFinal + shareCapitalFromTxns
+        // shareCapitalFinal = all-time equity credits = closing balance
+        const shareCapitalFinal = equityCrAll > 0
+            ? equityCrAll
+            : shareCapitalOpeningFinal > 0 ? shareCapitalOpeningFinal
             : equityGL > 0 ? equityGL
             : parseFloat(p.registeredCapital || p.shareCapital || 0);
 
