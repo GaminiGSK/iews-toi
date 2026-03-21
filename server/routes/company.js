@@ -2873,34 +2873,93 @@ router.get('/toi/autofill', auth, async (req, res) => {
             branchCount:       p.oldRegistrationNumber ? '1' : '1',
             filingDate:        `3103${yearStr}`,
 
-            // ── PAGE 2: Shareholders / Share Capital ──────────────────────
-            // Row 1: Director / main shareholder from CompanyProfile + Related Party
-            sh_reg_name_1:       p.shareholder || p.director || '',
-            sh_reg_addr_1:       p.address || ext('address') || '',
-            sh_reg_pos_1:        'Managing Director',
-            sh_reg_pct_start_1:  parties[0]?.ownershipPct || '100',
-            sh_reg_amt_start_1:  fmt(Math.max(0, equityGL)),
-            sh_reg_pct_end_1:    parties[0]?.ownershipPct || '100',
-            sh_reg_amt_end_1:    fmt(Math.max(0, equityGL)),
-            // Paid-up capital (same shareholders, same amounts for private limited)
-            sh_paid_name_1:      p.shareholder || p.director || '',
-            sh_paid_addr_1:      p.address || ext('address') || '',
-            sh_paid_pos_1:       'Managing Director',
-            sh_paid_pct_start_1: parties[0]?.ownershipPct || '100',
-            sh_paid_amt_start_1: fmt(Math.max(0, equityGL)),
-            sh_paid_pct_end_1:   parties[0]?.ownershipPct || '100',
-            sh_paid_amt_end_1:   fmt(Math.max(0, equityGL)),
-            // Row 2: second shareholder if exists in Related Party
-            ...(parties[1] && {
-                sh_reg_name_2:       parties[1].name || '',
-                sh_reg_pos_2:        parties[1].relationship || '',
-                sh_reg_pct_start_2:  parties[1].ownershipPct || '',
-                sh_reg_pct_end_2:    parties[1].ownershipPct || '',
-                sh_paid_name_2:      parties[1].name || '',
-                sh_paid_pos_2:       parties[1].relationship || '',
-                sh_paid_pct_start_2: parties[1].ownershipPct || '',
-                sh_paid_pct_end_2:   parties[1].ownershipPct || '',
-            }),
+            // ── PAGE 2: SMART Shareholders Array ─────────────────────────
+            // Build shareholders[] from ALL sources, dedup by name, sort by pct desc
+            // Source priority: 1) RelatedParty parties (ownershipPct > 0 or is Shareholder/Director)
+            //                  2) SalaryModule shareholderEmployees (position = role)
+            //                  3) CompanyProfile director/shareholder as fallback
+
+            shareholders: (() => {
+                const totalEquity = Math.max(0, equityGL);
+                const seen = new Set();
+                const list = [];
+
+                // Source 1 — Related Party parties with ownership
+                for (const party of parties) {
+                    const pct = parseFloat(party.ownershipPct) || 0;
+                    if (!party.name) continue;
+                    const key = party.name.trim().toLowerCase();
+                    if (seen.has(key)) continue;
+                    seen.add(key);
+                    list.push({
+                        name:        party.name.trim(),
+                        address:     party.country || p.address || '',
+                        nationality: party.nationality || 'Cambodian',
+                        position:    party.relationship || 'Shareholder',
+                        pctStart:    pct || 100,
+                        amtStart:    pct ? Math.round(totalEquity * pct / 100) : totalEquity,
+                        pctEnd:      pct || 100,
+                        amtEnd:      pct ? Math.round(totalEquity * pct / 100) : totalEquity,
+                    });
+                }
+
+                // Source 2 — Salary shareholder-employees not already in list
+                for (const emp of shEmps) {
+                    if (!emp.position) continue;
+                    const key = emp.position.trim().toLowerCase();
+                    if (seen.has(key)) continue;
+                    seen.add(key);
+                    list.push({
+                        name:        emp.position.trim(),
+                        address:     p.address || '',
+                        nationality: 'Cambodian',
+                        position:    'Managing Director',
+                        pctStart:    100 / Math.max(shEmps.length, 1),
+                        amtStart:    Math.round(totalEquity / Math.max(shEmps.length, 1)),
+                        pctEnd:      100 / Math.max(shEmps.length, 1),
+                        amtEnd:      Math.round(totalEquity / Math.max(shEmps.length, 1)),
+                    });
+                }
+
+                // Source 3 — CompanyProfile director as fallback if still empty
+                if (list.length === 0) {
+                    const name = p.shareholder || p.director || '';
+                    if (name) {
+                        list.push({
+                            name,
+                            address:     p.address || '',
+                            nationality: 'Cambodian',
+                            position:    'Managing Director',
+                            pctStart:    100,
+                            amtStart:    totalEquity,
+                            pctEnd:      100,
+                            amtEnd:      totalEquity,
+                        });
+                    }
+                }
+
+                // Normalise percentages to sum to 100
+                const totalPct = list.reduce((s, x) => s + x.pctStart, 0);
+                if (totalPct > 0 && totalPct !== 100) {
+                    list.forEach(x => {
+                        x.pctStart = Math.round(x.pctStart / totalPct * 100 * 100) / 100;
+                        x.pctEnd   = x.pctStart;
+                        x.amtStart = Math.round(totalEquity * x.pctStart / 100);
+                        x.amtEnd   = x.amtStart;
+                    });
+                }
+
+                // Format amounts
+                return list.map(x => ({
+                    ...x,
+                    amtStart: fmt(x.amtStart),
+                    amtEnd:   fmt(x.amtEnd),
+                    pctStart: String(x.pctStart),
+                    pctEnd:   String(x.pctEnd),
+                }));
+            })(),
+
+            share_capital_total:              fmt(Math.max(0, equityGL)),
             total_employees_workers:          String(shCount + nonShCount),
             taxable_salary_employees_workers:  fmt(totalSalary),
             taxable_salary_shareholders:       fmt(shSalary),
