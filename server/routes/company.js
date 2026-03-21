@@ -3081,7 +3081,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
                     flat[`capitalPaidAddress${idx}`]  = sh?.address  || '';
                     flat[`capitalPaidPos${idx}`]      = sh?.position || '';
                     flat[`capitalPaidStartPct${idx}`] = pctStr;
-                    flat[`capitalPaidStartAmt${idx}`] = amt;
+                    flat[`capitalPaidStartAmt${idx}`] = amtStart;
                     flat[`capitalPaidEndPct${idx}`]   = pctStr;
                     flat[`capitalPaidEndAmt${idx}`]   = amtEnd;
                 }
