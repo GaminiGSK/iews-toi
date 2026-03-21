@@ -2864,12 +2864,12 @@ router.get('/toi/autofill', auth, async (req, res) => {
             signatoryName:     p.director || ext('director') || '',
             // Legacy key kept for backward compat with other pages
             enterpriseName:    p.companyNameEn || '',
-            directorName:      p.director || ext('director') || '',
-            mainActivity:      p.businessActivity || ext('businessActivity') || '',
-            telephone:         ext('telephone') || '',
-            email:             ext('email') || '',
-            registeredAddress: p.address || ext('address') || '',
-            address:           p.address || ext('address') || '',
+            // Exact keys that ToiAcar.jsx rows 2-10 read
+            businessActivities: p.businessActivity || ext('businessActivity') || '',
+            address1:          p.address || ext('address') || '',
+            address2:          p.address || ext('address') || '',
+            address3:          '',
+            agentName:         '',
             registrationDate:  p.incorporationDate || '',
             legalForm:         'Private Limited Company',
             accountingRecord:  'Using Software',
@@ -2915,14 +2915,16 @@ router.get('/toi/autofill', auth, async (req, res) => {
                 // Source 2 — Salary shareholder-employees not already in list
                 for (const emp of shEmps) {
                     if (!emp.position) continue;
-                    const key = emp.position.trim().toLowerCase();
+                    // Use director/shareholder name from company profile, NOT the position title
+                    const personName = p.director || p.shareholder || emp.position;
+                    const key = personName.trim().toLowerCase();
                     if (seen.has(key)) continue;
                     seen.add(key);
                     list.push({
-                        name:        emp.position.trim(),
+                        name:        personName.trim(),
                         address:     p.address || '',
                         nationality: 'Cambodian',
-                        position:    'Managing Director',
+                        position:    emp.position.trim(),
                         pctStart:    100 / Math.max(shEmps.length, 1),
                         amtStart:    Math.round(totalEquity / Math.max(shEmps.length, 1)),
                         pctEnd:      100 / Math.max(shEmps.length, 1),
@@ -2987,10 +2989,12 @@ router.get('/toi/autofill', auth, async (req, res) => {
                 }
                 for (const emp of shEmps) {
                     if (!emp.position) continue;
-                    const key = emp.position.trim().toLowerCase();
+                    // Use the actual person's name (director/shareholder), NOT the position title
+                    const personName = p.director || p.shareholder || emp.position;
+                    const key = personName.trim().toLowerCase();
                     if (seen.has(key)) continue;
                     seen.add(key);
-                    list.push({ name: emp.position.trim(), address: p.address || '', position: 'Managing Director', pct: 100 / Math.max(shEmps.length, 1) });
+                    list.push({ name: personName.trim(), address: p.address || '', position: emp.position.trim(), pct: 100 / Math.max(shEmps.length, 1) });
                 }
                 if (list.length === 0) {
                     const name = p.shareholder || p.director || '';
