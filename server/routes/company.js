@@ -2910,11 +2910,11 @@ router.get('/toi/autofill', auth, async (req, res) => {
             tos_total_filed:                          fmt(tosFiled),
             tos_total_paid:                           fmt(tosPaid),
             tos_variance:                             fmt(Math.abs(tosFiled - tosPaid)),
-            ...Object.fromEntries(monthlyTOS.map((m, i) => ([
-                [`tos_gross_${m.month.toLowerCase()}`]:   fmt(parseFloat(m.grossSalary) || 0),
-                [`tos_filed_${m.month.toLowerCase()}`]:   fmt(parseFloat(m.tosFiled) || 0),
-                [`tos_paid_${m.month.toLowerCase()}`]:    fmt(parseFloat(m.tosPaid) || 0),
-            ])).flat().reduce((acc, obj) => ({...acc, ...obj}), {})),
+            ...Object.fromEntries(monthlyTOS.flatMap((m) => [
+                [`tos_gross_${m.month.toLowerCase()}`, fmt(parseFloat(m.grossSalary) || 0)],
+                [`tos_filed_${m.month.toLowerCase()}`, fmt(parseFloat(m.tosFiled) || 0)],
+                [`tos_paid_${m.month.toLowerCase()}`,  fmt(parseFloat(m.tosPaid) || 0)],
+            ])),
 
             // ── PAGE 7: COGS / Revenue ────────────────────────────────────
             d1_n:  fmt(costOfSales),
