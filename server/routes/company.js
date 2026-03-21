@@ -2878,8 +2878,9 @@ router.get('/toi/autofill', auth, async (req, res) => {
         const txnsAllTime = await Transaction.find({ companyCode }).populate('accountCode').lean();
         for (const tx of txnsAllTime) {
             if (!equityCodeIds.has(tx.accountCode?._id?.toString())) continue;
-            if (tx.amount > 0) equityDrAll += Math.abs(tx.amount);
-            else               equityCrAll += Math.abs(tx.amount);
+            // Positive amount = money in = Credit (consistent with TB unadjCrUSD)
+            if (tx.amount > 0) equityCrAll += Math.abs(tx.amount);
+            else               equityDrAll += Math.abs(tx.amount);
         }
         for (const je of jesAllTime) {
             for (const ln of (je.lines || [])) {
