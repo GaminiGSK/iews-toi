@@ -2873,28 +2873,39 @@ router.get('/toi/autofill', auth, async (req, res) => {
             branchCount:       p.oldRegistrationNumber ? '1' : '1',
             filingDate:        `3103${yearStr}`,
 
-            // ── PAGE 2: Shareholders / Directors ─────────────────────────
-            // Shareholder employees from Salary Module
-            ...(shEmps.length > 0 && {
-                [`shareholder_name_1`]:               shEmps[0]?.position || p.director || '',
-                [`shareholder_nationality_1`]:        parties[0]?.nationality || 'Cambodian',
-                [`shareholder_ownership_pct_1`]:      parties[0]?.ownershipPct || '100',
-                [`employee_description_1`]:           shEmps[0]?.position || 'Managing Director',
-                [`employee_position_1`]:              shEmps[0]?.position || 'Managing Director',
-                [`employee_number_1`]:                String(parseInt(shEmps[0]?.count) || 1),
-                [`employee_salary_1`]:                fmt(parseFloat(shEmps[0]?.annualSalary) || 0),
-                [`employee_fringe_benefits_1`]:       fmt(parseFloat(shEmps[0]?.fringeBenefits) || 0),
+            // ── PAGE 2: Shareholders / Share Capital ──────────────────────
+            // Row 1: Director / main shareholder from CompanyProfile + Related Party
+            sh_reg_name_1:       p.shareholder || p.director || '',
+            sh_reg_addr_1:       p.address || ext('address') || '',
+            sh_reg_pos_1:        'Managing Director',
+            sh_reg_pct_start_1:  parties[0]?.ownershipPct || '100',
+            sh_reg_amt_start_1:  fmt(Math.max(0, equityGL)),
+            sh_reg_pct_end_1:    parties[0]?.ownershipPct || '100',
+            sh_reg_amt_end_1:    fmt(Math.max(0, equityGL)),
+            // Paid-up capital (same shareholders, same amounts for private limited)
+            sh_paid_name_1:      p.shareholder || p.director || '',
+            sh_paid_addr_1:      p.address || ext('address') || '',
+            sh_paid_pos_1:       'Managing Director',
+            sh_paid_pct_start_1: parties[0]?.ownershipPct || '100',
+            sh_paid_amt_start_1: fmt(Math.max(0, equityGL)),
+            sh_paid_pct_end_1:   parties[0]?.ownershipPct || '100',
+            sh_paid_amt_end_1:   fmt(Math.max(0, equityGL)),
+            // Row 2: second shareholder if exists in Related Party
+            ...(parties[1] && {
+                sh_reg_name_2:       parties[1].name || '',
+                sh_reg_pos_2:        parties[1].relationship || '',
+                sh_reg_pct_start_2:  parties[1].ownershipPct || '',
+                sh_reg_pct_end_2:    parties[1].ownershipPct || '',
+                sh_paid_name_2:      parties[1].name || '',
+                sh_paid_pos_2:       parties[1].relationship || '',
+                sh_paid_pct_start_2: parties[1].ownershipPct || '',
+                sh_paid_pct_end_2:   parties[1].ownershipPct || '',
             }),
-            ...(shEmps.length > 1 && {
-                [`employee_description_2`]:           shEmps[1]?.position || '',
-                [`employee_number_2`]:                String(parseInt(shEmps[1]?.count) || 0),
-                [`employee_salary_2`]:                fmt(parseFloat(shEmps[1]?.annualSalary) || 0),
-            }),
-            total_employees_workers:                  String(shCount + nonShCount),
-            taxable_salary_employees_workers:         fmt(totalSalary),
-            taxable_salary_shareholders:              fmt(shSalary),
-            taxable_salary_staff:                     fmt(nonShSalary),
-            total_fringe_benefits:                    fmt(totalFringe),
+            total_employees_workers:          String(shCount + nonShCount),
+            taxable_salary_employees_workers:  fmt(totalSalary),
+            taxable_salary_shareholders:       fmt(shSalary),
+            taxable_salary_staff:              fmt(nonShSalary),
+            total_fringe_benefits:             fmt(totalFringe),
 
             // ── PAGE 3–4: Staff Employees ─────────────────────────────────
             ...(nonShEmps[0] && {

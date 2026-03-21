@@ -1599,57 +1599,50 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear = "20
                       className="flex border-b border-white/10 h-10 hover:bg-white/[0.04] transition-colors group"
                     >
                       <div className="w-[20%] border-r border-white/10 p-1 flex items-center">
-                        <span className="text-slate-700 text-[10px] font-mono w-4 shrink-0 text-center">
-                          {r}
-                        </span>
-                        <input
-                          type="text"
-                          className="w-full bg-transparent outline-none text-white text-xs font-bold px-1"
-                          placeholder="..."
+                        <span className="text-slate-700 text-[10px] font-mono w-4 shrink-0 text-center">{r}</span>
+                        <input type="text" className="w-full bg-transparent outline-none text-white text-xs font-bold px-1" placeholder="..."
+                          value={formData[`sh_reg_name_${r}`] || ''}
+                          onChange={(e) => handleFormChange(`sh_reg_name_${r}`, e.target.value)}
                         />
                       </div>
                       <div className="w-[18%] border-r border-white/10 p-1">
-                        <input
-                          type="text"
-                          className="w-full h-full bg-transparent outline-none text-white text-xs px-1"
+                        <input type="text" className="w-full h-full bg-transparent outline-none text-white text-xs px-1" placeholder="..."
+                          value={formData[`sh_reg_addr_${r}`] || ''}
+                          onChange={(e) => handleFormChange(`sh_reg_addr_${r}`, e.target.value)}
                         />
                       </div>
                       <div className="w-[12%] border-r border-white/10 p-1">
-                        <input
-                          type="text"
-                          className="w-full h-full bg-transparent outline-none text-white text-xs text-center"
+                        <input type="text" className="w-full h-full bg-transparent outline-none text-white text-xs text-center" placeholder="..."
+                          value={formData[`sh_reg_pos_${r}`] || ''}
+                          onChange={(e) => handleFormChange(`sh_reg_pos_${r}`, e.target.value)}
                         />
                       </div>
                       <div className="flex-1 flex">
                         <div className="w-1/2 flex border-r border-white/10">
-                          <div className="w-[30%] border-r border-white/10 flex items-center justify-center italic text-xs text-slate-500">
-                            <input
-                              type="text"
-                              className="w-full bg-transparent outline-none text-white text-center"
-                              placeholder="0"
+                          <div className="w-[30%] border-r border-white/10 flex items-center justify-center">
+                            <input type="text" className="w-full bg-transparent outline-none text-white text-center text-xs" placeholder="0"
+                              value={formData[`sh_reg_pct_start_${r}`] || ''}
+                              onChange={(e) => handleFormChange(`sh_reg_pct_start_${r}`, e.target.value)}
                             />
                           </div>
                           <div className="flex-1 p-1">
-                            <input
-                              type="text"
-                              className="w-full h-full bg-transparent outline-none text-white text-xs text-right"
-                              placeholder="0.00"
+                            <input type="text" className="w-full h-full bg-transparent outline-none text-white text-xs text-right" placeholder="0.00"
+                              value={formData[`sh_reg_amt_start_${r}`] || ''}
+                              onChange={(e) => handleFormChange(`sh_reg_amt_start_${r}`, e.target.value)}
                             />
                           </div>
                         </div>
                         <div className="flex-1 flex">
-                          <div className="w-[30%] border-r border-white/10 flex items-center justify-center italic text-xs text-slate-500">
-                            <input
-                              type="text"
-                              className="w-full bg-transparent outline-none text-white text-center"
-                              placeholder="0"
+                          <div className="w-[30%] border-r border-white/10 flex items-center justify-center">
+                            <input type="text" className="w-full bg-transparent outline-none text-white text-center text-xs" placeholder="0"
+                              value={formData[`sh_reg_pct_end_${r}`] || ''}
+                              onChange={(e) => handleFormChange(`sh_reg_pct_end_${r}`, e.target.value)}
                             />
                           </div>
                           <div className="flex-1 p-1">
-                            <input
-                              type="text"
-                              className="w-full h-full bg-transparent outline-none text-white text-xs text-right"
-                              placeholder="0.00"
+                            <input type="text" className="w-full h-full bg-transparent outline-none text-white text-xs text-right" placeholder="0.00"
+                              value={formData[`sh_reg_amt_end_${r}`] || ''}
+                              onChange={(e) => handleFormChange(`sh_reg_amt_end_${r}`, e.target.value)}
                             />
                           </div>
                         </div>
@@ -1671,19 +1664,19 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear = "20
                     </div>
                     <div className="flex-1 flex">
                       <div className="w-1/2 flex border-r border-white/10">
-                        <div className="w-[30%] border-r border-white/10 flex items-center justify-center font-black text-rose-500/70 text-[10px]">
-                          0%
+                        <div className="w-[30%] border-r border-white/10 flex items-center justify-center font-black text-rose-400 text-[10px]">
+                          100%
                         </div>
-                        <div className="flex-1 p-2 flex items-center justify-end font-black text-white/50 text-[10px]">
-                          -
+                        <div className="flex-1 p-2 flex items-center justify-end font-black text-emerald-400 text-[10px]">
+                          {formData.sh_reg_amt_start_1 || '-'}
                         </div>
                       </div>
                       <div className="flex-1 flex font-black">
-                        <div className="w-[30%] border-r border-white/10 flex items-center justify-center text-rose-500/70 text-[10px]">
-                          0%
+                        <div className="w-[30%] border-r border-white/10 flex items-center justify-center text-rose-400 text-[10px]">
+                          100%
                         </div>
-                        <div className="flex-1 p-2 flex items-center justify-end text-white/50 text-[10px]">
-                          -
+                        <div className="flex-1 p-2 flex items-center justify-end text-emerald-400 text-[10px]">
+                          {formData.sh_reg_amt_end_1 || '-'}
                         </div>
                       </div>
                     </div>
@@ -1706,41 +1699,36 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear = "20
                       className="flex border-b border-white/10 h-10 hover:bg-white/[0.04] transition-colors group"
                     >
                       <div className="w-[20%] border-r border-white/10 p-1 flex items-center">
-                        <span className="text-slate-700 text-[10px] font-mono w-4 shrink-0 text-center">
-                          {r}
-                        </span>
-                        <input
-                          type="text"
-                          className="w-full bg-transparent outline-none text-white text-xs font-bold px-1"
-                          placeholder="..."
+                        <span className="text-slate-700 text-[10px] font-mono w-4 shrink-0 text-center">{r}</span>
+                        <input type="text" className="w-full bg-transparent outline-none text-white text-xs font-bold px-1" placeholder="..."
+                          value={formData[`sh_paid_name_${r}`] || ''}
+                          onChange={(e) => handleFormChange(`sh_paid_name_${r}`, e.target.value)}
                         />
                       </div>
                       <div className="w-[18%] border-r border-white/10 p-1">
-                        <input
-                          type="text"
-                          className="w-full h-full bg-transparent outline-none text-white text-xs px-1"
+                        <input type="text" className="w-full h-full bg-transparent outline-none text-white text-xs px-1" placeholder="..."
+                          value={formData[`sh_paid_addr_${r}`] || ''}
+                          onChange={(e) => handleFormChange(`sh_paid_addr_${r}`, e.target.value)}
                         />
                       </div>
                       <div className="w-[12%] border-r border-white/10 p-1">
-                        <input
-                          type="text"
-                          className="w-full h-full bg-transparent outline-none text-white text-xs text-center"
+                        <input type="text" className="w-full h-full bg-transparent outline-none text-white text-xs text-center" placeholder="..."
+                          value={formData[`sh_paid_pos_${r}`] || ''}
+                          onChange={(e) => handleFormChange(`sh_paid_pos_${r}`, e.target.value)}
                         />
                       </div>
                       <div className="flex-1 flex">
                         <div className="w-1/2 flex border-r border-white/10">
-                          <div className="w-[30%] border-r border-white/10 flex items-center justify-center italic text-xs text-slate-500">
-                            <input
-                              type="text"
-                              className="w-full bg-transparent outline-none text-white text-center"
-                              placeholder="0"
+                          <div className="w-[30%] border-r border-white/10 flex items-center justify-center">
+                            <input type="text" className="w-full bg-transparent outline-none text-white text-center text-xs" placeholder="0"
+                              value={formData[`sh_paid_pct_start_${r}`] || ''}
+                              onChange={(e) => handleFormChange(`sh_paid_pct_start_${r}`, e.target.value)}
                             />
                           </div>
                           <div className="flex-1 p-1">
-                            <input
-                              type="text"
-                              className="w-full h-full bg-transparent outline-none text-white text-xs text-right"
-                              placeholder="0.00"
+                            <input type="text" className="w-full h-full bg-transparent outline-none text-white text-xs text-right" placeholder="0.00"
+                              value={formData[`sh_paid_amt_start_${r}`] || ''}
+                              onChange={(e) => handleFormChange(`sh_paid_amt_start_${r}`, e.target.value)}
                             />
                           </div>
                         </div>
