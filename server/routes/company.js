@@ -2852,33 +2852,93 @@ router.get('/toi/autofill', auth, async (req, res) => {
         const fromDateStr = `0101${yearStr}`;
         const untilDateStr= `3112${yearStr}`;
 
+        // ── Smart equity lookup: C3 toiCode OR scan by account description ──
+        // This makes the AI find share capital from GL even if toiCode not mapped
+        let shareCapitalGL = equityGL; // from toiCode C3
+        if (shareCapitalGL === 0) {
+            // Scan all AccountCode records for equity/capital accounts by description
+            const equityKeywords = ['share capital', 'registered capital', 'paid-up capital',
+                'equity', 'capital stock', 'owner', 'ចំណែក', 'មូលធន', 'ហ៊ុន'];
+            const equityCodes = codes.filter(c => {
+                const desc = (c.description || '').toLowerCase();
+                return equityKeywords.some(kw => desc.toLowerCase().includes(kw));
+            });
+            // Sum their CR-DR from all transactions (all years for opening, year only for closing)
+            const txnsAll = await Transaction.find({ companyCode }).populate('accountCode');
+            const jesAll  = await JournalEntry.find({ companyCode }).populate('lines.accountCode');
+            let equityCr = 0, equityDr = 0;
+            for (const tx of txnsAll) {
+                if (!equityCodes.some(c => c._id.equals(tx.accountCode?._id))) continue;
+                if (tx.amount > 0) equityDr += Math.abs(tx.amount);
+                else               equityCr += Math.abs(tx.amount);
+            }
+            for (const je of jesAll) {
+                for (const ln of je.lines) {
+                    if (!equityCodes.some(c => c._id.equals(ln.accountCode?._id))) continue;
+                    equityDr += ln.debit || 0;
+                    equityCr += ln.credit || 0;
+                }
+            }
+            shareCapitalGL = Math.max(0, equityCr - equityDr);
+        }
+        // Also check priorYearCr from AccountCode (opening balance = prior year closing)
+        const equityAccOpenings = codes
+            .filter(c => { const d=(c.description||'').toLowerCase(); return ['share capital','capital','equity','ហ៊ុន','មូលធន'].some(k=>d.includes(k)); })
+            .reduce((s,c) => s + Math.max(0, (c.priorYearCr||0)-(c.priorYearDr||0)), 0);
+        const profileCapitalTop = parseFloat(p.registeredCapital || p.shareCapital || ext('registeredCapital') || 0);
+        // Final share capital: GL toiCode > keyword scan > profile > 0
+        const shareCapitalFinal = shareCapitalGL > 0 ? shareCapitalGL
+                                : profileCapitalTop > 0 ? profileCapitalTop : 0;
+        const shareCapitalOpening = equityAccOpenings > 0 ? equityAccOpenings : shareCapitalFinal;
+
+        // Khmer-only address (strip English portion — everything after first non-Khmer line)
+        const addrRaw = p.address || ext('address') || '';
+        // If address has Khmer chars, prefer Khmer substring; else use full address
+        const hasKhmer = /[\u1780-\u17FF]/.test(addrRaw);
+        // Split on newline or comma after Cambodian text ends
+        const addrKh = hasKhmer
+            ? addrRaw.replace(/,?\s*[A-Za-z0-9][A-Za-z0-9 ,\.\-]+$/, '').trim()
+            : addrRaw;
+
         const formData = {
             // ── PAGE 1: Cover / TIN / Identification ─────────────────────
             taxMonths:         '12',
             fromDate:          fromDateStr,
             untilDate:         untilDateStr,
             tin:               p.vatTin?.replace(/[^0-9A-Z]/g, '') || '',
-            // Keys used by ToiAcar.jsx print preview (must match exactly)
-            companyNameEN:     p.companyNameEn || '',
+
+            // ── Row 2: Name of Enterprise (key = "name" in ToiAcar.jsx) ──
+            name:              p.companyNameKh || p.companyNameEn || '',   // Khmer first
             companyNameKH:     p.companyNameKh || '',
-            signatoryName:     p.director || ext('director') || '',
-            // Legacy key kept for backward compat with other pages
-            enterpriseName:    p.companyNameEn || '',
-            // Exact keys that ToiAcar.jsx rows 2-10 read
-            businessActivities: p.businessActivity || ext('businessActivity') || '',
-            address1:          p.address || ext('address') || '',
-            address2:          p.address || ext('address') || '',
-            address3:          '',
-            agentName:         '',
+            companyNameEN:     p.companyNameEn || '',
+            enterpriseName:    p.companyNameKh || p.companyNameEn || '',   // legacy
+
+            // ── Row 3: Branch count (key = "branchOut") ───────────────────
+            branchOut:         '1',
+
+            // ── Rows 4,5 ─────────────────────────────────────────────────
             registrationDate:  p.incorporationDate || '',
+            directorName:      p.director || ext('director') || '',
+            signatoryName:     p.director || ext('director') || '',
+
+            // ── Row 6: Business Activities ───────────────────────────────
+            businessActivities: p.businessActivity || ext('businessActivity') || '',
+
+            // ── Rows 7-10: Addresses (Khmer only) ───────────────────────
+            agentName:         '',
+            address1:          addrKh,    // Current Registered Office (Khmer)
+            address2:          addrKh,    // Current Principal Establishment (Khmer)
+            address3:          '',
+
+            // ── Other Page 1 fields ───────────────────────────────────────
             legalForm:         'Private Limited Company',
             accountingRecord:  'Using Software',
             softwareName:      'GK SMART AI',
             taxComplianceStatus:'Gold',
             incomeTaxRate:     '20%',
-            branchCount:       p.oldRegistrationNumber ? '1' : '1',
+            branchCount:       '1',
             filingDate:        `3103${yearStr}`,
-            filedIn:           p.address || ext('address') || 'Phnom Penh',
+            filedIn:           addrKh || 'Phnom Penh',
 
             // ── PAGE 2: SMART Shareholders Array ─────────────────────────
             // Build shareholders[] from ALL sources, dedup by name, sort by pct desc
@@ -2887,9 +2947,10 @@ router.get('/toi/autofill', auth, async (req, res) => {
             //                  3) CompanyProfile director/shareholder as fallback
 
             shareholders: (() => {
-                // Use equity GL, fall back to company profile registered capital
-                const profileCapital = parseFloat(p.registeredCapital || p.shareCapital || ext('registeredCapital') || 0);
-                const totalEquity = equityGL > 0 ? equityGL : profileCapital;
+                // Use smart GL-derived share capital (opening = start of year, final = end of year)
+                const totalEquityStart = shareCapitalOpening;
+                const totalEquityEnd   = shareCapitalFinal;
+                const totalEquity = totalEquityEnd || totalEquityStart;
                 const seen = new Set();
                 const list = [];
 
@@ -2902,13 +2963,13 @@ router.get('/toi/autofill', auth, async (req, res) => {
                     seen.add(key);
                     list.push({
                         name:        party.name.trim(),
-                        address:     party.country || p.address || '',
+                        address:     addrKh || party.country || '',
                         nationality: party.nationality || 'Cambodian',
                         position:    party.relationship || 'Shareholder',
                         pctStart:    pct || 100,
-                        amtStart:    pct ? Math.round(totalEquity * pct / 100) : totalEquity,
+                        amtStart:    pct ? Math.round(totalEquityStart * pct / 100) : totalEquityStart,
                         pctEnd:      pct || 100,
-                        amtEnd:      pct ? Math.round(totalEquity * pct / 100) : totalEquity,
+                        amtEnd:      pct ? Math.round(totalEquityEnd   * pct / 100) : totalEquityEnd,
                     });
                 }
 
@@ -2922,13 +2983,13 @@ router.get('/toi/autofill', auth, async (req, res) => {
                     seen.add(key);
                     list.push({
                         name:        personName.trim(),
-                        address:     p.address || '',
+                        address:     addrKh || '',
                         nationality: 'Cambodian',
                         position:    emp.position.trim(),
                         pctStart:    100 / Math.max(shEmps.length, 1),
-                        amtStart:    Math.round(totalEquity / Math.max(shEmps.length, 1)),
+                        amtStart:    Math.round(totalEquityStart / Math.max(shEmps.length, 1)),
                         pctEnd:      100 / Math.max(shEmps.length, 1),
-                        amtEnd:      Math.round(totalEquity / Math.max(shEmps.length, 1)),
+                        amtEnd:      Math.round(totalEquityEnd   / Math.max(shEmps.length, 1)),
                     });
                 }
 
@@ -2938,13 +2999,13 @@ router.get('/toi/autofill', auth, async (req, res) => {
                     if (name) {
                         list.push({
                             name,
-                            address:     p.address || '',
+                            address:     addrKh || '',
                             nationality: 'Cambodian',
                             position:    'Managing Director',
                             pctStart:    100,
-                            amtStart:    totalEquity,
+                            amtStart:    totalEquityStart,
                             pctEnd:      100,
-                            amtEnd:      totalEquity,
+                            amtEnd:      totalEquityEnd,
                         });
                     }
                 }
@@ -2971,36 +3032,32 @@ router.get('/toi/autofill', auth, async (req, res) => {
             })(),
 
             // ── PAGE 2: Flat keys for ToiAcar.jsx print preview (capitalReg* / capitalPaid*) ──
-            // Auto-generated from shareholders[] - supports up to 5 rows on the official GDT form
+            // Auto-generated — supports up to 5 rows on the official GDT form
             ...(() => {
-                const profileCapital = parseFloat(p.registeredCapital || p.shareCapital || ext('registeredCapital') || 0);
-                const totalEquity = equityGL > 0 ? equityGL : profileCapital;
                 const seen = new Set();
                 const list = [];
 
-                // Rebuild same list as shareholders[] above
                 for (const party of parties) {
                     if (!party.name) continue;
                     const key = party.name.trim().toLowerCase();
                     if (seen.has(key)) continue;
                     seen.add(key);
                     const pct = parseFloat(party.ownershipPct) || 0;
-                    list.push({ name: party.name.trim(), address: party.country || p.address || '', position: party.relationship || 'Shareholder', pct: pct || 100 });
+                    list.push({ name: party.name.trim(), address: addrKh || '', position: party.relationship || 'Shareholder', pct: pct || 100 });
                 }
                 for (const emp of shEmps) {
                     if (!emp.position) continue;
-                    // Use the actual person's name (director/shareholder), NOT the position title
                     const personName = p.director || p.shareholder || emp.position;
                     const key = personName.trim().toLowerCase();
                     if (seen.has(key)) continue;
                     seen.add(key);
-                    list.push({ name: personName.trim(), address: p.address || '', position: emp.position.trim(), pct: 100 / Math.max(shEmps.length, 1) });
+                    list.push({ name: personName.trim(), address: addrKh || '', position: emp.position.trim(), pct: 100 / Math.max(shEmps.length, 1) });
                 }
                 if (list.length === 0) {
                     const name = p.shareholder || p.director || '';
-                    if (name) list.push({ name, address: p.address || '', position: 'Managing Director', pct: 100 });
+                    if (name) list.push({ name, address: addrKh || '', position: 'Managing Director', pct: 100 });
                 }
-                // Normalise pct
+                // Normalise pct to 100
                 const totalPct = list.reduce((s, x) => s + x.pct, 0);
                 if (totalPct > 0 && totalPct !== 100) list.forEach(x => { x.pct = Math.round(x.pct / totalPct * 10000) / 100; });
 
@@ -3008,32 +3065,30 @@ router.get('/toi/autofill', auth, async (req, res) => {
                 for (let i = 0; i < 5; i++) {
                     const sh = list[i];
                     const idx = i + 1;
-                    const amt = sh ? fmt(Math.round(totalEquity * sh.pct / 100)) : '';
-                    const pctStr = sh ? String(sh.pct) + '%' : '';
-                    // Registered Capital
+                    const pctStr    = sh ? String(sh.pct) + '%' : '';
+                    const amtStart  = sh ? fmt(Math.round(shareCapitalOpening * sh.pct / 100)) : '';
+                    const amtEnd    = sh ? fmt(Math.round(shareCapitalFinal   * sh.pct / 100)) : '';
+                    // Registered Capital (Section A)
                     flat[`capitalRegName${idx}`]     = sh?.name     || '';
                     flat[`capitalRegAddress${idx}`]  = sh?.address  || '';
                     flat[`capitalRegPos${idx}`]      = sh?.position || '';
                     flat[`capitalRegStartPct${idx}`] = pctStr;
-                    flat[`capitalRegStartAmt${idx}`] = amt;
+                    flat[`capitalRegStartAmt${idx}`] = amtStart;
                     flat[`capitalRegEndPct${idx}`]   = pctStr;
-                    flat[`capitalRegEndAmt${idx}`]   = amt;
-                    // Paid-up Capital (mirrors registered)
+                    flat[`capitalRegEndAmt${idx}`]   = amtEnd;
+                    // Paid-up Capital (Section B — mirrors registered)
                     flat[`capitalPaidName${idx}`]     = sh?.name     || '';
                     flat[`capitalPaidAddress${idx}`]  = sh?.address  || '';
                     flat[`capitalPaidPos${idx}`]      = sh?.position || '';
                     flat[`capitalPaidStartPct${idx}`] = pctStr;
                     flat[`capitalPaidStartAmt${idx}`] = amt;
                     flat[`capitalPaidEndPct${idx}`]   = pctStr;
-                    flat[`capitalPaidEndAmt${idx}`]   = amt;
+                    flat[`capitalPaidEndAmt${idx}`]   = amtEnd;
                 }
                 return flat;
             })(),
 
-            share_capital_total: (() => {
-                const profileCapital = parseFloat(p.registeredCapital || p.shareCapital || ext('registeredCapital') || 0);
-                return fmt(equityGL > 0 ? equityGL : profileCapital);
-            })(),
+            share_capital_total: fmt(shareCapitalFinal),
             total_employees_workers:          String(shCount + nonShCount),
             taxable_salary_employees_workers:  fmt(totalSalary),
             taxable_salary_shareholders:       fmt(shSalary),
