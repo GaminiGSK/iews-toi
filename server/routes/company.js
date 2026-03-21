@@ -2882,7 +2882,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
             else               equityCrAll += Math.abs(tx.amount);
         }
         for (const je of jesAllTime) {
-            for (const ln of je.lines) {
+            for (const ln of (je.lines || [])) {
                 if (!equityCodeIds.has(ln.accountCode?._id?.toString())) continue;
                 equityDrAll += ln.debit || 0;
                 equityCrAll += ln.credit || 0;
