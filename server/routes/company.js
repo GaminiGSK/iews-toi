@@ -1,4 +1,4 @@
-const express = require('express');
+﻿const express = require('express');
 const router = express.Router();
 const upload = require('../middleware/upload');
 const googleAI = require('../services/googleAI');
@@ -170,7 +170,7 @@ router.post('/br-extract', auth, upload.single('file'), async (req, res) => {
                 // Parse the AI summary to fill into top-level model fields for User Dashboard
                 if (organizedProfile.includes("GK SMART")) {
                     profileInDb.companyNameEn = "GK SMART";
-                    profileInDb.companyNameKh = "ជីខេ ស្អា�?;
+                    profileInDb.companyNameKh = "ជីខេ ស្អាត";
                     profileInDb.registrationNumber = "50015732";
                     profileInDb.incorporationDate = "13 April 2021";
                     profileInDb.director = "Gunasingha Kassapa Gamini";
@@ -1571,7 +1571,7 @@ router.get('/ledger', auth, async (req, res) => {
                     _id: `${je._id}_${index}`, // Composite ID
                     date: je.date,
                     sequence: 9999, // Push to end of day
-                    description: `[Journal Entry: ${je.reference || 'Adjust'}] ${je.description} \n�?${line.description || 'Line item'}`,
+                    description: `[Journal Entry: ${je.reference || 'Adjust'}] ${je.description} \n�?${line.description || 'Line item'}`,
                     amount: amount,
                     accountCode: line.accountCode, // String/ObjectId reference
                     tagSource: 'je',
@@ -2045,7 +2045,7 @@ router.get('/trial-balance', auth, async (req, res) => {
             });
         });
 
-        // Apply REAL Bank Account (10130 ABA) Balance �?from the last transaction's balance snapshot.
+        // Apply REAL Bank Account (10130 ABA) Balance �?from the last transaction's balance snapshot.
         // The netControl approach (summing amounts) was fabricating a value that didn't match the GL.
         // The 'balance' field on each Transaction is the actual printed balance from the imported PDF.
         const bankCode = codes.find(c => c.code === '10130');
@@ -2163,7 +2163,7 @@ router.get('/financials-monthly', auth, async (req, res) => {
             ...allJournals.map(je => new Date(je.date).getFullYear())
         ])].sort((a, b) => b - a);
         
-        // Monthly view ALWAYS needs a specific year �?mixing 2024+2025 into the same month slots
+        // Monthly view ALWAYS needs a specific year �?mixing 2024+2025 into the same month slots
         // produces wrong running balances on BS and wrong cumulative totals on P&L.
         let currentYear;
         if (req.query.year && req.query.year !== 'all') {
@@ -2233,14 +2233,14 @@ router.get('/financials-monthly', auth, async (req, res) => {
         const CompanyProfile = require('../models/CompanyProfile');
         const profile = await CompanyProfile.findOne({ companyCode });
 
-        // ABA (10130) �?GL-First Cumulative Balance Rule
+        // ABA (10130) �?GL-First Cumulative Balance Rule
         // Since tx.balance is not stored, compute from GL transaction amounts directly:
         //   Opening = pre-import anchor (from CompanyProfile.abaOpeningBalance) + net sum of ALL bank transactions BEFORE currentYear
         //   Month N = Opening + sum of ALL bank transactions from Jan 1 to end of Month N
         if (bsData['10130']) {
             const sortedAllTx = [...allTransactions].sort((a, b) => new Date(a.date) - new Date(b.date));
 
-            // Pre-import anchor balance (e.g. $148.85 for GK SMART �?verified from physical bank statement)
+            // Pre-import anchor balance (e.g. $148.85 for GK SMART �?verified from physical bank statement)
             const abaAnchor = (profile && profile.abaOpeningBalance) ? parseFloat(profile.abaOpeningBalance) : 0;
 
             // Opening balance = anchor + net of all transactions from prior years
@@ -2710,7 +2710,7 @@ router.post('/toi/related-party', auth, async (req, res) => {
 });
 
 // =====================================================
-// TOI AUTO-FILL ENGINE �?Aggregates ALL data sources
+// TOI AUTO-FILL ENGINE �?Aggregates ALL data sources
 // GET /api/company/toi/autofill
 // Returns a full formData map for all 21 TOI pages
 // =====================================================
@@ -2857,7 +2857,8 @@ router.get('/toi/autofill', auth, async (req, res) => {
         // toiCode may be "30100" (not "C3"), so we read by code range (30000-39999 = equity)
         // AND by description keywords as fallback
         const equityKeywords = ['share capital', 'registered capital', 'paid-up capital',
-            'paid in capital', 'equity', 'capital stock', 'owner', 'ចំណែក', 'មូលធ�?, 'ហ៊ុន'];
+            'paid in capital', 'equity', 'capital stock', 'owner',
+            'share', '30100', '30200'];  // Search by account code range 30xxx instead
         const equityAccCodes = codes.filter(c => {
             const codeNum = parseInt(c.code) || 0;
             const isEquityRange = codeNum >= 30000 && codeNum < 40000;
@@ -2894,9 +2895,8 @@ router.get('/toi/autofill', auth, async (req, res) => {
             : equityGL > 0 ? equityGL
             : parseFloat(p.registeredCapital || p.shareCapital || 0);
 
-        const shareCapitalOpeningFinal = shareCapitalOpeningFinal > 0 ? shareCapitalOpeningFinal : shareCapitalFinal;
 
-        // Khmer-only address (strip English portion �?everything after first non-Khmer line)
+        // Khmer-only address (strip English portion �?everything after first non-Khmer line)
         const addrRaw = p.address || ext('address') || '';
         // If address has Khmer chars, prefer Khmer substring; else use full address
         const hasKhmer = /[\u1780-\u17FF]/.test(addrRaw);
@@ -2959,7 +2959,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
                 const seen = new Set();
                 const list = [];
 
-                // Source 1 �?Related Party parties with ownership
+                // Source 1 �?Related Party parties with ownership
                 for (const party of parties) {
                     const pct = parseFloat(party.ownershipPct) || 0;
                     if (!party.name) continue;
@@ -2978,7 +2978,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
                     });
                 }
 
-                // Source 2 �?Salary shareholder-employees not already in list
+                // Source 2 �?Salary shareholder-employees not already in list
                 for (const emp of shEmps) {
                     if (!emp.position) continue;
                     // Use director/shareholder name from company profile, NOT the position title
@@ -2998,7 +2998,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
                     });
                 }
 
-                // Source 3 �?CompanyProfile director as fallback if still empty
+                // Source 3 �?CompanyProfile director as fallback if still empty
                 if (list.length === 0) {
                     const name = p.shareholder || p.director || '';
                     if (name) {
@@ -3037,7 +3037,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
             })(),
 
             // ── PAGE 2: Flat keys for ToiAcar.jsx print preview (capitalReg* / capitalPaid*) ──
-            // Auto-generated �?supports up to 5 rows on the official GDT form
+            // Auto-generated �?supports up to 5 rows on the official GDT form
             ...(() => {
                 const seen = new Set();
                 const list = [];
@@ -3081,7 +3081,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
                     flat[`capitalRegStartAmt${idx}`] = amtStart;
                     flat[`capitalRegEndPct${idx}`]   = pctStr;
                     flat[`capitalRegEndAmt${idx}`]   = amtEnd;
-                    // Paid-up Capital (Section B �?mirrors registered)
+                    // Paid-up Capital (Section B �?mirrors registered)
                     flat[`capitalPaidName${idx}`]     = sh?.name     || '';
                     flat[`capitalPaidAddress${idx}`]  = sh?.address  || '';
                     flat[`capitalPaidPos${idx}`]      = sh?.position || '';
@@ -3100,7 +3100,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
             taxable_salary_staff:              fmt(nonShSalary),
             total_fringe_benefits:             fmt(totalFringe),
 
-            // ── PAGE 3�?: Staff Employees ─────────────────────────────────
+            // ── PAGE 3�?: Staff Employees ─────────────────────────────────
             ...(nonShEmps[0] && {
                 staff_position_1:                      nonShEmps[0]?.position || 'Staff',
                 staff_count_1:                         String(parseInt(nonShEmps[0]?.count) || 0),
@@ -3110,7 +3110,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
             total_staff_salary:                       fmt(nonShSalary),
             total_staff_headcount:                    String(nonShCount),
 
-            // ── PAGE 5�?: TOS (Tax on Salary) Monthly ────────────────────
+            // ── PAGE 5�?: TOS (Tax on Salary) Monthly ────────────────────
             tos_total_filed:                          fmt(tosFiled),
             tos_total_paid:                           fmt(tosPaid),
             tos_variance:                             fmt(Math.abs(tosFiled - tosPaid)),
@@ -3124,7 +3124,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
             d1_n:  fmt(costOfSales),
             e1_amount: fmt(revenue),
 
-            // ── PAGE 8�?: Financial Statements (IS) ──────────────────────
+            // ── PAGE 8�?: Financial Statements (IS) ──────────────────────
             fs_revenue:                               fmt(revenue),
             fs_cost_of_sales:                         fmt(costOfSales),
             fs_gross_profit:                          fmt(grossProfit),
@@ -3137,10 +3137,10 @@ router.get('/toi/autofill', auth, async (req, res) => {
             fs_travel:                                fmt(travelGL),
             fs_other_expense:                         fmt(otherExpGL),
 
-            // ── PAGE 10�?1: Tax Adjustments ────────────────────────────────
+            // ── PAGE 10�?1: Tax Adjustments ────────────────────────────────
             // Non-deductible items
-            e2_amount:  '', // Late filing penalty �?user inputs
-            e3_amount:  '', // Entertainment �?user inputs
+            e2_amount:  '', // Late filing penalty �?user inputs
+            e3_amount:  '', // Entertainment �?user inputs
             e4_amount:  fmt(Math.max(0, totalFringe)),   // Fringe benefits disallowed portion
             e9_amount:  fmt(totalDep),   // Depreciation per register
             e10_amount: fmt(totalDep),   // GDT depreciation allowed (same since using GDT method)
@@ -3178,7 +3178,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
                 [`rp_div_amount_${i+1}`,  fmt(parseFloat(d.amount) || 0)],
             ])),
 
-            // ── PAGE 14�?5: Balance Sheet ───────────────────────────────────
+            // ── PAGE 14�?5: Balance Sheet ───────────────────────────────────
             bs_cash:                 fmt(Math.max(0, cashGL)),
             bs_accounts_receivable:  fmt(Math.max(0, arGL)),
             bs_inventory:            fmt(Math.max(0, inventoryGL)),
@@ -3190,7 +3190,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
             bs_loans:                fmt(Math.max(0, loanGL)),
             bs_equity:               fmt(Math.max(0, equityGL)),
 
-            // ── PAGE 16�?7: Asset Register ────────────────────────────────
+            // ── PAGE 16�?7: Asset Register ────────────────────────────────
             asset_total_cost:        fmt(totalAssetCost),
             asset_total_dep:         fmt(totalDep),
             asset_total_nbv:         fmt(totalNBV),
@@ -3203,7 +3203,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
                 [`asset_nbv_${i+1}`,        fmt((parseFloat(a.cost)||0) - (parseFloat(a.accDepOpening)||0) - calcDep(a))],
             ])),
 
-            // ── PAGE 18�?9: Minimum Tax / Prepayment ─────────────────────
+            // ── PAGE 18�?9: Minimum Tax / Prepayment ─────────────────────
             min_tax_turnover:        fmt(revenue),
             min_tax_1pct:            fmt(revenue * 0.01),
             prepayment_tax:          fmt(revenue * 0.01),  // 1% monthly prepayment
