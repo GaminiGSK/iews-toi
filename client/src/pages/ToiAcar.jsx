@@ -2370,8 +2370,8 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                           <span className={`text-[10px] leading-tight text-slate-800 mt-[2px] ${row.indent ? 'font-normal' : 'font-bold'}`}>{row.e}</span>
                        </div>
                        <div className="w-[8%] border-r border-black flex items-center justify-center shrink-0 py-[2px] font-bold text-[11px]">{row.ref}</div>
-                       <div className="w-[21%] border-r border-black flex items-center justify-end shrink-0 py-[2px] px-2 font-mono text-[11px]">-</div>
-                       <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[11px]">-</div>
+                       <div className="w-[21%] border-r border-black flex items-center justify-end shrink-0 py-[2px] px-2 font-mono text-[11px]">{filledData?.[row.ref.replace(' ','')+'_n'] || '-'}</div>
+                       <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[11px]">{filledData?.[row.ref.replace(' ','')+'_n1'] || '-'}</div>
                     </div>
                   ))}
                </div>
@@ -2475,7 +2475,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                      </div>
                      <div className="w-[8%] border-r border-black flex items-center justify-center shrink-0 py-[2px] font-bold text-[11px]">E 1</div>
                      <div className="w-[20%] border-r border-black flex items-center justify-center shrink-0 py-[2px] px-2 font-mono text-[11px] bg-white">(+/-)</div>
-                     <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[11px] bg-white">-</div>
+                     <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[11px] bg-white">{filledData?.['B46_n'] || '-'}</div>
                   </div>
 
                   {/* Section 1 Header: Add Non-Deductible Expenses */}
@@ -2521,7 +2521,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        </div>
                        <div className="w-[8%] border-r border-black flex items-center justify-center shrink-0 py-[2px] font-bold text-[10px]">{row.ref}</div>
                        <div className="w-[20%] border-r border-black flex items-center justify-end shrink-0 py-[2px] px-2 font-mono text-[10px] bg-[#d9d9d9]"></div>
-                       <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px] bg-white">-</div>
+                       <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px] bg-white">{filledData?.[row.ref.replace(' ','')+'_n'] || '-'}</div>
                     </div>
                   ))}
 
@@ -2558,7 +2558,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        </div>
                        <div className="w-[8%] border-r border-black flex items-center justify-center shrink-0 py-[2px] font-bold text-[10px]">{row.ref}</div>
                        <div className="w-[20%] border-r border-black flex items-center justify-end shrink-0 py-[2px] px-2 font-mono text-[10px] bg-[#d9d9d9]"></div>
-                       <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px] bg-white">-</div>
+                       <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px] bg-white">{filledData?.[row.ref.replace(' ','')+'_n'] || '-'}</div>
                     </div>
                   ))}
 
@@ -2590,7 +2590,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        </div>
                        <div className="w-[8%] border-r border-black flex items-center justify-center shrink-0 py-[2px] font-bold text-[10px]">{row.ref}</div>
                        <div className="w-[20%] border-r border-black flex items-center justify-end shrink-0 py-[2px] px-2 font-mono text-[10px] bg-[#d9d9d9]"></div>
-                       <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px] bg-white">-</div>
+                       <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px] bg-white">{filledData?.[row.ref.replace(' ','')+'_n'] || '-'}</div>
                     </div>
                   ))}
                </div>
@@ -2688,7 +2688,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        </div>
                        <div className="w-[8%] border-r border-black flex items-center justify-center shrink-0 py-[2px] font-bold text-[10px]">{row.ref}</div>
                        <div className="w-[20%] border-r border-black flex items-center justify-end shrink-0 py-[2px] px-2 font-mono text-[10px] bg-[#d9d9d9]"></div>
-                       <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px] bg-white">-</div>
+                       <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px] bg-white">{filledData?.[row.ref.replace(' ','')+'_n'] || '-'}</div>
                     </div>
                   ))}
 
@@ -2722,7 +2722,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        </div>
                        <div className="w-[8%] border-r border-black flex items-center justify-center shrink-0 py-[2px] font-bold text-[10px]">{row.ref}</div>
                        <div className="w-[20%] border-r border-black flex items-center justify-end shrink-0 py-[2px] px-2 font-mono text-[10px] bg-[#d9d9d9]"></div>
-                       <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px] bg-white">-</div>
+                       <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px] bg-white">{filledData?.[row.ref.replace(' ','')+'_n'] || '-'}</div>
                     </div>
                   ))}
 
@@ -2735,7 +2735,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                      </div>
                      <div className="w-[8%] border-r border-black flex items-center justify-center shrink-0 py-[2px] font-bold text-[10px]">E 36</div>
                      <div className="w-[20%] border-r border-black flex items-center justify-end shrink-0 py-[2px] px-2 font-mono text-[10px] bg-[#d9d9d9]"></div>
-                     <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px] bg-white">-</div>
+                     <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px] bg-white">{filledData?.['E36_n'] || '-'}</div>
                   </div>
 
                   {/* Body Row E37 */}
@@ -2750,7 +2750,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                      </div>
                      <div className="w-[8%] border-r border-black flex items-center justify-center shrink-0 py-[2px] font-bold text-[10px]">E 37</div>
                      <div className="w-[20%] border-r border-black flex items-center justify-end shrink-0 py-[2px] px-2 font-mono text-[10px] bg-[#d9d9d9]"></div>
-                     <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px] bg-white">-</div>
+                     <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px] bg-white">{filledData?.['E37_n'] || '-'}</div>
                   </div>
 
                   {/* Body Row E38 */}
@@ -2762,7 +2762,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                      </div>
                      <div className="w-[8%] border-r border-black flex items-center justify-center shrink-0 py-[2px] font-bold text-[10px]">E 38</div>
                      <div className="w-[20%] border-r border-black flex items-center justify-end shrink-0 py-[2px] px-2 font-mono text-[10px] bg-[#d9d9d9]"></div>
-                     <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px] bg-white">-</div>
+                     <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px] bg-white">{filledData?.['E38_n'] || '-'}</div>
                   </div>
 
                   {/* Body Row E39 */}
@@ -2777,7 +2777,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                      </div>
                      <div className="w-[8%] border-r border-black flex items-center justify-center shrink-0 py-[2px] font-bold text-[10px]">E 39</div>
                      <div className="w-[20%] border-r border-black flex items-center justify-center shrink-0 py-[2px] px-2 font-mono text-[10px] bg-white">(+/-)</div>
-                     <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px] bg-white">-</div>
+                     <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px] bg-white">{filledData?.['E39_n'] || '-'}</div>
                   </div>
 
                   {/* Body Row E40 */}
@@ -2789,7 +2789,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                      </div>
                      <div className="w-[8%] border-r border-black flex items-center justify-center shrink-0 py-[2px] font-bold text-[10px]">E 40</div>
                      <div className="w-[20%] border-r border-black flex items-center justify-end shrink-0 py-[2px] px-2 font-mono text-[10px] bg-[#d9d9d9]"></div>
-                     <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px] bg-white">-</div>
+                     <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px] bg-white">{filledData?.['E40_n'] || '-'}</div>
                   </div>
 
                   {/* Body Row E41 */}
@@ -2804,7 +2804,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                      </div>
                      <div className="w-[8%] border-r border-black flex items-center justify-center shrink-0 py-[2px] font-bold text-[10px]">E 41</div>
                      <div className="w-[20%] border-r border-black flex items-center justify-end shrink-0 py-[2px] px-2 font-mono text-[10px] bg-[#d9d9d9]"></div>
-                     <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px] bg-white">-</div>
+                     <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px] bg-white">{filledData?.['E41_n'] || '-'}</div>
                   </div>
 
                   {/* Body Row E42 */}
@@ -2816,7 +2816,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                      </div>
                      <div className="w-[8%] border-r border-black flex items-center justify-center shrink-0 py-[2px] font-bold text-[10px]">E 42</div>
                      <div className="w-[20%] border-r border-black flex items-center justify-end shrink-0 py-[2px] px-2 font-mono text-[10px] bg-[#d9d9d9]"></div>
-                     <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px] bg-white">-</div>
+                     <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px] bg-white">{filledData?.['E42_n'] || '-'}</div>
                   </div>
 
                   {/* Body Rows E43 -> E45 */}
@@ -2833,7 +2833,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        </div>
                        <div className="w-[8%] border-r border-black flex items-center justify-center shrink-0 py-[2px] font-bold text-[10px]">{row.ref}</div>
                        <div className="w-[20%] border-r border-black flex items-center justify-end shrink-0 py-[2px] px-2 font-mono text-[10px] bg-[#d9d9d9]"></div>
-                       <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px] bg-white">-</div>
+                       <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px] bg-white">{filledData?.[row.ref.replace(' ','')+'_n'] || '-'}</div>
                     </div>
                   ))}
 
@@ -2874,7 +2874,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                          {row.isChild && row.action?.val}
                        </div>
                        <div className={`flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px] bg-white ${row.isChild ? 'border-t border-dashed border-black/30' : ''}`}>
-                          {row.isChild || !['E 52', 'E 59'].includes(row.ref) ? '-' : ''}
+                          {!row.isChild && filledData?.[row.ref.replace(' ','')+'_n'] || (!row.isChild ? '-' : '')}
                        </div>
                     </div>
                   ))}
@@ -3001,7 +3001,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                           <span className={`text-[8.5px] leading-tight text-slate-800 mt-[2px] font-normal`}>{row.e}</span>
                        </div>
                        <div className="w-[8%] border-r border-black flex items-center justify-center shrink-0 py-[2px] font-bold text-[10px]">{row.ref}</div>
-                       <div className="flex-1 flex items-center justify-end py-[2px] px-3 font-mono text-[11px] bg-white">-</div>
+                       <div className="flex-1 flex items-center justify-end py-[2px] px-3 font-mono text-[11px] bg-white">{filledData?.[row.ref.replace(' ','')+'_n'] || '-'}</div>
                     </div>
                   ))}
 
@@ -3062,7 +3062,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                           <span className={`text-[8.5px] leading-tight text-slate-800 mt-[2px] font-normal`}>{row.e}</span>
                        </div>
                        <div className="w-[8%] border-r border-black flex items-center justify-center shrink-0 py-[2px] font-bold text-[10px]">{row.ref}</div>
-                       <div className={`flex-1 flex items-center justify-end py-[2px] px-3 font-mono text-[11px] ${row.greyAmount ? 'bg-[#e5e5e5]' : 'bg-white'}`}>-</div>
+                       <div className={`flex-1 flex items-center justify-end py-[2px] px-3 font-mono text-[11px] ${row.greyAmount ? 'bg-[#e5e5e5]' : 'bg-white'}`}>{filledData?.['E42_n'] || '-'}</div>
                     </div>
                   ))}
 
@@ -3079,7 +3079,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                           <span className="text-[8px] leading-tight text-slate-700 font-normal mt-1 mb-1">* If G7 &gt; G2, the difference (G9) of table B.1 (Table of Interest Expense Carried Forward) in the next page (Page 12)</span>
                       </div>
                       <div className="w-[8%] border-r border-black flex items-center justify-center shrink-0 py-[2px] font-bold text-[10px]">G 8*</div>
-                      <div className="flex-1 flex items-end justify-end py-3 px-3 font-mono text-[11px] bg-white">-</div>
+                      <div className="flex-1 flex items-end justify-end py-3 px-3 font-mono text-[11px] bg-white">{filledData?.['E42_n'] || '-'}</div>
                   </div>
                </div>
 
@@ -3230,8 +3230,8 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                            <div className="w-[22%] border-r border-black"></div> {/* Empty under overlay */}
                            <div className="w-[16.5%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]"></div>
                            <div className="w-[16.5%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]"></div>
-                           <div className="w-[16.5%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                           <div className="flex-1 flex items-center justify-end px-2 font-mono text-[10px]">-</div>
+                           <div className="w-[16.5%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                           <div className="flex-1 flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
                         </div>
                      ))}
                      
@@ -3243,7 +3243,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         </div>
                         <div className="w-[22%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]"></div>
                         <div className="w-[16.5%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]"></div>
-                        <div className="w-[16.5%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">-</div>
+                        <div className="w-[16.5%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
                         <div className="w-[16.5%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]"></div>
                         <div className="flex-1 flex items-center justify-end px-2 font-mono text-[10px]"></div>
                      </div>
@@ -3544,16 +3544,16 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     <div key={`I-${i}`} className="flex border-b border-black h-[18px] bg-white text-black">
                         <div className="w-[2.5%] border-r border-black"></div>
                         <div className="w-[18.5%] border-r border-black"></div>
-                        <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                        <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                        <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                        <div className="w-[8%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
+                        <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                        <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                        <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                        <div className="w-[8%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
                         <div className="w-[3.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]"></div>
-                        <div className="w-[7%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                        <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                        <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                        <div className="w-[10%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                        <div className="w-[11%] flex items-center justify-end px-1 font-mono text-[9px]">-</div>
+                        <div className="w-[7%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                        <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                        <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                        <div className="w-[10%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                        <div className="w-[11%] flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
                     </div>
                  ))}
 
@@ -3584,16 +3584,16 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     <div key={`II-1-${i}`} className="flex border-b border-black h-[18px] bg-white text-black">
                         <div className="w-[2.5%] border-r border-black"></div>
                         <div className="w-[18.5%] border-r border-black"></div>
-                        <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                        <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                        <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                        <div className="w-[8%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
+                        <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                        <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                        <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                        <div className="w-[8%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
                         <div className="w-[3.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]"></div>
-                        <div className="w-[7%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                        <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                        <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                        <div className="w-[10%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                        <div className="w-[11%] flex items-center justify-end px-1 font-mono text-[9px]">-</div>
+                        <div className="w-[7%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                        <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                        <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                        <div className="w-[10%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                        <div className="w-[11%] flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
                     </div>
                  ))}
                  <div className="flex border-b border-black h-[18px] bg-white text-black">
@@ -3616,16 +3616,16 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     <div key={`II-2-${i}`} className="flex border-b border-black h-[18px] bg-white text-black">
                         <div className="w-[2.5%] border-r border-black"></div>
                         <div className="w-[18.5%] border-r border-black"></div>
-                        <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                        <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                        <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                        <div className="w-[8%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
+                        <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                        <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                        <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                        <div className="w-[8%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
                         <div className="w-[3.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]"></div>
-                        <div className="w-[7%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                        <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                        <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                        <div className="w-[10%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                        <div className="w-[11%] flex items-center justify-end px-1 font-mono text-[9px]">-</div>
+                        <div className="w-[7%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                        <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                        <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                        <div className="w-[10%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                        <div className="w-[11%] flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
                     </div>
                  ))}
 
@@ -3643,30 +3643,30 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         <span className="text-[8px] font-bold leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សំណង់ អគារ រចនាសម្ព័ន្ធ ផ្លូវ នាវា ...</span>
                         <span className="text-[6.5px] font-bold leading-tight mt-[1px]">Construction, buildings, infrastructures, roads, vessels ...</span>
                      </div>
-                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[8%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
+                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[8%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
                      <div className="w-[3.5%] border-r border-black flex items-center justify-center px-[2px] font-sans text-[8px]">5%</div>
-                     <div className="w-[7%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[10%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[11%] flex items-center justify-end px-1 font-mono text-[9px]">-</div>
+                     <div className="w-[7%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[10%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[11%] flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
                  </div>
                  <div className="flex border-b border-black h-[18px] bg-white text-black">
                      <div className="w-[2.5%] border-r border-black"></div>
                      <div className="w-[18.5%] border-r border-black"></div>
-                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[8%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
+                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[8%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
                      <div className="w-[3.5%] border-r border-black flex items-center justify-end px-[2px] font-mono text-[9px]"></div>
-                     <div className="w-[7%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[10%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[11%] flex items-center justify-end px-1 font-mono text-[9px]">-</div>
+                     <div className="w-[7%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[10%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[11%] flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
                  </div>
                  <div className="flex border-b border-black h-[22px] bg-white text-black">
                      <div className="w-[2.5%] border-r border-black flex flex-col items-center justify-start pt-[2px] font-bold text-[9px]">2</div>
@@ -3674,30 +3674,30 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         <span className="text-[8px] font-bold leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>អគារ មិនមែនបេតុង</span>
                         <span className="text-[6.5px] font-bold leading-tight mt-[1px]">Non-concrete buildings</span>
                      </div>
-                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[8%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
+                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[8%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
                      <div className="w-[3.5%] border-r border-black flex items-center justify-center px-[2px] font-sans text-[8px]">10%</div>
-                     <div className="w-[7%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[10%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[11%] flex items-center justify-end px-1 font-mono text-[9px]">-</div>
+                     <div className="w-[7%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[10%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[11%] flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
                  </div>
                  <div className="flex border-b border-black h-[18px] bg-white text-black">
                      <div className="w-[2.5%] border-r border-black"></div>
                      <div className="w-[18.5%] border-r border-black"></div>
-                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[8%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
+                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[8%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
                      <div className="w-[3.5%] border-r border-black flex items-center justify-end px-[2px] font-mono text-[9px]"></div>
-                     <div className="w-[7%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[10%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[11%] flex items-center justify-end px-1 font-mono text-[9px]">-</div>
+                     <div className="w-[7%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[10%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[11%] flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
                  </div>
                  
                  {/* Total I+II+III */}
@@ -3706,16 +3706,16 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                      <div className="w-[18.5%] border-r border-black flex items-center justify-center relative bg-white">
                         <span className="text-[9px] font-bold leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សរុប ( I + II + III ) <span className="text-[7.5px] font-bold leading-none mt-[1px] ml-1 font-sans">Total ( I + II + III )</span></span>
                      </div>
-                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[8%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
+                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[8%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
                      <div className="w-[3.5%] border-r border-black flex items-center justify-end px-[2px] font-mono text-[9px]"></div>
-                     <div className="w-[7%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[10%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[11%] flex items-center justify-end px-1 font-mono text-[9px]">-</div>
+                     <div className="w-[7%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[8.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[10%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[11%] flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
                  </div>
 
                  {/* SECTION IV HEADER */}
@@ -3811,14 +3811,14 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         <span className="text-[8px] font-bold leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ទ្រព្យរូបីថ្នាក់២</span>
                         <span className="text-[6.5px] font-bold leading-tight mt-[1px]">Tangible assets class 2</span>
                      </div>
-                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[8%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[19%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
+                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[8%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[19%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
                      <div className="w-[8.5%] border-r border-black flex items-center justify-center px-[2px] font-sans text-[8px]">50%</div>
-                     <div className="w-[10%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[11%] flex items-center justify-end px-1 font-mono text-[9px]">-</div>
+                     <div className="w-[10%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[11%] flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
                  </div>
                  <div className="flex border-b border-black h-[18px] bg-white text-black">
                      <div className="w-[2.5%] border-r border-black"></div>
@@ -3826,14 +3826,14 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         <span className="text-[8px] font-bold leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ទ្រព្យរូបីថ្នាក់៣</span>
                         <span className="text-[6.5px] font-bold leading-tight mt-[1px]">Tangible assets class 3</span>
                      </div>
-                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[8%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[19%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
+                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[8%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[19%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
                      <div className="w-[8.5%] border-r border-black flex items-center justify-center px-[2px] font-sans text-[8px]">25%</div>
-                     <div className="w-[10%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[11%] flex items-center justify-end px-1 font-mono text-[9px]">-</div>
+                     <div className="w-[10%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[11%] flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
                  </div>
                  <div className="flex border-b border-black h-[18px] bg-white text-black">
                      <div className="w-[2.5%] border-r border-black"></div>
@@ -3841,14 +3841,14 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         <span className="text-[8px] font-bold leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ទ្រព្យរូបីថ្នាក់៤</span>
                         <span className="text-[6.5px] font-bold leading-tight mt-[1px]">Tangible assets class 4</span>
                      </div>
-                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[8%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[19%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
+                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[8%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[19%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
                      <div className="w-[8.5%] border-r border-black flex items-center justify-center px-[2px] font-sans text-[8px]">20%</div>
-                     <div className="w-[10%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[11%] flex items-center justify-end px-1 font-mono text-[9px]">-</div>
+                     <div className="w-[10%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[11%] flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
                  </div>
 
                  {/* Total Class 2 to 4 */}
@@ -3856,14 +3856,14 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                      <div className="w-[21%] border-r border-black flex items-center justify-center relative bg-white">
                         <span className="text-[9px] font-bold leading-none" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សរុបថ្នាក់ ទី ២ ដល់ ៤ <span className="text-[7.5px] font-bold leading-none mt-[1px] ml-1 font-sans">Total class 2 to 4</span></span>
                      </div>
-                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[8%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[19%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
+                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[8%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[19%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
                      <div className="w-[8.5%] border-r border-black flex items-center justify-end px-[2px] font-mono text-[9px]"></div>
-                     <div className="w-[10%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">-</div>
-                     <div className="w-[11%] flex items-center justify-end px-1 font-mono text-[9px]">-</div>
+                     <div className="w-[10%] border-r border-black flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[11%] flex items-center justify-end px-1 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
                  </div>
                  
                  {/* Grand Total Row */}
@@ -3871,14 +3871,14 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                      <div className="w-[21%] border-r border-black flex flex-col items-center justify-center relative translate-y-[1px]">
                          <span className="font-bold text-[9px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សរុបរួម  <span className="font-bold text-[7.5px] leading-tight font-sans">Grand Total</span></span>
                      </div>
-                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[10px]">-</div>
-                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[10px]">-</div>
-                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[10px]">-</div>
-                     <div className="w-[8%] border-r border-black flex items-center justify-end px-1 font-mono text-[10px]">-</div>
-                     <div className="w-[19%] border-r border-black flex items-center justify-end px-1 font-mono text-[10px]">-</div>
+                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[7.5%] border-r border-black flex items-center justify-end px-1 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[8%] border-r border-black flex items-center justify-end px-1 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[19%] border-r border-black flex items-center justify-end px-1 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
                      <div className="w-[8.5%] border-r border-black bg-[#d9d9d9]"></div>
-                     <div className="w-[10%] border-r border-black flex items-center justify-end px-1 font-mono text-[10px]">-</div>
-                     <div className="w-[11%] flex items-center justify-end px-1 font-mono text-[10px]">-</div>
+                     <div className="w-[10%] border-r border-black flex items-center justify-end px-1 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                     <div className="w-[11%] flex items-center justify-end px-1 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
                  </div>
 
                </div>
@@ -4022,10 +4022,10 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                  {[1, 2].map((_, idx) => (
                     <div key={`c1-${idx}`} className="flex border-b border-black h-[24px] bg-white text-black">
                        <div className="w-[18%] border-r border-black"></div>
-                       <div className="w-[21%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                       <div className="w-[21%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                       <div className="w-[20%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                       <div className="w-[20%] flex items-center justify-end px-2 font-mono text-[10px]">-</div>
+                       <div className="w-[21%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                       <div className="w-[21%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                       <div className="w-[20%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                       <div className="w-[20%] flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
                     </div>
                  ))}
 
@@ -4050,10 +4050,10 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                  {[1, 2].map((_, idx) => (
                     <div key={`c2-${idx}`} className="flex border-b border-black h-[24px] bg-white text-black">
                        <div className="w-[18%] border-r border-black"></div>
-                       <div className="w-[21%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                       <div className="w-[21%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                       <div className="w-[20%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                       <div className="w-[20%] flex items-center justify-end px-2 font-mono text-[10px]">-</div>
+                       <div className="w-[21%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                       <div className="w-[21%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                       <div className="w-[20%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                       <div className="w-[20%] flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
                     </div>
                  ))}
 
@@ -4078,10 +4078,10 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                  {[1, 2].map((_, idx) => (
                     <div key={`c3-${idx}`} className="flex border-b border-black h-[24px] bg-white text-black">
                        <div className="w-[18%] border-r border-black"></div>
-                       <div className="w-[21%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                       <div className="w-[21%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                       <div className="w-[20%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                       <div className="w-[20%] flex items-center justify-end px-2 font-mono text-[10px]">-</div>
+                       <div className="w-[21%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                       <div className="w-[21%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                       <div className="w-[20%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                       <div className="w-[20%] flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
                     </div>
                  ))}
 
@@ -4106,10 +4106,10 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                  {[1, 2].map((_, idx) => (
                     <div key={`c4-${idx}`} className="flex border-b border-black h-[24px] bg-white text-black">
                        <div className="w-[18%] border-r border-black"></div>
-                       <div className="w-[21%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                       <div className="w-[21%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                       <div className="w-[20%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                       <div className="w-[20%] flex items-center justify-end px-2 font-mono text-[10px]">-</div>
+                       <div className="w-[21%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                       <div className="w-[21%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                       <div className="w-[20%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                       <div className="w-[20%] flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
                     </div>
                  ))}
 
@@ -4119,10 +4119,10 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        <span className="text-[10px] font-bold leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សរុប</span>
                        <span className="text-[8px] font-bold leading-tight mt-[1px]">Grand Total</span>
                     </div>
-                    <div className="w-[21%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                    <div className="w-[21%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                    <div className="w-[20%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                    <div className="w-[20%] flex items-center justify-end px-2 font-mono text-[10px]">-</div>
+                    <div className="w-[21%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                    <div className="w-[21%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                    <div className="w-[20%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                    <div className="w-[20%] flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
                  </div>
                </div>
 
@@ -4319,7 +4319,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                           <div className="w-[14%] border-r border-black h-full"></div>
                           
                           {/* (1) Hist Cost */}
-                          <div className="w-[11.6%] border-r border-black flex items-center justify-end px-2 font-mono text-[9px]">-</div>
+                          <div className="w-[11.6%] border-r border-black flex items-center justify-end px-2 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
                           
                           {/* (2) Accu Dep */}
                           <div className={`w-[11.6%] border-r border-black flex items-center justify-end px-2 font-mono text-[9px] ${section.greyIdx?.includes(5) ? 'bg-[#d9d9d9]' : ''}`}>
@@ -4332,7 +4332,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                           </div>
 
                           {/* (4) Proceeds */}
-                          <div className="w-[11.6%] border-r border-black flex items-center justify-end px-2 font-mono text-[9px]">-</div>
+                          <div className="w-[11.6%] border-r border-black flex items-center justify-end px-2 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
 
                           {/* (5) Gain/Loss */}
                           <div className={`w-[11.6%] flex items-center justify-end px-2 font-mono text-[9px] ${section.greyIdx?.includes(8) ? 'bg-[#d9d9d9]' : ''}`}>
@@ -4347,14 +4347,14 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                              <div className="w-[5.5%] border-r border-black h-full"></div>
                              <div className="w-[17%] border-r border-black h-full"></div>
                              <div className="w-[14%] border-r border-black h-full"></div>
-                             <div className="w-[11.6%] border-r border-black flex items-center justify-end px-2 font-mono text-[9px]">-</div>
+                             <div className="w-[11.6%] border-r border-black flex items-center justify-end px-2 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
                              <div className={`w-[11.6%] border-r border-black flex items-center justify-end px-2 font-mono text-[9px] ${section.greyIdx?.includes(5) ? 'bg-[#d9d9d9]' : ''}`}>
                                {!section.greyIdx?.includes(5) ? '-' : ''}
                              </div>
                              <div className={`w-[11.6%] border-r border-black flex items-center justify-end px-2 font-mono text-[9px] ${section.greyIdx?.includes(6) ? 'bg-[#d9d9d9]' : ''}`}>
                                {!section.greyIdx?.includes(6) ? '-' : ''}
                              </div>
-                             <div className="w-[11.6%] border-r border-black flex items-center justify-end px-2 font-mono text-[9px]">-</div>
+                             <div className="w-[11.6%] border-r border-black flex items-center justify-end px-2 font-mono text-[9px]">{filledData?.['E42_n'] || '-'}</div>
                              <div className={`w-[11.6%] flex items-center justify-end px-2 font-mono text-[9px] ${section.greyIdx?.includes(8) ? 'bg-[#d9d9d9]' : ''}`}>
                                {!section.greyIdx?.includes(8) ? '-' : ''}
                              </div>
@@ -4372,11 +4372,11 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        <span className="text-[10px] font-bold leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សរុបរួម</span>
                        <span className="text-[8px] font-bold leading-tight mt-[1px]">Grand Total</span>
                     </div>
-                    <div className="w-[11.6%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                    <div className="w-[11.6%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                    <div className="w-[11.6%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                    <div className="w-[11.6%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                    <div className="w-[11.6%] flex items-center justify-end px-2 font-mono text-[10px]">-</div>
+                    <div className="w-[11.6%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                    <div className="w-[11.6%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                    <div className="w-[11.6%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                    <div className="w-[11.6%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                    <div className="w-[11.6%] flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
                  </div>
                </div>
 
@@ -4518,10 +4518,10 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        <div className="w-[20%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">
                            {i < 5 ? "-" : ""}
                        </div>
-                       <div className="w-[19.25%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                       <div className="w-[19.25%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                       <div className="w-[19.25%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                       <div className="w-[19.25%] h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
+                       <div className="w-[19.25%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                       <div className="w-[19.25%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                       <div className="w-[19.25%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                       <div className="w-[19.25%] h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
                     </div>
                  ))}
 
@@ -4532,10 +4532,10 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        <span className="font-bold text-[10px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សរុប</span>
                        <span className="font-bold text-[8px] leading-tight">Total</span>
                     </div>
-                    <div className="w-[19.25%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                    <div className="w-[19.25%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                    <div className="w-[19.25%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                    <div className="w-[19.25%] h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
+                    <div className="w-[19.25%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                    <div className="w-[19.25%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                    <div className="w-[19.25%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                    <div className="w-[19.25%] h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
                  </div>
                </div>
 
@@ -5087,10 +5087,10 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        <div key={`ho-${i}`} className="flex border-b border-black h-[22px] bg-white text-black items-center">
                           <div className="w-[12%] border-r border-black h-full"></div>
                           <div className="w-[16%] border-r border-black h-full"></div>
-                          <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                          <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                          <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                          <div className="w-[18%] h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
+                          <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                          <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                          <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                          <div className="w-[18%] h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
                        </div>
                     ))}
                     <div className="flex h-[28px] bg-white text-black items-center">
@@ -5098,10 +5098,10 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                           <span className="font-bold text-[10px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សរុប</span>
                           <span className="font-bold text-[8px] leading-tight">Sub-Total</span>
                        </div>
-                       <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                       <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                       <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                       <div className="w-[18%] h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
+                       <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                       <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                       <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                       <div className="w-[18%] h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
                     </div>
                  </div>
 
@@ -5115,10 +5115,10 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        <div key={`b1-${i}`} className="flex border-b border-black h-[22px] bg-white text-black items-center">
                           <div className="w-[12%] border-r border-black h-full"></div>
                           <div className="w-[16%] border-r border-black h-full"></div>
-                          <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                          <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                          <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                          <div className="w-[18%] h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
+                          <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                          <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                          <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                          <div className="w-[18%] h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
                        </div>
                     ))}
                     <div className="flex h-[28px] bg-white text-black items-center">
@@ -5126,10 +5126,10 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                           <span className="font-bold text-[10px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សរុប</span>
                           <span className="font-bold text-[8px] leading-tight">Sub-Total</span>
                        </div>
-                       <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                       <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                       <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                       <div className="w-[18%] h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
+                       <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                       <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                       <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                       <div className="w-[18%] h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
                     </div>
                  </div>
 
@@ -5143,10 +5143,10 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        <div key={`bn-${i}`} className="flex border-b border-black h-[22px] bg-white text-black items-center">
                           <div className="w-[12%] border-r border-black h-full"></div>
                           <div className="w-[16%] border-r border-black h-full"></div>
-                          <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                          <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                          <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                          <div className="w-[18%] h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
+                          <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                          <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                          <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                          <div className="w-[18%] h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
                        </div>
                     ))}
                     <div className="flex h-[28px] bg-white text-black items-center">
@@ -5154,10 +5154,10 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                           <span className="font-bold text-[10px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សរុប</span>
                           <span className="font-bold text-[8px] leading-tight">Sub-Total</span>
                        </div>
-                       <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                       <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                       <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                       <div className="w-[18%] h-full flex items-center justify-end px-2 font-mono text-[10px]">-</div>
+                       <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                       <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                       <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                       <div className="w-[18%] h-full flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
                     </div>
                  </div>
 
@@ -5167,10 +5167,10 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        <span className="font-bold text-[10px] leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សរុបរួម</span>
                        <span className="font-bold text-[8px] leading-tight">Grand Total</span>
                     </div>
-                    <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px] bg-white">-</div>
-                    <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px] bg-white">-</div>
-                    <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px] bg-white">-</div>
-                    <div className="w-[18%] h-full flex items-center justify-end px-2 font-mono text-[10px] bg-white">-</div>
+                    <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px] bg-white">{filledData?.['E42_n'] || '-'}</div>
+                    <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px] bg-white">{filledData?.['E42_n'] || '-'}</div>
+                    <div className="w-[18%] border-r border-black h-full flex items-center justify-end px-2 font-mono text-[10px] bg-white">{filledData?.['E42_n'] || '-'}</div>
+                    <div className="w-[18%] h-full flex items-center justify-end px-2 font-mono text-[10px] bg-white">{filledData?.['E42_n'] || '-'}</div>
                  </div>
 
                </div>
@@ -5421,11 +5421,11 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         </div>
                         <div className="flex border border-black bg-[#f0f0f0] h-[24px]">
                            <span className="w-10 border-r border-black items-center justify-start px-1 text-[10px] leading-none pt-1 flex" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ខ/B :</span>
-                           <div className="flex-1 bg-white"></div>
+                           <div className="flex-1 bg-white flex justify-end items-center px-2 font-mono text-[11px] font-bold">{filledData?.['X2_n'] || '-'}</div>
                         </div>
                         <div className="flex border border-black bg-[#f0f0f0] h-[24px]">
                            <span className="w-10 border-r border-black items-center justify-start px-1 text-[10px] leading-none pt-1 flex" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>គ/C :</span>
-                           <div className="flex-1 bg-white"></div>
+                           <div className="flex-1 bg-white flex justify-end items-center px-2 font-mono text-[11px] font-bold">{filledData?.['X3_n'] || '-'}</div>
                         </div>
                      </div>
                   </div>
@@ -5443,7 +5443,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                               <span className="text-[9px] font-bold mt-[1px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រើប្រាស់កម្មវិធីគណនេយ្យកុំព្យូទ័រ (ឈ្មោះកម្មវិធី) </span>
                               <span className="text-[7.5px] font-bold opacity-80 mt-[1px]">Using Accounting Software (Software's name)</span>
                            </div>
-                           <div className="border border-black bg-white h-[20px] ml-auto flex-1 max-w-[50%]"></div>
+                           <div className="border border-black bg-white h-[20px] ml-auto flex-1 max-w-[50%] flex justify-end items-center px-2 font-mono text-[11px] font-bold">{filledData?.['X4_n'] || '-'}</div>
                         </div>
                         <div className="flex items-center gap-1 w-[90%] mb-1">
                            <div className="w-[12px] h-[12px] border border-black shrink-0 relative"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[45%] text-slate-800" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
@@ -5451,6 +5451,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                               <span className="text-[9px] font-bold mt-[1px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>មិនប្រើប្រាស់កម្មវិធីគណនេយ្យកុំព្យូទ័រ</span>
                               <span className="text-[7.5px] font-bold opacity-80 mt-[1px]">Not Using Accounting Software</span>
                            </div>
+                           <div className="border border-black bg-white h-[20px] ml-auto flex-1 max-w-[50%] flex justify-end items-center px-2 font-mono text-[11px] font-bold">{filledData?.['X5_n'] || '-'}</div>
                         </div>
                      </div>
                   </div>
@@ -5506,10 +5507,10 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                           </div>
                        </div>
                     </div>
-                    <div className="w-[16%] border-r border-black h-[24px] flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                    <div className="w-[13%] border-r border-black h-[24px] flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                    <div className="w-[23%] border-r border-black h-[24px] flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                    <div className="w-[20%] h-[24px] flex items-center justify-end px-2 font-mono text-[10px]">-</div>
+                    <div className="w-[16%] border-r border-black h-[24px] flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                    <div className="w-[13%] border-r border-black h-[24px] flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                    <div className="w-[23%] border-r border-black h-[24px] flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                    <div className="w-[20%] h-[24px] flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
                  </div>
 
                  {/* Rows 2-5 (Empty entries) */}
@@ -5521,10 +5522,10 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                              <div className="flex-1"></div>
                           </div>
                        </div>
-                       <div className="w-[16%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                       <div className="w-[13%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                       <div className="w-[23%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">-</div>
-                       <div className="w-[20%] flex items-center justify-end px-2 font-mono text-[10px]">-</div>
+                       <div className="w-[16%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                       <div className="w-[13%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                       <div className="w-[23%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                       <div className="w-[20%] flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
                     </div>
                  ))}
 
@@ -5540,7 +5541,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        </div>
                     </div>
                     <div className="w-[16%] border-r border-black bg-[#f0f0f0]"></div>
-                    <div className="w-[13%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px] font-bold">-</div>
+                    <div className="w-[13%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px] font-bold">{filledData?.['E42_n'] || '-'}</div>
                     <div className="w-[23%] border-r border-black bg-[#f0f0f0]"></div>
                     <div className="w-[20%] bg-[#f0f0f0]"></div>
                  </div>
@@ -5557,9 +5558,9 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        </div>
                     </div>
                     <div className="w-[16%] border-r border-black bg-[#f0f0f0]"></div>
-                    <div className="w-[13%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px] font-bold">-</div>
-                    <div className="w-[23%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px] font-bold">-</div>
-                    <div className="w-[20%] flex items-center justify-end px-2 font-mono text-[10px] font-bold">-</div>
+                    <div className="w-[13%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px] font-bold">{filledData?.['E42_n'] || '-'}</div>
+                    <div className="w-[23%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px] font-bold">{filledData?.['E42_n'] || '-'}</div>
+                    <div className="w-[20%] flex items-center justify-end px-2 font-mono text-[10px] font-bold">{filledData?.['E42_n'] || '-'}</div>
                  </div>
                </div>
 
@@ -5872,7 +5873,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        <span className="font-bold text-[8.5px] leading-tight">Taxable income (E42)</span>
                     </div>
                     <div className="w-[10%] border-r-[2px] border-black flex items-center justify-center font-bold text-[10.5px] shrink-0">X 1</div>
-                    <div className="w-[30%] flex justify-end items-center px-4 font-mono text-[11px] font-bold">-</div>
+                    <div className="w-[30%] flex justify-end items-center px-4 font-mono text-[11px] font-bold">{filledData?.['X1_n'] || '-'}</div>
                  </div>
 
                  {/* Row X2 */}
@@ -5882,7 +5883,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        <span className="font-bold text-[8.5px] leading-tight">Accumulated income</span>
                     </div>
                     <div className="w-[10%] border-r-[2px] border-black flex items-center justify-center font-bold text-[10.5px] shrink-0 bg-white">X 2</div>
-                    <div className="w-[30%] flex justify-end items-center px-4 font-mono text-[11px] font-bold bg-white">-</div>
+                    <div className="w-[30%] flex justify-end items-center px-4 font-mono text-[11px] font-bold bg-white">{filledData?.['X2_n'] || '-'}</div>
                  </div>
 
                  {/* Row X3 */}
@@ -5892,7 +5893,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        <span className="font-bold text-[8.5px] leading-tight">Accumulated expenses</span>
                     </div>
                     <div className="w-[10%] border-r-[2px] border-black flex items-center justify-center font-bold text-[10.5px] shrink-0">X 3</div>
-                    <div className="w-[30%] flex justify-end items-center px-4 font-mono text-[11px] font-bold">-</div>
+                    <div className="w-[30%] flex justify-end items-center px-4 font-mono text-[11px] font-bold">{filledData?.['X3_n'] || '-'}</div>
                  </div>
 
                  {/* Row X4 */}
@@ -5902,7 +5903,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        <span className="font-bold text-[8.5px] leading-tight">Proportion of excess income (X4 = X2 / X3)</span>
                     </div>
                     <div className="w-[10%] border-r-[2px] border-black flex items-center justify-center font-bold text-[10.5px] shrink-0 bg-white">X 4</div>
-                    <div className="w-[30%] flex justify-end items-center px-4 font-mono text-[11px] font-bold bg-white">-</div>
+                    <div className="w-[30%] flex justify-end items-center px-4 font-mono text-[11px] font-bold bg-white">{filledData?.['X4_n'] || '-'}</div>
                  </div>
 
                  {/* Row X5 */}
@@ -5912,7 +5913,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        <span className="font-bold text-[9px] leading-tight">Excess income tax *</span>
                     </div>
                     <div className="w-[10%] border-r-[2px] border-black flex items-center justify-center font-bold text-[10.5px] shrink-0">X 5</div>
-                    <div className="w-[30%] flex justify-end items-center px-4 font-mono text-[11px] font-bold bg-[#f7f7f7] border-l border-b-transparent">-</div>
+                    <div className="w-[30%] flex justify-end items-center px-4 font-mono text-[11px] font-bold bg-[#f7f7f7] border-l border-b-transparent">{filledData?.['X5_n'] || '-'}</div>
                  </div>
                </div>
 
