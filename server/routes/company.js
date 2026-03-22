@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const router = express.Router();
 const upload = require('../middleware/upload');
 const googleAI = require('../services/googleAI');
@@ -3137,6 +3137,61 @@ router.get('/toi/autofill', auth, async (req, res) => {
             fs_marketing:                             fmt(marketingGL),
             fs_travel:                                fmt(travelGL),
             fs_other_expense:                         fmt(otherExpGL),
+
+            // ── PAGES 5-6: Income Statement B-rows (B0-B48) ──────────────────
+            ...(() => {
+                const b = {};
+                b['B3_n']  = fmt(revenue);
+                b['B0_n']  = fmt(revenue);
+                b['B6_n']  = fmt(costOfSales);
+                b['B7_n']  = fmt(Math.max(0, grossProfit));
+                b['B23_n'] = fmt(salaryExpGL || totalSalary);
+                b['B25_n'] = fmt(travelGL);
+                b['B27_n'] = fmt(rentExpGL);
+                b['B30_n'] = fmt(marketingGL);
+                b['B36_n'] = fmt(depExpGL || totalDep);
+                b['B41_n'] = fmt(otherExpGL + bankChargesGL);
+                const bOpEx = costOfSales + (salaryExpGL||totalSalary) + travelGL + rentExpGL + marketingGL + (depExpGL||totalDep) + bankChargesGL + otherExpGL;
+                b['B22_n'] = fmt(bOpEx);
+                const bProfOps = revenue - bOpEx + costOfSales;
+                b['B42_n'] = fmt(grossProfit - (salaryExpGL||totalSalary) - travelGL - rentExpGL - marketingGL - (depExpGL||totalDep) - bankChargesGL - otherExpGL);
+                b['B43_n'] = fmt(interestExpGL);
+                const bPbt  = parseFloat(b['B42_n'].replace(/,/g,'') || '0') - interestExpGL;
+                b['B46_n'] = fmt(bPbt);
+                b['B47_n'] = fmt(Math.max(0, bPbt * 0.20));
+                b['B48_n'] = fmt(bPbt - Math.max(0, bPbt * 0.20));
+                return b;
+            })(),
+
+            // ── PAGE 7: COGS C-rows (C1-C20) ─────────────────────────────────
+            ...(() => {
+                const c = {};
+                let cOpen = 0; let cClose = 0;
+                for (const code of codes) {
+                    const num = parseInt(code.code) || 0;
+                    if (num >= 52031 && num <= 52042) {
+                        const prior = Math.max(0, (code.priorYearDr||0) - (code.priorYearCr||0));
+                        cOpen += prior;
+                        const tc = code.toiCode;
+                        const yr  = (tc && glMap[tc]) ? glMap[tc].dr - glMap[tc].cr : 0;
+                        cClose += Math.max(0, prior + yr);
+                    }
+                }
+                const cPurch = costOfSales || 0;
+                c['C1_n']  = fmt(cOpen);
+                c['C2_n']  = fmt(cPurch);
+                c['C4_n']  = fmt(cOpen + cPurch);
+                c['C5_n']  = fmt(cClose);
+                const cMat = Math.max(0, cOpen + cPurch - cClose);
+                c['C6_n']  = fmt(cMat || costOfSales);
+                c['C8_n']  = fmt(salaryExpGL || totalSalary);
+                c['C12_n'] = fmt(depExpGL || totalDep);
+                const cOther = (salaryExpGL||totalSalary) + (depExpGL||totalDep);
+                c['C7_n']  = fmt(cOther);
+                c['C17_n'] = fmt((cMat || costOfSales) + cOther);
+                c['C20_n'] = fmt(costOfSales || (cMat + cOther));
+                return c;
+            })(),
 
             // ── PAGE 10�?1: Tax Adjustments ────────────────────────────────
             // Non-deductible items
