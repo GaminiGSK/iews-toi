@@ -1218,35 +1218,30 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                           <span style={{ fontFamily: '"Kantumruy Pro", sans-serif'}} className="leading-none text-[11px]">ធ្វើនៅ</span>
                           <span className="text-[8px] font-normal font-sans pt-[2px]">Filed in.</span>
                        </div>
-                       <div className="w-[100px] border border-black h-[22px] flex items-center justify-center text-[10px] font-bold text-center shrink-0 overflow-hidden px-1">{filledData?.filedIn || ""}</div>
-                       <div className="flex gap-[4px] ml-4">
-                           <div className="flex gap-[2px]">
-                             {Array.from({ length: 2 }).map((_, i) => (
-                               <div key={'fd'+i} className="w-[18px] h-[22px] border border-black bg-white flex items-center justify-center font-bold text-black text-[11px]">
-                                 {filledData?.filingDate?.[i] || ""}
-                               </div>
-                             ))}
-                           </div>
-                           <div className="flex gap-[2px] ml-1">
-                             {Array.from({ length: 2 }).map((_, i) => (
-                               <div key={'fm'+i} className="w-[18px] h-[22px] border border-black bg-white flex items-center justify-center font-bold text-black text-[11px]">
-                                 {filledData?.filingDate?.[i + 2] || ""}
-                               </div>
-                             ))}
-                           </div>
-                           <div className="flex gap-[2px] ml-1">
-                             {Array.from({ length: 4 }).map((_, i) => (
-                               <div key={'fy'+i} className="w-[18px] h-[22px] border border-black bg-white flex items-center justify-center font-bold text-black text-[11px]">
-                                 {filledData?.filingDate?.[i + 4] || ""}
-                               </div>
-                             ))}
-                           </div>
-                       </div>
+                       <div className="w-[130px] border border-black h-[22px] flex items-center justify-center text-[8.5px] font-bold text-center shrink-0 overflow-hidden px-1" style={{ fontFamily: '"Kantumruy Pro", sans-serif'}}>{filledData?.filedIn || ""}</div>
+                        {/* TODAY's date (print date) - computed live */}
+                        {(() => {
+                          const now = new Date();
+                          const td = String(now.getDate()).padStart(2,'0') + String(now.getMonth()+1).padStart(2,'0') + String(now.getFullYear());
+                          return (
+                            <div className="flex gap-[4px] ml-4">
+                              <div className="flex gap-[2px]">
+                                {[0,1].map(i => <div key={'td'+i} className="w-[18px] h-[22px] border border-black bg-white flex items-center justify-center font-bold text-black text-[11px]">{td[i]}</div>)}
+                              </div>
+                              <div className="flex gap-[2px] ml-1">
+                                {[2,3].map(i => <div key={'tm'+i} className="w-[18px] h-[22px] border border-black bg-white flex items-center justify-center font-bold text-black text-[11px]">{td[i]}</div>)}
+                              </div>
+                              <div className="flex gap-[2px] ml-1">
+                                {[4,5,6,7].map(i => <div key={'ty'+i} className="w-[18px] h-[22px] border border-black bg-white flex items-center justify-center font-bold text-black text-[11px]">{td[i]}</div>)}
+                              </div>
+                            </div>
+                          );
+                        })()}
                     </div>
 
-                    <div className="flex-1 flex flex-col justify-end text-center text-[9px] w-full items-center pb-[8px] relative">
+                    <div className="flex-1 flex flex-col justify-end text-center text-[9px] w-full items-center pb-[8px] pt-4 relative">
                        {filledData?.signatoryName && (
-                         <div className="absolute bottom-[28px] w-full text-center text-blue-800 font-bold text-[14px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif'}}>{filledData.signatoryName}</div>
+                         <div className="w-full text-center text-blue-800 font-bold text-[13px] mb-[6px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif'}}>{filledData.signatoryName}</div>
                        )}
                        <span className="font-bold tracking-tight text-[9.5px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif'}}>អភិបាល/អ្នកគ្រប់គ្រង/ម្ចាស់សហគ្រាស/ ភ្នាក់ងារសេវាកម្មពន្ធដារ</span>
                        <span className="font-bold pt-[1px] uppercase tracking-tighter text-[8.5px]" style={{ fontFamily: '"Arial", sans-serif'}}>DIRECTOR/MANAGER/OWNER OF ENTERPRISE/TAX SERVICE AGENT</span>
