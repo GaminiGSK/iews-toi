@@ -50,6 +50,54 @@ const ToiAcar = ({ onBack, packageId, year }) => {
     }
   }, [filledData]);
 
+  // ── BA PAGE-SPECIFIC FILL INTENT MAP ─────────────────────────────────────
+  // Maps page number to its description and key fields
+  const PAGE_INFO = {
+    1:  { label: 'Cover / Identification',     keys: ['name','tin','address1','fromDate','untilDate','legalForm'] },
+    2:  { label: 'Share Capital & Employees',  keys: ['capitalRegName1','capitalRegEndAmt1','share_capital_total','total_employees_workers'] },
+    3:  { label: 'Balance Sheet (Assets)',      keys: ['A0_n','A1_n','A7_n','A13_n','A22_n'] },
+    4:  { label: 'Balance Sheet (Liabilities)',keys: ['A28_n','A29_n','A30_n','A28_n1'] },
+    5:  { label: 'Tax on Salary (TOS)',         keys: ['tos_total_filed','tos_total_paid'] },
+    6:  { label: 'Income Statement',            keys: ['fs_revenue','fs_gross_profit','fs_salary_expense'] },
+    7:  { label: 'Cost of Goods Sold',          keys: ['d1_n','e1_amount'] },
+    8:  { label: 'Financial Statements',        keys: ['fs_revenue','fs_cost_of_sales','fs_gross_profit'] },
+    13: { label: 'Related Party Disclosures',   keys: ['rp_has_transactions','rp_total_transactions','rp_total_loan_balance'] },
+    14: { label: 'Asset Register',              keys: ['asset_total_cost','asset_total_dep','asset_total_nbv'] },
+    18: { label: 'Minimum Tax / Prepayment',    keys: ['min_tax_turnover','min_tax_1pct'] },
+    19: { label: 'VAT / Patent Tax',            keys: ['vat_registration_no','patent_tax_year'] },
+  };
+
+  // ── BA COMMAND INTENT CLASSIFIER ──────────────────────────────────────────
+  const classifyIntent = (input) => {
+    const lower = input.toLowerCase().trim();
+
+    // "update all", "fill all", "smart fill all", "fill everything"
+    if (/fill\s*all|update\s*all|smart\s*fill|fill\s*everything|update\s*everything|auto.?fill/.test(lower)) {
+      return { type: 'fill_all' };
+    }
+
+    // "update page 3", "fill page 3", "page 3 update", "go to page 3", "show page 3"
+    const pageMatch = lower.match(/(?:update|fill|go to|show|open|refresh|navigate to)?\s*page\s*(\d+)|page\s*(\d+)\s*(?:update|fill|refresh)/);
+    if (pageMatch) {
+      const num = parseInt(pageMatch[1] || pageMatch[2]);
+      return { type: 'fill_page', page: num };
+    }
+
+    // Named page intent: "update balance sheet", "fill salary", "update cover page" etc.
+    if (/balance.?sheet|assets?|liabilit/.test(lower)) return { type: 'fill_page', page: 3 };
+    if (/salary|tos|tax.?on.?salary|employee/.test(lower)) return { type: 'fill_page', page: 5 };
+    if (/income|revenue|profit|cost.?of.?goods|cogs/.test(lower)) return { type: 'fill_page', page: 6 };
+    if (/cover|identification|company\s*name|tin|address/.test(lower)) return { type: 'fill_page', page: 1 };
+    if (/capital|share|shareholder/.test(lower)) return { type: 'fill_page', page: 2 };
+    if (/related.?party|loan|dividend/.test(lower)) return { type: 'fill_page', page: 13 };
+    if (/asset.?register|depreciation/.test(lower)) return { type: 'fill_page', page: 14 };
+    if (/minimum.?tax|prepayment/.test(lower)) return { type: 'fill_page', page: 18 };
+    if (/vat|patent/.test(lower)) return { type: 'fill_page', page: 19 };
+
+    // "delete / clear" handled above
+    return { type: 'chat' };
+  };
+
   const handleSend = async () => {
     if (!agentInput.trim() || isTyping) return;
 
@@ -59,7 +107,8 @@ const ToiAcar = ({ onBack, packageId, year }) => {
     setAgentInput("");
     setIsTyping(true);
 
-    const isDelete = currentInput.toLowerCase().includes("delete") || currentInput.toLowerCase().includes("clear") || currentInput.toLowerCase().includes("remove");
+    const lower = currentInput.toLowerCase().trim();
+    const isDelete = lower.includes("delete") || lower.includes("clear") || lower.includes("remove");
 
     if (isDelete) {
       setTimeout(() => {
@@ -73,6 +122,35 @@ const ToiAcar = ({ onBack, packageId, year }) => {
         setFilledData(null);
         setIsTyping(false);
       }, 800);
+      return;
+    }
+
+    // ── BA LOCAL INTENT HANDLING (before API call) ─────────────────────────
+    const intent = classifyIntent(currentInput);
+
+    if (intent.type === 'fill_all') {
+      setChatMessages(prev => [...prev, {
+        role: 'agent',
+        text: `⚡ <b>Smart Fill All Pages</b> — Understood.<br/><br/>Reading from <b>GL · Financial Statements · Salary TOS · Asset Register · Related Party · Company Profile</b> for year <span class="text-blue-400">${selectedYear}</span>.<br/><br/>Executing now…`
+      }]);
+      setIsTyping(false);
+      await handleAutoFill();
+      return;
+    }
+
+    if (intent.type === 'fill_page') {
+      const pg = intent.page;
+      const info = PAGE_INFO[pg] || { label: `Page ${pg}`, keys: [] };
+      // Confirm and execute
+      setChatMessages(prev => [...prev, {
+        role: 'agent',
+        text: `📋 <b>Update Page ${pg}</b> — <span class="text-emerald-400">${info.label}</span>.<br/><br/>Understood. Fetching data from GK SMART GL for year <span class="text-blue-400">${selectedYear}</span> and injecting into Page ${pg}…`
+      }]);
+      // Navigate to the page
+      setActiveWorkspacePage(pg);
+      setIsTyping(false);
+      // Run the full autofill (it fills all pages, then UI renders the correct one)
+      await handleAutoFill();
       return;
     }
 
