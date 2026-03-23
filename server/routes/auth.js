@@ -65,12 +65,21 @@ router.post('/login', async (req, res) => {
     }
 });
 
+// --- 1b. Get current logged-in user info ---
+router.get('/me', auth, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select('username companyName role isFirstLogin');
+        if (!user) return res.status(404).json({ message: 'Not found' });
+        res.json(user);
+    } catch (e) { res.status(500).json({ message: 'Server Error' }); }
+});
+
 // --- 2. Admin: User (Company) Management ---
 
-// Create User (Company)
+// Create User/Unit (Admin only)
 router.post('/create-user', auth, async (req, res) => {
-    // Check if requester is admin
-    if (req.user.role !== 'admin') return res.status(403).json({ message: 'Forbidden' });
+    // Admin (or superadmin managing directly) can create units
+    if (req.user.role !== 'admin' && req.user.role !== 'superadmin') return res.status(403).json({ message: 'Forbidden' });
     const { username, companyName, password } = req.body; // 'password' field in form is the loginCode
     try {
         if (!username || !password) return res.status(400).json({ message: 'Username and Access Code are required' });
@@ -121,7 +130,8 @@ router.post('/create-user', auth, async (req, res) => {
             companyCode: username.toUpperCase().replace(/\s+/g, '_'),
             password: hashedPassword,
             loginCode: password,
-            role: 'user',
+            role: 'unit',          // ← was 'user'
+            createdBy: req.user.id, // ← track which Admin created this unit
             driveFolderId: driveFolderId,
             bankStatementsFolderId: bankStatementsFolderId,
             brFolderId: brFolderId
@@ -135,24 +145,55 @@ router.post('/create-user', auth, async (req, res) => {
     }
 });
 
-// Get All Users
+// Get All Units (Admin sees only its own; Superadmin sees all)
 router.get('/users', auth, async (req, res) => {
-    // Check if requester is admin
-    if (req.user.role !== 'admin') return res.status(403).json({ message: 'Forbidden' });
+    if (req.user.role !== 'admin' && req.user.role !== 'superadmin') return res.status(403).json({ message: 'Forbidden' });
     try {
-        // Show all 'user' roles PLUS 'GKSMART' (to manage its access code)
-        // Explicitly exclude the master 'Admin' account
-        const users = await User.find({
-            $or: [
-                { role: 'user' },
-                { username: 'GKSMART' }
-            ],
-            username: { $ne: 'Admin' }
-        }).select('username companyName loginCode createdAt role');
+        let query = {
+            role: { $in: ['unit', 'user'] },
+            username: { $nin: ['Admin', 'ADMIN'] }
+        };
+        // Admin sees only units it created
+        if (req.user.role === 'admin') {
+            query.createdBy = req.user.id;
+        }
+        const users = await User.find(query).select('username companyName loginCode createdAt role createdBy');
         res.json(users);
     } catch (err) {
         res.status(500).send('Server Error');
     }
+});
+
+// Change own password — for Admin first-login
+router.post('/change-password', auth, async (req, res) => {
+    const { newCode } = req.body;
+    if (!newCode || newCode.length !== 6 || !/^\d{6}$/.test(newCode)) {
+        return res.status(400).json({ message: 'New code must be exactly 6 digits' });
+    }
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+        user.loginCode = newCode;
+        user.isFirstLogin = false;
+        await user.save();
+        res.json({ ok: true, message: 'Access code updated successfully' });
+    } catch (err) { res.status(500).json({ message: 'Server Error' }); }
+});
+
+// Reassign units to a different Admin (Superadmin only)
+router.post('/reassign-units', auth, async (req, res) => {
+    if (req.user.role !== 'superadmin') return res.status(403).json({ message: 'Superadmin only' });
+    const { unitUsernames, toAdminId } = req.body;
+    if (!unitUsernames || !toAdminId) return res.status(400).json({ message: 'unitUsernames[] and toAdminId required' });
+    try {
+        const admin = await User.findOne({ _id: toAdminId, role: 'admin' });
+        if (!admin) return res.status(404).json({ message: 'Target admin not found' });
+        const result = await User.updateMany(
+            { username: { $in: unitUsernames }, role: { $in: ['unit', 'user'] } },
+            { $set: { createdBy: admin._id } }
+        );
+        res.json({ ok: true, updated: result.modifiedCount, toAdmin: admin.username });
+    } catch (err) { res.status(500).json({ message: 'Server Error', error: err.message }); }
 });
 
 // Update User
@@ -322,6 +363,7 @@ router.post('/create-admin', auth, async (req, res) => {
             password: hashedPassword,
             loginCode,
             role: 'admin',
+            isFirstLogin: true,   // ← Admin must change code on first login
             driveFolderId,
             bankStatementsFolderId,
             brFolderId,

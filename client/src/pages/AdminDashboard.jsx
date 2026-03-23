@@ -1,12 +1,53 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
-    UserPlus, User, Edit2, Trash2, X, Lock, Users, FileSpreadsheet, Brain, ChevronRight, FileText, ArrowLeft, CloudUpload, Loader2, CheckCircle
+    UserPlus, User, Edit2, Trash2, X, Lock, Users, FileSpreadsheet, Brain, ChevronRight, FileText, ArrowLeft, CloudUpload, Loader2, CheckCircle, KeyRound
 } from 'lucide-react';
 import TaxFormWorkbench from './TaxFormWorkbench';
 import LiveTaxWorkspace from './LiveTaxWorkspace';
 
 export default function AdminDashboard() {
+    // --- First-Login Password Change ---
+    const [showPwChange, setShowPwChange] = useState(false);
+    const [pwChangeCode, setPwChangeCode] = useState('');
+    const [pwChangeCode2, setPwChangeCode2] = useState('');
+    const [pwChangeError, setPwChangeError] = useState('');
+    const [pwChanging, setPwChanging] = useState(false);
+
+    // Check if this is a first-login Admin
+    useEffect(() => {
+        try {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                const u = JSON.parse(userStr);
+                if (u.role === 'admin' && u.isFirstLogin !== false) {
+                    // Verify from server
+                    const token = localStorage.getItem('token');
+                    axios.get('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
+                        .then(res => { if (res.data?.isFirstLogin) setShowPwChange(true); })
+                        .catch(() => {}); // silently ignore if endpoint doesn't exist yet
+                }
+            }
+        } catch (e) {}
+    }, []);
+
+    const handlePwChange = async () => {
+        setPwChangeError('');
+        if (!pwChangeCode || pwChangeCode.length !== 6) { setPwChangeError('Enter a 6-digit code'); return; }
+        if (pwChangeCode !== pwChangeCode2) { setPwChangeError('Codes do not match'); return; }
+        setPwChanging(true);
+        try {
+            const token = localStorage.getItem('token');
+            await axios.post('/api/auth/change-password', { newCode: pwChangeCode }, { headers: { Authorization: `Bearer ${token}` } });
+            setShowPwChange(false);
+            // Update local user cache
+            const u = JSON.parse(localStorage.getItem('user') || '{}');
+            u.isFirstLogin = false;
+            localStorage.setItem('user', JSON.stringify(u));
+        } catch (e) { setPwChangeError(e.response?.data?.message || 'Failed to update code'); }
+        finally { setPwChanging(false); }
+    };
+
     // --- State ---
     const [users, setUsers] = useState([]);
     const [isCreating, setIsCreating] = useState(false);
@@ -791,6 +832,50 @@ export default function AdminDashboard() {
                                 {isEditing ? 'COMMIT MATRIX UPDATES' : 'FINALIZE DEPLOYMENT'}
                             </button>
                         </form>
+                    </div>
+                </div>
+            )}
+            {/* ── FIRST LOGIN: Password Change Modal ── */}
+            {showPwChange && (
+                <div className="fixed inset-0 bg-black/95 backdrop-blur-xl flex items-center justify-center z-[200]">
+                    <div className="bg-slate-900 border border-white/10 p-10 rounded-[40px] shadow-2xl w-full max-w-sm">
+                        <div className="flex items-center justify-center mb-6">
+                            <div className="w-14 h-14 bg-blue-600/20 rounded-2xl flex items-center justify-center">
+                                <KeyRound className="w-7 h-7 text-blue-400" />
+                            </div>
+                        </div>
+                        <h2 className="text-xl font-black text-white text-center mb-1">Change Your Access Code</h2>
+                        <p className="text-xs text-slate-500 text-center mb-6 uppercase tracking-wider">First login — set your personal 6-digit code</p>
+                        {pwChangeError && (
+                            <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-xl p-3 mb-4 font-semibold text-center">{pwChangeError}</div>
+                        )}
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-[10px] font-black text-slate-500 mb-1.5 uppercase tracking-widest">New 6-Digit Code</label>
+                                <input
+                                    type="password" placeholder="••••••" maxLength={6}
+                                    value={pwChangeCode}
+                                    onChange={e => setPwChangeCode(e.target.value.replace(/\D/g, ''))}
+                                    className="w-full px-4 py-3 bg-slate-800 border border-white/5 rounded-xl text-white text-center font-mono tracking-[0.5em] text-xl placeholder:text-slate-700 focus:ring-2 focus:ring-blue-500/30 outline-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-black text-slate-500 mb-1.5 uppercase tracking-widest">Confirm New Code</label>
+                                <input
+                                    type="password" placeholder="••••••" maxLength={6}
+                                    value={pwChangeCode2}
+                                    onChange={e => setPwChangeCode2(e.target.value.replace(/\D/g, ''))}
+                                    className="w-full px-4 py-3 bg-slate-800 border border-white/5 rounded-xl text-white text-center font-mono tracking-[0.5em] text-xl placeholder:text-slate-700 focus:ring-2 focus:ring-blue-500/30 outline-none"
+                                />
+                            </div>
+                        </div>
+                        <button
+                            onClick={handlePwChange} disabled={pwChanging}
+                            className="w-full mt-6 bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl text-xs uppercase tracking-widest transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                        >
+                            {pwChanging ? <Loader2 className="w-4 h-4 animate-spin" /> : <KeyRound className="w-4 h-4" />}
+                            {pwChanging ? 'Updating...' : 'Set New Code & Continue'}
+                        </button>
                     </div>
                 </div>
             )}

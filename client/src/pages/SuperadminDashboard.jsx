@@ -76,6 +76,27 @@ export default function SuperadminDashboard() {
         } catch (e) { setUnits([]); }
     };
 
+    // ── Reassign all units of a given admin → another admin ──────────────────
+    const [showReassign, setShowReassign] = useState(false);
+    const [reassignTargetId, setReassignTargetId] = useState('');
+    const [reassigning, setReassigning] = useState(false);
+
+    const reassignUnits = async () => {
+        if (!reassignTargetId || units.length === 0) return;
+        setReassigning(true);
+        try {
+            const unitUsernames = units.map(u => u.username);
+            const res = await axios.post('/api/auth/reassign-units',
+                { unitUsernames, toAdminId: reassignTargetId },
+                { headers: headers() }
+            );
+            showToast(`✅ ${res.data.updated} unit(s) moved to ${res.data.toAdmin}`);
+            setShowReassign(false);
+            await drillAdmin(selectedAdmin); // refresh
+        } catch (e) { showToast('❌ ' + (e.response?.data?.message || 'Reassign failed'), 'err'); }
+        finally { setReassigning(false); }
+    };
+
     // ── Create Admin ─────────────────────────────────────────────────────────
     const createAdmin = async () => {
         setCreateError('');
@@ -179,14 +200,24 @@ export default function SuperadminDashboard() {
                                 >
                                     ← Back to Admins
                                 </button>
-                                <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 bg-blue-600/20 rounded-xl flex items-center justify-center">
-                                        <Shield className="w-5 h-5 text-blue-400" />
+                                <div className="flex items-center justify-between mb-6">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 bg-blue-600/20 rounded-xl flex items-center justify-center">
+                                            <Shield className="w-5 h-5 text-blue-400" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-lg font-black">{selectedAdmin.username}</h2>
+                                            <p className="text-xs text-slate-500">{units.length} unit{units.length !== 1 ? 's' : ''} managed by this Admin</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h2 className="text-lg font-black">{selectedAdmin.username}</h2>
-                                        <p className="text-xs text-slate-500">Units managed by this Admin</p>
-                                    </div>
+                                    {units.length > 0 && (
+                                        <button
+                                            onClick={() => setShowReassign(true)}
+                                            className="flex items-center gap-2 px-4 py-2 bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/30 text-amber-400 rounded-xl text-xs font-black uppercase tracking-wider transition-all"
+                                        >
+                                            <Users className="w-3.5 h-3.5" /> Reassign Units
+                                        </button>
+                                    )}
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {units.length === 0 && (
@@ -372,6 +403,45 @@ export default function SuperadminDashboard() {
                     </div>
                 )}
             </div>
+
+            {/* ── Reassign Units Modal ──────────────────────────────────────── */}
+            {showReassign && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-slate-900 border border-white/10 rounded-3xl p-8 w-full max-w-md shadow-2xl">
+                        <div className="flex items-center justify-between mb-6">
+                            <div>
+                                <h3 className="font-black text-white">Reassign {units.length} Units</h3>
+                                <p className="text-[10px] text-slate-500 mt-0.5">Move all units from <span className="text-amber-400">{selectedAdmin.username}</span> to another Admin</p>
+                            </div>
+                            <button onClick={() => setShowReassign(false)} className="text-slate-400 hover:text-white"><X className="w-5 h-5" /></button>
+                        </div>
+                        <div className="mb-6">
+                            <label className="block text-[10px] font-black text-slate-500 mb-1.5 uppercase tracking-widest">Target Admin</label>
+                            <select
+                                value={reassignTargetId}
+                                onChange={e => setReassignTargetId(e.target.value)}
+                                className="w-full px-4 py-3 bg-slate-800 border border-white/5 rounded-xl text-white outline-none focus:ring-2 focus:ring-amber-500/30 text-sm"
+                            >
+                                <option value="">Select target admin...</option>
+                                {admins.filter(a => a._id !== selectedAdmin._id).map(a => (
+                                    <option key={a._id} value={a._id}>{a.username} ({a.unitCount} units)</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="flex gap-3">
+                            <button onClick={() => setShowReassign(false)}
+                                className="flex-1 px-4 py-3 bg-slate-800 hover:bg-slate-700 border border-white/5 rounded-xl text-slate-400 hover:text-white text-xs font-black uppercase tracking-wider transition-all">
+                                Cancel
+                            </button>
+                            <button onClick={reassignUnits} disabled={reassigning || !reassignTargetId}
+                                className="flex-1 px-4 py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+                                {reassigning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Users className="w-4 h-4" />}
+                                {reassigning ? 'Moving...' : 'Move Units'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* ── Create Admin Modal ───────────────────────────────────────── */}
             {showCreateModal && (
