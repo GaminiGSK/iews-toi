@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
+import SuperadminDashboard from './pages/SuperadminDashboard';
 import ChangePassword from './pages/ChangePassword';
 import CompanyProfile from './pages/CompanyProfileNew';
 import PrivateRoute from './components/PrivateRoute';
@@ -11,13 +12,13 @@ import TaxFormWorkbench from './pages/TaxFormWorkbench';
 import axios from 'axios';
 import SiteGate from './components/SiteGate';
 
-// GLOBAL AXIOS INTERCEPTOR FOR ADMIN SPOOFING
+// GLOBAL AXIOS INTERCEPTOR FOR ADMIN / SUPERADMIN SPOOFING
 axios.interceptors.request.use(config => {
   const userStr = localStorage.getItem('user');
   if (userStr) {
     try {
       const user = JSON.parse(userStr);
-      if (user.role === 'admin') {
+      if (user.role === 'admin' || user.role === 'superadmin') {
         const lastSelectedBR = localStorage.getItem('lastSelectedBR');
         if (lastSelectedBR) {
           config.headers['x-target-user'] = lastSelectedBR;
@@ -49,6 +50,7 @@ function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
 
+            <Route path="/superadmin" element={<SuperadminDashboard />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/dashboard" element={<CompanyProfile />} />
             <Route path="/workbench" element={<TaxFormWorkbench />} />
