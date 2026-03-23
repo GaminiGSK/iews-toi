@@ -104,7 +104,40 @@ export default function SuperadminDashboard() {
         finally { setReassigning(false); }
     };
 
+    // ── Edit Admin ────────────────────────────────────────────────────────────
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editForm, setEditForm] = useState({ id: '', username: '', companyName: '', loginCode: '' });
+    const [editLoading, setEditLoading] = useState(false);
+    const [editError, setEditError] = useState('');
+    const [showEditCode, setShowEditCode] = useState(false);
+
+    const openEditModal = (a) => {
+        setEditForm({ id: a._id, username: a.username, companyName: a.companyName || '', loginCode: '' });
+        setEditError('');
+        setShowEditModal(true);
+    };
+
+    const saveAdmin = async () => {
+        setEditError('');
+        if (!editForm.username) { setEditError('Username is required'); return; }
+        if (editForm.loginCode && !/^\d{6}$/.test(editForm.loginCode)) {
+            setEditError('Access code must be exactly 6 digits'); return;
+        }
+        setEditLoading(true);
+        try {
+            const payload = { username: editForm.username, companyName: editForm.companyName };
+            if (editForm.loginCode) payload.loginCode = editForm.loginCode;
+            await axios.put(`/api/auth/admins/${editForm.id}`, payload, { headers: headers() });
+            setShowEditModal(false);
+            showToast('✅ Admin updated successfully');
+            await loadAdmins();
+        } catch (e) {
+            setEditError(e.response?.data?.message || 'Failed to update admin');
+        } finally { setEditLoading(false); }
+    };
+
     // ── Create Admin ─────────────────────────────────────────────────────────
+
     const createAdmin = async () => {
         setCreateError('');
         if (!createForm.username || !createForm.loginCode) {
@@ -335,11 +368,18 @@ export default function SuperadminDashboard() {
                                                     </div>
                                                     <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                                                         <button
-                                                            onClick={() => drillAdmin(a)}
+                                                            onClick={() => openEditModal(a)}
                                                             className="p-1.5 bg-slate-700/50 hover:bg-blue-600/30 rounded-lg transition-all"
+                                                            title="Edit admin"
+                                                        >
+                                                            <Edit3 className="w-3.5 h-3.5 text-blue-400" />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => drillAdmin(a)}
+                                                            className="p-1.5 bg-slate-700/50 hover:bg-emerald-600/30 rounded-lg transition-all"
                                                             title="View units"
                                                         >
-                                                            <Eye className="w-3.5 h-3.5 text-blue-400" />
+                                                            <Users className="w-3.5 h-3.5 text-emerald-400" />
                                                         </button>
                                                         <button
                                                             onClick={() => deleteAdmin(a._id, a.username)}
@@ -500,7 +540,86 @@ export default function SuperadminDashboard() {
                 </div>
             )}
 
+            {/* ── Edit Admin Modal ──────────────────────────────────────────── */}
+            {showEditModal && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-slate-900 border border-white/10 rounded-3xl p-8 w-full max-w-md shadow-2xl">
+                        <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-blue-600/20 rounded-xl flex items-center justify-center">
+                                    <Edit3 className="w-5 h-5 text-blue-400" />
+                                </div>
+                                <div>
+                                    <h3 className="font-black text-white">Edit Admin</h3>
+                                    <p className="text-[10px] text-slate-500">Superadmin — modify account credentials</p>
+                                </div>
+                            </div>
+                            <button onClick={() => { setShowEditModal(false); setEditError(''); }} className="text-slate-400 hover:text-white transition-colors">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {editError && (
+                            <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-xl p-3 mb-4 font-semibold">
+                                ⚠️ {editError}
+                            </div>
+                        )}
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-[10px] font-black text-slate-500 mb-1.5 uppercase tracking-widest">Username *</label>
+                                <input
+                                    type="text"
+                                    value={editForm.username}
+                                    onChange={e => setEditForm(p => ({ ...p, username: e.target.value }))}
+                                    className="w-full px-4 py-3 bg-slate-800 border border-white/5 rounded-xl text-white placeholder:text-slate-600 focus:ring-2 focus:ring-blue-500/30 outline-none text-sm font-medium"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-black text-slate-500 mb-1.5 uppercase tracking-widest">Display Name</label>
+                                <input
+                                    type="text"
+                                    value={editForm.companyName}
+                                    onChange={e => setEditForm(p => ({ ...p, companyName: e.target.value }))}
+                                    className="w-full px-4 py-3 bg-slate-800 border border-white/5 rounded-xl text-white placeholder:text-slate-600 focus:ring-2 focus:ring-blue-500/30 outline-none text-sm font-medium"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-black text-slate-500 mb-1.5 uppercase tracking-widest">
+                                    New Access Code <span className="text-slate-600 normal-case tracking-normal">(leave blank to keep current)</span>
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type={showEditCode ? 'text' : 'password'}
+                                        placeholder="••••••" maxLength={6}
+                                        value={editForm.loginCode}
+                                        onChange={e => setEditForm(p => ({ ...p, loginCode: e.target.value.replace(/\D/g, '') }))}
+                                        className="w-full px-4 py-3 bg-slate-800 border border-white/5 rounded-xl text-white placeholder:text-slate-600 focus:ring-2 focus:ring-blue-500/30 outline-none font-mono tracking-[0.3em] text-lg pr-12"
+                                    />
+                                    <button onClick={() => setShowEditCode(v => !v)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white">
+                                        {showEditCode ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3 mt-6">
+                            <button onClick={() => { setShowEditModal(false); setEditError(''); }}
+                                className="flex-1 px-4 py-3 bg-slate-800 hover:bg-slate-700 border border-white/5 rounded-xl text-slate-400 hover:text-white text-xs font-black uppercase tracking-wider transition-all">
+                                Cancel
+                            </button>
+                            <button onClick={saveAdmin} disabled={editLoading}
+                                className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-lg shadow-blue-600/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+                                {editLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                                {editLoading ? 'Saving...' : 'Save Changes'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* ── Create Admin Modal ───────────────────────────────────────── */}
+
             {showCreateModal && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                     <div className="bg-slate-900 border border-white/10 rounded-3xl p-8 w-full max-w-md shadow-2xl">

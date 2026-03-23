@@ -204,16 +204,46 @@ router.post('/reassign-units', auth, async (req, res) => {
     } catch (err) { res.status(500).json({ message: 'Server Error', error: err.message }); }
 });
 
-// List unassigned units (no createdBy) — Superadmin only
+// List unassigned units — units with null createdBy OR owned by a superadmin (migration artifact)
 router.get('/unassigned-units', auth, async (req, res) => {
     if (req.user.role !== 'superadmin') return res.status(403).json({ message: 'Superadmin only' });
     try {
+        // Find all superadmin user IDs — units assigned to superadmin are effectively "unowned by any admin"
+        const superadminIds = await User.find({ role: 'superadmin' }).distinct('_id');
         const units = await User.find({
             role: { $in: ['unit', 'user'] },
-            $or: [{ createdBy: null }, { createdBy: { $exists: false } }]
-        }).select('username companyName loginCode createdAt brFolderId role');
+            $or: [
+                { createdBy: null },
+                { createdBy: { $exists: false } },
+                { createdBy: { $in: superadminIds } }
+            ]
+        }).select('username companyName loginCode createdAt brFolderId role createdBy');
         res.json(units);
     } catch (err) { res.status(500).json({ message: 'Server Error' }); }
+});
+
+// Edit Admin (Superadmin only) — change username, companyName, loginCode
+router.put('/admins/:id', auth, async (req, res) => {
+    if (req.user.role !== 'superadmin') return res.status(403).json({ message: 'Superadmin only' });
+    const { companyName, loginCode, username } = req.body;
+    try {
+        const admin = await User.findOne({ _id: req.params.id, role: 'admin' });
+        if (!admin) return res.status(404).json({ message: 'Admin not found' });
+        // Check username uniqueness if changing
+        if (username && username !== admin.username) {
+            const exists = await User.findOne({ username, _id: { $ne: admin._id } });
+            if (exists) return res.status(400).json({ message: 'Username already taken' });
+            admin.username = username;
+            admin.companyCode = username.toUpperCase().replace(/\s+/g, '_');
+        }
+        if (companyName) admin.companyName = companyName;
+        if (loginCode) {
+            if (!/^\d{6}$/.test(loginCode)) return res.status(400).json({ message: 'Access code must be 6 digits' });
+            admin.loginCode = loginCode;
+        }
+        await admin.save();
+        res.json({ ok: true, admin });
+    } catch (err) { res.status(500).json({ message: 'Server Error', error: err.message }); }
 });
 
 // Update User
@@ -421,19 +451,7 @@ router.get('/admins/:id/units', auth, async (req, res) => {
     } catch (err) { res.status(500).json({ message: 'Server Error' }); }
 });
 
-// Update Admin (Superadmin only)
-router.put('/admins/:id', auth, async (req, res) => {
-    if (req.user.role !== 'superadmin') return res.status(403).json({ message: 'Superadmin only' });
-    const { companyName, loginCode } = req.body;
-    try {
-        const admin = await User.findOne({ _id: req.params.id, role: 'admin' });
-        if (!admin) return res.status(404).json({ message: 'Admin not found' });
-        if (companyName) admin.companyName = companyName;
-        if (loginCode) admin.loginCode = loginCode;
-        await admin.save();
-        res.json(admin);
-    } catch (err) { res.status(500).json({ message: 'Server Error' }); }
-});
+// (PUT /admins/:id is defined earlier with full username/companyName/loginCode support)
 
 // Delete Admin (Superadmin only)
 router.delete('/admins/:id', auth, async (req, res) => {
