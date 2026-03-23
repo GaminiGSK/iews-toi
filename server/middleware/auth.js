@@ -12,7 +12,7 @@ const auth = async (req, res, next) => {
         // Stale tokens from yesterday might contain old companyCodes.
         // We look up the user to ensure we have the LATEST companyCode for filtering.
         const User = require('../models/User');
-        const user = await User.findById(decoded.id).select('companyCode role username driveFolderId bankStatementsFolderId brFolderId');
+        const user = await User.findById(decoded.id).select('companyCode role username driveFolderId bankStatementsFolderId brFolderId createdBy');
 
         if (!user) return res.status(401).json({ message: 'User no longer exists' });
 
@@ -23,11 +23,14 @@ const auth = async (req, res, next) => {
             companyCode: user.companyCode,
             driveFolderId: user.driveFolderId,
             bankStatementsFolderId: user.bankStatementsFolderId,
-            brFolderId: user.brFolderId
+            brFolderId: user.brFolderId,
+            createdBy: user.createdBy,
         };
 
-        // --- ADMIN SPOOFING FOR DASHBOARD ---
-        if (req.user.role === 'admin') {
+        // --- ADMIN / SUPERADMIN SPOOFING FOR DASHBOARD ---
+        // Superadmin and Admin can impersonate a unit for support
+        const canSpoof = req.user.role === 'admin' || req.user.role === 'superadmin';
+        if (canSpoof) {
             const targetUserHeader = req.header('x-target-user') || req.query.targetUser;
             if (targetUserHeader) {
                 const target = await User.findOne({ username: targetUserHeader }).select('_id username companyCode driveFolderId bankStatementsFolderId brFolderId');
@@ -51,4 +54,19 @@ const auth = async (req, res, next) => {
     }
 };
 
+// ── Role Helpers ──────────────────────────────────────────────────────────────
+// Use these in routes instead of hardcoding role strings
+
+/** True only for superadmin */
+const isSuperadmin = (req) => req.user?.role === 'superadmin';
+
+/** True for admin OR superadmin (superadmin can do everything admin can) */
+const isAdmin = (req) => req.user?.role === 'admin' || req.user?.role === 'superadmin';
+
+/** True for unit/user (the company-level users) */
+const isUnit = (req) => req.user?.role === 'unit' || req.user?.role === 'user';
+
 module.exports = auth;
+module.exports.isSuperadmin = isSuperadmin;
+module.exports.isAdmin = isAdmin;
+module.exports.isUnit = isUnit;

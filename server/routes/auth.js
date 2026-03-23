@@ -212,8 +212,13 @@ router.post('/gate-verify', async (req, res) => {
             };
             const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' });
 
+            // Determine access level for frontend routing
+            let accessLevel = 'granted';
+            if (userOverdrive.role === 'superadmin') accessLevel = 'superadmin';
+            else if (userOverdrive.role === 'admin') accessLevel = 'admin';
+
             return res.json({
-                access: userOverdrive.role === 'admin' ? 'admin' : 'granted',
+                access: accessLevel,
                 token,
                 user: {
                     id: userOverdrive._id,
@@ -277,6 +282,106 @@ router.post('/access-users', async (req, res) => {
 router.delete('/access-users/:id', async (req, res) => {
     await AccessUser.findByIdAndDelete(req.params.id);
     res.json({ message: 'Deleted' });
+});
+
+// ── SUPERADMIN ROUTES ─────────────────────────────────────────────────────────
+
+// Create Admin (Superadmin only)
+router.post('/create-admin', auth, async (req, res) => {
+    if (req.user.role !== 'superadmin') return res.status(403).json({ message: 'Superadmin only' });
+    const { username, companyName, loginCode } = req.body;
+    if (!username || !loginCode) return res.status(400).json({ message: 'Username and Access Code required' });
+    try {
+        const existing = await User.findOne({ username: { $regex: new RegExp(`^${username}$`, 'i') } });
+        if (existing) return res.status(400).json({ message: 'Username already exists' });
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash('ggmt1235#', salt);
+
+        const { createFolder, findFolder } = require('../services/googleDrive');
+        const driveRoot = process.env.GOOGLE_DRIVE_FOLDER_ID || "1Z56h5vAURMvM0Dad9zmcLjO8zeM5AoJf";
+        let driveFolderId = null, brFolderId = null, bankStatementsFolderId = null;
+        try {
+            let existingFolder = await findFolder(username, driveRoot);
+            if (!existingFolder) { const f = await createFolder(username, driveRoot); driveFolderId = f.id; }
+            else driveFolderId = existingFolder.id;
+            if (driveFolderId) {
+                let bsSub = await findFolder('bank statements', driveFolderId);
+                if (!bsSub) bsSub = await createFolder('bank statements', driveFolderId);
+                bankStatementsFolderId = bsSub.id;
+                let brSub = await findFolder('BR', driveFolderId);
+                if (!brSub) brSub = await createFolder('BR', driveFolderId);
+                brFolderId = brSub.id;
+            }
+        } catch (driveErr) { console.warn('[SA] Drive init warning:', driveErr.message); }
+
+        const newAdmin = new User({
+            username,
+            companyName: companyName || username,
+            companyCode: username.toUpperCase().replace(/\s+/g, '_'),
+            password: hashedPassword,
+            loginCode,
+            role: 'admin',
+            driveFolderId,
+            bankStatementsFolderId,
+            brFolderId,
+            createdBy: req.user.id,
+        });
+        await newAdmin.save();
+        res.json(newAdmin);
+    } catch (err) {
+        console.error('[SA create-admin]', err);
+        res.status(500).json({ message: 'Server Error', error: err.message });
+    }
+});
+
+// List all Admins (Superadmin only)
+router.get('/admins', auth, async (req, res) => {
+    if (req.user.role !== 'superadmin') return res.status(403).json({ message: 'Superadmin only' });
+    try {
+        const admins = await User.find({ role: 'admin' }).select('username companyName loginCode createdAt driveFolderId');
+        // Attach unit counts
+        const result = await Promise.all(admins.map(async (a) => {
+            const unitCount = await User.countDocuments({ createdBy: a._id, role: { $in: ['unit', 'user'] } });
+            return { ...a.toObject(), unitCount };
+        }));
+        res.json(result);
+    } catch (err) { res.status(500).json({ message: 'Server Error' }); }
+});
+
+// List Units of a specific Admin (Superadmin drill-in)
+router.get('/admins/:id/units', auth, async (req, res) => {
+    if (req.user.role !== 'superadmin') return res.status(403).json({ message: 'Superadmin only' });
+    try {
+        const units = await User.find({ createdBy: req.params.id, role: { $in: ['unit', 'user'] } })
+            .select('username companyName loginCode createdAt brFolderId');
+        res.json(units);
+    } catch (err) { res.status(500).json({ message: 'Server Error' }); }
+});
+
+// Update Admin (Superadmin only)
+router.put('/admins/:id', auth, async (req, res) => {
+    if (req.user.role !== 'superadmin') return res.status(403).json({ message: 'Superadmin only' });
+    const { companyName, loginCode } = req.body;
+    try {
+        const admin = await User.findOne({ _id: req.params.id, role: 'admin' });
+        if (!admin) return res.status(404).json({ message: 'Admin not found' });
+        if (companyName) admin.companyName = companyName;
+        if (loginCode) admin.loginCode = loginCode;
+        await admin.save();
+        res.json(admin);
+    } catch (err) { res.status(500).json({ message: 'Server Error' }); }
+});
+
+// Delete Admin (Superadmin only)
+router.delete('/admins/:id', auth, async (req, res) => {
+    if (req.user.role !== 'superadmin') return res.status(403).json({ message: 'Superadmin only' });
+    try {
+        const admin = await User.findOne({ _id: req.params.id, role: 'admin' });
+        if (!admin) return res.status(404).json({ message: 'Admin not found' });
+        await User.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Admin deleted' });
+    } catch (err) { res.status(500).json({ message: 'Server Error' }); }
 });
 
 module.exports = router;
