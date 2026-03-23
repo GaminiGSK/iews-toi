@@ -3209,102 +3209,83 @@ router.get('/toi/autofill', auth, async (req, res) => {
             D8_n:  '',                    // Closing stock – user inputs (from BS)
             D9_n:  fmt(costOfSales),      // COGS Sold = D7 - D8
 
-            // ── PAGES 9-10: Income Tax Calculation (E-rows) ──────────
+
+            // ── PAGES 9-10: Income Tax Calculation (E-rows) ──────────────
+            // E1 = B46 (Profit before tax per Financial Statements)
             ...(() => {
-                const e1  = revenue - (salaryExpGL||totalSalary) - travelGL - rentExpGL - marketingGL - (depExpGL||totalDep) - bankChargesGL - otherExpGL - interestExpGL - costOfSales;
-                const e18 = depExpGL || totalDep;   // add-back: accounting depreciation
-                const e31 = depExpGL || totalDep;   // deduct: GDT depreciation (same method)
-                const e36 = e1 + e18 - e31;         // profit after adjustments
-                const e40 = e36;                    // no interest cap adjustment
-                const e42 = Math.max(0, e40);       // taxable income (loss = 0)
-                const e43 = e42 * 0.20;             // 20% CIT
-                const e45 = e43;                    // total tax
-                const e47 = e43;                    // after foreign tax credit (assume nil)
-                const e50 = e47;                    // income tax liability
-                const e53 = e50;                    // payable (proper books)
-                const minTax = revenue * 0.01;      // 1% minimum tax
-                const e51 = fmt(minTax);
-                const e52 = fmt(Math.max(e50 > 0 ? e50 : 0, minTax));
+                // Use the same B-row values already computed above
+                const bOpEx  = costOfSales + (salaryExpGL||totalSalary) + travelGL + rentExpGL + marketingGL + (depExpGL||totalDep) + bankChargesGL + otherExpGL;
+                const b42    = Math.max(0, grossProfit - (salaryExpGL||totalSalary) - travelGL - rentExpGL - marketingGL - (depExpGL||totalDep) - bankChargesGL - otherExpGL);
+                const b46    = b42 - interestExpGL;  // B42 - interest expense = PBT
+                const dep    = depExpGL || totalDep;
+
+                // Standard TOI tax adjustment (same depreciation method → cancels)
+                const e1    = b46;                   // PBT = Accounting profit/loss
+                const e18   = dep;                   // Add-back: accounting depreciation (E2 only)
+                const e31   = dep;                   // Deduct: GDT-approved depreciation (E26 only)
+                const e36   = e1 + e18 - e31;        // Profit after adjustments (dep cancels)
+                const e40   = e36;                   // No interest cap adjustment
+                const e42   = Math.max(0, e40);      // Taxable income (losses = 0)
+                const e43   = e42 * 0.20;            // CIT at 20%
+                const e45   = e43;
+                const e47   = e43;                   // No foreign tax credit
+                const e50   = e47;                   // Income tax liability
+                const e53   = e50;                   // Payable (proper books)
+                const minTax = Math.max(0, revenue * 0.01);  // 1% minimum tax
+                const e51   = minTax;
+                const e52   = Math.max(e50 > 0 ? e50 : 0, minTax);
+                // fmtTax: show 0 as "0" (not "" like fmt does) so the cell isn't blank
+                const fmtT  = (n) => n === undefined || isNaN(n) ? '' : n === 0 ? '0' : Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                 return {
-                    E1_n:   fmt(e1),
-                    E2_n:   fmt(depExpGL || totalDep),
-                    E3_n:   '',
-                    E4_n:   '',
-                    E5_n:   '',
-                    E6_n:   '',
-                    E7_n:   '',
-                    E8_n:   '',
-                    E9_n:   '',
-                    E10_n:  '',
-                    E11_n:  '',
-                    E12_n:  '',
-                    E13_n:  '',
-                    E14_n:  '',
-                    E15_n:  '',
-                    E16_n:  '',
-                    E17_n:  '',
-                    E18_n:  fmt(e18),
-                    E19_n:  '',
-                    E20_n:  '',
-                    E21_n:  '',
-                    E22_n:  '',
-                    E23_n:  '',
-                    E24_n:  '',
+                    E1_n:   fmtT(e1),
+                    E2_n:   fmtT(dep),
+                    E3_n:   '', E4_n: '', E5_n: '', E6_n: '', E7_n: '', E8_n: '',
+                    E9_n:   '', E10_n: '', E11_n: '', E12_n: '', E13_n: '',
+                    E14_n:  '', E15_n: '', E16_n: '', E17_n: '',
+                    E18_n:  fmtT(e18),
+                    E19_n:  '', E20_n: '', E21_n: '', E22_n: '', E23_n: '', E24_n: '',
                     E25_n:  '',
-                    E26_n:  fmt(depExpGL || totalDep),
-                    E27_n:  '',
-                    E28_n:  '',
-                    E29_n:  '',
-                    E30_n:  '',
-                    E31_n:  fmt(e31),
-                    E32_n:  '',
-                    E33_n:  '',
-                    E34_n:  '',
-                    E35_n:  '',
-                    E36_n:  fmt(e36),
+                    E26_n:  fmtT(dep),
+                    E27_n: '', E28_n: '', E29_n: '', E30_n: '',
+                    E31_n:  fmtT(e31),
+                    E32_n: '', E33_n: '', E34_n: '', E35_n: '',
+                    E36_n:  fmtT(e36),
                     E37_n:  '',
-                    E38_n:  fmt(e36),
+                    E38_n:  fmtT(e36),
                     E39_n:  '',
-                    E40_n:  fmt(e40),
+                    E40_n:  fmtT(e40),
                     E41_n:  '',
-                    E42_n:  fmt(e42),
-                    E43_n:  fmt(e43),
+                    E42_n:  fmtT(e42),
+                    E43_n:  fmtT(e43),
                     E44_n:  '',
-                    E45_n:  fmt(e45),
+                    E45_n:  fmtT(e45),
                     E46_n:  '',
-                    E47_n:  fmt(e47),
-                    E48_n:  '',
-                    E49_n:  '',
-                    E50_n:  fmt(e50),
-                    E51_n:  e51,
-                    E52_n:  e52,
-                    E53_n:  fmt(e53),
-                    E54_n:  e52,
-                    E55_n:  '',
-                    E56_n:  '',
-                    E57_n:  '',
-                    E58_n:  '',
-                    E59_n:  fmt(e53),
+                    E47_n:  fmtT(e47),
+                    E48_n: '', E49_n: '',
+                    E50_n:  fmtT(e50),
+                    E51_n:  fmtT(e51),
+                    E52_n:  fmtT(e52),
+                    E53_n:  fmtT(e53),
+                    E54_n:  fmtT(e52),
+                    E55_n: '', E56_n: '', E57_n: '', E58_n: '',
+                    E59_n:  fmtT(e53),
                 };
             })(),
 
-            // ── PAGE 11-12: F-rows (Charitable) & G-rows (Interest cap) ────
-            F1_n:  '',
-            F2_n:  '',
-            F3_n:  '',
-            F4_n:  '',
-            F5_n:  fmt(0),
-            F6_n:  '',
+            // ── PAGE 11-12: F-rows (Charitable) & G-rows (Interest cap) ──
+            F1_n: '', F2_n: '', F3_n: '', F4_n: '',
+            F5_n: '0',
+            F6_n: '',
             G1_n:  fmt(revenue),
             G2_n:  fmt(interestExpGL),
             G3_n:  fmt(Math.max(0, revenue * 0.5)),
             G4_n:  fmt(Math.min(interestExpGL, revenue * 0.5)),
-            G5_n:  '',
-            G6_n:  '',
+            G5_n: '', G6_n: '',
             G7_n:  fmt(Math.max(0, interestExpGL - revenue * 0.5)),
             G8_n:  '',
 
-// ── PAGE 12: Interest carry-forward ──────────────────────────
+            // (legacy keys kept for backwards compat)
+
             g1: fmt(revenue),
             g2: fmt(interestExpGL),
             g3: fmt(Math.max(0, revenue * 0.5)),
