@@ -3062,7 +3062,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                           <span className={`text-[8.5px] leading-tight text-slate-800 mt-[2px] font-normal`}>{row.e}</span>
                        </div>
                        <div className="w-[8%] border-r border-black flex items-center justify-center shrink-0 py-[2px] font-bold text-[10px]">{row.ref}</div>
-                       <div className={`flex-1 flex items-center justify-end py-[2px] px-3 font-mono text-[11px] ${row.greyAmount ? 'bg-[#e5e5e5]' : 'bg-white'}`}>{filledData?.['E42_n'] || '-'}</div>
+                       <div className={`flex-1 flex items-center justify-end py-[2px] px-3 font-mono text-[11px] ${row.greyAmount ? 'bg-[#e5e5e5]' : 'bg-white'}`}>{filledData?.[row.ref.replace(' ','')+'_n'] || '-'}</div>
                     </div>
                   ))}
 
@@ -3079,7 +3079,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                           <span className="text-[8px] leading-tight text-slate-700 font-normal mt-1 mb-1">* If G7 &gt; G2, the difference (G9) of table B.1 (Table of Interest Expense Carried Forward) in the next page (Page 12)</span>
                       </div>
                       <div className="w-[8%] border-r border-black flex items-center justify-center shrink-0 py-[2px] font-bold text-[10px]">G 8*</div>
-                      <div className="flex-1 flex items-end justify-end py-3 px-3 font-mono text-[11px] bg-white">{filledData?.['E42_n'] || '-'}</div>
+                      <div className="flex-1 flex items-end justify-end py-3 px-3 font-mono text-[11px] bg-white">{filledData?.['G8_n'] || '-'}</div>
                   </div>
                </div>
 
@@ -3230,8 +3230,8 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                            <div className="w-[22%] border-r border-black"></div> {/* Empty under overlay */}
                            <div className="w-[16.5%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]"></div>
                            <div className="w-[16.5%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]"></div>
-                           <div className="w-[16.5%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
-                           <div className="flex-1 flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                           <div className="w-[16.5%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['G11_n'] || ''}</div>
+                           <div className="flex-1 flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['G13_n'] || '-'}</div>
                         </div>
                      ))}
                      
@@ -3243,7 +3243,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         </div>
                         <div className="w-[22%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]"></div>
                         <div className="w-[16.5%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]"></div>
-                        <div className="w-[16.5%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['E42_n'] || '-'}</div>
+                        <div className="w-[16.5%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]">{filledData?.['G11_n'] || ''}</div>
                         <div className="w-[16.5%] border-r border-black flex items-center justify-end px-2 font-mono text-[10px]"></div>
                         <div className="flex-1 flex items-center justify-end px-2 font-mono text-[10px]"></div>
                      </div>

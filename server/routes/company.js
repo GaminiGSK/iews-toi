@@ -3273,21 +3273,35 @@ router.get('/toi/autofill', auth, async (req, res) => {
             })(),
 
             // ── PAGE 11-12: F-rows (Charitable) & G-rows (Interest cap) ──
-            F1_n: '', F2_n: '', F3_n: '', F4_n: '',
-            F5_n: '0',
-            F6_n: '',
+            ...(() => {
+                // F-row Charitable Contribution Calculation
+                const bOpEx  = costOfSales + (salaryExpGL||totalSalary) + travelGL + rentExpGL + marketingGL + (depExpGL||totalDep) + bankChargesGL + otherExpGL;
+                const b42f   = Math.max(0, grossProfit - (salaryExpGL||totalSalary) - travelGL - rentExpGL - marketingGL - (depExpGL||totalDep) - bankChargesGL - otherExpGL);
+                const b46f   = b42f - interestExpGL;
+                const dep_f  = depExpGL || totalDep;
+                const e36_f  = b46f; // E36 = profit after adjustments
+                const f1     = e36_f;  // F1 = E36
+                const f2     = 0;      // Charitable contributions (user inputs, default 0)
+                const f3     = f1 + f2; // F3 = F1+F2
+                const f4     = Math.max(0, f3 * 0.05); // F4 = 5% cap
+                const f5     = Math.min(f2, f4); // F5 = whichever is lower
+                const f6     = f2 - f5; // F6 = non-deductible portion
+                const fmtT   = (n) => n === undefined || isNaN(n) ? '' : Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                return { F1_n: fmtT(f1), F2_n: '', F3_n: fmtT(f3), F4_n: fmtT(f4), F5_n: fmtT(f5), F6_n: fmtT(f6) };
+            })(),
             G1_n:  fmt(revenue),
             G2_n:  fmt(interestExpGL),
             G3_n:  fmt(Math.max(0, revenue * 0.5)),
-            G4_n:  fmt(Math.min(interestExpGL, revenue * 0.5)),
-            G5_n: '', G6_n: '',
-            G7_n:  fmt(Math.max(0, interestExpGL - revenue * 0.5)),
-            G8_n:  '',
-
-            // (legacy keys kept for backwards compat)
-
-            g1: fmt(revenue),
-            g2: fmt(interestExpGL),
+                        G4_n:  fmt(Math.max(0, grossProfit + interestExpGL)),  // Net non-interest income = E38+G2
+            G5_n:  fmt(Math.max(0, (grossProfit + interestExpGL) * 0.5)),  // 50% cap
+            G6_n:  '',
+            G7_n:  fmt(Math.max(0, (grossProfit + interestExpGL) * 0.5)),  // max deductible
+            G8_n:  fmt(Math.max(0, interestExpGL - Math.max(0, (grossProfit + interestExpGL) * 0.5))),
+            // Page 12 B.1: Interest carryforward table keys
+            G10_n: fmt(Math.max(0, interestExpGL - Math.max(0, (grossProfit + interestExpGL) * 0.5))),
+            G11_n: fmt(Math.min(interestExpGL, Math.max(0, (grossProfit + interestExpGL) * 0.5))),
+            G12_n: '',
+            G13_n: fmt(Math.max(0, interestExpGL - Math.min(interestExpGL, Math.max(0, (grossProfit + interestExpGL) * 0.5)))),
             g3: fmt(Math.max(0, revenue * 0.5)),
 
             // ── PAGE 13: Related Party Transactions ──────────────────────
