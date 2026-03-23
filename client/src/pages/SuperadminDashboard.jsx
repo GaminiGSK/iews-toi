@@ -9,14 +9,17 @@ import {
 
 export default function SuperadminDashboard() {
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState('admins'); // 'admins' | 'knowledge'
+    const [activeTab, setActiveTab] = useState('admins');
     const [admins, setAdmins] = useState([]);
     const [knowledgeFiles, setKnowledgeFiles] = useState([]);
     const [knowledgeStatus, setKnowledgeStatus] = useState(null);
     const [loading, setLoading] = useState(true);
     const [syncing, setSyncing] = useState(false);
-    const [selectedAdmin, setSelectedAdmin] = useState(null); // drill-in
+    const [selectedAdmin, setSelectedAdmin] = useState(null);
     const [units, setUnits] = useState([]);
+    const [unassignedUnits, setUnassignedUnits] = useState([]);
+    const [assigningTo, setAssigningTo] = useState('');
+    const [assigningUnowned, setAssigningUnowned] = useState(false);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [createForm, setCreateForm] = useState({ username: '', companyName: '', loginCode: '' });
     const [createLoading, setCreateLoading] = useState(false);
@@ -35,8 +38,12 @@ export default function SuperadminDashboard() {
     // ── Load Admins ──────────────────────────────────────────────────────────
     const loadAdmins = async () => {
         try {
-            const res = await axios.get('/api/auth/admins', { headers: headers() });
-            setAdmins(res.data);
+            const [adminsRes, unassignedRes] = await Promise.all([
+                axios.get('/api/auth/admins', { headers: headers() }),
+                axios.get('/api/auth/unassigned-units', { headers: headers() }).catch(() => ({ data: [] }))
+            ]);
+            setAdmins(adminsRes.data);
+            setUnassignedUnits(unassignedRes.data || []);
         } catch (e) {
             if (e.response?.status === 401 || e.response?.status === 403) {
                 navigate('/login');
@@ -245,6 +252,56 @@ export default function SuperadminDashboard() {
                         ) : (
                             /* ── Admin List ── */
                             <div>
+                                {/* Unassigned Units Banner */}
+                                {unassignedUnits.length > 0 && (
+                                    <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-5 mb-6">
+                                        <div className="flex items-start justify-between gap-4">
+                                            <div className="flex items-center gap-3">
+                                                <AlertCircle className="w-5 h-5 text-amber-400 shrink-0" />
+                                                <div>
+                                                    <p className="font-black text-amber-300 text-sm">⚠️ {unassignedUnits.length} Unassigned Unit{unassignedUnits.length > 1 ? 's' : ''}</p>
+                                                    <p className="text-[10px] text-amber-500 mt-0.5">
+                                                        {unassignedUnits.map(u => u.username).join(', ')} — not yet assigned to any Admin
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2 shrink-0">
+                                                <select
+                                                    value={assigningTo}
+                                                    onChange={e => setAssigningTo(e.target.value)}
+                                                    className="px-3 py-2 bg-slate-800 border border-amber-500/30 rounded-xl text-white text-xs outline-none"
+                                                >
+                                                    <option value="">Select Admin...</option>
+                                                    {admins.map(a => (
+                                                        <option key={a._id} value={a._id}>{a.username}</option>
+                                                    ))}
+                                                </select>
+                                                <button
+                                                    onClick={async () => {
+                                                        if (!assigningTo) return;
+                                                        setAssigningUnowned(true);
+                                                        try {
+                                                            const res = await axios.post('/api/auth/reassign-units',
+                                                                { toAdminId: assigningTo, assignUnowned: true },
+                                                                { headers: headers() }
+                                                            );
+                                                            showToast(`✅ ${res.data.updated} unit(s) assigned to ${res.data.toAdmin}`);
+                                                            await loadAdmins();
+                                                            setAssigningTo('');
+                                                        } catch (e) { showToast('❌ ' + (e.response?.data?.message || 'Failed'), 'err'); }
+                                                        finally { setAssigningUnowned(false); }
+                                                    }}
+                                                    disabled={!assigningTo || assigningUnowned}
+                                                    className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all disabled:opacity-50 flex items-center gap-1.5"
+                                                >
+                                                    {assigningUnowned ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Building2 className="w-3.5 h-3.5" />}
+                                                    Assign All
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
                                 <div className="flex items-center justify-between mb-6">
                                     <div>
                                         <h2 className="text-xl font-black">Admin Accounts</h2>

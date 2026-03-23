@@ -183,17 +183,37 @@ router.post('/change-password', auth, async (req, res) => {
 // Reassign units to a different Admin (Superadmin only)
 router.post('/reassign-units', auth, async (req, res) => {
     if (req.user.role !== 'superadmin') return res.status(403).json({ message: 'Superadmin only' });
-    const { unitUsernames, toAdminId } = req.body;
-    if (!unitUsernames || !toAdminId) return res.status(400).json({ message: 'unitUsernames[] and toAdminId required' });
+    const { unitUsernames, toAdminId, assignUnowned } = req.body;
+    if (!toAdminId) return res.status(400).json({ message: 'toAdminId required' });
     try {
         const admin = await User.findOne({ _id: toAdminId, role: 'admin' });
         if (!admin) return res.status(404).json({ message: 'Target admin not found' });
-        const result = await User.updateMany(
-            { username: { $in: unitUsernames }, role: { $in: ['unit', 'user'] } },
-            { $set: { createdBy: admin._id } }
-        );
+
+        let filter = { role: { $in: ['unit', 'user'] } };
+        if (assignUnowned) {
+            // Assign all units with no owner
+            filter.createdBy = null;
+        } else if (unitUsernames && unitUsernames.length > 0) {
+            filter.username = { $in: unitUsernames };
+        } else {
+            return res.status(400).json({ message: 'unitUsernames[] or assignUnowned required' });
+        }
+
+        const result = await User.updateMany(filter, { $set: { createdBy: admin._id } });
         res.json({ ok: true, updated: result.modifiedCount, toAdmin: admin.username });
     } catch (err) { res.status(500).json({ message: 'Server Error', error: err.message }); }
+});
+
+// List unassigned units (no createdBy) — Superadmin only
+router.get('/unassigned-units', auth, async (req, res) => {
+    if (req.user.role !== 'superadmin') return res.status(403).json({ message: 'Superadmin only' });
+    try {
+        const units = await User.find({
+            role: { $in: ['unit', 'user'] },
+            $or: [{ createdBy: null }, { createdBy: { $exists: false } }]
+        }).select('username companyName loginCode createdAt brFolderId role');
+        res.json(units);
+    } catch (err) { res.status(500).json({ message: 'Server Error' }); }
 });
 
 // Update User
