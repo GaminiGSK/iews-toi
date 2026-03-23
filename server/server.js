@@ -255,7 +255,7 @@ const startServer = async () => {
                 companyCode: 'ADMIN_GK_SMART',
                 password: hashedPassword,
                 loginCode: '999999',
-                role: 'admin',
+                role: 'superadmin',   // ← upgraded from admin
                 isFirstLogin: false
             },
             {
@@ -264,7 +264,7 @@ const startServer = async () => {
                 companyCode: 'GK_SMART_AI',
                 password: hashedPassword,
                 loginCode: '666666',
-                role: 'user', // Changed from 'admin' to 'user'
+                role: 'unit',         // ← upgraded from user
                 isFirstLogin: false
             }
         ];
@@ -284,6 +284,30 @@ const startServer = async () => {
             }
         }
         console.log('Master Account Status: Verified');
+
+        // ── RBAC Auto-Migration (safe, idempotent) ───────────────────────────
+        // Upgrades old 'admin' role → 'superadmin', old 'user' → 'unit' where needed
+        try {
+            const adminUser = await User.findOne({ username: { $regex: /^admin$/i } });
+            if (adminUser && adminUser.role === 'admin') {
+                await User.updateOne({ _id: adminUser._id }, { $set: { role: 'superadmin' } });
+                console.log('[RBAC Migration] Admin → superadmin');
+            }
+            // Assign createdBy for GKSMART, RSW, TEXLINK if not already set
+            if (adminUser) {
+                const unitNames = ['GKSMART', 'RSW', 'TEXLINK'];
+                for (const name of unitNames) {
+                    const u = await User.findOne({ username: { $regex: new RegExp(`^${name}$`, 'i') }, createdBy: null });
+                    if (u) {
+                        await User.updateOne({ _id: u._id }, { $set: { createdBy: adminUser._id } });
+                        console.log(`[RBAC Migration] ${name} → createdBy set`);
+                    }
+                }
+            }
+            console.log('[RBAC Migration] Complete');
+        } catch (migrErr) {
+            console.warn('[RBAC Migration] Warning:', migrErr.message);
+        }
 
         // Apply Gate Code Logic
         try {
