@@ -812,7 +812,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
 
               {/* Section 14: Legal Form */}
               <div className="flex border-b border-black bg-white min-h-[138px]">
-                <div className="w-[49px] shrink-0 border-r border-black flex flex-col items-center justify-center bg-white">
+                <div className="w-[49px] shrink-0 border-r border-black flex flex-col items-center justify-center bg-[#e6e6e6]">
                   {/* Container to center 14 properly */}
                   <div className="h-full flex flex-col justify-center font-bold text-sm">
                     14
