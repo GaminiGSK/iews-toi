@@ -819,7 +819,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     {row.numBox ? (
                       <div className="flex-1 flex bg-white justify-between">
                         <div className="flex items-center px-4 w-[50%] overflow-hidden">
-                          <span className="font-bold text-[13px] text-black uppercase tracking-widest leading-none translate-y-px whitespace-normal break-words py-2">{filledData ? cleanVal(filledData[row.valKey]) : ""}</span>
+                          <span className="font-bold text-[13px] text-black tracking-widest leading-tight translate-y-px whitespace-pre-wrap break-words py-2">{(displayData || filledData) ? cleanVal((displayData || filledData)[row.valKey]) : ""}</span>
                         </div>
                         <div className="flex flex-col justify-center items-start text-left pt-[2px] w-[50%] border-l border-black pl-[14px] pr-3">
                           <span className="font-bold text-[11px] leading-tight text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
@@ -835,7 +835,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       </div>
                     ) : (
                       <div className="flex-1 bg-white flex items-center px-4 w-full overflow-hidden">
-                        <span className="font-bold text-[13px] text-black uppercase tracking-widest leading-none translate-y-px whitespace-normal break-words py-2">{filledData ? cleanVal(filledData[row.valKey]) : ""}</span>
+                        <span className="font-bold text-[13px] text-black tracking-widest leading-tight translate-y-px whitespace-pre-wrap break-words py-2">{(displayData || filledData) ? cleanVal((displayData || filledData)[row.valKey]) : ""}</span>
                       </div>
                     )}
                   </div>
