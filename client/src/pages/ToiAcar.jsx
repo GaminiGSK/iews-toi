@@ -345,9 +345,15 @@ const ToiAcar = ({ onBack, packageId, year }) => {
     Object.keys(out).forEach(key => {
       const raw = out[key];
       if (raw === null || raw === undefined || raw === '' || raw === '-') return;
-      const num = parseFloat(raw);
-      if (!isNaN(num) && isFinite(num) && String(raw).match(/^-?[\d,]*\.?\d*$/)) {
-        // Format with thousands separator for KHR
+      if (typeof raw !== 'string' && typeof raw !== 'number') return;
+      const str = String(raw);
+      // Match numbers that may have commas (formatted like "83,795.00") or plain numbers
+      // Must look like a number: optional minus, digits/commas, optional decimal
+      if (!str.match(/^-?[\d,]+(\.\d+)?$/) || str.length > 20) return;
+      // Strip commas before parsing (JS parseFloat stops at comma!)
+      const num = parseFloat(str.replace(/,/g, ''));
+      if (!isNaN(num) && isFinite(num)) {
+        // Format KHR with thousands separator, no decimals (KHR has no cents)
         out[key] = Math.round(num * exchangeRate).toLocaleString('en-US');
       }
     });
@@ -677,8 +683,8 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     </span>
                   </div>
                   <div className="flex items-center gap-[6px] ml-[24px]">
-                    <div className="w-[20px] h-[26px] border-[1.5px] border-black flex items-center justify-center bg-white text-sm font-bold text-black">{filledData ? filledData.taxMonths[0] : ""}</div>
-                    <div className="w-[20px] h-[26px] border-[1.5px] border-black flex items-center justify-center bg-white text-sm font-bold text-black">{filledData ? filledData.taxMonths[1] : ""}</div>
+                    <div className="w-[20px] h-[26px] border-[1.5px] border-black flex items-center justify-center bg-white text-sm font-bold text-black">{displayData ? displayData.taxMonths[0] : ""}</div>
+                    <div className="w-[20px] h-[26px] border-[1.5px] border-black flex items-center justify-center bg-white text-sm font-bold text-black">{displayData ? displayData.taxMonths[1] : ""}</div>
                   </div>
                 </div>
 
@@ -694,19 +700,19 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       <div className="flex items-end gap-[2px]">
                         <div className="flex gap-[2px]">
                           {Array.from({ length: 2 }).map((_, i) => (
-                            <div key={i} className="w-[20px] h-[26px] border-[1.5px] border-black bg-white flex items-center justify-center font-bold text-black text-[13px]">{filledData ? filledData.fromDate[i] : ""}</div>
+                            <div key={i} className="w-[20px] h-[26px] border-[1.5px] border-black bg-white flex items-center justify-center font-bold text-black text-[13px]">{displayData ? displayData.fromDate[i] : ""}</div>
                           ))}
                         </div>
                         <span className="text-black font-medium text-[15px] px-[1px] leading-none translate-y-[-2px]">/</span>
                         <div className="flex gap-[2px]">
                           {Array.from({ length: 2 }).map((_, i) => (
-                            <div key={i + 2} className="w-[20px] h-[26px] border-[1.5px] border-black bg-white flex items-center justify-center font-bold text-black text-[13px]">{filledData ? filledData.fromDate[i + 2] : ""}</div>
+                            <div key={i + 2} className="w-[20px] h-[26px] border-[1.5px] border-black bg-white flex items-center justify-center font-bold text-black text-[13px]">{displayData ? displayData.fromDate[i + 2] : ""}</div>
                           ))}
                         </div>
                         <span className="text-black font-medium text-[15px] px-[1px] leading-none translate-y-[-2px]">/</span>
                         <div className="flex gap-[2px]">
                           {Array.from({ length: 4 }).map((_, i) => (
-                            <div key={i + 4} className="w-[20px] h-[26px] border-[1.5px] border-black bg-white flex items-center justify-center font-bold text-black text-[13px]">{filledData ? filledData.fromDate[i + 4] : ""}</div>
+                            <div key={i + 4} className="w-[20px] h-[26px] border-[1.5px] border-black bg-white flex items-center justify-center font-bold text-black text-[13px]">{displayData ? displayData.fromDate[i + 4] : ""}</div>
                           ))}
                         </div>
                       </div>
@@ -721,19 +727,19 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       <div className="flex items-end gap-[2px]">
                         <div className="flex gap-[2px]">
                           {Array.from({ length: 2 }).map((_, i) => (
-                            <div key={i} className="w-[20px] h-[26px] border-[1.5px] border-black bg-white flex items-center justify-center font-bold text-black text-[13px]">{filledData ? filledData.untilDate[i] : ""}</div>
+                            <div key={i} className="w-[20px] h-[26px] border-[1.5px] border-black bg-white flex items-center justify-center font-bold text-black text-[13px]">{displayData ? displayData.untilDate[i] : ""}</div>
                           ))}
                         </div>
                         <span className="text-black font-medium text-[15px] px-[1px] leading-none translate-y-[-2px]">/</span>
                         <div className="flex gap-[2px]">
                           {Array.from({ length: 2 }).map((_, i) => (
-                            <div key={i + 2} className="w-[20px] h-[26px] border-[1.5px] border-black bg-white flex items-center justify-center font-bold text-black text-[13px]">{filledData ? filledData.untilDate[i + 2] : ""}</div>
+                            <div key={i + 2} className="w-[20px] h-[26px] border-[1.5px] border-black bg-white flex items-center justify-center font-bold text-black text-[13px]">{displayData ? displayData.untilDate[i + 2] : ""}</div>
                           ))}
                         </div>
                         <span className="text-black font-medium text-[15px] px-[1px] leading-none translate-y-[-2px]">/</span>
                         <div className="flex gap-[2px]">
                           {Array.from({ length: 4 }).map((_, i) => (
-                            <div key={i + 4} className="w-[20px] h-[26px] border-[1.5px] border-black bg-white flex items-center justify-center font-bold text-black text-[13px]">{filledData ? filledData.untilDate[i + 4] : ""}</div>
+                            <div key={i + 4} className="w-[20px] h-[26px] border-[1.5px] border-black bg-white flex items-center justify-center font-bold text-black text-[13px]">{displayData ? displayData.untilDate[i + 4] : ""}</div>
                           ))}
                         </div>
                       </div>
@@ -765,7 +771,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     <div className="flex gap-[2px]">
                       {Array.from({ length: 4 }).map((_, i) => (
                         <div key={i} className="w-[26px] h-[32px] border border-black bg-white flex items-center justify-center font-bold text-black text-lg">
-                          {(filledData?.tin?.replace('-', '') || '')[i] || ""}
+                          {(displayData?.tin?.replace('-', '') || '')[i] || ""}
                         </div>
                       ))}
                     </div>
@@ -773,7 +779,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     <div className="flex gap-[2px]">
                       {Array.from({ length: 9 }).map((_, i) => (
                         <div key={'t' + i} className="w-[26px] h-[32px] border border-black bg-white flex items-center justify-center font-bold text-black text-lg">
-                          {(filledData?.tin?.replace('-', '') || '')[i + 4] || ""}
+                          {(displayData?.tin?.replace('-', '') || '')[i + 4] || ""}
                         </div>
                       ))}
                     </div>
@@ -856,7 +862,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   <div className="flex-1 flex px-3 py-1 items-center bg-white">
                     <div className="flex items-center gap-[6px]">
                       <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center relative">
-                        {filledData?.accountingRecord === 'Using Software' && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                        {displayData?.accountingRecord === 'Using Software' && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                       </div>
                       <div className="flex flex-col leading-tight pt-[1px]">
                         <span className="font-bold text-[11px] text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រើប្រាស់កម្មវិធីគណនេយ្យកុំព្យូទ័រ (ឈ្មោះកម្មវិធី) ៖</span>
@@ -865,12 +871,12 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     </div>
                     
                     <div className="border-[1.5px] border-black h-[26px] w-[120px] flex items-center px-1 text-[11px] font-bold text-black mx-2 bg-white">
-                       {filledData?.accountingRecord === 'Using Software' && filledData?.softwareName}
+                       {displayData?.accountingRecord === 'Using Software' && displayData?.softwareName}
                     </div>
 
                     <div className="flex items-center gap-[6px] ml-1">
                       <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center relative">
-                        {filledData?.accountingRecord === 'Not Using Software' && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                        {displayData?.accountingRecord === 'Not Using Software' && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                       </div>
                       <div className="flex flex-col leading-tight pt-[1px]">
                         <span className="font-bold text-[11px] text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>មិនប្រើប្រាស់កម្មវិធីគណនេយ្យកុំព្យូទ័រ</span>
@@ -897,7 +903,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   <div className="flex-1 flex px-3 py-1 items-center gap-14 bg-white">
                     <div className="flex items-center gap-[6px]">
                       <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center relative">
-                        {filledData?.taxComplianceStatus === 'Gold' && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                        {displayData?.taxComplianceStatus === 'Gold' && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                       </div>
                       <div className="flex flex-col pt-[1px]">
                         <span className="font-bold text-[11px] text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>មាស</span>
@@ -906,7 +912,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     </div>
                     <div className="flex items-center gap-[6px]">
                       <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center relative">
-                        {filledData?.taxComplianceStatus === 'Silver' && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                        {displayData?.taxComplianceStatus === 'Silver' && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                       </div>
                       <div className="flex flex-col pt-[1px]">
                         <span className="font-bold text-[11px] text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ប្រាក់</span>
@@ -915,7 +921,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     </div>
                     <div className="flex items-center gap-[6px]">
                       <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center relative">
-                        {filledData?.taxComplianceStatus === 'Bronze' && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                        {displayData?.taxComplianceStatus === 'Bronze' && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                       </div>
                       <div className="flex flex-col pt-[1px]">
                         <span className="font-bold text-[11px] text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សំរឹទ្ធ</span>
@@ -942,7 +948,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   <div className="flex-1 flex px-3 py-1 items-center gap-16 bg-white">
                     <div className="flex items-center gap-[6px]">
                       <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center relative">
-                        {filledData?.statutoryAudit === 'Required' && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                        {displayData?.statutoryAudit === 'Required' && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                       </div>
                       <div className="flex flex-col leading-tight pt-[1px]">
                         <span className="font-bold text-[11px] text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>មានកាតព្វកិច្ច <span className="font-normal">(តម្រូវឱ្យដាក់របាយការណ៍សវនកម្ម)</span></span>
@@ -951,7 +957,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     </div>
                     <div className="flex items-center gap-[6px]">
                       <div className="w-[20px] h-[20px] border-[1.5px] border-black shrink-0 bg-white flex items-center justify-center relative">
-                        {filledData?.statutoryAudit === 'Not Required' && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                        {displayData?.statutoryAudit === 'Not Required' && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                       </div>
                       <div className="flex flex-col leading-tight pt-[1px]">
                         <span className="font-bold text-[11px] text-black tracking-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>គ្មានកាតព្វកិច្ច</span>
@@ -988,7 +994,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     <div className="flex-1 flex">
                       <div className="w-[50%] shrink-0 flex items-center gap-2 pl-[18px] pr-2">
                         <div className="w-[20px] h-[20px] border border-black shrink-0 bg-white flex items-center justify-center relative mt-[2px]">
-                          {filledData?.legalForm === "Private Limited Company" && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                          {displayData?.legalForm === "Private Limited Company" && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                         </div>
                         <div className="flex flex-col leading-tight pt-[1px] w-full">
                           <span className="text-[11px] text-black tracking-tighter" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ក្រុមហ៊ុនឯកជនទទួលខុសត្រូវមានកម្រិត</span>
@@ -997,7 +1003,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       </div>
                       <div className="w-[50%] shrink-0 flex items-center gap-2 pl-[18px] pr-2">
                         <div className="w-[20px] h-[20px] border border-black shrink-0 bg-white flex items-center justify-center relative mt-[2px]">
-                          {filledData?.legalForm === "State Joint Venture" && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                          {displayData?.legalForm === "State Joint Venture" && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                         </div>
                         <div className="flex flex-col leading-tight pt-[1px] w-full">
                           <span className="text-[11px] text-black tracking-tighter" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សហគ្រាសចម្រុះរដ្ឋ</span>
@@ -1019,7 +1025,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       ].map((item, idx) => (
                         <div key={'c1'+idx} className="flex gap-2 items-start mt-0.5">
                           <div className="w-[20px] h-[20px] border border-black shrink-0 bg-white flex items-center justify-center relative mt-[2px]">
-                            {filledData?.legalForm === item.en && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                            {displayData?.legalForm === item.en && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                           </div>
                           <div className="flex flex-col leading-tight w-full">
                             <span className="text-[11px] text-black tracking-tighter" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{item.kh}</span>
@@ -1040,7 +1046,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         ].map((item, idx) => (
                           <div key={'c2'+idx} className="flex gap-2 items-start mt-0.5">
                             <div className="w-[20px] h-[20px] border border-black shrink-0 bg-white flex items-center justify-center relative mt-[2px]">
-                              {filledData?.legalForm === item.en && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                              {displayData?.legalForm === item.en && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                             </div>
                             <div className="flex flex-col leading-tight w-full">
                               <span className="text-[11px] text-black tracking-tighter" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{item.kh}</span>
@@ -1060,7 +1066,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         ].map((item, idx) => (
                           <div key={'c3'+idx} className="flex gap-2 items-start mt-0.5">
                             <div className="w-[20px] h-[20px] border border-black shrink-0 bg-white flex items-center justify-center relative mt-[2px]">
-                              {filledData?.legalForm === item.en && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                              {displayData?.legalForm === item.en && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                             </div>
                             <div className={`flex ${item.en === "Others" ? "flex-row gap-2 flex-1 items-end" : "flex-col w-full pr-2"} leading-tight`}>
                               {item.en === "Others" ? (
@@ -1116,7 +1122,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         Year of First Revenue:
                       </span>
                     </div>
-                    <div className="w-[60px] p-2 flex items-center justify-center border-b-0 border-r-0 text-black font-bold text-[12px]">{filledData?.yearFirstRevenue || ""}</div>
+                    <div className="w-[60px] p-2 flex items-center justify-center border-b-0 border-r-0 text-black font-bold text-[12px]">{displayData?.yearFirstRevenue || ""}</div>
                     <div className="flex-1 px-3 py-1 flex flex-col justify-center">
                       <span
                         className="text-[11px] font-bold text-black"
@@ -1128,7 +1134,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         Year of First Profit:
                       </span>
                     </div>
-                    <div className="w-[60px] p-2 flex items-center justify-center border-b-0 border-r-0 text-black font-bold text-[12px]">{filledData?.yearFirstProfit || ""}</div>
+                    <div className="w-[60px] p-2 flex items-center justify-center border-b-0 border-r-0 text-black font-bold text-[12px]">{displayData?.yearFirstProfit || ""}</div>
                     <div className="flex-1 px-3 py-[6px] flex flex-col justify-center border-l border-black">
                       <span
                         className="text-[11px] font-bold text-black"
@@ -1142,7 +1148,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     </div>
                     <div className="w-[60px] p-2 flex relative justify-center items-center border-l-0">
                       <div className="flex-1 flex flex-col items-center justify-between border-b border-black">
-                        <div className="flex items-center justify-center pt-2 text-black font-bold text-[12px] bg-white z-0 mt-2 mb-2">{filledData?.priorityPeriodYear || ""}</div>
+                        <div className="flex items-center justify-center pt-2 text-black font-bold text-[12px] bg-white z-0 mt-2 mb-2">{displayData?.priorityPeriodYear || ""}</div>
                         <span className="text-[9px] z-10 text-black leading-none mb-1 font-normal" style={{ fontFamily: '"Arial", sans-serif' }}>Year(s)</span>
                       </div>
                     </div>
@@ -1167,31 +1173,31 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   <div className="flex-1 flex px-3 py-1 items-center justify-between text-[11px] font-bold text-black tracking-tighter bg-white">
                     <div className="flex items-center gap-[6px]">
                       <div className="w-[16px] h-[16px] border border-black bg-white flex items-center justify-center relative">
-                        {filledData?.incomeTaxRate === '30%' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                        {displayData?.incomeTaxRate === '30%' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                       </div> 
                       <span className="font-bold -translate-y-[1px]">30%</span>
                     </div>
                     <div className="flex items-center gap-[4px]">
                       <div className="w-[16px] h-[16px] border border-black bg-white flex items-center justify-center relative">
-                        {filledData?.incomeTaxRate === '20%' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                        {displayData?.incomeTaxRate === '20%' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                       </div> 
                       <span className="font-bold -translate-y-[1px]">20%</span>
                     </div>
                     <div className="flex items-center gap-[4px]">
                       <div className="w-[16px] h-[16px] border border-black bg-white flex items-center justify-center relative">
-                        {filledData?.incomeTaxRate === '5%' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                        {displayData?.incomeTaxRate === '5%' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                       </div> 
                       <span className="font-bold -translate-y-[1px]">5%</span>
                     </div>
                     <div className="flex items-center gap-[4px]">
                       <div className="w-[16px] h-[16px] border border-black bg-white flex items-center justify-center relative">
-                        {filledData?.incomeTaxRate === '0%' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                        {displayData?.incomeTaxRate === '0%' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                       </div> 
                       <span className="font-bold -translate-y-[1px]">0%</span>
                     </div>
                     <div className="flex items-center gap-[4px]">
                       <div className="w-[16px] h-[16px] border border-black bg-white flex items-center justify-center relative">
-                        {filledData?.incomeTaxRate === '0-20%' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                        {displayData?.incomeTaxRate === '0-20%' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                       </div> 
                       <span className="font-bold -translate-y-[1px]">0-20%</span>
                     </div>
@@ -1208,7 +1214,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         </span>
                       </div>
                       <div className="w-[16px] h-[16px] border border-black bg-white flex items-center justify-center relative">
-                        {filledData?.incomeTaxRate === 'Progressive Rate' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                        {displayData?.incomeTaxRate === 'Progressive Rate' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-700 font-bold" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                       </div>
                     </div>
                   </div>
@@ -1229,7 +1235,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       Income Tax Due:
                     </span>
                   </div>
-                  <div className="flex-[0.6] border-r border-black bg-white flex items-center font-bold text-black uppercase tracking-widest px-4">{filledData?.incomeTaxDue ? String(filledData.incomeTaxDue).replace(/null|N\/A/ig, "") : ""}</div>
+                  <div className="flex-[0.6] border-r border-black bg-white flex items-center font-bold text-black uppercase tracking-widest px-4">{displayData?.incomeTaxDue ? String(displayData?.incomeTaxDue).replace(/null|N\/A/ig, "") : ""}</div>
                   <div className="w-[49px] shrink-0 border-r border-black flex items-center justify-center font-bold text-[14px] bg-[#e6e6e6] text-black">
                     18
                   </div>
@@ -1244,7 +1250,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                       Tax Credit Carried Forward:
                     </span>
                   </div>
-                  <div className="flex-1 bg-white flex items-center font-bold text-black uppercase tracking-widest px-4">{filledData?.taxCreditCarriedForward ? String(filledData.taxCreditCarriedForward).replace(/null|N\/A/ig, "") : ""}</div>
+                  <div className="flex-1 bg-white flex items-center font-bold text-black uppercase tracking-widest px-4">{displayData?.taxCreditCarriedForward ? String(displayData?.taxCreditCarriedForward).replace(/null|N\/A/ig, "") : ""}</div>
                 </div>
               </div>
               </div>
@@ -1314,7 +1320,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                             <span style={{ fontFamily: '"Kantumruy Pro", sans-serif', fontSize: '10px' }}>លេខចូល</span>
                             <span className="text-[8px] text-black font-normal font-sans mt-[1px]">(No.)</span>
                           </div>
-                          <div className="flex-1 h-[22px] border-[1px] border-black bg-white mr-1 ml-1 flex items-center justify-center font-bold text-center text-[11px] overflow-hidden px-1">{filledData?.taxOfficeNo || ""}</div>
+                          <div className="flex-1 h-[22px] border-[1px] border-black bg-white mr-1 ml-1 flex items-center justify-center font-bold text-center text-[11px] overflow-hidden px-1">{displayData?.taxOfficeNo || ""}</div>
                         </div>
 
                         {/* Signature Row */}
@@ -1332,7 +1338,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                             <div className="flex min-w-[96px]">
                               {Array.from({ length: 4 }).map((_, i) => (
                                 <div key={'txid'+i} className={`flex-1 h-[20px] bg-white flex items-center justify-center font-bold text-[12px] ${i < 3 ? 'border-r-[1px] border-black' : ''}`}>
-                                  {filledData?.taxOfficialId?.[i] || ""}
+                                  {displayData?.taxOfficialId?.[i] || ""}
                                 </div>
                               ))}
                             </div>
@@ -1369,7 +1375,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                           <span style={{ fontFamily: '"Kantumruy Pro", sans-serif'}} className="leading-none text-[11px]">ធ្វើនៅ</span>
                           <span className="text-[8px] font-normal font-sans pt-[2px]">Filed in.</span>
                        </div>
-                       <div className="w-[130px] border border-black h-[22px] flex items-center justify-center text-[8.5px] font-bold text-center shrink-0 overflow-hidden px-1" style={{ fontFamily: '"Kantumruy Pro", sans-serif'}}>{filledData?.filedIn || ""}</div>
+                       <div className="w-[130px] border border-black h-[22px] flex items-center justify-center text-[8.5px] font-bold text-center shrink-0 overflow-hidden px-1" style={{ fontFamily: '"Kantumruy Pro", sans-serif'}}>{displayData?.filedIn || ""}</div>
                         {/* TODAY's date (print date) - computed live */}
                         {(() => {
                           const now = new Date();
@@ -1391,7 +1397,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     </div>
 
                     <div className="flex-1 flex flex-col justify-end text-center text-[9px] w-full items-center pb-[8px] pt-4 relative">
-                       {filledData?.signatoryName && (
+                       {displayData?.signatoryName && (
                          <div className="w-full text-center text-blue-800 font-bold text-[13px] mb-[6px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif'}}>{filledData.signatoryName}</div>
                        )}
                        <span className="font-bold tracking-tight text-[9.5px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif'}}>អភិបាល/អ្នកគ្រប់គ្រង/ម្ចាស់សហគ្រាស/ ភ្នាក់ងារសេវាកម្មពន្ធដារ</span>
@@ -1464,11 +1470,11 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         <span className="font-bold text-[11px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
                         <div className="flex gap-[4px]">
                            {Array.from({ length: 4 }).map((_, i) => (
-                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(filledData?.tin?.replace('-', '') || '')[i] || ""}</div>
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(displayData?.tin?.replace('-', '') || '')[i] || ""}</div>
                            ))}
                            <span className="text-black font-black text-xl leading-none mx-0 relative top-[1px]">-</span>
                            {Array.from({ length: 9 }).map((_, i) => (
-                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(filledData?.tin?.replace('-', '') || '')[i + 4] || ""}</div>
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(displayData?.tin?.replace('-', '') || '')[i + 4] || ""}</div>
                            ))}
                         </div>
                      </div>
@@ -1544,17 +1550,17 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   {[1,2,3,4,5].map(i => (
                     <div key={'A'+i} className="flex border-b border-black min-h-[28px] text-[11px] font-bold">
                        <div className="w-[6%] border-r border-black flex items-center justify-center shrink-0 py-1">{i}</div>
-                       <div className="w-[20%] border-r border-black px-2 flex items-center shrink-0 py-1 break-words">{filledData?.['capitalRegName'+i] || ''}</div>
-                       <div className="w-[18%] border-r border-black px-2 flex items-center shrink-0 py-1 break-words">{filledData?.['capitalRegAddress'+i] || ''}</div>
-                       <div className="w-[12%] border-r border-black px-2 flex items-center justify-center shrink-0 py-1 break-words">{filledData?.['capitalRegPos'+i] || ''}</div>
+                       <div className="w-[20%] border-r border-black px-2 flex items-center shrink-0 py-1 break-words">{displayData?.['capitalRegName'+i] || ''}</div>
+                       <div className="w-[18%] border-r border-black px-2 flex items-center shrink-0 py-1 break-words">{displayData?.['capitalRegAddress'+i] || ''}</div>
+                       <div className="w-[12%] border-r border-black px-2 flex items-center justify-center shrink-0 py-1 break-words">{displayData?.['capitalRegPos'+i] || ''}</div>
                        <div className="flex-1 flex">
                           <div className="w-1/2 border-r border-black flex">
-                             <div className="w-[30%] border-r border-black flex items-center justify-center shrink-0 py-1">{filledData?.['capitalRegStartPct'+i] || ''}</div>
-                             <div className="flex-1 flex items-center justify-end px-2 py-1">{filledData?.['capitalRegStartAmt'+i] || ''}</div>
+                             <div className="w-[30%] border-r border-black flex items-center justify-center shrink-0 py-1">{displayData?.['capitalRegStartPct'+i] || ''}</div>
+                             <div className="flex-1 flex items-center justify-end px-2 py-1">{displayData?.['capitalRegStartAmt'+i] || ''}</div>
                           </div>
                           <div className="w-1/2 flex">
-                             <div className="w-[30%] border-r border-black flex items-center justify-center shrink-0 py-1">{filledData?.['capitalRegEndPct'+i] || ''}</div>
-                             <div className="flex-1 flex items-center justify-end px-2 py-1">{filledData?.['capitalRegEndAmt'+i] || ''}</div>
+                             <div className="w-[30%] border-r border-black flex items-center justify-center shrink-0 py-1">{displayData?.['capitalRegEndPct'+i] || ''}</div>
+                             <div className="flex-1 flex items-center justify-end px-2 py-1">{displayData?.['capitalRegEndAmt'+i] || ''}</div>
                           </div>
                        </div>
                     </div>
@@ -1583,17 +1589,17 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                   {[1,2,3,4,5].map(i => (
                     <div key={'B'+i} className="flex border-b border-black min-h-[28px] text-[11px] font-bold">
                        <div className="w-[6%] border-r border-black flex items-center justify-center shrink-0 py-1">{i}</div>
-                       <div className="w-[20%] border-r border-black px-2 flex items-center shrink-0 py-1 break-words">{filledData?.['capitalPaidName'+i] || ''}</div>
-                       <div className="w-[18%] border-r border-black px-2 flex items-center shrink-0 py-1 break-words">{filledData?.['capitalPaidAddress'+i] || ''}</div>
-                       <div className="w-[12%] border-r border-black px-2 flex items-center justify-center shrink-0 py-1 break-words">{filledData?.['capitalPaidPos'+i] || ''}</div>
+                       <div className="w-[20%] border-r border-black px-2 flex items-center shrink-0 py-1 break-words">{displayData?.['capitalPaidName'+i] || ''}</div>
+                       <div className="w-[18%] border-r border-black px-2 flex items-center shrink-0 py-1 break-words">{displayData?.['capitalPaidAddress'+i] || ''}</div>
+                       <div className="w-[12%] border-r border-black px-2 flex items-center justify-center shrink-0 py-1 break-words">{displayData?.['capitalPaidPos'+i] || ''}</div>
                        <div className="flex-1 flex">
                           <div className="w-1/2 border-r border-black flex">
-                             <div className="w-[30%] border-r border-black flex items-center justify-center shrink-0 py-1">{filledData?.['capitalPaidStartPct'+i] || ''}</div>
-                             <div className="flex-1 flex items-center justify-end px-2 py-1">{filledData?.['capitalPaidStartAmt'+i] || ''}</div>
+                             <div className="w-[30%] border-r border-black flex items-center justify-center shrink-0 py-1">{displayData?.['capitalPaidStartPct'+i] || ''}</div>
+                             <div className="flex-1 flex items-center justify-end px-2 py-1">{displayData?.['capitalPaidStartAmt'+i] || ''}</div>
                           </div>
                           <div className="w-1/2 flex">
-                             <div className="w-[30%] border-r border-black flex items-center justify-center shrink-0 py-1">{filledData?.['capitalPaidEndPct'+i] || ''}</div>
-                             <div className="flex-1 flex items-center justify-end px-2 py-1">{filledData?.['capitalPaidEndAmt'+i] || ''}</div>
+                             <div className="w-[30%] border-r border-black flex items-center justify-center shrink-0 py-1">{displayData?.['capitalPaidEndPct'+i] || ''}</div>
+                             <div className="flex-1 flex items-center justify-end px-2 py-1">{displayData?.['capitalPaidEndAmt'+i] || ''}</div>
                           </div>
                        </div>
                     </div>
@@ -1666,10 +1672,10 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        <div className="w-[36%] border-r border-black px-2 flex items-center shrink-0 py-[2px] break-words text-left">
                            <span className="pl-1">-</span>
                        </div>
-                       <div className="w-[15%] border-r border-black flex items-center justify-center shrink-0 py-[2px] px-2">{filledData?.['employeeShPos'+i] || ''}</div>
-                       <div className="w-[10%] border-r border-black flex items-center justify-center shrink-0 py-[2px] px-2">{filledData?.['employeeShNum'+i] || ''}</div>
-                       <div className="w-[22%] border-r border-black flex items-center justify-center shrink-0 py-[2px] px-2">{filledData?.['employeeShSal'+i] || ''}</div>
-                       <div className="flex-1 flex items-center justify-center py-[2px] px-2">{filledData?.['employeeShFringe'+i] || ''}</div>
+                       <div className="w-[15%] border-r border-black flex items-center justify-center shrink-0 py-[2px] px-2">{displayData?.['employeeShPos'+i] || ''}</div>
+                       <div className="w-[10%] border-r border-black flex items-center justify-center shrink-0 py-[2px] px-2">{displayData?.['employeeShNum'+i] || ''}</div>
+                       <div className="w-[22%] border-r border-black flex items-center justify-center shrink-0 py-[2px] px-2">{displayData?.['employeeShSal'+i] || ''}</div>
+                       <div className="flex-1 flex items-center justify-center py-[2px] px-2">{displayData?.['employeeShFringe'+i] || ''}</div>
                     </div>
                   ))}
 
@@ -1689,10 +1695,10 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        <div className="w-[36%] border-r border-black px-2 flex items-center shrink-0 py-[2px] break-words text-left">
                            <span className="pl-1">-</span>
                        </div>
-                       <div className="w-[15%] border-r border-black flex items-center justify-center shrink-0 py-[2px] px-2">{filledData?.['employeeNonShPos'+i] || ''}</div>
-                       <div className="w-[10%] border-r border-black flex items-center justify-center shrink-0 py-[2px] px-2">{filledData?.['employeeNonShNum'+i] || ''}</div>
-                       <div className="w-[22%] border-r border-black flex items-center justify-center shrink-0 py-[2px] px-2">{filledData?.['employeeNonShSal'+i] || ''}</div>
-                       <div className="flex-1 flex items-center justify-center py-[2px] px-2">{filledData?.['employeeNonShFringe'+i] || ''}</div>
+                       <div className="w-[15%] border-r border-black flex items-center justify-center shrink-0 py-[2px] px-2">{displayData?.['employeeNonShPos'+i] || ''}</div>
+                       <div className="w-[10%] border-r border-black flex items-center justify-center shrink-0 py-[2px] px-2">{displayData?.['employeeNonShNum'+i] || ''}</div>
+                       <div className="w-[22%] border-r border-black flex items-center justify-center shrink-0 py-[2px] px-2">{displayData?.['employeeNonShSal'+i] || ''}</div>
+                       <div className="flex-1 flex items-center justify-center py-[2px] px-2">{displayData?.['employeeNonShFringe'+i] || ''}</div>
                     </div>
                   ))}
 
@@ -1702,9 +1708,9 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         <span className="text-[11px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>៣- សរុបបុគ្គលិក-កម្មករ</span>
                         <span className="text-[9px] font-normal">3 - Total Employees and Workers</span>
                      </div>
-                     <div className="w-[10%] border-r border-black flex items-center justify-center shrink-0 py-1 px-2">{filledData?.['employeeTotalNum'] || ''}</div>
-                     <div className="w-[22%] border-r border-black flex items-center justify-center shrink-0 py-1 px-2">{filledData?.['employeeTotalSal'] || ''}</div>
-                     <div className="flex-1 flex items-center justify-center py-1 px-2">{filledData?.['employeeTotalFringe'] || ''}</div>
+                     <div className="w-[10%] border-r border-black flex items-center justify-center shrink-0 py-1 px-2">{displayData?.['employeeTotalNum'] || ''}</div>
+                     <div className="w-[22%] border-r border-black flex items-center justify-center shrink-0 py-1 px-2">{displayData?.['employeeTotalSal'] || ''}</div>
+                     <div className="flex-1 flex items-center justify-center py-1 px-2">{displayData?.['employeeTotalFringe'] || ''}</div>
                   </div>
                   {/* Section 4 */}
                   <div className="flex min-h-[32px] font-bold text-[11px] text-center bg-white">
@@ -1712,9 +1718,9 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         <span className="text-[11px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>៤- បុគ្គលិក-កម្មករជាប់ពន្ធលើប្រាក់បៀវត្ស</span>
                         <span className="text-[9px] font-normal">4 - Taxable Salary for Employees and Workers</span>
                      </div>
-                     <div className="w-[10%] border-r border-black flex items-center justify-center shrink-0 py-1 px-2">{filledData?.['employeeTaxNum'] || ''}</div>
-                     <div className="w-[22%] border-r border-black flex items-center justify-center shrink-0 py-1 px-2">{filledData?.['employeeTaxSal'] || ''}</div>
-                     <div className="flex-1 flex items-center justify-center py-1 px-2">{filledData?.['employeeTaxFringe'] || ''}</div>
+                     <div className="w-[10%] border-r border-black flex items-center justify-center shrink-0 py-1 px-2">{displayData?.['employeeTaxNum'] || ''}</div>
+                     <div className="w-[22%] border-r border-black flex items-center justify-center shrink-0 py-1 px-2">{displayData?.['employeeTaxSal'] || ''}</div>
+                     <div className="flex-1 flex items-center justify-center py-1 px-2">{displayData?.['employeeTaxFringe'] || ''}</div>
                   </div>
                </div>
 
@@ -1780,11 +1786,11 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         <span className="font-bold text-[11px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
                         <div className="flex gap-[4px]">
                            {Array.from({ length: 4 }).map((_, i) => (
-                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(filledData?.tin?.replace('-', '') || '')[i] || ""}</div>
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(displayData?.tin?.replace('-', '') || '')[i] || ""}</div>
                            ))}
                            <span className="text-black font-black text-xl leading-none mx-0 relative top-[1px]">-</span>
                            {Array.from({ length: 9 }).map((_, i) => (
-                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(filledData?.tin?.replace('-', '') || '')[i + 4] || ""}</div>
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(displayData?.tin?.replace('-', '') || '')[i + 4] || ""}</div>
                            ))}
                         </div>
                      </div>
@@ -1853,7 +1859,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        </div>
                        <div className="w-[8%] border-r border-black flex items-center justify-center shrink-0 py-[2px] font-bold text-[10px]">{row.ref}</div>
                        <div className="w-[21%] border-r border-black flex items-center justify-end shrink-0 py-[2px] px-2 font-mono text-[10px]">{displayData?.[row.ref.replace(' ','')+'_n'] || '-'}</div>
-                       <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px]">{filledData?.[row.ref.replace(' ','')+'_n1'] || '-'}</div>
+                       <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px]">{displayData?.[row.ref.replace(' ','')+'_n1'] || '-'}</div>
                     </div>
                   ))}
                </div>
@@ -1921,11 +1927,11 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         <span className="font-bold text-[11px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
                         <div className="flex gap-[4px]">
                            {Array.from({ length: 4 }).map((_, i) => (
-                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(filledData?.tin?.replace('-', '') || '')[i] || ""}</div>
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(displayData?.tin?.replace('-', '') || '')[i] || ""}</div>
                            ))}
                            <span className="text-black font-black text-xl leading-none mx-0 relative top-[1px]">-</span>
                            {Array.from({ length: 9 }).map((_, i) => (
-                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(filledData?.tin?.replace('-', '') || '')[i + 4] || ""}</div>
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(displayData?.tin?.replace('-', '') || '')[i + 4] || ""}</div>
                            ))}
                         </div>
                      </div>
@@ -1971,7 +1977,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        </div>
                        <div className="w-[8%] border-r border-black flex items-center justify-center shrink-0 py-[2px] font-bold text-[10px]">{row.ref}</div>
                        <div className="w-[21%] border-r border-black flex items-center justify-end shrink-0 py-[2px] px-2 font-mono text-[10px]">{displayData?.[row.ref.replace(' ','')+'_n'] || '-'}</div>
-                       <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px]">{filledData?.[row.ref.replace(' ','')+'_n1'] || '-'}</div>
+                       <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px]">{displayData?.[row.ref.replace(' ','')+'_n1'] || '-'}</div>
                     </div>
                   ))}
                </div>
@@ -2036,11 +2042,11 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         <span className="font-bold text-[11px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
                         <div className="flex gap-[4px]">
                            {Array.from({ length: 4 }).map((_, i) => (
-                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(filledData?.tin?.replace('-', '') || '')[i] || ""}</div>
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(displayData?.tin?.replace('-', '') || '')[i] || ""}</div>
                            ))}
                            <span className="text-black font-black text-xl leading-none mx-0 relative top-[1px]">-</span>
                            {Array.from({ length: 9 }).map((_, i) => (
-                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(filledData?.tin?.replace('-', '') || '')[i + 4] || ""}</div>
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(displayData?.tin?.replace('-', '') || '')[i + 4] || ""}</div>
                            ))}
                         </div>
                      </div>
@@ -2106,7 +2112,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        </div>
                        <div className="w-[8%] border-r border-black flex items-center justify-center shrink-0 py-[2px] font-bold text-[10px]">{row.ref}</div>
                        <div className="w-[21%] border-r border-black flex items-center justify-end shrink-0 py-[2px] px-2 font-mono text-[10px]">{displayData?.[row.ref.replace(' ','')+'_n'] || '-'}</div>
-                       <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px]">{filledData?.[row.ref.replace(' ','')+'_n1'] || '-'}</div>
+                       <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px]">{displayData?.[row.ref.replace(' ','')+'_n1'] || '-'}</div>
                     </div>
                   ))}
                </div>
@@ -2182,11 +2188,11 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         <span className="font-bold text-[11px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
                         <div className="flex gap-[4px]">
                            {Array.from({ length: 4 }).map((_, i) => (
-                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(filledData?.tin?.replace('-', '') || '')[i] || ""}</div>
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(displayData?.tin?.replace('-', '') || '')[i] || ""}</div>
                            ))}
                            <span className="text-black font-black text-xl leading-none mx-0 relative top-[1px]">-</span>
                            {Array.from({ length: 9 }).map((_, i) => (
-                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(filledData?.tin?.replace('-', '') || '')[i + 4] || ""}</div>
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(displayData?.tin?.replace('-', '') || '')[i + 4] || ""}</div>
                            ))}
                         </div>
                      </div>
@@ -2231,7 +2237,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        </div>
                        <div className="w-[8%] border-r border-black flex items-center justify-center shrink-0 py-[2px] font-bold text-[10px]">{row.ref}</div>
                        <div className="w-[21%] border-r border-black flex items-center justify-end shrink-0 py-[2px] px-2 font-mono text-[10px]">{displayData?.[row.ref.replace(' ','')+'_n'] || '-'}</div>
-                       <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px]">{filledData?.[row.ref.replace(' ','')+'_n1'] || '-'}</div>
+                       <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px]">{displayData?.[row.ref.replace(' ','')+'_n1'] || '-'}</div>
                     </div>
                   ))}
                </div>
@@ -2317,11 +2323,11 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         <span className="font-bold text-[11px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
                         <div className="flex gap-[4px]">
                            {Array.from({ length: 4 }).map((_, i) => (
-                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(filledData?.tin?.replace('-', '') || '')[i] || ""}</div>
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(displayData?.tin?.replace('-', '') || '')[i] || ""}</div>
                            ))}
                            <span className="text-black font-black text-xl leading-none mx-0 relative top-[1px]">-</span>
                            {Array.from({ length: 9 }).map((_, i) => (
-                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(filledData?.tin?.replace('-', '') || '')[i + 4] || ""}</div>
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(displayData?.tin?.replace('-', '') || '')[i + 4] || ""}</div>
                            ))}
                         </div>
                      </div>
@@ -2382,7 +2388,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        </div>
                        <div className="w-[8%] border-r border-black flex items-center justify-center shrink-0 py-[2px] font-bold text-[10px]">{row.ref}</div>
                        <div className="w-[21%] border-r border-black flex items-center justify-end shrink-0 py-[2px] px-2 font-mono text-[10px]">{displayData?.[row.ref.replace(' ','')+'_n'] || '-'}</div>
-                       <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px]">{filledData?.[row.ref.replace(' ','')+'_n1'] || '-'}</div>
+                       <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[10px]">{displayData?.[row.ref.replace(' ','')+'_n1'] || '-'}</div>
                     </div>
                   ))}
                </div>
@@ -2468,11 +2474,11 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         <span className="font-bold text-[11px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
                         <div className="flex gap-[4px]">
                            {Array.from({ length: 4 }).map((_, i) => (
-                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(filledData?.tin?.replace('-', '') || '')[i] || ""}</div>
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(displayData?.tin?.replace('-', '') || '')[i] || ""}</div>
                            ))}
                            <span className="text-black font-black text-xl leading-none mx-0 relative top-[1px]">-</span>
                            {Array.from({ length: 9 }).map((_, i) => (
-                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(filledData?.tin?.replace('-', '') || '')[i + 4] || ""}</div>
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(displayData?.tin?.replace('-', '') || '')[i + 4] || ""}</div>
                            ))}
                         </div>
                      </div>
@@ -2522,7 +2528,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        </div>
                        <div className="w-[8%] border-r border-black flex items-center justify-center shrink-0 py-[2px] font-bold text-[11px]">{row.ref}</div>
                        <div className="w-[21%] border-r border-black flex items-center justify-end shrink-0 py-[2px] px-2 font-mono text-[11px]">{displayData?.[row.ref.replace(' ','')+'_n'] || '-'}</div>
-                       <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[11px]">{filledData?.[row.ref.replace(' ','')+'_n1'] || '-'}</div>
+                       <div className="flex-1 flex items-center justify-end py-[2px] px-2 font-mono text-[11px]">{displayData?.[row.ref.replace(' ','')+'_n1'] || '-'}</div>
                     </div>
                   ))}
                </div>
@@ -2587,11 +2593,11 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         <span className="font-bold text-[11px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
                         <div className="flex gap-[4px]">
                            {Array.from({ length: 4 }).map((_, i) => (
-                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(filledData?.tin?.replace('-', '') || '')[i] || ""}</div>
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(displayData?.tin?.replace('-', '') || '')[i] || ""}</div>
                            ))}
                            <span className="text-black font-black text-xl leading-none mx-0 relative top-[1px]">-</span>
                            {Array.from({ length: 9 }).map((_, i) => (
-                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(filledData?.tin?.replace('-', '') || '')[i + 4] || ""}</div>
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(displayData?.tin?.replace('-', '') || '')[i + 4] || ""}</div>
                            ))}
                         </div>
                      </div>
@@ -2809,11 +2815,11 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         <span className="font-bold text-[11px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
                         <div className="flex gap-[4px]">
                            {Array.from({ length: 4 }).map((_, i) => (
-                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(filledData?.tin?.replace('-', '') || '')[i] || ""}</div>
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(displayData?.tin?.replace('-', '') || '')[i] || ""}</div>
                            ))}
                            <span className="text-black font-black text-xl leading-none mx-0 relative top-[1px]">-</span>
                            {Array.from({ length: 9 }).map((_, i) => (
-                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(filledData?.tin?.replace('-', '') || '')[i + 4] || ""}</div>
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(displayData?.tin?.replace('-', '') || '')[i + 4] || ""}</div>
                            ))}
                         </div>
                      </div>
@@ -3102,11 +3108,11 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         <span className="font-bold text-[11px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
                         <div className="flex gap-[4px]">
                            {Array.from({ length: 4 }).map((_, i) => (
-                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(filledData?.tin?.replace('-', '') || '')[i] || ""}</div>
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(displayData?.tin?.replace('-', '') || '')[i] || ""}</div>
                            ))}
                            <span className="text-black font-black text-xl leading-none mx-0 relative top-[1px]">-</span>
                            {Array.from({ length: 9 }).map((_, i) => (
-                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(filledData?.tin?.replace('-', '') || '')[i + 4] || ""}</div>
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(displayData?.tin?.replace('-', '') || '')[i + 4] || ""}</div>
                            ))}
                         </div>
                      </div>
@@ -3297,11 +3303,11 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         <span className="font-bold text-[11px]" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>លេខអត្តសញ្ញាណកម្មសារពើពន្ធ ៖</span>
                         <div className="flex gap-[4px]">
                            {Array.from({ length: 4 }).map((_, i) => (
-                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(filledData?.tin?.replace('-', '') || '')[i] || ""}</div>
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(displayData?.tin?.replace('-', '') || '')[i] || ""}</div>
                            ))}
                            <span className="text-black font-black text-xl leading-none mx-0 relative top-[1px]">-</span>
                            {Array.from({ length: 9 }).map((_, i) => (
-                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(filledData?.tin?.replace('-', '') || '')[i + 4] || ""}</div>
+                             <div key={i} className="w-[20px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black">{(displayData?.tin?.replace('-', '') || '')[i + 4] || ""}</div>
                            ))}
                         </div>
                      </div>
@@ -3573,13 +3579,13 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        <div className="flex gap-[4px] ml-1">
                           {Array.from({ length: 4 }).map((_, i) => (
                              <div key={i} className="w-[18px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[11px] text-black pt-[2px]">
-                               {(filledData?.tin?.replace('-', '') || '')[i] || ""}
+                               {(displayData?.tin?.replace('-', '') || '')[i] || ""}
                              </div>
                           ))}
                           <span className="text-black font-black text-xl leading-none mx-[1px] relative top-[1px]">-</span>
                           {Array.from({ length: 9 }).map((_, i) => (
                              <div key={i} className="w-[18px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[11px] text-black pt-[2px]">
-                               {(filledData?.tin?.replace('-', '') || '')[i + 4] || ""}
+                               {(displayData?.tin?.replace('-', '') || '')[i + 4] || ""}
                              </div>
                           ))}
                        </div>
@@ -4103,13 +4109,13 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        <div className="flex gap-[4px] ml-1">
                           {Array.from({ length: 4 }).map((_, i) => (
                              <div key={i} className="w-[18px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[11px] text-black pt-[2px]">
-                               {(filledData?.tin?.replace('-', '') || '')[i] || ""}
+                               {(displayData?.tin?.replace('-', '') || '')[i] || ""}
                              </div>
                           ))}
                           <span className="text-black font-black text-xl leading-none mx-[1px] relative top-[1px]">-</span>
                           {Array.from({ length: 9 }).map((_, i) => (
                              <div key={i} className="w-[18px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[11px] text-black pt-[2px]">
-                               {(filledData?.tin?.replace('-', '') || '')[i + 4] || ""}
+                               {(displayData?.tin?.replace('-', '') || '')[i + 4] || ""}
                              </div>
                           ))}
                        </div>
@@ -4376,13 +4382,13 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        <div className="flex gap-[4px] ml-1">
                           {Array.from({ length: 4 }).map((_, i) => (
                              <div key={i} className="w-[18px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[11px] text-black pt-[2px]">
-                               {(filledData?.tin?.replace('-', '') || '')[i] || ""}
+                               {(displayData?.tin?.replace('-', '') || '')[i] || ""}
                              </div>
                           ))}
                           <span className="text-black font-black text-xl leading-none mx-[1px] relative top-[1px]">-</span>
                           {Array.from({ length: 9 }).map((_, i) => (
                              <div key={i} className="w-[18px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[11px] text-black pt-[2px]">
-                               {(filledData?.tin?.replace('-', '') || '')[i + 4] || ""}
+                               {(displayData?.tin?.replace('-', '') || '')[i + 4] || ""}
                              </div>
                           ))}
                        </div>
@@ -4600,13 +4606,13 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        <div className="flex gap-[4px] ml-1">
                           {Array.from({ length: 4 }).map((_, i) => (
                              <div key={i} className="w-[18px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[11px] text-black pt-[2px]">
-                               {(filledData?.tin?.replace('-', '') || '')[i] || ""}
+                               {(displayData?.tin?.replace('-', '') || '')[i] || ""}
                              </div>
                           ))}
                           <span className="text-black font-black text-xl leading-none mx-[1px] relative top-[1px]">-</span>
                           {Array.from({ length: 9 }).map((_, i) => (
                              <div key={i} className="w-[18px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[11px] text-black pt-[2px]">
-                               {(filledData?.tin?.replace('-', '') || '')[i + 4] || ""}
+                               {(displayData?.tin?.replace('-', '') || '')[i + 4] || ""}
                              </div>
                           ))}
                        </div>
@@ -4806,14 +4812,14 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        <span className="text-[7px] font-bold leading-tight">Name of Enterprise:</span>
                     </div>
                     <div className="w-[30%] border-r border-black flex items-center px-2 font-bold text-[11px] uppercase">
-                       {filledData?.companyNameKH || ""}
+                       {displayData?.companyNameKH || ""}
                     </div>
                     <div className="w-[15%] border-r border-black flex flex-col justify-center px-1 shrink-0">
                        <span className="text-[9px] font-bold leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ឈ្មោះអក្សរឡាតាំង ៖</span>
                        <span className="text-[7px] font-bold leading-tight">Name in Latin:</span>
                     </div>
                     <div className="w-[35%] flex items-center px-2 font-bold text-[11px] uppercase">
-                       {filledData?.companyNameEN || ""}
+                       {displayData?.companyNameEN || ""}
                     </div>
                  </div>
 
@@ -4825,13 +4831,13 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     <div className="flex gap-[4px]">
                       {Array.from({ length: 4 }).map((_, i) => (
                          <div key={i} className="w-[20px] h-[26px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black pt-[2px]">
-                           {(filledData?.tin?.replace('-', '') || '')[i] || ""}
+                           {(displayData?.tin?.replace('-', '') || '')[i] || ""}
                          </div>
                       ))}
                       <span className="text-black font-black text-xl leading-none mx-[2px] relative top-[1px]">-</span>
                       {Array.from({ length: 9 }).map((_, i) => (
                          <div key={i} className="w-[20px] h-[26px] border border-black bg-white flex items-center justify-center font-bold text-[12px] text-black pt-[2px]">
-                           {(filledData?.tin?.replace('-', '') || '')[i + 4] || ""}
+                           {(displayData?.tin?.replace('-', '') || '')[i + 4] || ""}
                          </div>
                       ))}
                     </div>
@@ -5152,13 +5158,13 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        <div className="flex gap-[4px] ml-1">
                           {Array.from({ length: 4 }).map((_, i) => (
                              <div key={i} className="w-[18px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[11px] text-black pt-[2px]">
-                               {(filledData?.tin?.replace('-', '') || '')[i] || ""}
+                               {(displayData?.tin?.replace('-', '') || '')[i] || ""}
                              </div>
                           ))}
                           <span className="text-black font-black text-xl leading-none mx-[1px] relative top-[1px]">-</span>
                           {Array.from({ length: 9 }).map((_, i) => (
                              <div key={i} className="w-[18px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[11px] text-black pt-[2px]">
-                               {(filledData?.tin?.replace('-', '') || '')[i + 4] || ""}
+                               {(displayData?.tin?.replace('-', '') || '')[i + 4] || ""}
                              </div>
                           ))}
                        </div>
@@ -5170,7 +5176,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                           <span className="text-[8px] font-bold leading-tight mt-0">Name of Enterprise</span>
                        </div>
                        <div className="flex1 border border-black px-2 py-1 flex items-center flex-grow font-bold text-[11px] uppercase">
-                          {filledData?.companyNameKH || filledData?.companyNameEN || ""}
+                          {displayData?.companyNameKH || displayData?.companyNameEN || ""}
                        </div>
                     </div>
                   </div>
@@ -5466,13 +5472,13 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                      <div className="flex gap-[4px]">
                         {Array.from({ length: 4 }).map((_, i) => (
                            <div key={i} className="w-[18px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[11px] text-black pt-[2px]">
-                             {(filledData?.tin?.replace('-', '') || '')[i] || ""}
+                             {(displayData?.tin?.replace('-', '') || '')[i] || ""}
                            </div>
                         ))}
                         <span className="text-black font-black text-xl leading-none mx-[1px] relative top-[1px]">-</span>
                         {Array.from({ length: 9 }).map((_, i) => (
                            <div key={i} className="w-[18px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[11px] text-black pt-[2px]">
-                             {(filledData?.tin?.replace('-', '') || '')[i + 4] || ""}
+                             {(displayData?.tin?.replace('-', '') || '')[i + 4] || ""}
                            </div>
                         ))}
                      </div>
@@ -5513,7 +5519,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                         <span className="text-[8px] font-bold leading-tight text-slate-700 ml-4">Name of Enterprise (Head Office)</span>
                      </div>
                      <div className="flex-1 border border-black bg-white h-[26px] flex items-center px-2 text-[11px] uppercase ml-[4px]">
-                        {filledData?.companyNameKH || filledData?.companyNameEN || ""}
+                        {displayData?.companyNameKH || displayData?.companyNameEN || ""}
                      </div>
                   </div>
 
@@ -5779,13 +5785,13 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                        <div className="flex gap-[4px] flex-1">
                           {Array.from({ length: 4 }).map((_, i) => (
                              <div key={i} className="w-[18px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[11px] text-black pt-[2px]">
-                               {(filledData?.tin?.replace('-', '') || '')[i] || ""}
+                               {(displayData?.tin?.replace('-', '') || '')[i] || ""}
                              </div>
                           ))}
                           <span className="text-black font-black text-xl leading-none mx-[1px] relative top-[1px]">-</span>
                           {Array.from({ length: 9 }).map((_, i) => (
                              <div key={i} className="w-[18px] h-[24px] border border-black bg-white flex items-center justify-center font-bold text-[11px] text-black pt-[2px]">
-                               {(filledData?.tin?.replace('-', '') || '')[i + 4] || ""}
+                               {(displayData?.tin?.replace('-', '') || '')[i + 4] || ""}
                              </div>
                           ))}
                        </div>
@@ -5977,13 +5983,13 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                     <div className="flex gap-[4px] ml-[2px]">
                        {Array.from({ length: 4 }).map((_, i) => (
                           <div key={i} className="w-[20px] h-[26px] border border-black bg-white flex items-center justify-center font-bold text-[11px] text-black pt-[2px]">
-                            {(filledData?.tin?.replace('-', '') || '')[i] || ""}
+                            {(displayData?.tin?.replace('-', '') || '')[i] || ""}
                           </div>
                        ))}
                        <span className="text-black font-black text-xl leading-none mx-[2px] relative top-[1px]">-</span>
                        {Array.from({ length: 9 }).map((_, i) => (
                           <div key={i} className="w-[20px] h-[26px] border border-black bg-white flex items-center justify-center font-bold text-[11px] text-black pt-[2px]">
-                            {(filledData?.tin?.replace('-', '') || '')[i + 4] || ""}
+                            {(displayData?.tin?.replace('-', '') || '')[i + 4] || ""}
                           </div>
                        ))}
                     </div>

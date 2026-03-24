@@ -2928,7 +2928,33 @@ router.get('/toi/autofill', auth, async (req, res) => {
             signatoryName:     p.director || ext('director') || '',
 
             // ── Row 6: Business Activities ───────────────────────────────
-            businessActivities: p.businessActivity || ext('businessActivity') || '',
+            businessActivities: (() => {
+                const actEn = p.businessActivity || ext('businessActivity') || '';
+                // GDT ISIC code → Khmer description lookup
+                const isicKhmer = {
+                    '62010': 'ការសរសេរកម្មវិធី',
+                    '62020': 'ការផ្ដល់ប្រឹក្សា IT',
+                    '62090': 'សកម្មភាព IT ផ្សេងៗ',
+                    '620':   'ការសរសេរកម្មវិធី ការផ្ដល់ប្រឹក្សា',
+                    '63110': 'ដំណើរការទិន្នន័យ',
+                    '63120': 'វេទិកា Internet',
+                    '47':    'ការលក់រាយ',
+                    '46':    'ការលក់ដុំ',
+                    '56':    'ម្ហូបអាហារ និងភេស្សភ័ជ',
+                    '41':    'សំណង់',
+                    '68':    'អចលនទ្រព្យ',
+                    '69':    'ច្បាប់ និងគណនេយ្យ',
+                    '70':    'ការគ្រប់គ្រង',
+                    '73':    'ផ្សព្វផ្សាយ',
+                    '85':    'ការអប់រំ',
+                    '86':    'សុខភាព',
+                };
+                let kh = '';
+                for (const [code, khLabel] of Object.entries(isicKhmer)) {
+                    if (actEn.includes(code)) { kh = khLabel; break; }
+                }
+                return kh ? kh + '\n' + actEn : actEn;
+            })(),
 
             // ── Rows 7-10: Addresses (Khmer only) ───────────────────────
             agentName:         '',
