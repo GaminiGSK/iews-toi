@@ -33,22 +33,58 @@ const ToiAcar = ({ onBack, packageId, year }) => {
   ]);
 
   // Data State for Template Auto-fill
+  const storageKey = (yr) => `toiFilledData_${yr}`;
+
+  // ── One-time migration: move old shared 'toiFilledData' → year-specific key ─
+  React.useEffect(() => {
+    const oldKey = 'toiFilledData';
+    const old = localStorage.getItem(oldKey);
+    if (old) {
+      try {
+        const parsed = JSON.parse(old);
+        // The old data was for 2024 (the last autofill year)
+        const guessYear = parsed?.fromDate?.slice(4)?.join('') || '2024';
+        const migrateYear = guessYear.length === 4 ? guessYear : '2024';
+        const newKey = storageKey(migrateYear);
+        if (!localStorage.getItem(newKey)) {
+          localStorage.setItem(newKey, old);
+          console.log(`[TOI] Migrated legacy toiFilledData → ${newKey}`);
+        }
+      } catch { /* ignore */ }
+      localStorage.removeItem(oldKey); // cleanup old key
+    }
+  }, []); // run once on mount
+
   const [filledData, setFilledData] = useState(() => {
+
     try {
-      const saved = localStorage.getItem('toiFilledData');
+      const initYear = year || (new Date().getFullYear() - 1).toString();
+      const saved = localStorage.getItem(storageKey(initYear));
       return saved ? JSON.parse(saved) : null;
     } catch {
       return null;
     }
   });
 
+  // ── Persist filledData for the currently selected year ────────────────────
   React.useEffect(() => {
     if (filledData) {
-      localStorage.setItem('toiFilledData', JSON.stringify(filledData));
-    } else {
-      localStorage.removeItem('toiFilledData');
+      localStorage.setItem(storageKey(selectedYear), JSON.stringify(filledData));
     }
-  }, [filledData]);
+    // NOTE: We don't remove data when null — just don't overwrite
+  }, [filledData, selectedYear]);
+
+  // ── Reload year-specific data when year selector changes ──────────────────
+  React.useEffect(() => {
+    try {
+      const saved = localStorage.getItem(storageKey(selectedYear));
+      setFilledData(saved ? JSON.parse(saved) : null);
+    } catch {
+      setFilledData(null);
+    }
+  }, [selectedYear]);
+
+
 
   // ── BA PAGE-SPECIFIC FILL INTENT MAP ─────────────────────────────────────
   // Maps page number to its description and key fields
