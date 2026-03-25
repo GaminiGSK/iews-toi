@@ -2742,6 +2742,26 @@ router.get('/toi/autofill', auth, async (req, res) => {
         // Helper: extract extracted data value safely
         const ext = (key) => p.extractedData?.get?.(key) || p.extractedData?.[key] || '';
 
+        // Emergency Extract from organizedProfile if root fields are blank (Fallback for older Rescans)
+        if (!p.vatTin && p.organizedProfile) {
+            const tinMatch = p.organizedProfile.match(/TIN[:\-]\s*([A-Z0-9\-]{5,})/i);
+            if (tinMatch && tinMatch[1]) p.vatTin = tinMatch[1].trim();
+        }
+        if (!p.companyNameEn && !p.companyNameKh && p.organizedProfile) {
+            const nameLinesMatch = p.organizedProfile.match(/\*\*Legal Name\*\*\s*:\s*([^/]+)\/\s*([^-\n]+)/i);
+            if (nameLinesMatch) {
+                p.companyNameKh = nameLinesMatch[1].trim();
+                p.companyNameEn = nameLinesMatch[2].trim();
+            } else {
+                const enMatch = p.organizedProfile.match(/\*\*Legal Name\*\*\s*:\s*([^-\n]+)/i);
+                if (enMatch) p.companyNameEn = enMatch[1].trim();
+            }
+        }
+        if (!p.incorporationDate && p.organizedProfile) {
+            const incMatch = p.organizedProfile.match(/Incorporation Date[^\n]*(2[0-9]{3}[-\sA-Za-z0-9]*)/i);
+            if (incMatch) p.incorporationDate = incMatch[1].trim();
+        }
+
         // ── 2. Load TOI Modules ───────────────────────────────────────────
         const assetRec  = await AssetModule.findOne({ companyCode });
         const salaryRec = await SalaryModule.findOne({ companyCode });
@@ -2925,19 +2945,19 @@ router.get('/toi/autofill', auth, async (req, res) => {
             taxMonths:         '12',
             fromDate:          fromDateStr,
             untilDate:         untilDateStr,
-            tin:               p.vatTin?.replace(/[^0-9A-Z]/g, '') || '',
+            tin:               (p.vatTin || ext('tin') || ext('vatTin') || '').replace(/[^0-9A-Z]/g, ''),
 
             // ── Row 2: Name of Enterprise (key = "name" in ToiAcar.jsx) ──
-            name:              p.companyNameKh || p.companyNameEn || '',   // Khmer first
-            companyNameKH:     p.companyNameKh || '',
-            companyNameEN:     p.companyNameEn || '',
-            enterpriseName:    p.companyNameKh || p.companyNameEn || '',   // legacy
+            name:              p.companyNameKh || p.companyNameEn || ext('companyNameKh') || ext('companyNameEn') || ext('name') || '',
+            companyNameKH:     p.companyNameKh || ext('companyNameKh') || '',
+            companyNameEN:     p.companyNameEn || ext('companyNameEn') || ext('name') || '',
+            enterpriseName:    p.companyNameKh || p.companyNameEn || ext('companyNameKh') || ext('companyNameEn') || ext('name') || '',
 
             // ── Row 3: Branch count (key = "branchOut") ───────────────────
             branchOut:         '1',
 
             // ── Rows 4,5 ─────────────────────────────────────────────────
-            registrationDate:  p.incorporationDate || '',
+            registrationDate:  p.incorporationDate || ext('incorporationDate') || ext('registrationDate') || '',
             directorName:      p.director || ext('director') || '',
             signatoryName:     p.director || ext('director') || '',
 
