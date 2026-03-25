@@ -60,9 +60,6 @@ const ToiAcar = ({ onBack, packageId, year }) => {
     }
   ]);
 
-  // Data State for Template Auto-fill
-  const storageKey = (yr) => `toiFilledData_${yr}`;
-
   // ── One-time migration: move old shared 'toiFilledData' → year-specific key ─
   React.useEffect(() => {
     const oldKey = 'toiFilledData';
