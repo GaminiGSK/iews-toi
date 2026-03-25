@@ -2932,7 +2932,8 @@ router.get('/toi/autofill', auth, async (req, res) => {
 
 
         // Khmer-only address (strip English portion �?everything after first non-Khmer line)
-        const addrRaw = p.address || ext('address') || '';
+        // Check for explicitly saved Khmer address first (from extractedData), then fallback to profile.address
+        const addrRaw = ext('address1') || ext('address') || p.address || '';
         // If address has Khmer chars, prefer Khmer substring; else use full address
         const hasKhmer = /[\u1780-\u17FF]/.test(addrRaw);
         // Split on newline or comma after Cambodian text ends
@@ -2954,7 +2955,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
             enterpriseName:    p.companyNameKh || p.companyNameEn || ext('companyNameKh') || ext('companyNameEn') || ext('name') || '',
 
             // ── Row 3: Branch count (key = "branchOut") ───────────────────
-            branchOut:         '1',
+            branchOut:         ext('branchOut') || ext('branchCount') || '0',
 
             // ── Rows 4,5 ─────────────────────────────────────────────────
             registrationDate:  p.incorporationDate || ext('incorporationDate') || ext('registrationDate') || '',
@@ -2963,6 +2964,9 @@ router.get('/toi/autofill', auth, async (req, res) => {
 
             // ── Row 6: Business Activities ───────────────────────────────
             businessActivities: (() => {
+                // Priority 1: explicitly saved Khmer text (via update-profile)
+                const savedKh = ext('businessActivities');
+                if (savedKh) return savedKh;
                 const actEn = p.businessActivity || ext('businessActivity') || '';
                 // GDT ISIC code → Khmer description lookup
                 const isicKhmer = {
@@ -3022,7 +3026,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
             taxComplianceStatus: ext('taxComplianceStatus') || 'Gold',
             statutoryAudit:    ext('statutoryAudit') || 'Required',
             incomeTaxRate:     ext('incomeTaxRate') || '20%',
-            branchCount:       ext('branchCount') || '1',
+            branchCount:       ext('branchCount') || ext('branchOut') || '0',
             filingDate:        `3103${yearStr}`,
             filedIn:           addrKh || 'Phnom Penh',
 
