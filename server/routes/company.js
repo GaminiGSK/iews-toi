@@ -2847,31 +2847,41 @@ router.get('/toi/autofill', auth, async (req, res) => {
         }, 0);
 
         // ── 6. Revenue / Expense from GL ─────────────────────────────────
-        // Key TOI codes to map (based on standard Cambodia TOI form structure)
-        // A-codes = Revenue, B/C/D = Expenses, E = Adjustments
-        const revenue        = glDr('A1') || glCr('A1');  // Turnover
-        const costOfSales    = glDr('D1') || glCr('D1');
-        const grossProfit    = revenue - costOfSales;
+        // Uses actual TOI B-prefix codes that the Chart of Accounts maps to.
+        // B3/B0 = Turnover/Revenue, B6 = COGS, B23..B47 = Operating Expenses
 
-        // P&L summary fields
-        const salaryExpGL    = glDr('E1') || glCr('E1');
-        const rentExpGL      = glDr('E2') || glCr('E2');
-        const depExpGL       = glDr('E3') || glCr('E3');
-        const interestExpGL  = glDr('E4') || glCr('E4');
-        const bankChargesGL  = glDr('E5') || glCr('E5');
-        const marketingGL    = glDr('E6') || glCr('E6');
-        const travelGL       = glDr('E7') || glCr('E7');
-        const otherExpGL     = glDr('E8') || glCr('E8');
+        // Revenue: sum all credit-normal revenue accounts (B0, B3, B4, B5)
+        const revenue = Math.max(
+            glCr('B0') - glDr('B0'),
+            glCr('B3') - glDr('B3'),
+            glCr('B4') - glDr('B4'),
+            glCr('B5') - glDr('B5'),
+            0
+        ) || (glDr('B0') + glDr('B3') + glDr('B4') + glDr('B5'));
 
-        // Balance Sheet  
-        const cashGL         = glDr('B1') - glCr('B1');   // Cash & Bank
-        const arGL           = glDr('B2') - glCr('B2');   // Accounts Receivable
-        const inventoryGL    = glDr('B3') - glCr('B3');   // Inventory
-        const ppneGL         = glDr('B4') - glCr('B4');   // PP&E
-        const totalAssetsGL  = cashGL + arGL + inventoryGL + ppneGL;
-        const apGL           = glCr('C1') - glDr('C1');   // Accounts Payable
-        const loanGL         = glCr('C2') - glDr('C2');   // Loans / Borrowing
-        const equityGL       = glCr('C3') - glDr('C3');   // Equity
+        // COGS: B6
+        const costOfSales = glDr('B6') || glCr('B6');
+        const grossProfit = revenue - costOfSales;
+
+        // P&L Expense fields — using actual B-code TOI mapping
+        const salaryExpGL   = glDr('B23') + glDr('B24') + glDr('B25');  // Salary + Benefits
+        const rentExpGL     = glDr('B26');   // Rent
+        const depExpGL      = glDr('B27');   // Depreciation
+        const interestExpGL = glDr('B28');   // Interest
+        const bankChargesGL = glDr('B29');   // Bank charges / Professional fees
+        const marketingGL   = glDr('B30');   // Marketing
+        const travelGL      = glDr('B31');   // Travel
+        const otherExpGL    = glDr('B33') + glDr('B36') + glDr('B41') + glDr('B43') + glDr('B47');  // Other
+
+        // Balance Sheet — use actual A-code TOI mapping
+        const cashGL        = glDr('A21') - glCr('A21');  // Cash
+        const arGL          = glDr('A20') - glCr('A20');  // Receivables
+        const inventoryGL   = glDr('A18') - glCr('A18');  // Inventory / prepaid
+        const ppneGL        = glDr('A7')  - glCr('A7');   // PP&E
+        const totalAssetsGL = cashGL + arGL + inventoryGL + ppneGL;
+        const apGL          = glCr('A43') - glDr('A43');  // Accounts Payable
+        const loanGL        = glCr('A38') - glDr('A38');  // Loans
+        const equityGL      = glCr('A30') - glDr('A30');  // Share Capital (equity proxy)
 
         // ── 7. Related Party data ─────────────────────────────────────────
         const totalRelatedTx = transactions.reduce((a, t) => a + (parseFloat(t.amount) || 0), 0);
