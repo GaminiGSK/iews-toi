@@ -1,8 +1,22 @@
 const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
 
 class AgentExecutor {
     constructor(io) {
         this.io = io;
+    }
+
+    // Returns the companyCode from the socket's JWT — TRUSTED source, not client params
+    _getAuthenticatedCompanyCode(socket) {
+        try {
+            const token = socket.handshake?.auth?.token || socket.handshake?.headers?.authorization?.split(' ')[1];
+            if (!token) return null;
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            return decoded.companyCode || null;
+        } catch (e) {
+            console.warn('[AgentExecutor] JWT decode failed:', e.message);
+            return null;
+        }
     }
 
     async execute(socket, action, packageId, params) {
@@ -24,6 +38,9 @@ class AgentExecutor {
                     break;
 
                 // Ledger Workflows
+                case 'tag_single_transaction':
+                    await this.tagSingleTransaction(socket, params);
+                    break;
                 case 'bulk_tag_ledger':
                     await this.bulkTagLedger(socket, params);
                     break;
@@ -45,6 +62,10 @@ class AgentExecutor {
                     socket.emit('ledger:updated');
                     break;
 
+                case 'save_br_data':
+                    await this.saveBrData(socket, params);
+                    break;
+
                 default:
                     console.log(`[AgentExecutor] Unknown action: ${action}`);
                     socket.emit('agent:message', { text: `Sorry, I don't know how to perform the action: ${action}` });
@@ -55,8 +76,55 @@ class AgentExecutor {
         }
     }
 
+    async saveBrData(socket, params) {
+        const companyCode = this._getAuthenticatedCompanyCode(socket) || params.companyCode;
+        console.log(`[AgentExecutor] Saving BR Data for ${companyCode}`, params);
+        
+        try {
+            const CompanyProfile = require('../models/CompanyProfile');
+            const User = require('../models/User');
+            
+            // Find the user to get their user ID (company profiles are linked by user ID)
+            const user = await User.findOne({ companyCode });
+            if (!user) {
+                socket.emit('agent:message', { text: "Error: Could not find user account to link profile data." });
+                return;
+            }
+
+            // Map extracted properties to profile schema
+            const updateData = {};
+            if (params.companyNameEn) updateData.companyNameEn = params.companyNameEn;
+            if (params.companyNameKh) updateData.companyNameKh = params.companyNameKh;
+            if (params.regId) updateData.registrationNumber = params.regId;
+            if (params.taxId) updateData.vatTin = params.taxId;
+            if (params.incDate) updateData.incorporationDate = params.incDate;
+            if (params.addr) updateData.address = params.addr;
+            if (params.type) updateData.companyType = params.type;
+            
+            // For directors/business activities we'd normally put them in extractedData or specific arrays
+            updateData['extractedData.directorName'] = params.directorName || params.director || '';
+            updateData['extractedData.businessActivities'] = params.businessActivities || '';
+
+            await CompanyProfile.findOneAndUpdate(
+                { user: user._id },
+                { $set: updateData },
+                { upsert: true, new: true }
+            );
+
+            socket.emit('agent:message', { text: "I have successfully extracted and saved your business registration data to your profile. The Company Identity block will now reflect this new data." });
+            // Optionally, tell the client to refresh the profile if it's listening
+            socket.emit('profile:updated'); 
+        } catch (e) {
+            console.error('[AgentExecutor] saveBrData Error:', e);
+            socket.emit('agent:message', { text: "Error saving BR data: " + e.message });
+        }
+    }
+
     async bulkTagLedger(socket, params) {
-        const { companyCode, condition, targetCode } = params;
+        // SECURITY: Always use server-side JWT companyCode, not client-sent param
+        const trustedCompanyCode = this._getAuthenticatedCompanyCode(socket) || params.companyCode;
+        const { condition, targetCode, description_match } = params;
+        const companyCode = trustedCompanyCode;
         console.log(`[AgentExecutor] Bulk tagging ledger for ${companyCode} to ${targetCode} (Condition: ${condition})`);
 
         const Transaction = require('../models/Transaction');
@@ -76,9 +144,20 @@ class AgentExecutor {
         }
         if (targetCodeObj) {
             const query = { companyCode: companyCode };
+            
+            // Protect against reckless ALL changing
+            if (!description_match || description_match.trim().length === 0) {
+                socket.emit('agent:message', { text: `Safety Lock: I cannot blanket-tag multiple transactions without a specific keyword. Please tell me the exact description (e.g. 'change ALL rental expenses to 61070').` });
+                return;
+            }
+
             if (condition === 'money_in') query.amount = { $gt: 0 };
             else if (condition === 'money_out') query.amount = { $lt: 0 };
             // if 'all', just leave the query as { companyCode }
+
+            if (description_match) {
+                query.description = { $regex: new RegExp(description_match, 'i') };
+            }
 
             const result = await Transaction.updateMany(query, { 
                 accountCode: targetCodeObj._id, 
@@ -89,6 +168,59 @@ class AgentExecutor {
 
             socket.emit('agent:message', {
                 text: `Successfully updated ${result.modifiedCount} transactions to ${targetCode} (${targetCodeObj.description}).`
+            });
+            socket.emit('ledger:updated');
+        } else {
+            socket.emit('agent:message', { text: `Failed to tag. Code ${targetCode} not found in your Chart of Accounts.` });
+        }
+    }
+
+    async tagSingleTransaction(socket, params) {
+        const trustedCompanyCode = this._getAuthenticatedCompanyCode(socket) || params.companyCode;
+        const { targetCode, description_match } = params;
+        
+        if (!description_match || description_match.length < 3) {
+            socket.emit('agent:message', { text: `I need a specific vendor name or keyword to identify the exact transaction.` });
+            return;
+        }
+
+        const Transaction = require('../models/Transaction');
+        const AccountCode = require('../models/AccountCode');
+
+        let targetCodeObj = await AccountCode.findOne({ companyCode: trustedCompanyCode, code: targetCode });
+        
+        if (!targetCodeObj && targetCode) {
+            targetCodeObj = await AccountCode.findOne({
+                companyCode: trustedCompanyCode,
+                $or: [
+                    { description: { $regex: new RegExp(targetCode.trim(), 'i') } },
+                    { matchDescription: { $regex: new RegExp(targetCode.trim(), 'i') } }
+                ]
+            });
+        }
+
+        if (targetCodeObj) {
+            // Find exactly ONE transaction to tag
+            const query = { 
+                companyCode: trustedCompanyCode,
+                description: { $regex: new RegExp(description_match.trim(), 'i') }
+            };
+            
+            // Find one first to report back accurately
+            const targetTx = await Transaction.findOne(query);
+            
+            if (!targetTx) {
+                socket.emit('agent:message', { text: `I couldn't find any transaction matching "${description_match}" in your ledger.` });
+                return;
+            }
+
+            targetTx.accountCode = targetCodeObj._id;
+            targetTx.code = targetCodeObj.code;
+            targetTx.tagSource = 'ai';
+            await targetTx.save();
+
+            socket.emit('agent:message', {
+                text: `I surgically tagged one transaction matching "${description_match}" to ${targetCodeObj.code} (${targetCodeObj.description}).`
             });
             socket.emit('ledger:updated');
         } else {

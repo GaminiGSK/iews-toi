@@ -1,20 +1,10 @@
-const mongoose = require('mongoose');
-const Transaction = require('./models/Transaction');
-require('dotenv').config({ path: 'server/.env' });
-
-async function query() {
-    await mongoose.connect(process.env.MONGODB_URI);
-    const yearlyStatsRaw = await Transaction.aggregate([
-        {
-            $group: {
-                _id: { $dateToString: { format: '%Y', date: '$date' } },
-                income: { $sum: { $cond: [{ $gt: ['$amount', 0] }, '$amount', 0] } },
-                expense: { $sum: { $cond: [{ $lt: ['$amount', 0] }, '$amount', 0] } }
-            }
-        },
-        { $sort: { _id: -1 } }
-    ]);
-    console.log(yearlyStatsRaw);
+require('dotenv').config();
+require('mongoose').connect(process.env.MONGODB_URI).then(async () => {
+    const BankFile = require('./models/BankFile');
+    const Transaction = require('./models/Transaction');
+    const files = await BankFile.find({ companyCode: 'ARAKAN' });
+    const txs = await Transaction.countDocuments({ companyCode: 'ARAKAN' });
+    console.log('BankFiles for ARAKAN:', files.length);
+    console.log('Transactions for ARAKAN:', txs);
     process.exit(0);
-}
-query();
+});

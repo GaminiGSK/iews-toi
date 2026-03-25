@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Loader2, CheckCircle, AlertCircle, Table, Save, X, Eye, FileText, CloudUpload, Calendar, Book, Tag, DollarSign, Scale, TrendingUp, ArrowLeft, ShieldCheck, Sparkles, QrCode, BookOpen, RefreshCw, Terminal, Plus, Box, ChevronRight, Brain, Layers, Users, Bot, Globe, Send, Wifi } from 'lucide-react';
+import { Receipt, Loader2, CheckCircle, AlertCircle, Table, Save, X, Eye, FileText, CloudUpload, Calendar, Book, Tag, DollarSign, Scale, TrendingUp, ArrowLeft, ShieldCheck, Sparkles, QrCode, BookOpen, RefreshCw, Terminal, Plus, Box, ChevronRight, Brain, Layers, Users, Bot, Globe, Send, Wifi } from 'lucide-react';
 import GeneralLedger from './GeneralLedger';
 import AccountingCodes from './AccountingCodes';
 import CurrencyExchange from './CurrencyExchange';
@@ -11,6 +11,7 @@ import ToiAcar from './ToiAcar';
 import AssetDepreciation from './AssetDepreciation';
 import SalaryTOSRecon from './SalaryTOSRecon';
 import RelatedPartyDisclosure from './RelatedPartyDisclosure';
+import Withholdings from './Withholdings';
 import BankStatementV2Workspace from '../components/BankStatementV2Workspace';
 import MOCCertificate from '../components/MOCCertificate';
 import ErrorBoundary from '../components/ErrorBoundary';
@@ -863,6 +864,15 @@ export default function CompanyProfile() {
                             <h3 className="text-white font-bold text-xl mb-2">Related Party Disclosure</h3>
                             <p className="text-slate-500 text-xs leading-relaxed">Map intercompany transactions, director loans, and parent/subsidiary entities.</p>
                         </div>
+
+                        <div onClick={() => setView('withholdings')} className="group p-8 bg-slate-800/40 hover:bg-purple-600/10 border border-white/5 hover:border-purple-500/50 rounded-3xl transition-all duration-500 cursor-pointer relative overflow-hidden">
+                            <span className="absolute top-4 right-4 bg-purple-500 text-white text-[8px] font-black px-2 py-0.5 rounded shadow-lg animate-pulse">NEW</span>
+                            <div className="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-500">
+                                <Receipt size={28} className="text-purple-400" />
+                            </div>
+                            <h3 className="text-white font-bold text-xl mb-2">Withholdings</h3>
+                            <p className="text-slate-500 text-xs leading-relaxed">Track rental WHT (10%) and service VAT (15%). Maps to TOI expense line B27.</p>
+                        </div>
                     </div>
 
                     {/* COLUMN 3 */}
@@ -1419,8 +1429,8 @@ export default function CompanyProfile() {
     // Lengthy comments removed for brevity but logic is preserved.
     // ==========================================
     const handleDelete = async (idx, file) => {
-        // Robust check for saved status
-        const isSaved = file.status === 'Saved' || (file.transactions && file.transactions.some(t => t._id));
+        // Robust check for saved status: If it has an _id in the DB, it's considered saved
+        const isSaved = !!(file._id || file.status === 'Saved' || (file.transactions && file.transactions.some(t => t._id)));
 
         if (!window.confirm(`Delete ${isSaved ? 'PERMANENTLY' : 'this'} item?`)) return;
 
@@ -1917,6 +1927,7 @@ export default function CompanyProfile() {
                 {view === 'assets' && <AssetDepreciation onBack={() => setView('home')} />}
                 {view === 'salary' && <SalaryTOSRecon onBack={() => setView('home')} />}
                 {view === 'related' && <RelatedPartyDisclosure onBack={() => setView('home')} />}
+                {view === 'withholdings' && <Withholdings onBack={() => setView('home')} />}
                 {view === 'agentic_filing' && renderAgenticFiling()}
             </main>
 

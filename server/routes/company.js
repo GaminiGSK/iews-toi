@@ -1091,7 +1091,7 @@ router.post('/upload-bank-statement', auth, upload.array('files'), async (req, r
             try {
                 // Higher priority to the specific 'bank statements' folder
                 const targetFolderId = req.user.bankStatementsFolderId || req.user.driveFolderId;
-                const driveData = await uploadFile(file.path, file.mimetype, file.filename, targetFolderId);
+                const driveData = await uploadFile(file.path, file.mimetype || 'application/pdf', file.originalname || 'BankStatement.pdf', targetFolderId);
 
                 // driveData might be { id, name, isMetadataOnly? }
                 driveId = driveData; // Keep the whole object for now to check metadata status
@@ -1138,37 +1138,9 @@ router.post('/upload-bank-statement', auth, upload.array('files'), async (req, r
             // Assign Sequence Number
             extracted = extracted.map((tx, idx) => ({ ...tx, sequence: idx }));
 
-            // --- AUTO-TAGGING LOGIC ---
-            try {
-                const AccountCode = require('../models/AccountCode');
-                // Fetch codes if not already cached (could cache optimization later)
-                const codes = await AccountCode.find({ companyCode: req.user.companyCode });
-                const codeMap = {};
-                codes.forEach(c => codeMap[c.code] = c._id); // Map "10110" -> ObjectId
-
-                extracted = extracted.map(tx => {
-                    let targetCode = null;
-                    // Determine Amount (MoneyIn vs MoneyOut columns)
-                    const inVal = parseFloat(String(tx.moneyIn).replace(/[^0-9.-]/g, '')) || 0;
-                    const outVal = parseFloat(String(tx.moneyOut).replace(/[^0-9.-]/g, '')) || 0;
-
-                    if (inVal > 0) {
-                        targetCode = "10110"; // Income -> Cash On Hand
-                    } else if (outVal > 0) {
-                        // Expenses (Magnitude check)
-                        if (outVal < 10) targetCode = "61220"; // Bank Charges
-                        else if (outVal < 100) targetCode = "61100"; // Commission
-                        else targetCode = "61070"; // Payroll
-                    }
-
-                    if (targetCode && codeMap[targetCode]) {
-                        return { ...tx, accountCode: codeMap[targetCode], code: targetCode };
-                    }
-                    return tx;
-                });
-            } catch (tagErr) {
-                console.error("Auto-Tag Error:", tagErr);
-            }
+            // --- AUTO-TAGGING LOGIC (DISABLED TO EMPOWER AI AGENT) ---
+            // Transactions now come in "untagged" by default so the Blue Agent
+            // can cleanly categorize them during the audit phase using its exhaustive rules.
 
             // --- SMART RENAMING ---
             // If we have a valid date range, use it as the display name
@@ -2709,6 +2681,48 @@ router.post('/toi/related-party', auth, async (req, res) => {
     }
 });
 
+
+// =====================================================
+// TOI MODULE ROUTES: Withholdings (Rental WHT & Service VAT)
+// =====================================================
+
+const WithholdingsModule = require('../models/WithholdingsModule');
+
+router.get('/toi/withholdings', auth, async (req, res) => {
+    try {
+        const companyCode = req.user.companyCode;
+        const record = await WithholdingsModule.findOne({ companyCode });
+        res.json({ data: record || null });
+    } catch (err) {
+        console.error('TOI Withholdings GET error:', err);
+        res.status(500).json({ message: 'Error loading withholdings data' });
+    }
+});
+
+router.post('/toi/withholdings', auth, async (req, res) => {
+    try {
+        const companyCode = req.user.companyCode;
+        const { hasRentals, hasServices, immovableRentals, movableRentals, serviceContracts } = req.body;
+        const processRentals  = (items = []) => items.map(it => ({ ...it, annualAmount: parseFloat(it.annualAmount) || 0, whtRate: 10 }));
+        const processServices = (items = []) => items.map(it => ({ ...it, annualAmount: parseFloat(it.annualAmount) || 0, vatRate: 15 }));
+        const record = await WithholdingsModule.findOneAndUpdate(
+            { companyCode },
+            {
+                companyCode, hasRentals, hasServices,
+                immovableRentals: processRentals(immovableRentals),
+                movableRentals:   processRentals(movableRentals),
+                serviceContracts: processServices(serviceContracts),
+                lastSaved: new Date(), savedBy: req.user.username
+            },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+        res.json({ message: 'Withholdings data saved', data: record });
+    } catch (err) {
+        console.error('TOI Withholdings POST error:', err);
+        res.status(500).json({ message: 'Error saving withholdings data' });
+    }
+});
+
 // =====================================================
 // TOI AUTO-FILL ENGINE �?Aggregates ALL data sources
 // GET /api/company/toi/autofill
@@ -2968,19 +2982,27 @@ router.get('/toi/autofill', auth, async (req, res) => {
             //       No suffix (e.g. "GK SMART") → Sole Proprietorship / Physical Person
             // Confirmed by BR: GK SMART = Sole Proprietorship (MOC Cert + Patent Tax 2025)
             legalForm: (() => {
+                const taught = ext('legalForm');
+                if (taught) return taught;
+
                 const nameEn = (p.companyNameEn || '').toUpperCase();
                 if (/CO\.\s*,?\s*LTD|LIMITED COMPANY|PTE\.?\s*LTD|CORPORATION|CORP\./i.test(nameEn)) return 'Private Limited Company';
                 if (/SINGLE MEMBER/i.test(nameEn)) return 'Single Member Private Limited Company';
                 if (/PUBLIC LIMITED/i.test(nameEn)) return 'Public Limited Company';
                 if (/GENERAL PARTNERSHIP/i.test(nameEn)) return 'General Partnership';
                 if (/LIMITED PARTNERSHIP/i.test(nameEn)) return 'Limited Partnership';
+                
+                // ARAKAN hack (Private Limited is more common for standard companies lacking the literal english word in profile name)
+                if (nameEn && nameEn.length < 30 && !nameEn.includes(' ')) return 'Private Limited Company';
+
                 return 'Sole Proprietorship / Physical Person';  // Default: no Co.,Ltd suffix
             })(),
-            accountingRecord:  'Using Software',
-            softwareName:      'GK SMART AI',
-            taxComplianceStatus:'Gold',
-            incomeTaxRate:     '20%',
-            branchCount:       '1',
+            accountingRecord:  ext('accountingRecord') || 'Using Software',
+            softwareName:      ext('softwareName') || 'GK SMART AI',
+            taxComplianceStatus: ext('taxComplianceStatus') || 'Gold',
+            statutoryAudit:    ext('statutoryAudit') || 'Required',
+            incomeTaxRate:     ext('incomeTaxRate') || '20%',
+            branchCount:       ext('branchCount') || '1',
             filingDate:        `3103${yearStr}`,
             filedIn:           addrKh || 'Phnom Penh',
 

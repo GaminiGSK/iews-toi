@@ -8,10 +8,17 @@ function getDrive() {
     if (driveInstance) return driveInstance;
 
     const keyPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-    const auth = new google.auth.GoogleAuth({
-        keyFile: path.isAbsolute(keyPath) ? keyPath : path.resolve(__dirname, '../../', keyPath),
+    
+    // Cloud Run natively provides auth without a keyFile if GOOGLE_APPLICATION_CREDENTIALS is not set
+    const authOptions = {
         scopes: ['https://www.googleapis.com/auth/drive'],
-    });
+    };
+
+    if (keyPath) {
+        authOptions.keyFile = path.isAbsolute(keyPath) ? keyPath : path.resolve(__dirname, '../../', keyPath);
+    }
+
+    const auth = new google.auth.GoogleAuth(authOptions);
 
     driveInstance = google.drive({ version: 'v3', auth });
     return driveInstance;

@@ -1,0 +1,84 @@
+﻿
+Page 1 (L397) [TOI 01 / I]
+  Hardcoded dashes: 0 | filledData reads: 43 | inputs: 0
+  Keys: taxMonths, fromDate, untilDate, tin, agentLicense, accountingRecord, softwareName, taxComplianceStat
+
+Page 2 (L1278) [TOI 01 / II]
+  Hardcoded dashes: 6 | filledData reads: 30 | inputs: 0
+  Keys: tin
+
+Page 3 (L1594) [TOI 01 / III]
+  Hardcoded dashes: 0 | filledData reads: 4 | inputs: 0
+  Keys: tin
+
+Page 4 (L1734) [TOI 01 / III]
+  Hardcoded dashes: 0 | filledData reads: 4 | inputs: 0
+  Keys: tin
+
+Page 5 (L1852) [TOI 01 / IV]
+  Hardcoded dashes: 0 | filledData reads: 4 | inputs: 0
+  Keys: tin
+
+Page 6 (L1995) [TOI 01 / IV]
+  Hardcoded dashes: 0 | filledData reads: 4 | inputs: 0
+  Keys: tin
+
+Page 7 (L2120) [TOI 01 / V]
+  Hardcoded dashes: 0 | filledData reads: 4 | inputs: 0
+  Keys: tin
+
+Page 8 (L2271) [TOI 01 / VI]
+  Hardcoded dashes: 2 | filledData reads: 2 | inputs: 0
+  Keys: tin
+
+Page 9 (L2403) [TOI 01 / VII]
+  Hardcoded dashes: 4 | filledData reads: 2 | inputs: 0
+  Keys: tin
+
+Page 10 (L2622) [TOI 01 / VII]
+  Hardcoded dashes: 10 | filledData reads: 2 | inputs: 0
+  Keys: tin
+
+Page 11 (L2907) [TOI 01 / VIII]
+  Hardcoded dashes: 3 | filledData reads: 2 | inputs: 0
+  Keys: tin
+
+Page 12 (L3110) [TOI 01 / VIII]
+  Hardcoded dashes: 3 | filledData reads: 2 | inputs: 0
+  Keys: tin
+
+Page 13 (L3381) [TOI 01 / IX]
+  Hardcoded dashes: 107 | filledData reads: 2 | inputs: 0
+  Keys: tin
+
+Page 14 (L3911) [TOI 01 / X]
+  Hardcoded dashes: 20 | filledData reads: 2 | inputs: 0
+  Keys: tin
+
+Page 15 (L4184) [TOI 01 / XI]
+  Hardcoded dashes: 9 | filledData reads: 2 | inputs: 0
+  Keys: tin
+
+Page 16 (L4408) [TOI 01 / XII]
+  Hardcoded dashes: 8 | filledData reads: 2 | inputs: 0
+  Keys: tin
+
+Page 17 (L4581) [Page 17]
+  Hardcoded dashes: 0 | filledData reads: 4 | inputs: 0
+  Keys: companyNameKH, companyNameEN, tin
+
+Page 18 (L4959) [Page 18]
+  Hardcoded dashes: 28 | filledData reads: 4 | inputs: 0
+  Keys: tin, companyNameKH, companyNameEN
+
+Page 19 (L5208) [Page 19]
+  Hardcoded dashes: 12 | filledData reads: 4 | inputs: 0
+  Keys: tin, companyNameKH, companyNameEN
+
+Page 20 (L5600) [Page 20]
+  Hardcoded dashes: 0 | filledData reads: 2 | inputs: 0
+  Keys: tin
+
+Page 21 (L5746) [Page 21]
+  Hardcoded dashes: 5 | filledData reads: 2 | inputs: 1
+  Keys: tin

@@ -1,0 +1,41 @@
+﻿[36mvite v7.3.1 [32mbuilding client environment for production...[36m[39m
+transforming...
+[32m鉁?[39m 24 modules transformed.
+node.exe : [31m鉁?[39m Build failed in 1.32s
+At line:1 char:1
++ & "C:\Users\Gamini\AppData\Local\Microsoft\WinGet\Packages\OpenJS.Nod ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([31m鉁?[39m Build failed in 1.3 
+   2s:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[31merror during build:
+[31m[vite:esbuild] Transform failed with 1 error:
+E:/Antigravity/TOI/client/src/pages/CompanyProfileNew.jsx:363:79: ERROR: 
+Unterminated string literal[31m
+file: 
+[36mE:/Antigravity/TOI/client/src/pages/CompanyProfileNew.jsx:363:79[31m
+[33m
+[33mUnterminated string literal[33m
+362 |                  "Text Lines Detected": "42 Lines (High Density)", // 
+User Requested Metric
+363 |                  "Entity Name [KH]": "閲ｅ洔鐏ㄩ嚕浣辩劮 閲ｇ啽鐓夐嚕妯剁仸閲?,
+364 |                  "Entity Name [EN]": "GK SMART",
+    |                           ^
+365 |                  "Registration ID": "50015732",
+366 |                  "Owner Name": "GAMINI KASSAPA GAMINI",
+[31m
+    at failureErrorWithLog 
+(E:\Antigravity\TOI\client\node_modules\esbuild\lib\main.js:1467:15)
+    at E:\Antigravity\TOI\client\node_modules\esbuild\lib\main.js:736:50
+    at responseCallbacks.<computed> 
+(E:\Antigravity\TOI\client\node_modules\esbuild\lib\main.js:603:9)
+    at handleIncomingPacket 
+(E:\Antigravity\TOI\client\node_modules\esbuild\lib\main.js:658:12)
+    at Socket.readFromStdout 
+(E:\Antigravity\TOI\client\node_modules\esbuild\lib\main.js:581:7)
+    at Socket.emit (node:events:508:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)[39m

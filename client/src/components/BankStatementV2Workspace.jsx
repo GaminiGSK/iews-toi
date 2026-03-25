@@ -408,9 +408,15 @@ export default function BankStatementV2Workspace({ onBack }) {
                                                     <span className="ml-2 font-mono">{(file.transactions || []).length} txs</span>
 
                                                     <div className="ml-auto flex items-center gap-1.5">
-                                                        <span className="text-[8px] text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 font-black flex items-center gap-1">
-                                                            <CheckCircle size={8} /> SAVED
-                                                        </span>
+                                                        {(file.syncStatus === 'SYNC_FAILED' || file.syncStatus === 'sync_failed') ? (
+                                                            <span className="text-[8px] text-red-500 bg-red-500/10 px-1.5 py-0.5 rounded border border-red-500/20 font-black flex items-center gap-1">
+                                                                <AlertCircle size={8} /> SYNC FAILED
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-[8px] text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 font-black flex items-center gap-1">
+                                                                <CheckCircle size={8} /> SAVED
+                                                            </span>
+                                                        )}
                                                     </div>
                                                 </div>
                                                 {(file.bankName || file.accountNumber) && (

@@ -1,0 +1,12 @@
+[dotenv@17.2.3] injecting env (6) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+Error running sync script: MongooseError: The `uri` parameter to `openUri()` must be a string, got "undefined". Make sure the first parameter to `mongoose.connect()` or `mongoose.createConnection()` is a string.
+    at NativeConnection.createClient (E:\Antigravity\TOI\server\node_modules\mongoose\lib\drivers\node-mongodb-native\connection.js:230:11)
+    at NativeConnection.openUri (E:\Antigravity\TOI\server\node_modules\mongoose\lib\connection.js:1075:34)
+    at Mongoose.connect (E:\Antigravity\TOI\server\node_modules\mongoose\lib\mongoose.js:451:15)
+    at syncCodes (E:\Antigravity\TOI\server\sync_gk_codes_to_all.js:10:24)
+    at Object.<anonymous> (E:\Antigravity\TOI\server\sync_gk_codes_to_all.js:69:1)
+    at Module._compile (node:internal/modules/cjs/loader:1760:14)
+    at Object..js (node:internal/modules/cjs/loader:1892:10)
+    at Module.load (node:internal/modules/cjs/loader:1480:32)
+    at Module._load (node:internal/modules/cjs/loader:1299:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)

@@ -267,7 +267,7 @@ router.post('/message', auth, async (req, res) => {
             monthlyStats,
             yearlyStats,
             ui: req.body.context || {}, // Pass UI Context (Route, etc.)
-            brData: backendBrData.length > 0 ? backendBrData : (req.body.context?.brData || []), // Use backend docs first
+            brData: backendBrData, // SECURITY: Only use server-side profile docs, never client-sent data
             history: req.body.history || [] // Pass conversation history
         };
 
@@ -342,6 +342,25 @@ router.post('/message', auth, async (req, res) => {
                         finalText = "I understood you want to create a rule, but I couldn't identify the specific code or criteria. Please try again.";
                     }
                 }
+
+                // --- PERSIST TOI SETTINGS ---
+                if (toolPayload.tool_use === 'fill_toi_workspace' && toolPayload.params) {
+                    const profileRec = await CompanyProfile.findOne({ companyCode });
+                    if (profileRec) {
+                        if (!profileRec.extractedData) profileRec.extractedData = new Map();
+                        
+                        Object.keys(toolPayload.params).forEach(k => {
+                            const val = toolPayload.params[k];
+                            if (val !== null && val !== "" && val !== "N/A") {
+                                profileRec.extractedData.set(k, String(val));
+                            }
+                        });
+                        profileRec.markModified('extractedData');
+                        await profileRec.save();
+                        console.log(`[BA Audit] Persisted TOI workspace settings to DB for ${companyCode}:`, Object.keys(toolPayload.params));
+                    }
+                }
+
             }
         } catch (e) {
             // Not JSON or parse error, just return raw text

@@ -81,7 +81,10 @@ export default function AdminDashboard() {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             setUsers(res.data);
-        } catch (err) { console.error(err); }
+        } catch (err) { 
+            console.error(err); 
+            setUsers([{ _id: 'ERR', username: 'FETCH ERROR: ' + (err.response?.status || err.message) }]);
+        }
     };
 
     const fetchKnowledge = async () => {
@@ -476,10 +479,10 @@ export default function AdminDashboard() {
                                     ))}
 
                                     {users.length === 0 && (
-                                        <div className="col-span-full py-40 text-center opacity-20 flex flex-col items-center">
+                                        <div className="col-span-full py-40 text-center opacity-80 flex flex-col items-center">
                                             <User size={64} className="mb-4" />
                                             <h3 className="text-xl font-black uppercase tracking-[0.4em]">Matrix Empty</h3>
-                                            <p className="text-[10px] mt-2 font-bold uppercase tracking-widest">Awaiting first entity deployment...</p>
+                                            <p className="text-[10px] mt-2 font-bold uppercase tracking-widest text-red-400">DEBUG DB: {JSON.stringify(users)}</p>
                                         </div>
                                     )}
                                 </div>

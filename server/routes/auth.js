@@ -138,6 +138,28 @@ router.post('/create-user', auth, async (req, res) => {
         });
 
         await newUser.save();
+
+        // --- Auto-Populate Default Account Codes & AI Rules from GK_SMART_AI ---
+        try {
+            const AccountCode = require('../models/AccountCode');
+            const masterCodes = await AccountCode.find({ companyCode: 'GK_SMART_AI' }).lean();
+            if (masterCodes && masterCodes.length > 0) {
+                const newCodes = masterCodes.map(mc => ({
+                    user: newUser._id,
+                    companyCode: newUser.companyCode,
+                    code: mc.code,
+                    toiCode: mc.toiCode,
+                    description: mc.description,
+                    matchDescription: mc.matchDescription
+                }));
+                await AccountCode.insertMany(newCodes);
+                console.log(`[Admin] Cloned ${newCodes.length} default account codes for new user ${username}`);
+            }
+        } catch (codeErr) {
+            console.error('[Admin] Failed to clone default account codes:', codeErr.message);
+        }
+        // ------------------------------------------------------------------------
+
         res.json(newUser);
     } catch (err) {
         console.error(err);

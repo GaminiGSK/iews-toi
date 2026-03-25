@@ -20,9 +20,13 @@ const AIAssistant = () => {
     // STATE
     const [isOpen, setIsOpen] = useState(true); // Default Open
     const [selectedModel, setSelectedModel] = useState('gemini-2.0'); // Default
+    // Per-user history key: prevents cross-company data leaks
+    const currentCompanyCode = localStorage.getItem('companyCode') || 'guest';
+    const HISTORY_KEY = `ba_chat_history_${currentCompanyCode}`;
+
     const [messages, setMessages] = useState(() => {
         try {
-            const saved = localStorage.getItem('ba_chat_history');
+            const saved = localStorage.getItem(HISTORY_KEY);
             if (saved) return JSON.parse(saved);
         } catch (e) {
             console.warn("Could not load chat history", e);
@@ -33,8 +37,8 @@ const AIAssistant = () => {
     });
 
     useEffect(() => {
-        localStorage.setItem('ba_chat_history', JSON.stringify(messages));
-    }, [messages]);
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(messages));
+    }, [messages, HISTORY_KEY]);
     const [input, setInput] = useState('');
     const [image, setImage] = useState(null); // Base64 string
     const [isThinking, setIsThinking] = useState(false);
@@ -174,24 +178,29 @@ const AIAssistant = () => {
 
             // AUTONOMOUS EXECUTION ENGINE
             if (toolAction && socket && toolAction.tool_use === 'workspace_action') {
-                const searchParams = new URLSearchParams(window.location.search);
-                const packageId = searchParams.get('packageId') || searchParams.get('year');
+                try {
+                    const searchParams = new URLSearchParams(window.location.search);
+                    const packageId = searchParams.get('packageId') || searchParams.get('year');
 
-                console.log("[AI Assistant] Autonomous Execution: Triggering Workspace Action:", toolAction.action);
+                    console.log("[AI Assistant] Autonomous Execution: Triggering Workspace Action:", toolAction.action);
 
-                // Merge default context with AI-generated params
-                const actionParams = {
-                    year: packageId,
-                    companyCode: localStorage.getItem('companyCode'),
-                    history: messages.slice(-10),
-                    ...toolAction.params
-                };
+                    // Merge default context with AI-generated params
+                    const actionParams = {
+                        year: packageId,
+                        companyCode: localStorage.getItem('companyCode'),
+                        ...toolAction.params
+                        // NOTE: history is intentionally excluded to keep payload small
+                    };
 
-                socket.emit('workspace:perform_action', {
-                    action: toolAction.action,
-                    packageId: packageId,
-                    params: actionParams
-                });
+                    socket.emit('workspace:perform_action', {
+                        action: toolAction.action,
+                        packageId: packageId,
+                        params: actionParams
+                    });
+                } catch (socketErr) {
+                    console.error('[AI Assistant] Socket action error (non-fatal):', socketErr);
+                    // Do NOT rethrow — never let socket errors crash the page
+                }
             }
 
         } catch (err) {
