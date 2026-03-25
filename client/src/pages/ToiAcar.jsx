@@ -13,7 +13,17 @@ import LiveTaxWorkspace from "./LiveTaxWorkspace";
 
 const ToiAcar = ({ onBack, packageId, year }) => {
   const [activeWorkspacePage, setActiveWorkspacePage] = useState(1);
-  const [selectedYear, setSelectedYear] = useState(year || (new Date().getFullYear() - 1).toString());
+  const storageKey = (yr) => `toiFilledData_${yr}`;
+  const [selectedYear, setSelectedYear] = useState(() => {
+      const yearProp = year;
+      if (yearProp) return yearProp;
+      const defaultY = (new Date().getFullYear() - 1).toString();
+      // If 2025 is empty but 2024 has user data, default to 2024 visually
+      if (!localStorage.getItem(`toiFilledData_${defaultY}`) && localStorage.getItem('toiFilledData_2024')) {
+          return '2024';
+      }
+      return defaultY;
+  });
   const [autoFilling, setAutoFilling] = useState(false);
   const [fillStatus, setFillStatus] = useState(null); // { ok, msg, sources }
 
@@ -276,9 +286,15 @@ const ToiAcar = ({ onBack, packageId, year }) => {
       });
       if (res.data.ok && res.data.formData) {
         const fd = res.data.formData;
-        // Remove empty strings so they don't wipe existing user data
         const clean = {};
-        Object.keys(fd).forEach(k => { if (fd[k] !== '' && fd[k] !== null && fd[k] !== undefined) clean[k] = fd[k]; });
+        Object.keys(fd).forEach(k => { 
+            const val = fd[k];
+            // Skip empty primitives
+            if (val === '' || val === null || val === undefined) return;
+            // Skip explicitly empty arrays (protects manual shareholders, assets, etc)
+            if (Array.isArray(val) && val.length === 0) return;
+            clean[k] = val; 
+        });
         setFilledData(prev => ({ ...(prev || {}), ...clean }));
         const s = res.data.sources || {};
         const fieldCount = Object.keys(clean).length;
