@@ -3329,7 +3329,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
             d1_n:  fmt(costOfSales),
             e1_amount: fmt(revenue),
 
-            // ── PAGE 8�?: Financial Statements (IS) ──────────────────────
+            // ── PAGE 8?: Financial Statements (IS) ──────────────────────
             fs_revenue:                               fmt(revenue),
             fs_cost_of_sales:                         fmt(costOfSales),
             fs_gross_profit:                          fmt(grossProfit),
@@ -3378,14 +3378,19 @@ router.get('/toi/autofill', auth, async (req, res) => {
                 b['B42_n'] = fmt(netPbt);
                 b['B43_n'] = fmt(interestExpGL);
 
-                // *** B46 = Net Profit/(Loss) Before Tax — negative value = LOSS ***
-                // fmt() uses Math.abs() so store raw for E1 context
-                b['B46_n'] = fmt(netPbt);
-                b['_pbt_signed'] = netPbt; // internal signed reference for E-rows
+                // *** B46 = Net Profit/(Loss) Before Tax ***
+                // fmtSigned preserves the sign: negative = LOSS, positive = PROFIT
+                const fmtSigned = (n) => {
+                    if (!n || n === 0) return '0';
+                    const abs = Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    return n < 0 ? `-${abs}` : abs;
+                };
+                b['B46_n'] = fmtSigned(netPbt);   // e.g. "-34,516.22" for loss, "40.97" for profit
+                b['_pbt_signed'] = netPbt;          // raw number for E-rows
 
-                // Income tax & retained
+                // Income tax & retained — only if profitable
                 b['B47_n'] = fmt(Math.max(0, netPbt * 0.20));
-                b['B48_n'] = fmt(netPbt > 0 ? netPbt * 0.80 : netPbt);
+                b['B48_n'] = netPbt > 0 ? fmt(netPbt * 0.80) : fmtSigned(netPbt);
 
                 return b;
             })(),
