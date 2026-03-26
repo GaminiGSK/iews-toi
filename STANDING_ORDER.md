@@ -10,7 +10,7 @@ ACTIVE_URL=https://gksmart-ai-app.web.app
 CLOUD_RUN_URL=https://iews-toi-588941282431.asia-southeast1.run.app
 
 # BACKUP_911_REVISION: The last known safe state for emergency restoration.
-BACKUP_911_REVISION=iews-toi-00928-clx
+BACKUP_911_REVISION=iews-toi-00931-c69
 
 # LANDMARK TAG: v1.0-TOI-GL-VERIFIED-2026-03-26
 # GL->TB->FS->TOI chain verified. 134 fields, 21 pages.
