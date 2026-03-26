@@ -1,3 +1,4 @@
+// @ts-nocheck
 const fs = require('fs');
 const file = 'client/src/pages/TrialBalance.jsx';
 let content = fs.readFileSync(file, 'utf8');

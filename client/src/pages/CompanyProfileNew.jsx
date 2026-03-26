@@ -717,8 +717,84 @@ export default function CompanyProfile() {
     };
 
     // --- Agentic Filing (4th Module) ---
+    const [gdtCreds, setGdtCreds] = useState({ gdtUsername: '', gdtPassword: '' });
+    const [gdtSaving, setGdtSaving] = useState(false);
+    const [gdtSaved, setGdtSaved] = useState(false);
+    const [gdtLoaded, setGdtLoaded] = useState(false);
+
+    useEffect(() => {
+        if (view === 'agentic_filing' && !gdtLoaded) {
+            const token = localStorage.getItem('token');
+            axios.get('/api/company/gdt-credentials', { headers: { Authorization: `Bearer ${token}` } })
+                .then(r => { setGdtCreds({ gdtUsername: r.data.gdtUsername || '', gdtPassword: r.data.gdtPassword || '' }); setGdtLoaded(true); })
+                .catch(() => setGdtLoaded(true));
+        }
+    }, [view]);
+
+    const handleSaveGdtCreds = async () => {
+        setGdtSaving(true);
+        try {
+            const token = localStorage.getItem('token');
+            await axios.post('/api/company/gdt-credentials', gdtCreds, { headers: { Authorization: `Bearer ${token}` } });
+            setGdtSaved(true);
+            setTimeout(() => setGdtSaved(false), 3000);
+        } catch (e) { alert('Failed to save GDT credentials.'); }
+        finally { setGdtSaving(false); }
+    };
+
+    // --- GDT Agent State ---
+    const [gdtAgentStatus, setGdtAgentStatus] = useState('idle'); // idle | launching | otp_pending | submitting_otp | done | error
+    const [gdtSessionId, setGdtSessionId] = useState(null);
+    const [gdtScreenshot, setGdtScreenshot] = useState(null); // base64 preview
+    const [gdtAgentMsg, setGdtAgentMsg] = useState('');
+    const [gdtOtp, setGdtOtp] = useState('');
+
+    const handleLaunchGdtAgent = async () => {
+        if (!gdtCreds.gdtUsername || !gdtCreds.gdtPassword) {
+            alert('Please save your GDT credentials first (Step 1).');
+            return;
+        }
+        setGdtAgentStatus('launching');
+        setGdtAgentMsg('🤖 Agent opening GDT portal and filling your credentials...');
+        setGdtScreenshot(null);
+        setGdtOtp('');
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.post('/api/company/gdt-agent-launch',
+                { gdtUsername: gdtCreds.gdtUsername, gdtPassword: gdtCreds.gdtPassword },
+                { headers: { Authorization: `Bearer ${token}` }, timeout: 60000 }
+            );
+            setGdtSessionId(res.data.sessionId);
+            setGdtScreenshot(res.data.screenshot || null);
+            setGdtAgentMsg(res.data.message || 'OTP sent to your email.');
+            setGdtAgentStatus('otp_pending');
+        } catch (e) {
+            setGdtAgentMsg(`❌ Agent error: ${e.response?.data?.message || e.message}`);
+            setGdtAgentStatus('error');
+        }
+    };
+
+    const handleSubmitOtp = async () => {
+        if (!gdtOtp.trim()) { alert('Please enter the OTP from your email.'); return; }
+        setGdtAgentStatus('submitting_otp');
+        setGdtAgentMsg('🤖 Submitting OTP...');
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.post('/api/company/gdt-agent-otp',
+                { sessionId: gdtSessionId, otp: gdtOtp.trim() },
+                { headers: { Authorization: `Bearer ${token}` }, timeout: 30000 }
+            );
+            setGdtScreenshot(res.data.screenshot || null);
+            setGdtAgentMsg(res.data.message || 'Login complete!');
+            setGdtAgentStatus('done');
+        } catch (e) {
+            setGdtAgentMsg(`❌ OTP error: ${e.response?.data?.message || e.message}`);
+            setGdtAgentStatus('error');
+        }
+    };
+
     const renderAgenticFiling = () => (
-        <div className="w-full h-[calc(100vh-80px)] flex flex-col bg-[#080c14]">
+        <div className="w-full h-[calc(100vh-80px)] flex flex-col bg-[#080c14] overflow-y-auto">
             {/* Top bar */}
             <div className="flex items-center gap-4 px-6 py-3 bg-slate-900/80 backdrop-blur-md border-b border-white/5 shrink-0">
                 <button onClick={() => setView('home')} className="w-9 h-9 bg-white/5 rounded-xl flex items-center justify-center text-slate-400 hover:text-white transition-all border border-white/5 active:scale-95 shrink-0">
@@ -734,14 +810,151 @@ export default function CompanyProfile() {
                     BA TOI Agent Active
                 </div>
             </div>
-            {/* Full screen portal */}
-            <iframe
-                src="https://owp.tax.gov.kh/gdtowpcoreweb/login"
-                className="flex-1 w-full border-none"
-                title="GDT e-Tax Portal"
-            />
+
+            {/* Main content */}
+            <div className="flex-1 flex flex-col items-center justify-center px-8 py-12 gap-8 max-w-2xl mx-auto w-full">
+
+                {/* Step 1 — Pre-save GDT Credentials */}
+                <div className="w-full bg-slate-800/50 border border-white/8 rounded-3xl p-8 space-y-5">
+                    <div className="flex items-center gap-3 mb-1">
+                        <div className="w-8 h-8 rounded-full bg-blue-500/20 border border-blue-500/40 flex items-center justify-center text-blue-400 font-black text-sm">1</div>
+                        <div>
+                            <h2 className="text-white font-black text-base uppercase tracking-wider">Pre-Save GDT Credentials</h2>
+                            <p className="text-slate-500 text-xs mt-0.5">Saved securely in your company profile. Used by the agent to autofill the GDT portal.</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-3">
+                        <div>
+                            <label className="text-slate-400 text-[10px] font-bold uppercase tracking-widest block mb-1">GDT Username / TIN</label>
+                            <input
+                                type="text"
+                                value={gdtCreds.gdtUsername}
+                                onChange={e => setGdtCreds(p => ({ ...p, gdtUsername: e.target.value }))}
+                                placeholder="e.g. K009902103452"
+                                className="w-full bg-slate-900/80 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-blue-500/50"
+                            />
+                        </div>
+                        <div>
+                            <label className="text-slate-400 text-[10px] font-bold uppercase tracking-widest block mb-1">GDT Password</label>
+                            <input
+                                type="password"
+                                value={gdtCreds.gdtPassword}
+                                onChange={e => setGdtCreds(p => ({ ...p, gdtPassword: e.target.value }))}
+                                placeholder="••••••••"
+                                className="w-full bg-slate-900/80 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-blue-500/50"
+                            />
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={handleSaveGdtCreds}
+                        disabled={gdtSaving}
+                        className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 text-white font-bold text-sm transition-all"
+                    >
+                        {gdtSaving ? 'Saving...' : gdtSaved ? '✓ Credentials Saved!' : 'Save GDT Credentials'}
+                    </button>
+                    {gdtCreds.gdtUsername && (
+                        <p className="text-green-400/70 text-[10px] text-center font-mono">
+                            {gdtSaved ? '✓ ' : ''}Stored: {gdtCreds.gdtUsername} / {'•'.repeat(gdtCreds.gdtPassword.length || 8)}
+                        </p>
+                    )}
+                </div>
+
+                {/* Step 2 — Agent Launch */}
+                <div className="w-full bg-slate-800/50 border border-white/8 rounded-3xl p-8 space-y-4">
+                    <div className="flex items-center gap-3 mb-1">
+                        <div className="w-8 h-8 rounded-full bg-green-500/20 border border-green-500/40 flex items-center justify-center text-green-400 font-black text-sm">2</div>
+                        <div>
+                            <h2 className="text-white font-black text-base uppercase tracking-wider">Launch Agent</h2>
+                            <p className="text-slate-500 text-xs mt-0.5">Agent opens GDT headlessly, fills your credentials, and clicks Send Code — fully automatic.</p>
+                        </div>
+                    </div>
+
+                    {/* Credentials preview */}
+                    <div className="bg-slate-900/60 rounded-xl p-4 text-xs text-slate-400 space-y-1 border border-white/5">
+                        <div className="flex justify-between"><span>GDT Username</span><span className="text-white font-mono">{gdtCreds.gdtUsername || <span className="text-red-400 italic">Not set — save in Step 1</span>}</span></div>
+                        <div className="flex justify-between"><span>GDT Password</span><span className="text-white font-mono">{gdtCreds.gdtPassword ? '•'.repeat(gdtCreds.gdtPassword.length) : <span className="text-red-400 italic">Not set</span>}</span></div>
+                        <div className="flex justify-between"><span>Portal</span><span className="text-blue-400">owp.tax.gov.kh → TID tab</span></div>
+                    </div>
+
+                    {/* Agent status message */}
+                    {gdtAgentMsg && (
+                        <div className={`rounded-xl px-4 py-3 text-xs font-mono border ${
+                            gdtAgentStatus === 'error' ? 'bg-red-900/20 border-red-500/30 text-red-300' :
+                            gdtAgentStatus === 'done' ? 'bg-green-900/20 border-green-500/30 text-green-300' :
+                            'bg-slate-900/60 border-white/5 text-slate-300'
+                        }`}>
+                            {gdtAgentStatus === 'launching' && <span className="animate-pulse">⏳ </span>}
+                            {gdtAgentMsg}
+                        </div>
+                    )}
+
+                    {/* Live screenshot from agent */}
+                    {gdtScreenshot && (
+                        <div className="rounded-xl overflow-hidden border border-white/10">
+                            <div className="bg-slate-900/80 px-3 py-1.5 text-[10px] text-slate-500 font-mono uppercase tracking-widest border-b border-white/5">Agent Screen Preview</div>
+                            <img src={`data:image/png;base64,${gdtScreenshot}`} alt="GDT portal screenshot" className="w-full" />
+                        </div>
+                    )}
+
+                    <button
+                        onClick={handleLaunchGdtAgent}
+                        disabled={['launching', 'submitting_otp'].includes(gdtAgentStatus)}
+                        className="w-full py-4 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 disabled:from-slate-700 disabled:to-slate-700 text-white font-black text-base tracking-wider uppercase transition-all shadow-lg shadow-green-900/30 active:scale-95"
+                    >
+                        {gdtAgentStatus === 'launching' ? '⏳ Agent Working...' :
+                         gdtAgentStatus === 'otp_pending' ? '🔄 Re-launch Agent' :
+                         gdtAgentStatus === 'done' ? '✓ Done — Re-launch' :
+                         '🤖 Launch Agent & Auto-Fill GDT'}
+                    </button>
+                </div>
+
+                {/* Step 3 — OTP Entry (appears after agent sends code) */}
+                <div className={`w-full rounded-3xl p-8 space-y-4 border transition-all duration-500 ${
+                    gdtAgentStatus === 'otp_pending' || gdtAgentStatus === 'submitting_otp' || gdtAgentStatus === 'done'
+                        ? 'bg-amber-900/10 border-amber-500/30'
+                        : 'bg-slate-800/30 border-white/5 opacity-50'
+                }`}>
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 font-black text-sm">3</div>
+                        <div>
+                            <h2 className="text-white font-black text-base uppercase tracking-wider">Enter OTP — Agent Will Submit</h2>
+                            <p className="text-slate-500 text-xs mt-0.5">Check your email for the GDT authentication code. Type it here — agent enters it automatically.</p>
+                        </div>
+                    </div>
+
+                    <input
+                        type="text"
+                        inputMode="numeric"
+                        value={gdtOtp}
+                        onChange={e => setGdtOtp(e.target.value.replace(/\D/g, ''))}
+                        maxLength={8}
+                        placeholder="e.g. 123456"
+                        disabled={gdtAgentStatus !== 'otp_pending'}
+                        className="w-full bg-slate-900/80 border border-amber-500/30 rounded-xl px-4 py-4 text-white text-2xl font-mono tracking-widest text-center placeholder-slate-700 focus:outline-none focus:border-amber-400/60 disabled:opacity-40"
+                    />
+
+                    <button
+                        onClick={handleSubmitOtp}
+                        disabled={gdtAgentStatus !== 'otp_pending' || !gdtOtp}
+                        className="w-full py-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 disabled:from-slate-700 disabled:to-slate-700 text-white font-black text-base tracking-wider uppercase transition-all active:scale-95"
+                    >
+                        {gdtAgentStatus === 'submitting_otp' ? '⏳ Submitting...' :
+                         gdtAgentStatus === 'done' ? '✓ OTP Accepted!' :
+                         '📨 Submit OTP to Agent'}
+                    </button>
+
+                    {gdtAgentStatus !== 'otp_pending' && gdtAgentStatus !== 'submitting_otp' && gdtAgentStatus !== 'done' && (
+                        <p className="text-slate-600 text-[10px] text-center">⚠️ Launch the agent first (Step 2) — OTP field will activate once the agent sends the code.</p>
+                    )}
+                </div>
+
+            </div>
         </div>
     );
+
+
 
     // --- IEWS Placeholder ---
     const renderIEWS = () => (

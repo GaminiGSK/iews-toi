@@ -1,3 +1,4 @@
+// @ts-nocheck
 const fs = require('fs');
 
 // 1. Fix Schedule 4 (Related Party Transactions) in ToiAcar.jsx

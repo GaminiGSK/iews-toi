@@ -1,0 +1,91 @@
+﻿鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
+    GK SMART 鈥?GL 鈫?TB 鈫?FS 鈫?TOI AUDIT
+鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
+
+[1] GL SUMMARY
+  Account codes: 61
+  Bank transactions: ALL: 106 | 2024: 25 | 2025: 81
+  2024: IN=$4950.23 OUT=$5050.00
+  2025: IN=$78844.85 OUT=$74093.69
+
+[2] TRIAL BALANCE
+  2025 TB: rows=0 TotalDr=$0.00 TotalCr=$0.00
+  2025 TB Balanced: 鉁?YES
+  Income rows: 0 | Asset rows: 0 | Equity rows: 0
+  2024 TB: rows=0 TotalDr=$0.00 TotalCr=$0.00
+  2024 TB Balanced: 鉁?YES
+
+[3] FINANCIAL STATEMENTS (Monthly Financials)
+  2025: Revenue=$0.00 | Expenses=$0.00 | NetIncome=$0.00
+       TotalAssets=$0.00 | TotalEquity=$0.00
+  2024: Revenue=$0.00 | Expenses=$0.00 | NetIncome=$0.00
+       TotalAssets=$0.00 | TotalEquity=$0.00
+
+[4] TOI AUTOFILL
+
+  鈹€鈹€ Year 2024 鈹€鈹€
+  TIN: K009902103452 | Name: 釣囜灨釣佱焷 釣熱煉釣⑨灦釣?| LegalForm: Sole Proprietorship / Physical Person
+  Director: Gunasingha KASSAPA GAMINI | Branch: 0
+  [INCOME STMT]
+    B0_n (Total Revenue): 鉂?EMPTY
+    B3_n (Net Revenue): 鉂?EMPTY
+    B6_n (COGS): (none)
+    B22_n (Gross Profit): 17,250.00
+    B23_n (Salary): 6,000.00
+    B42_n (Total OpExp): 17,250.00
+    B46_n (PBT): 17,250.00
+    B48_n (Total Exp): 13,800.00
+  [BALANCE SHEET]
+    A0_n (Total Assets): 33,790.97
+    A7_n (PP&E): 33,750.00
+    A13_n (Curr Assets): 40.97
+    A21_n (Cash): (none)
+    A22_n (Bank): 40.97
+    A28_n (E+L): 83,795.08
+    A29_n (Total Eq): 83,795.08
+    A30_n (Share Cap): 83,795.08
+    A36_n (P&L Period): (none)
+    BS Balanced: 鉂?NO (A0=33,790.97 vs A28=83,795.08)
+  [TAX CALC]
+    E1_n (PBT): 0
+    E42_n (Taxable Inc): 0
+    E43_n (CIT 20%): 0
+    E51_n (Min Tax 1%): 0
+    E52_n (Tax to pay): 0
+  [SOURCES]: {"profile":true,"assets":1,"employees":2,"monthlyTOS":12,"relatedParties":1,"transactions":25,"journalEntries":25}
+  Non-empty fields: 118 / ~371 total
+
+  鈹€鈹€ Year 2025 鈹€鈹€
+  TIN: K009902103452 | Name: 釣囜灨釣佱焷 釣熱煉釣⑨灦釣?| LegalForm: Sole Proprietorship / Physical Person
+  Director: Gunasingha KASSAPA GAMINI | Branch: 0
+  [INCOME STMT]
+    B0_n (Total Revenue): 40.97
+    B3_n (Net Revenue): 40.97
+    B6_n (COGS): (none)
+    B22_n (Gross Profit): 17,250.00
+    B23_n (Salary): 6,000.00
+    B42_n (Total OpExp): 17,209.03
+    B46_n (PBT): 17,209.03
+    B48_n (Total Exp): 13,767.22
+  [BALANCE SHEET]
+    A0_n (Total Assets): 33,790.97
+    A7_n (PP&E): 33,750.00
+    A13_n (Curr Assets): 40.97
+    A21_n (Cash): (none)
+    A22_n (Bank): 40.97
+    A28_n (E+L): 83,836.05
+    A29_n (Total Eq): 83,836.05
+    A30_n (Share Cap): 83,795.08
+    A36_n (P&L Period): 40.97
+    BS Balanced: 鉂?NO (A0=33,790.97 vs A28=83,836.05)
+  [TAX CALC]
+    E1_n (PBT): 0
+    E42_n (Taxable Inc): 0
+    E43_n (CIT 20%): 0
+    E51_n (Min Tax 1%): 0.41
+    E52_n (Tax to pay): 0.41
+  [SOURCES]: {"profile":true,"assets":1,"employees":2,"monthlyTOS":12,"relatedParties":1,"transactions":81,"journalEntries":80}
+  Non-empty fields: 134 / ~371 total
+
+鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
+AUDIT COMPLETE

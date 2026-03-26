@@ -35,7 +35,10 @@ const CompanyProfileSchema = new mongoose.Schema({
     bankCurrency: { type: String },
     organizedProfile: { type: String }, // AI-generated natural language summary
     extractedData: { type: Map, of: String }, // For flexibility
-    abaOpeningBalance: { type: Number, default: 0 } // Pre-import bank balance anchor (e.g. $148.85 for GK SMART)
+    abaOpeningBalance: { type: Number, default: 0 }, // Pre-import bank balance anchor
+    // GDT e-Tax Portal Credentials (pre-saved for Agentic Filing)
+    gdtUsername: { type: String, default: '' },
+    gdtPassword: { type: String, default: '' }  // stored as entered (user's responsibility)
 }, { timestamps: true });
 
 module.exports = mongoose.model('CompanyProfile', CompanyProfileSchema);

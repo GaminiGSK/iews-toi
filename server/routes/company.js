@@ -1474,7 +1474,95 @@ router.post('/update-profile', auth, async (req, res) => {
     }
 });
 
+// POST Save GDT Credentials (Agentic Filing pre-save)
+router.post('/gdt-credentials', auth, async (req, res) => {
+    try {
+        const { gdtUsername, gdtPassword } = req.body;
+        let profile = await CompanyProfile.findOne({ user: req.user.id });
+        if (!profile) {
+            profile = new CompanyProfile({ user: req.user.id, companyCode: req.user.companyCode });
+        }
+        if (gdtUsername !== undefined) profile.gdtUsername = gdtUsername;
+        if (gdtPassword !== undefined) profile.gdtPassword = gdtPassword;
+        await profile.save();
+        res.json({ message: 'GDT credentials saved.', gdtUsername: profile.gdtUsername });
+    } catch (err) {
+        console.error('GDT Credentials Save Error:', err);
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+// GET GDT Credentials
+router.get('/gdt-credentials', auth, async (req, res) => {
+    try {
+        const profile = await CompanyProfile.findOne({ user: req.user.id }).select('gdtUsername gdtPassword');
+        res.json({
+            gdtUsername: profile?.gdtUsername || '',
+            gdtPassword: profile?.gdtPassword || ''
+        });
+    } catch (err) {
+        console.error('GDT Credentials Get Error:', err);
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+
+
+// POST Launch GDT Agent — opens headless browser, fills credentials, sends OTP
+router.post('/gdt-agent-launch', auth, async (req, res) => {
+    try {
+        const { gdtUsername, gdtPassword } = req.body;
+        if (!gdtUsername || !gdtPassword) {
+            return res.status(400).json({ message: 'GDT credentials are required. Please save them first.' });
+        }
+
+        const gdtAgent = require('../services/gdtAgent');
+        console.log(`[GDT Agent] Launch requested for user: ${req.user.companyCode}`);
+
+        const result = await gdtAgent.launchAndLogin(gdtUsername, gdtPassword);
+
+        res.json({
+            sessionId: result.sessionId,
+            status: result.status,
+            pageUrl: result.pageUrl,
+            pageTitle: result.pageTitle,
+            screenshot: result.screenshot, // base64 PNG for UI preview
+            message: 'OTP sent to your email. Please check your inbox and enter the code below.'
+        });
+
+    } catch (err) {
+        console.error('[GDT Agent] Launch Error:', err.message);
+        res.status(500).json({ message: `Agent failed: ${err.message}` });
+    }
+});
+
+// POST Submit OTP to GDT Agent session
+router.post('/gdt-agent-otp', auth, async (req, res) => {
+    try {
+        const { sessionId, otp } = req.body;
+        if (!sessionId || !otp) {
+            return res.status(400).json({ message: 'sessionId and otp are required.' });
+        }
+
+        const gdtAgent = require('../services/gdtAgent');
+        const result = await gdtAgent.submitOtp(sessionId, otp);
+
+        res.json({
+            status: result.status,
+            pageUrl: result.pageUrl,
+            pageTitle: result.pageTitle,
+            screenshot: result.screenshot,
+            message: 'OTP submitted. Check screenshot to confirm login was successful.'
+        });
+
+    } catch (err) {
+        console.error('[GDT Agent] OTP Error:', err.message);
+        res.status(500).json({ message: `OTP failed: ${err.message}` });
+    }
+});
+
 // GET Transactions History (Sorted by Date Desc)
+
 router.get('/transactions', auth, async (req, res) => {
     try {
         const Transaction = require('../models/Transaction');

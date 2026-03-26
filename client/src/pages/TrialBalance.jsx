@@ -62,7 +62,7 @@ const TrialBalance = ({ onBack }) => {
 
 
     const isBalancedUSD = Math.abs(totals.drUSD - totals.crUSD) < 0.01;
-    const isBalancedKHR = Math.abs(totals.drKHR - totals.crKHR) < 1.0;
+    const isBalancedKHR = Math.abs((currency === 'USD' ? totals.drUSD : totals.drKHR) - (currency === 'USD' ? totals.crUSD : totals.crKHR)) < 1.0;
 
     const handleDownloadPDF = () => {
         const doc = new jsPDF();
@@ -84,8 +84,8 @@ const TrialBalance = ({ onBack }) => {
         tableRows.push(['', 'TOTALS',
             totals.drUSD.toLocaleString(),
             totals.crUSD.toLocaleString(),
-            totals.drKHR.toLocaleString(),
-            totals.crKHR.toLocaleString()
+            (currency === 'USD' ? totals.drUSD : totals.drKHR).toLocaleString(),
+            (currency === 'USD' ? totals.crUSD : totals.crKHR).toLocaleString()
         ]);
 
         doc.autoTable({
@@ -278,8 +278,12 @@ const TrialBalance = ({ onBack }) => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                         </svg> Print A4 Layout 
                     </button>
-                    <button
-                        onClick={handleDownloadPDF}
+                    <button onClick={() => window.print()} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-sm font-medium transition flex items-center gap-2 shadow-sm border border-slate-300 mr-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                        </svg> Print A4 Layout 
+                    </button>
+                    <button onClick={handleDownloadPDF}
                         className="p-2 hover:bg-gray-100 rounded-full transition text-gray-500"
                         title="Download PDF Report"
                     >
@@ -338,7 +342,29 @@ const TrialBalance = ({ onBack }) => {
                             </div>
                         </div>
 
-                        {/* Audit Toolbar */}
+                        
+                    <div className="hidden print:block pb-6 mb-8 border-b-2 border-black mt-2">
+                        <div className="flex justify-between items-start mb-8">
+                            <div>
+                                <h1 className="text-3xl font-bold text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                    {companyNameKh}
+                                </h1>
+                                <h2 className="text-xl font-bold text-black uppercase tracking-widest mt-2">
+                                    {companyNameEn}
+                                </h2>
+                            </div>
+                            <div className="text-right flex flex-col items-end gap-1">
+                                <div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Report Detail</div>
+                                <div className="text-sm font-bold text-black">
+                                    Trial Balance - {fiscalYear === 'all' ? 'All Years' : fiscalYear}
+                                </div>
+                                <div className="text-sm font-bold text-black">
+                                    Currency: {currency} {inThousands ? " (in '000s)" : ""}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {/* Audit Toolbar */}
                         <div className="bg-gray-100 p-2 flex justify-end items-center border-b border-gray-300 gap-4">
                             <label className="flex items-center gap-2 cursor-pointer select-none">
                                 <input
@@ -354,7 +380,7 @@ const TrialBalance = ({ onBack }) => {
                         {loading && report.length === 0 ? (
                             <div className="p-12 text-center text-gray-500 font-sans">Generating Audit Report...</div>
                         ) : (
-                            <div className="overflow-x-auto">
+                            <div className="overflow-x-auto print:overflow-visible">
                                 <table className="w-full border-collapse min-w-[900px]">
                                     {/* --- 1. COMPARATIVE FORMAT --- */}
                                     {reportFormat === 'comparative' && (
@@ -436,10 +462,10 @@ const TrialBalance = ({ onBack }) => {
                                                     <td className="border-r border-gray-600"></td>
                                                     <td className="border-r border-gray-600 p-3 text-right uppercase text-xs text-gray-300" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សរុប / TOTAL</td>
                                                     <td className="border-r border-gray-600"></td>
-                                                    <td className="border-r border-gray-600 p-3 text-right text-teal-400 bg-[#334155]">{((currency === 'USD' ? totals.drUSD : totals.drKHR) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
-                                                    <td className="border-r border-gray-600 p-3 text-right text-teal-400 bg-[#334155]">{((currency === 'USD' ? totals.crUSD : totals.crKHR) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
-                                                    <td className="border-r border-gray-600 p-3 text-right text-gray-300">{((currency === 'USD' ? totals.priorDrUSD : totals.priorDrKHR) ? ((currency === 'USD' ? totals.priorDrUSD : totals.priorDrKHR) / (inThousands ? 1000 : 1)) : 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
-                                                    <td className="border-r border-gray-600 p-3 text-right text-gray-300">{((currency === 'USD' ? totals.priorCrUSD : totals.priorCrKHR) ? ((currency === 'USD' ? totals.priorCrUSD : totals.priorCrKHR) / (inThousands ? 1000 : 1)) : 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                                    <td className="border-r border-gray-600 p-3 text-right text-teal-400 bg-[#334155]">{((currency === 'USD' ? totals.drUSD : (currency === 'USD' ? totals.drUSD : totals.drKHR)) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                                    <td className="border-r border-gray-600 p-3 text-right text-teal-400 bg-[#334155]">{((currency === 'USD' ? totals.crUSD : (currency === 'USD' ? totals.crUSD : totals.crKHR)) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                                    <td className="border-r border-gray-600 p-3 text-right text-gray-300">{((currency === 'USD' ? totals.priorDrUSD : (currency === 'USD' ? totals.priorDrUSD : totals.priorDrKHR)) ? ((currency === 'USD' ? totals.priorDrUSD : (currency === 'USD' ? totals.priorDrUSD : totals.priorDrKHR)) / (inThousands ? 1000 : 1)) : 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                                    <td className="border-r border-gray-600 p-3 text-right text-gray-300">{((currency === 'USD' ? totals.priorCrUSD : (currency === 'USD' ? totals.priorCrUSD : totals.priorCrKHR)) ? ((currency === 'USD' ? totals.priorCrUSD : (currency === 'USD' ? totals.priorCrUSD : totals.priorCrKHR)) / (inThousands ? 1000 : 1)) : 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
                                                     <td></td>
                                                 </tr>
                                             </tbody>
@@ -547,14 +573,14 @@ const TrialBalance = ({ onBack }) => {
                                                     <td className="border-r border-gray-400 p-3 text-right uppercase text-xs" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សរុប / TOTAL</td>
                                                     <td className="border-r border-gray-400"></td>
 
-                                                    <td className="border-r border-gray-400 p-3 text-right text-gray-600">{(report.reduce((sum, r) => sum + (currency === 'USD' ? (r.unadjDrUSD || 0) : (r.unadjDrKHR || 0)), 0) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
-                                                    <td className="border-r border-gray-400 p-3 text-right text-gray-600">{(report.reduce((sum, r) => sum + (currency === 'USD' ? (r.unadjCrUSD || 0) : (r.unadjCrKHR || 0)), 0) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                                    <td className="border-r border-gray-400 p-3 text-right text-gray-600">{(report.reduce((sum, r) => sum + (currency === 'USD' ? (r.unadjDrUSD || 0) : (currency === 'USD' ? (r.unadjDrUSD || 0) : (r.unadjDrKHR || 0))), 0) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                                    <td className="border-r border-gray-400 p-3 text-right text-gray-600">{(report.reduce((sum, r) => sum + (currency === 'USD' ? (r.unadjCrUSD || 0) : (currency === 'USD' ? (r.unadjCrUSD || 0) : (r.unadjCrKHR || 0))), 0) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
 
-                                                    <td className="border-r border-gray-400 p-3 text-right text-blue-800 border-l-2 border-l-blue-400">{(report.reduce((sum, r) => sum + (currency === 'USD' ? (r.adjDrUSD || 0) : (r.adjDrKHR || 0)), 0) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
-                                                    <td className="border-r border-gray-400 p-3 text-right text-blue-800">{(report.reduce((sum, r) => sum + (currency === 'USD' ? (r.adjCrUSD || 0) : (r.adjCrKHR || 0)), 0) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                                    <td className="border-r border-gray-400 p-3 text-right text-blue-800 border-l-2 border-l-blue-400">{(report.reduce((sum, r) => sum + (currency === 'USD' ? (r.adjDrUSD || 0) : (currency === 'USD' ? (r.adjDrUSD || 0) : (r.adjDrKHR || 0))), 0) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                                    <td className="border-r border-gray-400 p-3 text-right text-blue-800">{(report.reduce((sum, r) => sum + (currency === 'USD' ? (r.adjCrUSD || 0) : (currency === 'USD' ? (r.adjCrUSD || 0) : (r.adjCrKHR || 0))), 0) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
 
-                                                    <td className="border-r border-gray-400 p-3 text-right text-gray-900 border-l-2 border-l-gray-400">{((currency === 'USD' ? totals.drUSD : totals.drKHR) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
-                                                    <td className="border-r border-gray-400 p-3 text-right text-gray-900">{((currency === 'USD' ? totals.crUSD : totals.crKHR) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                                    <td className="border-r border-gray-400 p-3 text-right text-gray-900 border-l-2 border-l-gray-400">{((currency === 'USD' ? totals.drUSD : (currency === 'USD' ? totals.drUSD : totals.drKHR)) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                                    <td className="border-r border-gray-400 p-3 text-right text-gray-900">{((currency === 'USD' ? totals.crUSD : (currency === 'USD' ? totals.crUSD : totals.crKHR)) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
                                                     <td></td>
                                                 </tr>
                                             </tbody>
@@ -652,11 +678,11 @@ const TrialBalance = ({ onBack }) => {
                                                     <td className="border-r border-[#374151] p-3 text-right uppercase text-xs text-gray-400" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សរុប / TOTAL</td>
                                                     <td className="border-r border-[#374151]"></td>
                                                     <td className="border-r border-[#374151]"></td>
-                                                    <td className="border-r border-[#374151] p-3 text-right text-gray-100">{((currency === 'USD' ? totals.drUSD : totals.drKHR) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
-                                                    <td className="border-r border-[#374151] p-3 text-right text-gray-100">{((currency === 'USD' ? totals.crUSD : totals.crKHR) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                                    <td className="border-r border-[#374151] p-3 text-right text-gray-100">{((currency === 'USD' ? totals.drUSD : (currency === 'USD' ? totals.drUSD : totals.drKHR)) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                                    <td className="border-r border-[#374151] p-3 text-right text-gray-100">{((currency === 'USD' ? totals.crUSD : (currency === 'USD' ? totals.crUSD : totals.crKHR)) / (inThousands ? 1000 : 1)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
                                                     <td className="border-r border-[#374151]"></td>
-                                                    <td className="border-r border-[#374151] p-3 text-right text-gray-400">{((currency === 'USD' ? totals.priorDrUSD : totals.priorDrKHR) ? ((currency === 'USD' ? totals.priorDrUSD : totals.priorDrKHR) / (inThousands ? 1000 : 1)) : 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
-                                                    <td className="border-r border-[#374151] p-3 text-right text-gray-400">{((currency === 'USD' ? totals.priorCrUSD : totals.priorCrKHR) ? ((currency === 'USD' ? totals.priorCrUSD : totals.priorCrKHR) / (inThousands ? 1000 : 1)) : 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                                    <td className="border-r border-[#374151] p-3 text-right text-gray-400">{((currency === 'USD' ? totals.priorDrUSD : (currency === 'USD' ? totals.priorDrUSD : totals.priorDrKHR)) ? ((currency === 'USD' ? totals.priorDrUSD : (currency === 'USD' ? totals.priorDrUSD : totals.priorDrKHR)) / (inThousands ? 1000 : 1)) : 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                                    <td className="border-r border-[#374151] p-3 text-right text-gray-400">{((currency === 'USD' ? totals.priorCrUSD : (currency === 'USD' ? totals.priorCrUSD : totals.priorCrKHR)) ? ((currency === 'USD' ? totals.priorCrUSD : (currency === 'USD' ? totals.priorCrUSD : totals.priorCrKHR)) / (inThousands ? 1000 : 1)) : 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
                                                     <td></td>
                                                 </tr>
                                             </tbody>
