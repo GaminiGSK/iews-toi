@@ -9,7 +9,12 @@ ACTIVE_REGION=asia-southeast1
 ACTIVE_URL=https://gksmart-ai-app.web.app
 
 # BACKUP_911_REVISION: The last known safe state for emergency restoration.
-BACKUP_911_REVISION=iews-toi-00514-hmb
+BACKUP_911_REVISION=iews-toi-00925-fgl
+
+# LANDMARK TAG: v1.0-TOI-GL-VERIFIED-2026-03-26
+# GL->TB->FS->TOI chain verified. 134 fields, 21 pages.
+# Firebase: https://gksmart-ai-app.web.app
+
 
 # Verification Rule: 
 # Every 'gcloud run' or 'gcloud builds' command must include:
