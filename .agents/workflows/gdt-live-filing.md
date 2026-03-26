@@ -3,228 +3,507 @@ description: GDT e-Tax Portal Login & TOI Filing — Full Agent Execution Routin
 ---
 
 # GDT Live Filing Workflow
-## For: BA TOI Agent (or any agent taking over this task)
+## For: BA TOI Agent & BA Audit Agent — STAND-ALONE EXECUTION
 
-This workflow applies to **ALL companies and users** on the GK SMART platform.
-Each company stores its own GDT credentials independently in their `CompanyProfile` record.
-The user does NOT need to type anything except the OTP code from their email.
+> **CARVED IN IRON — 2026-03-26 — VERIFIED LIVE SESSION**
+> The user will communicate via BA agent chat. The BA agent executes this entire routine autonomously.
+> The ONLY human input needed: **OTP code** (from email, expires 3 min).
 
 ---
 
-## PRE-REQUISITES (Check before starting)
+## PRE-REQUISITES
 
 ### Who is filing?
-- Identify the **currently logged-in user** from the GK SMART session (JWT token → `req.user.companyCode`)
-- Each company has its own GDT credentials stored in MongoDB
+- Identify the company from the logged-in user's JWT token (`req.user.companyCode`)
+- Every company stores its own GDT credentials in MongoDB `CompanyProfile`
 
-### Get GDT Credentials for any company
-
-**Via API** (preferred — use the logged-in user's token):
+### Get GDT Credentials for ANY company (BA Agent Method)
 ```
 GET /api/company/gdt-credentials
-Authorization: Bearer <token>
+Authorization: Bearer <user_token>
 ```
-Returns: `{ gdtUsername, gdtPassword }`
+Returns: `{ gdtUsername, gdtPassword, companyCode, companyNameEn }`
 
-**Via DB direct query** (for agent use, from `e:\Antigravity\TOI\server`):
-```javascript
-node -e "
-const mongoose = require('mongoose');
-mongoose.connect('mongodb+srv://admin_gsk:admingsk1235@cluster0.pipzn70.mongodb.net/gksmart_live?appName=Cluster0').then(async () => {
-  const CompanyProfile = require('./models/CompanyProfile');
-  // Replace COMPANY_CODE with the target company e.g. 'GK_SMART_AI', 'ARAKAN', etc.
-  const p = await CompanyProfile.findOne({ companyCode: 'COMPANY_CODE' }).select('gdtUsername gdtPassword companyCode companyNameEn');
-  console.log('Company:', p.companyCode, '|', p.companyNameEn);
-  console.log('GDT User:', p.gdtUsername);
-  console.log('GDT Pass:', p.gdtPassword);
-  process.exit(0);
-});
-"
+### GK SMART Confirmed Credentials (2026-03-26 verified)
+- **GDT Login Email**: `gamini@ggmt.sg`
+- **GDT Password**: stored in MongoDB `CompanyProfile.gdtPassword` for `GK_SMART_AI`
+- **OTP sent to**: `gamini@ggmt.sg`
+- **TIN**: K009-902103452
+- **Barcode 2025**: OTOI2026032427869
+
+---
+
+## ═══════════════════════════════════════════════
+## PHASE A — GDT PORTAL LOGIN
+## ═══════════════════════════════════════════════
+
+### 🔩 STEP 1 — Open GDT Login Page
+
 ```
-
-**List all companies with GDT credentials saved:**
-```javascript
-node -e "
-const mongoose = require('mongoose');
-mongoose.connect('mongodb+srv://admin_gsk:admingsk1235@cluster0.pipzn70.mongodb.net/gksmart_live?appName=Cluster0').then(async () => {
-  const CompanyProfile = require('./models/CompanyProfile');
-  const all = await CompanyProfile.find({ gdtUsername: { \$exists: true, \$ne: '' } }).select('companyCode companyNameEn gdtUsername').lean();
-  all.forEach(p => console.log(p.companyCode, '|', p.companyNameEn, '|', p.gdtUsername));
-  process.exit(0);
-});
-"
+URL: https://owp.tax.gov.kh/gdtowpcoreweb/login
+Wait: 8 seconds after load
 ```
 
----
+The page shows 3 tabs: **MOI ID** | **Email** | **TID**
 
-## STEP 1 — Open the GDT Login Page
+### 🔩 STEP 2 — Login via Email Tab
 
-**Action**: Open `https://owp.tax.gov.kh/gdtowpcoreweb/login` in a browser tab.
-Wait 8 seconds for the page to fully load.
+> ⚠️ ALWAYS use the **Email** tab. NEVER use TID tab for email-based accounts.
 
-> The page shows 3 tabs: **MOI ID | Email | TID**
+1. Click **Email** tab (middle tab)
+2. Click Email field → Ctrl+A → Delete → Type: `gamini@ggmt.sg`
+3. Click Password field → Type: `[read from MongoDB gdtPassword]`
+4. Click blue **Login** button
+5. Wait 5 seconds
 
----
+### 🔩 STEP 3 — Handle OTP
 
-## STEP 2 — Select the Email Tab & Fill Credentials
+You land at: `https://owp.tax.gov.kh/gdtowpcoreweb/verify-code`
 
-**CRITICAL**: Use the **Email tab** (middle tab). NOT the TID tab.
+**ACTION**: Ask user immediately:
+> "GDT sent a 6-digit OTP to gamini@ggmt.sg. Please check your email and give me the code. (It expires in 3 minutes)"
 
-1. Click the **Email** tab
-2. Click the Email input field
-3. Clear any existing content (Ctrl+A → Delete)
-4. Type: `gamini@ggmt.sg`
-5. Click the Password field
-6. Type the password (read from DB — `gdtPassword` field of `GK_SMART_AI` profile)
-7. Click the **Login** button (blue button)
+- Type OTP into the 6 boxes
+- Click **Verify**
 
-> ⚠️ If you use the TID tab: it will fail — `gamini@ggmt.sg` is an email, not a TIN.
+### 🔩 STEP 4 — GDT Application Dashboard
 
----
+After OTP: `https://owp.tax.gov.kh/gdtowpcoreweb/coremgm/application`
 
-## STEP 3 — Handle the OTP
-
-After clicking Login, GDT redirects to:
-`https://owp.tax.gov.kh/gdtowpcoreweb/verify-code`
-
-**GDT emails a 6-digit OTP to `gamini@ggmt.sg`.**
-- OTP expires in ~3 minutes
-- Ask the user: *"Please check your email gamini@ggmt.sg and tell me the 6-digit code."*
-- Once user provides code → type it into the 6 boxes on the verify-code page
-- Click **Verify** / **Submit**
+Find and click: **"Tax on Income - ToI E-Filing"** module card.
 
 ---
 
-## STEP 4 — Arrive at GDT Application Dashboard
+## ═══════════════════════════════════════════════
+## PHASE B — TOI SYSTEM NAVIGATION (3 CARVED STEPS)
+## ═══════════════════════════════════════════════
 
-After OTP, browser lands at:
-`https://owp.tax.gov.kh/gdtowpcoreweb/coremgm/application`
-
-This is the GDT main portal showing all available tax modules.
-
----
-
-## STEP 5 — Navigate to TOI E-Filing
-
-On the GDT Application page:
-1. Find the **"Tax on Income - ToI E-Filing"** module card
-2. Click on it
-3. The TOI system opens in a new page/tab at: `https://toi.tax.gov.kh/gdttoiweb/`
-
-> GK SMART's company profile will be listed on the TOI dashboard.
-
----
-
-## STEP 6 — TOI Dashboard: Find the Company
+### 🔩 STEP 5 — TOI Dashboard → Detail Information
 
 **URL**: `https://toi.tax.gov.kh/gdttoiweb/`
 
-You will see a list of companies. Find the target company (e.g. **GK SMART**).
+1. Find the target company row (e.g. **GK SMART**)
+2. Click **⋮** (three dots) on that row
+3. Click **"Detail Information"**
 
-1. Locate the company row
-2. Click the **⋮ (three dots)** action button on that row
-3. A dropdown appears — click **"Detail Information"**
+→ Lands on: `https://toi.tax.gov.kh/gdttoiweb/6201c01a/02fb9ed1`
 
-> ✅ Confirmed live: GK SMART is at URL pattern `toi.tax.gov.kh/gdttoiweb/{id}`
-> ✅ GK SMART TIN: **K009-902103452**, Bank: Advance Bank of Asia
+### 🔩 STEP 6 — Declaration History → View Detail (2025 row)
 
----
+**You are on the Declaration History page.**
 
-## ═══ STEP 7 — Declaration History: Find the Target Year ═══
-### 🔩 CARVED IN IRON — FOLLOW EXACTLY
+| # | Tax Year | Status | Request Status |
+|---|---|---|---|
+| 1 | **2025** | **Not Paid** | **Not yet submitted** |
+| 2 | 2024 | Paid | Submitted |
 
-**You are now on the Declaration History page.**
-Example URL: `https://toi.tax.gov.kh/gdttoiweb/6201c01a/02fb9ed1`
+1. Find row **Tax Year 2025** (Not Paid / Not yet submitted)
+2. Click **⋮** on that row
+3. Click **"View Detail"** ← NOT "Disable"!
 
-The table shows all TOI declarations by year:
+→ Lands on: `https://toi.tax.gov.kh/gdttoiweb/6201c01a/64ed586d`
 
-| # | Tax Year | Status | Request Status | Action |
-|---|---|---|---|---|
-| 1 | **2025** | **Not Paid** | **Not yet submitted** | ⋮ |
-| 2 | 2024 | Paid | Submitted | ⋮ |
-| 3 | 2023 | Paid | Submitted | ⋮ |
+### 🔩 STEP 7 — Declaration List → Data Entry
 
-**To file for Tax Year 2025 (current outstanding):**
-1. Find row **Tax Year 2025** — Status: **Not Paid**, Request Status: **Not yet submitted**
-2. Click the **⋮** button on that row
-3. A dropdown appears with **"View Detail"** and "Disable"
-4. Click **"View Detail"**
+**You are on the Declaration List page.**
+- Shows: Headquarter table with 2025 row (Barcode: OTOI2026032427869, Not Paid)
+- Shows: Attachments required (Balance Sheet / Income Statement / Other Documents)
+- Shows: Branches — empty (no branches)
 
-> ⚠️ Do NOT click "Disable" — that disables the declaration permanently.
-> ✅ Barcode for 2025: **OTOI2026032427869** — Created 24 March 2026
+1. In the **Headquarter** table, find the 2025 row
+2. Click **⋮** on that row
+3. Click **"Data Entry"**
 
----
-
-## ═══ STEP 8 — Declaration List: Open Data Entry ═══
-### 🔩 CARVED IN IRON — FOLLOW EXACTLY
-
-**You are now on the Declaration List page.**
-Example URL: `https://toi.tax.gov.kh/gdttoiweb/6201c01a/64ed586d`
-
-This page shows:
-- Company info (TIN, Name, Address, Bank)
-- Attachments required: **Balance Sheet** / **Income Statement** / **Other Documents** (all currently "Not Attached")
-- A **Headquarter** table with the 2025 declaration row
-- A **Branches** section (currently empty — no branches)
-
-**To enter the TOI form:**
-1. In the **Headquarter** table, find the 2025 row (Barcode: OTOI2026032427869, Status: Not Paid)
-2. Click the **⋮** button on that Headquarter row
-3. A dropdown appears with **"Data Entry"**
-4. Click **"Data Entry"**
-
-> ✅ This opens the actual 21-page TOI declaration form
-> ✅ This is where all financial data gets entered (134 fields)
+→ Opens the 17-step TOI form at:
+`https://toi.tax.gov.kh/gdttoiweb/a1ce70a4/ae3675ba/1cd1a83c9431`
 
 ---
 
-## STEP 9 — Fill the TOI Form (21 Pages)
+## ═══════════════════════════════════════════════
+## PHASE C — TOI FORM DATA ENTRY (17 STEPS)
+## ═══════════════════════════════════════════════
 
-Once inside **Data Entry**, the TOI form has multiple pages/sections.
-The agent should fill in data pulled from the GK SMART financial system:
-- Revenue, Expenses, Assets, Liabilities, Equity figures
-- These come from the GK SMART General Ledger / Trial Balance / Financial Statements
+### CONTEXT: GK SMART 2025 Financial Profile
+```
+Company:         GK SMART (ជីខេ ស្អាត) — Sole Proprietorship
+TIN:             K009-902103452
+Director/Owner:  Gunasingha KASSAPA GAMINI
+Tax Period:      01-2025 to 12-2025 (12 months)
+Tax Rate:        20%
+Compliance:      None (no Gold/Silver/Bronze)
+Audit Required:  No
+Accounting SW:   GK SMART AI (Using accounting software)
+Share Capital:   83,795.08 USD = ~335,180,320 KHR (@ ~4,000 KHR/USD)
+Net P&L 2025:    Loss (service company)
+COGS:            0 (service company — no COGS)
+Interest:        0
+Charitable:      0
+Branches:        0
+```
 
-> **Previous session note**: The form was previously navigated through all 21 pages and reached the final Submit step. If a draft exists, verify data before submitting.
+### Get live data before filling:
+```
+GET /api/company/toi/autofill?year=2025
+Authorization: Bearer <token>
+```
 
 ---
 
-## KNOWN ISSUES & NOTES
+### 📋 STEP 1/17 — Information of Enterprise
 
-| Issue | Resolution |
+**What's pre-filled** (verify, don't change):
+- Tax Period: 01-2025 to 12-2025 ✅
+- Company Name, TIN, Director ✅
+
+**Fields to fill/verify**:
+| Field | Value |
 |---|---|
-| TID tab fails for email accounts | Always use **Email tab** |
-| OTP expires in ~3 min | Ask user immediately after Login is clicked |
-| Sessions are not persisted in DB | Each BA session needs a fresh login |
-| Server-side Puppeteer fails on GDT | GDT blocks headless bots — use real browser subagent only |
-| Password not visible in UI | Read from MongoDB `gdtPassword` field directly |
-| "Disable" in ⋮ menu | NEVER click — disables the declaration permanently |
+| Status of Tax Compliance | **None** (radio button) |
+| Accounting Holdings | **Proper accounting records** |
+| Accounting Records | **Using accounting software** |
+| Name of Program | **GK SMART AI** |
+| Name of Accountant | **Gunasingha KASSAPA GAMINI** |
+| Statutory Audit Requirement | **Not Required** |
+| Income Tax Rate | **20%** |
+
+Click **Next (2)**
 
 ---
 
-## EXACT URL MAP (GK SMART 2025 Filing — Confirmed 2026-03-26)
+### 📋 STEP 2/17 — Shareholders
+
+**Fill Section A (Khmer shareholders) and Section B (Foreign shareholders)**:
+- GK SMART has 1 owner → enter in BOTH sections:
+
+| Field | Value |
+|---|---|
+| Shareholder Name | GUNASINGHA KASSAPA GAMINI |
+| Address | #Arakawa Residence Block Unit D414, 4th Floor, Phum Phsar Teuk Thla, Sangkat Teuk Thla, Khan Sen Sok, Phnom Penh |
+| Position | Owner |
+| Beginning % | 100 |
+| Beginning Amount (KHR) | 335,180,320 |
+| Ending % | 100 |
+| Ending Amount (KHR) | 335,180,320 |
+
+Click **Next (3)**
+
+---
+
+### 📋 STEP 3/17 — Employees & Compensation
+
+**Shareholding Managers section**:
+| Field | Value |
+|---|---|
+| Description | Managing Director |
+| Number | 1 |
+| Annual Salary (KHR) | 24,000,000 |
+| Fringe Benefits | 0 |
+
+**Total Employees section**:
+| Field | Value |
+|---|---|
+| Position/Category | Managing Director |
+| Khmer | 1 |
+| Foreigner | 0 |
+| Total | 1 |
+| Annual Salary | 24,000,000 |
+| Fringe Benefits | 0 |
+
+Click **Next (4)**
+
+---
+
+### 📋 STEP 4/17 — Balance Sheet
+
+> Source: `/api/company/toi/autofill?year=2025` → Balance Sheet section
+> Exchange rate: ~4,000 KHR per USD
+
+**Assets side**:
+
+| Row | Description | Current Year (KHR) |
+|---|---|---|
+| A7 | Plant, Property & Equipment (Net) | 169,466,000 |
+| A12 | Other long-term assets | 18,605,560 |
+| A22 | Cash and bank | 163,880 |
+| All others | Leave 0 | — |
+
+**Equity & Liabilities side**:
+
+| Row | Description | Current Year (KHR) |
+|---|---|---|
+| A30 | Capital / Share capital | 335,180,320 |
+| A35 | Profit/(loss) brought forward | (previous years' accumulated loss) |
+| A36 | Profit/(loss) for the period | -170,944,880 |
+| All liabilities | 0 (no debt) | — |
+
+> ⚠️ Balance Sheet must balance: Total Assets = Total Equity + Liabilities
+
+Click **Next (5)**
+
+---
+
+### 📋 STEP 5/17 — Income Statement
+
+| Row | Description | Amount (KHR) |
+|---|---|---|
+| B15 | Interest Income | 163,880 |
+| B23 | Salaries & wages | 24,000,000 |
+| B33 | Consulting/professional fees (Business Reg) | 98,600,000 |
+| B36 | Depreciation | 45,908,760 |
+| B41 | Other expenses | 2,600,000 |
+
+> System auto-calculates totals (B42 = Total expenses, B46 = PBT/loss)
+
+Click **Next (6)**
+
+---
+
+### 📋 STEP 6/17 — COGS Non-Production
+
+> GK SMART is a **service company** — NO COGS.
+> Leave ALL fields empty/0.
+
+Click **Next (7)**
+
+---
+
+### 📋 STEP 7/17 — COGS Production
+
+> GK SMART is a **service company** — NOT APPLICABLE.
+> Leave ALL fields empty.
+
+Click **Next (8)**
+
+---
+
+### 📋 STEP 8/17 — Income Tax Adjustments (Add-backs & Deductions)
+
+**Add-backs (non-deductible expenses)**:
+
+| Row | Description | Amount (KHR) |
+|---|---|---|
+| E1 | Accounting Profit/Loss (= B46) | -170,944,880 |
+| E2 | Accounting Depreciation (add back) | 45,908,760 |
+| E13 | Owner/Director remuneration (non-deductible for sole prop) | 24,000,000 |
+
+**Deductions (GDT-approved)**:
+
+| Row | Description | Amount (KHR) |
+|---|---|---|
+| E26 | GDT Tax-Allowable Depreciation | 53,386,000 |
+
+Click **Next (9)**
+
+---
+
+### 📋 STEP 9/17 — Loss Carryforward
+
+| Section | Description | Amount (KHR) |
+|---|---|---|
+| E41 | Accumulated taxable losses b/fwd | 81,987,380 (from 2024) |
+| E42 | Taxable Income (auto-calculated: max 0, E40-E41) | 0 (loss company) |
+
+**Loss Carryforward Table**:
+
+| Year | Loss Amount (KHR) |
+|---|---|
+| N-1 (2024) | 81,987,380 |
+| N (2025) | 154,860,880 |
+
+Click **Next (10)**
+
+---
+
+### 📋 STEP 10/17 — Tax Depreciation Detail (Asset Pools)
+
+GK SMART has 3 fixed assets in 2 depreciation classes:
+
+**Class 3 (25% declining balance) — Computers & Automobiles**:
+
+| Field | Value |
+|---|---|
+| Historical Cost | [Computer cost + Auto cost combined in KHR] |
+
+**Class 4 (20% declining balance) — Furniture & Fixtures**:
+
+| Field | Value |
+|---|---|
+| Historical Cost | [Furniture cost in KHR] |
+
+> Get exact values from `/api/company/assets` or Asset & Depreciation module
+
+Click **Next (11)**
+
+---
+
+### 📋 STEP 11/17 — Charitable & Interest Cap
+
+**Charitable (F-rows)**:
+- F2 = 0 (GK SMART makes no charitable donations)
+- All F-rows = 0
+
+**Interest Cap (G-rows)**:
+- G2 = 0 (GK SMART has no interest expense)
+- All G-rows = 0
+
+Click **Next (12)**
+
+---
+
+### 📋 STEP 12/17 — Interest & Loss Carryforward Tables
+
+> Auto-populated from Step 9 and Step 11
+> Verify totals are correct
+> No manual entry needed if G-rows and loss tables were filled in Step 9
+
+Click **Next (13)**
+
+---
+
+### 📋 STEP 13/17 — Transfer Pricing / Related Parties
+
+> GK SMART has NO related party transactions.
+
+- Answer **"No"** to the Transfer Pricing documentation question
+- Leave all tables empty
+
+Click **Next (14)**
+
+---
+
+### 📋 STEP 14/17 — Related Party Transactions Detail
+
+> NOT APPLICABLE for GK SMART.
+> Leave empty.
+
+Click **Next (15)**
+
+---
+
+### 📋 STEP 15/17 — Fixed Asset Details
+
+List all 3 GK SMART fixed assets:
+
+| # | Asset Name | Type | Acquisition Date | Historical Cost (KHR) |
+|---|---|---|---|---|
+| 1 | Furniture | Furniture & Fixtures | [date] | [cost from DB] |
+| 2 | Computer | Computer Equipment | [date] | [cost from DB] |
+| 3 | Automobile | Motor Vehicle | [date] | [cost from DB] |
+
+> Get from: `/api/company/assets` or Asset & Depreciation module in GK SMART dashboard
+
+Click **Next (16)**
+
+---
+
+### 📋 STEP 16/17 — Excess Income Tax (Mining/Oil)
+
+> **NOT APPLICABLE** for GK SMART.
+> Leave ALL fields (X1-X5) empty.
+
+Click **Next (17)**
+
+---
+
+### 📋 STEP 17/17 — DECLARATION & FILE UPLOAD ← FINAL STEP
+
+**This is the last step before submission.**
+
+**3 Files must be uploaded BEFORE submitting**:
+
+| # | Required File | What to Upload |
+|---|---|---|
+| 1 | **Balance Sheet** | PDF of 2025 Annual Balance Sheet from GK SMART system |
+| 2 | **Income Statement** | PDF of 2025 Annual Income Statement from GK SMART system |
+| 3 | **Other Documents** | Trial Balance OR Fixed Asset Register PDF |
+
+**How to generate these files from GK SMART**:
+1. Open GK SMART → Financial Statements → Select Year 2025 → Export PDF
+2. Or: GK SMART → Trial Balance → Export PDF
+
+**After uploading all 3 files**:
+- Verify Income Tax Due = 0 KHR (loss company, no tax payable)
+- Verify signatory: Gunasingha KASSAPA GAMINI, Managing Director
+- Verify date: [filing date]
+- Ask user: **"Ready to submit? Please confirm YES to proceed."**
+- User confirms → Click **Submit / Confirm Declaration**
+
+---
+
+## GDT SYSTEM SCHEDULE
+
+| Day | Hours (Cambodia Time, UTC+7) |
+|---|---|
+| Monday–Friday | 08:00 – 18:00 |
+| Saturday | 08:00 – 12:00 |
+| Sunday | CLOSED |
+
+> ⚠️ GDT shuts down at **18:00 Cambodia time** (11:00 UTC). Session will fail if filed after this time. Plan accordingly.
+
+---
+
+## EXACT URL MAP (GK SMART 2025 — Verified 2026-03-26)
 
 ```
-GDT Login:          https://owp.tax.gov.kh/gdtowpcoreweb/login
-GDT Application:    https://owp.tax.gov.kh/gdtowpcoreweb/coremgm/application
-TOI Dashboard:      https://toi.tax.gov.kh/gdttoiweb/
-GK SMART Detail:    https://toi.tax.gov.kh/gdttoiweb/6201c01a/02fb9ed1
-GK SMART 2025:      https://toi.tax.gov.kh/gdttoiweb/6201c01a/64ed586d
-Data Entry (form):  Opens from ⋮ → Data Entry on the Declaration List page
+GDT Login:              https://owp.tax.gov.kh/gdtowpcoreweb/login
+GDT OTP Verify:         https://owp.tax.gov.kh/gdtowpcoreweb/verify-code
+GDT Application Hub:    https://owp.tax.gov.kh/gdtowpcoreweb/coremgm/application
+TOI Dashboard:          https://toi.tax.gov.kh/gdttoiweb/
+GK SMART Detail:        https://toi.tax.gov.kh/gdttoiweb/6201c01a/02fb9ed1
+GK SMART 2025 Decl:     https://toi.tax.gov.kh/gdttoiweb/6201c01a/64ed586d
+Data Entry (form):      https://toi.tax.gov.kh/gdttoiweb/a1ce70a4/ae3675ba/1cd1a83c9431
 ```
 
 ---
 
-## DEPLOYMENT PROTOCOL (if code changes are made)
+## KNOWN ISSUES & ANTI-PATTERNS
 
-**ALWAYS in this order:**
-1. `gcloud builds submit` → Cloud Run image build
-2. `gcloud run deploy iews-toi` → Deploy to Cloud Run
-3. Verify Cloud Run revision is live
-4. `npm run build` (in `client/`) → `firebase deploy --only hosting` → Firebase
-
-**NEVER deploy Firebase before Cloud Run.**
+| Issue | Solution |
+|---|---|
+| TID tab fails for email accounts | Always use **Email** tab |
+| OTP expires in 3 min | Ask user IMMEDIATELY after clicking Login |
+| GDT closes at 18:00 KH time | File during 08:00–17:30 window only |
+| Session killed after GDT shutdown | Must re-login on next session |
+| "Disable" in ⋮ menu | **NEVER CLICK** — permanently disables declaration |
+| Step 15 asset list blocks Next | Must fill at least 1 asset row with valid date & cost |
+| Balance Sheet must balance | Total Assets MUST equal Total Equity+Liabilities |
+| Puppeteer headless blocked by GDT | Use real browser subagent only (not server-side) |
 
 ---
-*Last updated: 2026-03-26 by Antigravity*
-*Session: GDT Live Filing — All 3 navigation steps confirmed live. Steps 6-8 are FINAL and VERIFIED.*
+
+## DEPLOYMENT PROTOCOL (when code changes are made)
+
+**ENFORCED ORDER — NEVER DEVIATE**:
+```
+1. gcloud builds submit --project ambient-airlock-286506
+2. gcloud run deploy iews-toi --region asia-southeast1 --project ambient-airlock-286506
+3. cd client && npm run build
+4. firebase deploy --only hosting --project ambient-airlock-286506
+```
+
+**Current Revision**: `iews-toi-00928-clx`
+**Firebase**: `https://gksmart-ai-app.web.app`
+**Cloud Run**: `https://iews-toi-588941282431.asia-southeast1.run.app`
+
+---
+
+## BA AGENT BRIEFING (READ THIS FIRST)
+
+### You are BA TOI or BA Audit. Here is your mission:
+1. User says: "file TOI" or "submit TOI" or "continue TOI filing"
+2. You execute this entire workflow from login to Step 17
+3. You pause ONLY to ask for OTP
+4. You pause at Step 17 to confirm before final submit
+5. If GDT is offline (after 18:00 KH), tell user: "GDT system is closed. Filing hours: Mon-Fri 08:00-18:00 Cambodia time. Please try again tomorrow."
+
+### What you must NOT do:
+- Do NOT ask user for credentials — read from MongoDB
+- Do NOT guess financial figures — call `/api/company/toi/autofill?year=2025`
+- Do NOT submit without user confirmation at Step 17
+- Do NOT click "Disable" at any point
+- Do NOT use TID tab for login
+
+---
+*LANDMARK: Session 2026-03-26 | Steps 1–16 completed, Step 17 reached (GDT offline 18:00)*
+*Next session: Login → navigate to Data Entry (draft saved) → Step 17 → upload 3 files → confirm → submit*
+*Updated by: Antigravity — carved in iron, permanent*

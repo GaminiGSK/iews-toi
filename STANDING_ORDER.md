@@ -15,6 +15,15 @@ BACKUP_911_REVISION=iews-toi-00928-clx
 # LANDMARK TAG: v1.0-TOI-GL-VERIFIED-2026-03-26
 # GL->TB->FS->TOI chain verified. 134 fields, 21 pages.
 # Firebase: https://gksmart-ai-app.web.app
+#
+# GDT SESSION STATUS (2026-03-26):
+# - TOI Data Entry form navigated: Steps 1-16 COMPLETE
+# - Step 17 (Declaration & Upload): PENDING — GDT closed at 18:00 KH time
+# - Draft is SAVED on GDT server (Barcode: OTOI2026032427869)
+# - NEXT SESSION: Login -> Shortcut directly to Data Entry -> Jump to Step 17
+#   -> Upload 3 files (Balance Sheet, Income Statement, Other Docs)
+#   -> Confirm -> Submit
+# - GDT URL for 2025 Declaration List: https://toi.tax.gov.kh/gdttoiweb/6201c01a/64ed586d
 
 # -------------------------------------------------------
 # GDT e-TAX PORTAL CREDENTIALS (for BA Agentic Filing)
