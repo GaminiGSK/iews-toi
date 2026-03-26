@@ -26,6 +26,7 @@ const ToiAcar = ({ onBack, packageId, year }) => {
   });
   const [autoFilling, setAutoFilling] = useState(false);
   const [fillStatus, setFillStatus] = useState(null); // { ok, msg, sources }
+  const [saveStatus, setSaveStatus] = useState(null); // null | 'saving' | 'saved'
 
   // ── CURRENCY TOGGLE (USD ⇄ KHR) ───────────────────────────────────────────
   // GDT files in KHR. GL data is stored in USD. Toggle to cross-check GDT values.
@@ -505,6 +506,37 @@ const ToiAcar = ({ onBack, packageId, year }) => {
                 <><svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>Filling…</>
               ) : (
                 <><Sparkles size={13}/> Smart Fill All Pages</>
+              )}
+            </button>
+
+            {/* ── SAVE BUTTON ─────────────────────────────── */}
+            <button
+              onClick={() => {
+                if (!filledData) return;
+                setSaveStatus('saving');
+                try {
+                  localStorage.setItem(storageKey(selectedYear), JSON.stringify(filledData));
+                  setTimeout(() => { setSaveStatus('saved'); }, 300);
+                  setTimeout(() => { setSaveStatus(null); }, 2500);
+                } catch (e) {
+                  setSaveStatus(null);
+                  console.error('Save failed', e);
+                }
+              }}
+              disabled={!filledData || saveStatus === 'saving'}
+              title="Save current TOI data to local storage"
+              className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all active:scale-95 border shadow-md disabled:opacity-40 ${
+                saveStatus === 'saved'
+                  ? 'bg-blue-600 border-blue-400 text-white'
+                  : 'bg-slate-700 hover:bg-slate-600 border-slate-500 text-white hover:shadow-slate-900/30 hover:shadow-lg'
+              }`}
+            >
+              {saveStatus === 'saving' ? (
+                <><svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>Saving…</>
+              ) : saveStatus === 'saved' ? (
+                <><ShieldCheck size={13}/> Saved!</>
+              ) : (
+                <><ShieldCheck size={13}/> Save</>  
               )}
             </button>
 
