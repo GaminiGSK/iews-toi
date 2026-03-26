@@ -13,7 +13,16 @@ import LiveTaxWorkspace from "./LiveTaxWorkspace";
 
 const ToiAcar = ({ onBack, packageId, year }) => {
   const [activeWorkspacePage, setActiveWorkspacePage] = useState(1);
-  const storageKey = (yr) => `toiFilledData_${yr}`;
+
+  // ── COMPANY-SCOPED STORAGE KEY ──────────────────────────────────────────────
+  // CRITICAL: Must include companyCode so each company's TOI data is isolated.
+  // Without this, all logins on the same browser share the same localStorage key.
+  const _currentUser = (() => {
+    try { return JSON.parse(localStorage.getItem('user') || '{}'); } catch { return {}; }
+  })();
+  const _companyCode = _currentUser.companyCode || _currentUser.username || 'default';
+  const storageKey = (yr) => `toiFilledData_${_companyCode}_${yr}`;
+
   const [selectedYear, setSelectedYear] = useState(() => {
       const yearProp = year;
       if (yearProp) return yearProp;
@@ -61,25 +70,32 @@ const ToiAcar = ({ onBack, packageId, year }) => {
     }
   ]);
 
-  // ── One-time migration: move old shared 'toiFilledData' → year-specific key ─
+  // ── One-time migration: clear old shared keys that have no company prefix ──
+  // Old format: 'toiFilledData' and 'toiFilledData_2025' (shared across all users)
+  // New format: 'toiFilledData_GK_SMART_AI_2025' (company-scoped)
   React.useEffect(() => {
-    const oldKey = 'toiFilledData';
-    const old = localStorage.getItem(oldKey);
-    if (old) {
-      try {
-        const parsed = JSON.parse(old);
-        // The old data was for 2024 (the last autofill year)
-        const guessYear = parsed?.fromDate?.slice(4)?.join('') || '2024';
-        const migrateYear = guessYear.length === 4 ? guessYear : '2024';
-        const newKey = storageKey(migrateYear);
-        if (!localStorage.getItem(newKey)) {
-          localStorage.setItem(newKey, old);
-          console.log(`[TOI] Migrated legacy toiFilledData → ${newKey}`);
-        }
-      } catch { /* ignore */ }
-      localStorage.removeItem(oldKey); // cleanup old key
-    }
+    const yearsToClean = ['2023','2024','2025','2026'];
+    // Remove legacy non-scoped keys
+    ['toiFilledData', ...yearsToClean.map(y => `toiFilledData_${y}`)].forEach(oldKey => {
+      const old = localStorage.getItem(oldKey);
+      if (old) {
+        try {
+          const parsed = JSON.parse(old);
+          const guessYear = String(parsed?.fromDate || '').slice(4) || '2024';
+          const migrateYear = guessYear.length === 4 ? guessYear : '2024';
+          const newKey = storageKey(migrateYear);
+          // Only migrate if the new company-scoped key doesn't already have data
+          if (!localStorage.getItem(newKey)) {
+            localStorage.setItem(newKey, old);
+            console.log(`[TOI] Migrated ${oldKey} → ${newKey}`);
+          }
+        } catch { /* ignore */ }
+        localStorage.removeItem(oldKey);
+        console.log(`[TOI] Removed legacy shared key: ${oldKey}`);
+      }
+    });
   }, []); // run once on mount
+
 
   const [filledData, setFilledData] = useState(() => {
 
