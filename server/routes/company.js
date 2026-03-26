@@ -2959,15 +2959,25 @@ router.get('/toi/autofill', auth, async (req, res) => {
         const costOfSales = glDr('B6') + glCr('B6');
         const grossProfit = revenue - costOfSales;
 
-        // P&L Expenses — use ONLY accountant-assigned B-codes
-        const salaryExpGL   = glDr('B23') + glDr('B24') + glDr('B25');
-        const rentExpGL     = glDr('B26');
-        const depExpGL      = glDr('B27');
-        const interestExpGL = glDr('B28');
-        const bankChargesGL = glDr('B29');
-        const marketingGL   = glDr('B30');
-        const travelGL      = glDr('B31');
-        const otherExpGL    = glDr('B33') + glDr('B36') + glDr('B41') + glDr('B43') + glDr('B47');
+        // P&L Expenses — use ONLY accountant-assigned GL B-codes from actual transactions
+        // ⚠️ RULE: NEVER use salary module totals (TOS/IEWS) as P&L expense.
+        //          Salary in P&L = what was ACTUALLY EXPENSED in the GL (B23/B24/B25 accounts).
+        //          If no salary GL entry exists → B23 = 0. (IEWS salary module is not built yet)
+        //
+        // ⚠️ DIRECTION: Bank outflows = negative amount = stored as CREDIT in glMap.
+        //    Journal entry expenses (dep/adjustments) = DEBIT.
+        //    glExp() = max(DR, CR) picks the positive expense value from either direction.
+        const glExp = (tc) => Math.max(glDr(tc), glCr(tc));
+
+        const salaryExpGL   = glExp('B23') + glExp('B24') + glExp('B25'); // GL salary ONLY
+        const rentExpGL     = glExp('B26');
+        const depExpGL      = glExp('B27') + glExp('B36') + glExp('E30'); // E30 = DEPRECIATION AND AMORTISATION
+        const interestExpGL = glExp('B28');
+        const bankChargesGL = glExp('B29') + glExp('B41');                 // B41 = Office Supply, Bank Charge
+        const marketingGL   = glExp('B30');
+        const travelGL      = glExp('B31');
+        const consultingGL  = glExp('B33');                                // B33 = Business Register, Consulting
+        const otherExpGL    = glExp('B34') + glExp('B35') + glExp('B38') + glExp('B39') + glExp('B40') + glExp('B43') + glExp('B47');
 
         // Balance Sheet — A-codes as assigned by accountant
         const cashGL        = Math.max(glDr('A21') - glCr('A21'), 0);
@@ -3133,8 +3143,8 @@ router.get('/toi/autofill', auth, async (req, res) => {
             })(),
             accountingRecord:  ext('accountingRecord') || 'Using Software',
             softwareName:      ext('softwareName') || 'GK SMART AI',
-            taxComplianceStatus: ext('taxComplianceStatus') || 'Gold',
-            statutoryAudit:    ext('statutoryAudit') || 'Required',
+            taxComplianceStatus: ext('taxComplianceStatus') || 'None',
+            statutoryAudit:    ext('statutoryAudit') || 'Not Required',
             incomeTaxRate:     ext('incomeTaxRate') || '20%',
             branchCount:       ext('branchCount') || ext('branchOut') || '0',
             filingDate:        `3103${yearStr}`,
@@ -3323,39 +3333,63 @@ router.get('/toi/autofill', auth, async (req, res) => {
             fs_revenue:                               fmt(revenue),
             fs_cost_of_sales:                         fmt(costOfSales),
             fs_gross_profit:                          fmt(grossProfit),
-            fs_salary_expense:                        fmt(salaryExpGL || totalSalary),
+            fs_salary_expense:                        fmt(salaryExpGL),      // GL ONLY — 0 if no salary in GL
             fs_rental_expense:                        fmt(rentExpGL),
-            fs_depreciation_expense:                  fmt(depExpGL || totalDep),
+            fs_depreciation_expense:                  fmt(depExpGL),
             fs_interest_expense:                      fmt(interestExpGL),
             fs_bank_charges:                          fmt(bankChargesGL),
             fs_marketing:                             fmt(marketingGL),
             fs_travel:                                fmt(travelGL),
+            fs_consulting:                            fmt(consultingGL),
             fs_other_expense:                         fmt(otherExpGL),
 
             // ── PAGES 5-6: Income Statement B-rows (B0-B48) ──────────────────
+            // FIX 1: B23 = GL salary expense ONLY. Never falls back to TOS/IEWS.
+            // FIX 2: B33 = Business Register / Consulting (GL code 61241 → toiCode B33) — was missing.
+            // FIX 3: B46 = Revenue minus ALL expenses (negative = loss, stored signed).
             ...(() => {
                 const b = {};
-                b['B3_n']  = fmt(revenue);
+
+                // Revenue
+                b['B3_n']  = fmt(revenue);            // Total service revenue
                 b['B0_n']  = fmt(revenue);
-                b['B6_n']  = fmt(costOfSales);
-                b['B7_n']  = fmt(Math.max(0, grossProfit));
-                b['B23_n'] = fmt(salaryExpGL || totalSalary);
+                b['B6_n']  = fmt(costOfSales);        // COGS (0 for service cos)
+                b['B7_n']  = fmt(Math.max(0, grossProfit)); // Gross profit
+
+                // Expenses — each mapped from their specific GL toiCode
+                b['B23_n'] = fmt(salaryExpGL);        // *** Salary: GL ONLY, 0 if not booked ***
                 b['B25_n'] = fmt(travelGL);
+                b['B26_n'] = fmt(rentExpGL);
                 b['B27_n'] = fmt(rentExpGL);
+                b['B28_n'] = fmt(interestExpGL);
+                b['B29_n'] = fmt(bankChargesGL);
                 b['B30_n'] = fmt(marketingGL);
-                b['B36_n'] = fmt(depExpGL || totalDep);
-                b['B41_n'] = fmt(otherExpGL + bankChargesGL);
-                const bOpEx = costOfSales + (salaryExpGL||totalSalary) + travelGL + rentExpGL + marketingGL + (depExpGL||totalDep) + bankChargesGL + otherExpGL;
-                b['B22_n'] = fmt(bOpEx);
-                const bProfOps = revenue - bOpEx + costOfSales;
-                b['B42_n'] = fmt(grossProfit - (salaryExpGL||totalSalary) - travelGL - rentExpGL - marketingGL - (depExpGL||totalDep) - bankChargesGL - otherExpGL);
+                b['B33_n'] = fmt(consultingGL);       // *** Business Register / Consulting fees ***
+                b['B36_n'] = fmt(depExpGL);           // *** Depreciation from GL (B27+B36+E30) ***
+                b['B41_n'] = fmt(otherExpGL);         // Other expenses
+
+                // Total operating expenses
+                const totalOpEx = salaryExpGL + travelGL + rentExpGL + interestExpGL
+                    + bankChargesGL + marketingGL + consultingGL + depExpGL + otherExpGL;
+                b['B22_n'] = fmt(totalOpEx);
+
+                // Net P&L = Revenue - ALL expenses (NO stripping of sign)
+                const netPbt = revenue - totalOpEx;
+                b['B42_n'] = fmt(netPbt);
                 b['B43_n'] = fmt(interestExpGL);
-                const bPbt  = parseFloat(b['B42_n'].replace(/,/g,'') || '0') - interestExpGL;
-                b['B46_n'] = fmt(bPbt);
-                b['B47_n'] = fmt(Math.max(0, bPbt * 0.20));
-                b['B48_n'] = fmt(bPbt - Math.max(0, bPbt * 0.20));
+
+                // *** B46 = Net Profit/(Loss) Before Tax — negative value = LOSS ***
+                // fmt() uses Math.abs() so store raw for E1 context
+                b['B46_n'] = fmt(netPbt);
+                b['_pbt_signed'] = netPbt; // internal signed reference for E-rows
+
+                // Income tax & retained
+                b['B47_n'] = fmt(Math.max(0, netPbt * 0.20));
+                b['B48_n'] = fmt(netPbt > 0 ? netPbt * 0.80 : netPbt);
+
                 return b;
             })(),
+
 
             // ── PAGE 7: COGS C-rows (C1-C20) ─────────────────────────────────
             ...(() => {
@@ -3378,9 +3412,9 @@ router.get('/toi/autofill', auth, async (req, res) => {
                 c['C5_n']  = fmt(cClose);
                 const cMat = Math.max(0, cOpen + cPurch - cClose);
                 c['C6_n']  = fmt(cMat || costOfSales);
-                c['C8_n']  = fmt(salaryExpGL || totalSalary);
-                c['C12_n'] = fmt(depExpGL || totalDep);
-                const cOther = (salaryExpGL||totalSalary) + (depExpGL||totalDep);
+                c['C8_n']  = fmt(salaryExpGL);         // Salary from GL ONLY — 0 if no GL salary booked
+                c['C12_n'] = fmt(depExpGL);             // Depreciation from GL
+                const cOther = salaryExpGL + depExpGL;
                 c['C7_n']  = fmt(cOther);
                 c['C17_n'] = fmt((cMat || costOfSales) + cOther);
                 c['C20_n'] = fmt(costOfSales || (cMat + cOther));
@@ -3405,26 +3439,26 @@ router.get('/toi/autofill', auth, async (req, res) => {
 
 
             // ── PAGES 9-10: Income Tax Calculation (E-rows) ──────────────
-            // E1 = B46 (Profit before tax per Financial Statements)
+            // E1 = B46 (Profit/(Loss) before tax — signed, negative = loss)
+            // FIX: use netPbt = revenue minus ALL GL expenses (no salary fallback)
             ...(() => {
-                // Use the same B-row values already computed above
-                const bOpEx  = costOfSales + (salaryExpGL||totalSalary) + travelGL + rentExpGL + marketingGL + (depExpGL||totalDep) + bankChargesGL + otherExpGL;
-                const b42    = Math.max(0, grossProfit - (salaryExpGL||totalSalary) - travelGL - rentExpGL - marketingGL - (depExpGL||totalDep) - bankChargesGL - otherExpGL);
-                const b46    = b42 - interestExpGL;  // B42 - interest expense = PBT
-                const dep    = depExpGL || totalDep;
+                const totalOpEx = salaryExpGL + travelGL + rentExpGL + interestExpGL
+                    + bankChargesGL + marketingGL + consultingGL + depExpGL + otherExpGL;
+                const netPbt    = revenue - totalOpEx;  // Signed: negative = loss
+                const dep       = depExpGL;
 
-                // Standard TOI tax adjustment (same depreciation method → cancels)
-                const e1    = b46;                   // PBT = Accounting profit/loss
-                const e18   = dep;                   // Add-back: accounting depreciation (E2 only)
-                const e31   = dep;                   // Deduct: GDT-approved depreciation (E26 only)
-                const e36   = e1 + e18 - e31;        // Profit after adjustments (dep cancels)
-                const e40   = e36;                   // No interest cap adjustment
-                const e42   = Math.max(0, e40);      // Taxable income (losses = 0)
+                // Standard TOI tax adjustment: dep add-back (E2) cancels GDT dep deduction (E26)
+                const e1    = netPbt;                // Accounting P/(L) from FS
+                const e18   = dep;                   // Total add-backs (dep only)
+                const e31   = dep;                   // Total deductions (GDT dep)
+                const e36   = e1 + e18 - e31;        // = netPbt (dep nets to 0)
+                const e40   = e36;                   // After G-row interest cap (none)
+                const e42   = Math.max(0, e40);      // Taxable income: floor 0 for loss cos
                 const e43   = e42 * 0.20;            // CIT at 20%
                 const e45   = e43;
-                const e47   = e43;                   // No foreign tax credit
+                const e47   = e43;
                 const e50   = e47;                   // Income tax liability
-                const e53   = e50;                   // Payable (proper books)
+                const e53   = e50;                   // Payable
                 const minTax = Math.max(0, revenue * 0.01);  // 1% minimum tax
                 const e51   = minTax;
                 const e52   = Math.max(e50 > 0 ? e50 : 0, minTax);
