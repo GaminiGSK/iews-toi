@@ -3341,17 +3341,26 @@ router.get('/toi/autofill', auth, async (req, res) => {
                     const pct = parseFloat(party.ownershipPct) || 0;
                     list.push({ name: party.name.trim(), address: addrKh || '', position: party.relationship || 'Shareholder', pct: pct || 100 });
                 }
+                const rawNames = p.shareholder || p.director || '';
+                if (rawNames) {
+                    const names = rawNames.split(',').map(n => n.trim()).filter(Boolean);
+                    if (names.length > 0) {
+                        for (const personName of names) {
+                            const key = personName.toLowerCase();
+                            if (seen.has(key)) continue;
+                            seen.add(key);
+                            list.push({ name: personName, address: addrKh || '', position: 'Shareholder / Director', pct: 100 / names.length });
+                        }
+                    }
+                }
+
                 for (const emp of shEmps) {
                     if (!emp.position) continue;
-                    const personName = p.director || p.shareholder || emp.position;
+                    const personName = emp.position;
                     const key = personName.trim().toLowerCase();
                     if (seen.has(key)) continue;
                     seen.add(key);
                     list.push({ name: personName.trim(), address: addrKh || '', position: emp.position.trim(), pct: 100 / Math.max(shEmps.length, 1) });
-                }
-                if (list.length === 0) {
-                    const name = p.shareholder || p.director || '';
-                    if (name) list.push({ name, address: addrKh || '', position: 'Managing Director', pct: 100 });
                 }
                 // Normalise pct to 100
                 const totalPct = list.reduce((s, x) => s + x.pct, 0);

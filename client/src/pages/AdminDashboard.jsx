@@ -7,46 +7,8 @@ import TaxFormWorkbench from './TaxFormWorkbench';
 import LiveTaxWorkspace from './LiveTaxWorkspace';
 
 export default function AdminDashboard() {
-    // --- First-Login Password Change ---
-    const [showPwChange, setShowPwChange] = useState(false);
-    const [pwChangeCode, setPwChangeCode] = useState('');
-    const [pwChangeCode2, setPwChangeCode2] = useState('');
-    const [pwChangeError, setPwChangeError] = useState('');
-    const [pwChanging, setPwChanging] = useState(false);
-
-    // Check if this is a first-login Admin
-    useEffect(() => {
-        try {
-            const userStr = localStorage.getItem('user');
-            if (userStr) {
-                const u = JSON.parse(userStr);
-                if (u.role === 'admin' && u.isFirstLogin !== false) {
-                    // Verify from server
-                    const token = localStorage.getItem('token');
-                    axios.get('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
-                        .then(res => { if (res.data?.isFirstLogin) setShowPwChange(true); })
-                        .catch(() => {}); // silently ignore if endpoint doesn't exist yet
-                }
-            }
-        } catch (e) {}
-    }, []);
-
-    const handlePwChange = async () => {
-        setPwChangeError('');
-        if (!pwChangeCode || pwChangeCode.length !== 6) { setPwChangeError('Enter a 6-digit code'); return; }
-        if (pwChangeCode !== pwChangeCode2) { setPwChangeError('Codes do not match'); return; }
-        setPwChanging(true);
-        try {
-            const token = localStorage.getItem('token');
-            await axios.post('/api/auth/change-password', { newCode: pwChangeCode }, { headers: { Authorization: `Bearer ${token}` } });
-            setShowPwChange(false);
-            // Update local user cache
-            const u = JSON.parse(localStorage.getItem('user') || '{}');
-            u.isFirstLogin = false;
-            localStorage.setItem('user', JSON.stringify(u));
-        } catch (e) { setPwChangeError(e.response?.data?.message || 'Failed to update code'); }
-        finally { setPwChanging(false); }
-    };
+    // Admin identity from localStorage
+    const adminUser = (() => { try { return JSON.parse(localStorage.getItem('user') || '{}'); } catch(e) { return {}; } })();
 
     // --- State ---
     const [users, setUsers] = useState([]);
@@ -479,10 +441,10 @@ export default function AdminDashboard() {
                                     ))}
 
                                     {users.length === 0 && (
-                                        <div className="col-span-full py-40 text-center opacity-80 flex flex-col items-center">
+                                        <div className="col-span-full py-40 text-center opacity-30 flex flex-col items-center">
                                             <User size={64} className="mb-4" />
-                                            <h3 className="text-xl font-black uppercase tracking-[0.4em]">Matrix Empty</h3>
-                                            <p className="text-[10px] mt-2 font-bold uppercase tracking-widest text-red-400">DEBUG DB: {JSON.stringify(users)}</p>
+                                            <h3 className="text-xl font-black uppercase tracking-[0.4em]">No Units Deployed</h3>
+                                            <p className="text-[10px] mt-2 font-bold uppercase tracking-widest">Click "Deploy New Profile" to create your first unit</p>
                                         </div>
                                     )}
                                 </div>

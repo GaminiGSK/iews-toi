@@ -90,7 +90,8 @@ exports.extractDocumentData = async (filePath, docType) => {
                 - registrationNumber
                 - businessActivity (String summary)
                 - capitalAmount (Number or String)
-                - directorName (String)
+                - directorName (String: Comma-separated list if multiple directors)
+                - shareholder (String: Comma-separated list if multiple shareholders)
                 `;
                 break;
             case 'tax_patent':
@@ -604,7 +605,7 @@ ${s.transactions.map(t => `  ${t.date} | IN:$${t.moneyIn||0} OUT:$${t.moneyOut||
                Schema: { "tool_use": "generate_chart", "chart_data": { "type": "bar" | "pie" | "line", "title": "Chart Title", "data": [ { "name": "Category A", "value": 100 }, { "name": "Category B", "value": 200 } ] }, "reply_text": "Here is the visual chart representing the data you requested." }
 
             10. **save_br_data**: USE THIS IMMEDIATELY when the user pastes Business Registration data (like MOC certificates or Tax Posters).
-                Schema: { "tool_use": "workspace_action", "action": "save_br_data", "params": { "companyNameEn": "...", "companyNameKh": "...", "regId": "...", "taxId": "...", "incDate": "...", "addr": "...", "type": "...", "directorName": "...", "businessActivities": "..." }, "reply_text": "I have successfully extracted your business registration info and saved it to the profile." }
+                Schema: { "tool_use": "workspace_action", "action": "save_br_data", "params": { "companyNameEn": "...", "companyNameKh": "...", "regId": "...", "taxId": "...", "incDate": "...", "addr": "...", "type": "...", "directorName": "...", "shareholder": "...", "businessActivities": "..." }, "reply_text": "I have successfully extracted your business registration info and saved it to the profile." }
 
              11. **fill_toi_workspace**: Use this ONLY for the Annual "TOI" Tax Return Form (e.g., "fill in page one"). DO NOT use this for the Statement of Financial Position or Trial Balance. If the user asks to update data in any subject/field on the TOI form, dynamically extract those details from context and output the JSON.
                Schema: { "tool_use": "fill_toi_workspace", "reply_text": "A friendly conversational response acknowledging ONLY the specific fields you updated.", "params": { "tin": "extract regId or taxId, ensuring hyphens if any", "name": "extract nameKh FIRST, then nameEn if Kh is missing", "branchOut": "001", "registrationDate": "extract incDate, e.g. 15/07/2021", "directorName": "extract nameKh FIRST, then nameEn if Kh is missing", "businessActivities": "extract Khmer type FIRST, then English if missing", "agentName": "Tax Agent Name", "agentLicense": "Tax Agent License Number", "address1": "extract pure Khmer text of the address. Strip ALL english text.", "address2": "extract exactly the same pure Khmer address as address1", "address3": "N/A", "taxMonths": "12", "fromDate": "01012026", "untilDate": "31122026", "accountingRecord": "Using Software / Not Using Software", "softwareName": "Software if used", "taxComplianceStatus": "Gold / Silver / Bronze", "statutoryAudit": "Required / Not Required", "legalForm": "Private Limited Company", "yearFirstRevenue": "Year of first revenue", "yearFirstProfit": "Year of first profit", "priorityPeriodYear": "Priority period year", "incomeTaxRate": "30% / 20% / 5% / 0% / 0-20% / Progressive Rate", "incomeTaxDue": "Amount", "taxCreditCarriedForward": "Amount", "taxOfficeNo": "No", "taxOfficialId": "Tax ID array mapped", "filedIn": "Location", "filingDate": "DDMMYYYY", "signatoryName": "Name" } }

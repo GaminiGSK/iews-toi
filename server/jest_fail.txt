@@ -1,0 +1,25 @@
+\nPASS tests/rotator.test.js
+PASS tests/management.route.test.js
+FAIL tests/command.route.test.js
+  ● command handler › allows auto-exec for authorized client via HMAC fallback
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: undefined
+
+    [0m [90m 68 |[39m         cp[33m.[39mexecFile [33m=[39m jest[33m.[39mfn((s[33m,[39ma[33m,[39mo[33m,[39mcb) [33m=>[39m { cb([36mnull[39m[33m,[39m [32m'stdout'[39m[33m,[39m [32m''[39m)[33m;[39m })[33m;[39m
+     [90m 69 |[39m         [36mawait[39m commandHandler(req[33m,[39m res)[33m;[39m
+    [31m[1m>[22m[39m[90m 70 |[39m         expect(res[33m.[39mstatusCode)[33m.[39mtoBe([35m200[39m)[33m;[39m
+     [90m    |[39m                                [31m[1m^[22m[39m
+     [90m 71 |[39m     })[33m;[39m
+     [90m 72 |[39m
+     [90m 73 |[39m     test([32m'circuit breaker prevents too many restarts'[39m[33m,[39m [36masync[39m () [33m=>[39m {[0m
+
+      at Object.toBe (tests/command.route.test.js:70:32)
+
+Test Suites: 1 failed, 2 passed, 3 total
+Tests:       1 failed, 8 passed, 9 total
+Snapshots:   0 total
+Time:        2.745 s
+Ran all test suites.

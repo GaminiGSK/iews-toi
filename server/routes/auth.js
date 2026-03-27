@@ -167,18 +167,14 @@ router.post('/create-user', auth, async (req, res) => {
     }
 });
 
-// Get All Units (Admin sees only its own; Superadmin sees all)
+// Get All Units (Admin sees all units; Superadmin sees all)
 router.get('/users', auth, async (req, res) => {
     if (req.user.role !== 'admin' && req.user.role !== 'superadmin') return res.status(403).json({ message: 'Forbidden' });
     try {
-        let query = {
+        const query = {
             role: { $in: ['unit', 'user'] },
             username: { $nin: ['Admin', 'ADMIN'] }
         };
-        // Admin sees only units it created
-        if (req.user.role === 'admin') {
-            query.createdBy = req.user.id;
-        }
         const users = await User.find(query).select('username companyName loginCode createdAt role createdBy');
         res.json(users);
     } catch (err) {

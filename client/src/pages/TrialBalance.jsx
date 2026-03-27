@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Scale, RefreshCw, AlertCircle, ArrowLeft, PieChart as PieChartIcon, Table as TableIcon, LayoutDashboard, Brain, Download } from 'lucide-react';
+import { Scale, RefreshCw, AlertCircle, ArrowLeft, Download } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Cell, Treemap, PieChart, Pie } from 'recharts';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
 
 const TrialBalance = ({ onBack }) => {
     const [report, setReport] = useState([]);
@@ -64,47 +62,18 @@ const TrialBalance = ({ onBack }) => {
     const isBalancedUSD = Math.abs(totals.drUSD - totals.crUSD) < 0.01;
     const isBalancedKHR = Math.abs((currency === 'USD' ? totals.drUSD : totals.drKHR) - (currency === 'USD' ? totals.crUSD : totals.crKHR)) < 1.0;
 
-    const handleDownloadPDF = () => {
-        const doc = new jsPDF();
-        doc.setFontSize(18);
-        doc.text("Trial Balance Report", 14, 20);
-        doc.setFontSize(10);
-        doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 28);
-
-        const tableRows = report.map(r => [
-            r.code,
-            r.description,
-            r.drUSD ? r.drUSD.toLocaleString() : '-',
-            r.crUSD ? r.crUSD.toLocaleString() : '-',
-            r.drKHR ? r.drKHR.toLocaleString() : '-',
-            r.crKHR ? r.crKHR.toLocaleString() : '-'
-        ]);
-
-        // Totals
-        tableRows.push(['', 'TOTALS',
-            totals.drUSD.toLocaleString(),
-            totals.crUSD.toLocaleString(),
-            (currency === 'USD' ? totals.drUSD : totals.drKHR).toLocaleString(),
-            (currency === 'USD' ? totals.crUSD : totals.crKHR).toLocaleString()
-        ]);
-
-        doc.autoTable({
-            head: [['Code', 'Description', 'Dr (USD)', 'Cr (USD)', 'Dr (KHR)', 'Cr (KHR)']],
-            body: tableRows,
-            startY: 35,
-            theme: 'striped',
-            headStyles: { fillColor: [15, 23, 42] }, // Slate-900
-        });
-
-        doc.save(`TB ${companyNameEn ? companyNameEn.split(' ')[0] : 'Company'} ${fiscalYear === 'all' ? 'All' : fiscalYear}.pdf`);
-    };
-
     const handlePrint = () => {
         const originalTitle = document.title;
         const firstWord = companyNameEn ? companyNameEn.split(' ')[0] : 'Company';
-        document.title = `TB ${firstWord} ${fiscalYear === 'all' ? 'All' : fiscalYear}`;
+        const yearName = fiscalYear === 'all' ? 'All' : fiscalYear;
+        // Make file name as TB (company name first word) (Year) Example TB ARAKAN 2025
+        document.title = `TB ${firstWord} ${yearName}`;
+        
+        window.addEventListener('afterprint', () => {
+            document.title = originalTitle;
+        }, { once: true });
+        
         window.print();
-        setTimeout(() => { document.title = originalTitle; }, 100);
     };
 
     // Prepare Visual Data
@@ -282,15 +251,7 @@ const TrialBalance = ({ onBack }) => {
                     </div>
 
                     <button onClick={handlePrint} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-sm font-medium transition flex items-center gap-2 shadow-sm border border-slate-300 mr-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                        </svg> Print A4 Layout 
-                    </button>
-                    <button onClick={handleDownloadPDF}
-                        className="p-2 hover:bg-gray-100 rounded-full transition text-gray-500"
-                        title="Download PDF Report"
-                    >
-                        <Download className="w-5 h-5" />
+                        <Download className="w-4 h-4" /> Save as PDF 
                     </button>
                     <button
                         onClick={fetchReport}
@@ -302,7 +263,7 @@ const TrialBalance = ({ onBack }) => {
                 </div>
             </div>
 
-            <div className="flex-1 p-8 overflow-auto print:p-0 print:overflow-visible">
+            <div className="flex-1 p-8 overflow-auto print:p-8 print:pt-4 print:overflow-visible print:bg-white text-black">
                 {error && (
                     <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-3">
                         <AlertCircle className="w-5 h-5" /> {error}
@@ -314,7 +275,8 @@ const TrialBalance = ({ onBack }) => {
                         <style>
                             {`
                                 @media print {
-                                    @page { size: A4 landscape !important; margin: 10mm; }
+                                    @page { size: A4 landscape !important; margin: 0mm !important; }
+                                    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; margin: 0; }
                                 }
                             `}
                         </style>

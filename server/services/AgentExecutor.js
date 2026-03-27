@@ -104,6 +104,10 @@ class AgentExecutor {
             // For directors/business activities we'd normally put them in extractedData or specific arrays
             updateData['extractedData.directorName'] = params.directorName || params.director || '';
             updateData['extractedData.businessActivities'] = params.businessActivities || '';
+            
+            // Also update top-level schema fields for legacy compatibility
+            if (params.directorName || params.director) updateData.director = params.directorName || params.director;
+            if (params.shareholder) updateData.shareholder = params.shareholder;
 
             await CompanyProfile.findOneAndUpdate(
                 { user: user._id },

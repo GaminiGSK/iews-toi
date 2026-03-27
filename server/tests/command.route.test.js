@@ -40,6 +40,7 @@ describe('command handler', () => {
     test('rejects auto-exec when not authorized (mTLS required set)', async () => {
         process.env.MTLS_REQUIRED = 'true';
         process.env.MTLS_CLIENT_CN_ALLOWLIST = 'agent';
+        jest.resetModules();
         // re-require module so config is picked up
         const mgmt = require('../routes/management');
         commandHandler = mgmt.commandHandler;
@@ -52,6 +53,10 @@ describe('command handler', () => {
     test('allows auto-exec for authorized client via HMAC fallback', async () => {
         process.env.AUTO_ALLOW_HMAC = 'true';
         process.env.AGENT_SHARED_SECRET = 'testsecret';
+        jest.resetModules();
+        jest.mock('child_process', () => ({
+            execFile: jest.fn((s, a, o, cb) => cb(null, 'stdout', ''))
+        }));
         // re-require module so config is picked up
         const mgmt = require('../routes/management');
         commandHandler = mgmt.commandHandler;
@@ -61,9 +66,6 @@ describe('command handler', () => {
         const h = crypto.createHmac('sha256', process.env.AGENT_SHARED_SECRET).update(raw).digest('hex');
         const req = makeReq({ body, headers: { 'x-signature': 'sha256=' + h } });
         const res = makeRes();
-        // mock execFile to complete immediately
-        const cp = require('child_process');
-        cp.execFile = jest.fn((s,a,o,cb) => { cb(null, 'stdout', ''); });
         await commandHandler(req, res);
         expect(res.statusCode).toBe(200);
     });
@@ -73,6 +75,7 @@ describe('command handler', () => {
         process.env.MTLS_CLIENT_CN_ALLOWLIST = 'agent-client';
         const socket = { authorized: true, getPeerCertificate: () => ({ subject: { CN: 'agent-client' } }) };
         // trigger AUTO_CIRCUIT_MAX times
+        jest.resetModules();
         // re-require module so config is picked up
         const mgmt = require('../routes/management');
         commandHandler = mgmt.commandHandler;

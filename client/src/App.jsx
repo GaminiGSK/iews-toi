@@ -31,8 +31,9 @@ axios.interceptors.request.use(config => {
 
 const AppLayout = ({ children }) => {
   const location = useLocation();
-  // Don't show AI on login page
-  const showAI = location.pathname !== '/login';
+  // Only show AI assistant for unit users on working pages (not admin/superadmin management pages)
+  const isAdminRoute = location.pathname === '/admin' || location.pathname === '/superadmin' || location.pathname === '/login';
+  const showAI = !isAdminRoute;
 
   return (
     <>
