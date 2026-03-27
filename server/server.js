@@ -291,7 +291,16 @@ const startServer = async () => {
             const adminUser = await User.findOne({ username: { $regex: /^admin$/i } });
             if (adminUser && adminUser.role === 'admin') {
                 await User.updateOne({ _id: adminUser._id }, { $set: { role: 'superadmin' } });
-                console.log('[RBAC Migration] Admin → superadmin');
+                console.log('[RBAC Migration] Admin -> superadmin');
+            }
+
+            // FIX: Ensure user with loginCode 111111 has role 'admin'
+            const admin1User = await User.findOne({ loginCode: '111111' });
+            if (admin1User && !['admin', 'superadmin'].includes(admin1User.role)) {
+                await User.updateOne({ _id: admin1User._id }, { $set: { role: 'admin' } });
+                console.log(`[RBAC Migration] ${admin1User.username} (111111) -> role set to 'admin'`);
+            } else if (admin1User) {
+                console.log(`[RBAC Migration] ${admin1User.username} already has role '${admin1User.role}' OK`);
             }
             // Assign createdBy for GKSMART, RSW, TEXLINK if not already set
             if (adminUser) {

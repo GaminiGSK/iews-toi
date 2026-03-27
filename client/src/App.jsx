@@ -8,9 +8,45 @@ import PrivateRoute from './components/PrivateRoute';
 import AIAssistant from './components/AIAssistant';
 import LiveTaxWorkspace from './pages/LiveTaxWorkspace';
 import TaxFormWorkbench from './pages/TaxFormWorkbench';
+import { Component } from 'react';
 
 import axios from 'axios';
 import SiteGate from './components/SiteGate';
+
+// Simple Error Boundary for admin routes
+class AdminErrorBoundary extends Component {
+  constructor(props) { super(props); this.state = { hasError: false, error: null }; }
+  static getDerivedStateFromError(error) { return { hasError: true, error }; }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: 40, background: '#0f172a', minHeight: '100vh', color: '#f87171', fontFamily: 'monospace' }}>
+          <h2 style={{ fontSize: 24, marginBottom: 16 }}>⚠ Dashboard Error</h2>
+          <pre style={{ whiteSpace: 'pre-wrap', fontSize: 12, color: '#94a3b8' }}>{this.state.error?.message}</pre>
+          <button onClick={() => { localStorage.clear(); window.location.href = '/login'; }}
+            style={{ marginTop: 24, padding: '10px 24px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}>
+            Back to Login
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+// Admin Auth Guard
+const AdminGuard = ({ children, requiredRole }) => {
+  const token = localStorage.getItem('token');
+  if (!token) return <Navigate to="/login" replace />;
+  try {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const allowed = requiredRole === 'superadmin'
+      ? user.role === 'superadmin'
+      : ['admin', 'superadmin'].includes(user.role);
+    if (!allowed) return <Navigate to="/dashboard" replace />;
+  } catch (e) { return <Navigate to="/login" replace />; }
+  return children;
+};
 
 // GLOBAL AXIOS INTERCEPTOR FOR ADMIN / SUPERADMIN SPOOFING
 axios.interceptors.request.use(config => {
@@ -51,8 +87,20 @@ function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
 
-            <Route path="/superadmin" element={<SuperadminDashboard />} />
-            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/superadmin" element={
+              <AdminGuard requiredRole="superadmin">
+                <AdminErrorBoundary>
+                  <SuperadminDashboard />
+                </AdminErrorBoundary>
+              </AdminGuard>
+            } />
+            <Route path="/admin" element={
+              <AdminGuard requiredRole="admin">
+                <AdminErrorBoundary>
+                  <AdminDashboard />
+                </AdminErrorBoundary>
+              </AdminGuard>
+            } />
             <Route path="/dashboard" element={<CompanyProfile />} />
             <Route path="/workbench" element={<TaxFormWorkbench />} />
 
