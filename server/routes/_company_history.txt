@@ -1,0 +1,547 @@
+﻿commit e5e4764554f51293ce46e57ffcf5a651b6903981
+Author: Gamini GGMT GaminiGSK <gamini.vat80@gmail.com>
+Date:   Fri Mar 27 12:37:20 2026 +0700
+
+    fix(gdt): stone-carved rule enforced - relay page opens GDT visibly, auto-copies TID, guides user; rules written to knowledge base
+
+diff --git a/server/routes/company.js b/server/routes/company.js
+index 118a763..2dad33b 100644
+--- a/server/routes/company.js
++++ b/server/routes/company.js
+@@ -1507,6 +1507,91 @@ router.get('/gdt-credentials', auth, async (req, res) => {
+ });
+ 
+ 
++// 鉀帮笍 STONE-CARVED RULE: GDT must open VISIBLY, auto-fill on screen, in front of human.
++// GET /gdt-relay 鈥?opens in user's new browser tab, shows relay page that auto-fills GDT
++router.get('/gdt-relay', auth, async (req, res) => {
++    try {
++        const profile = await CompanyProfile.findOne({ user: req.user.id }).select('gdtUsername gdtPassword');
++        if (!profile?.gdtUsername) {
++            return res.status(400).send('<h2>GDT credentials not saved. Go back and save them first.</h2>');
++        }
++        const username = profile.gdtUsername;
++        const password = profile.gdtPassword;
++
++        const relayHtml = `<!DOCTYPE html>
++<html lang="en">
++<head>
++  <meta charset="UTF-8">
++  <title>GDT Auto-Login Agent</title>
++  <style>
++    * { margin:0; padding:0; box-sizing:border-box; }
++    body { font-family:'Segoe UI',sans-serif; background:#0a0f1e; color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; gap:20px; }
++    .card { background:#111827; border:1px solid rgba(255,255,255,0.1); border-radius:20px; padding:36px 40px; max-width:520px; width:90%; }
++    h1 { font-size:20px; font-weight:900; color:#10b981; margin-bottom:6px; }
++    .sub { color:#64748b; font-size:12px; margin-bottom:24px; }
++    .step { display:flex; align-items:flex-start; gap:12px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
++    .num { width:26px; height:26px; border-radius:50%; background:#10b981; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:900; flex-shrink:0; margin-top:2px; }
++    .num.grey { background:#1f2937; color:#4b5563; }
++    .step-t { font-size:13px; }
++    .step-s { font-size:11px; color:#64748b; margin-top:2px; }
++    .status { text-align:center; font-size:13px; color:#10b981; margin-top:16px; min-height:20px; }
++    .btn { display:block; width:100%; padding:13px; border-radius:12px; background:#10b981; color:#fff; font-weight:900; font-size:14px; border:none; cursor:pointer; margin-top:16px; }
++    .btn:disabled { background:#1f2937; color:#4b5563; cursor:not-allowed; }
++    .sp { width:14px; height:14px; border:2px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:spin 0.8s linear infinite; display:inline-block; margin-right:6px; vertical-align:middle; }
++    @keyframes spin { to { transform:rotate(360deg); } }
++  </style>
++</head>
++<body>
++  <div class="card">
++    <h1>馃 GDT Auto-Login Agent</h1>
++    <p class="sub">Watch the GDT window 鈥?agent fills credentials on screen in front of you.</p>
++    <div class="step"><div class="num" id="n1">鉁?/div><div><div class="step-t">GDT Portal Opened</div><div class="step-s">owp.tax.gov.kh 鈥?General Department of Taxation</div></div></div>
++    <div class="step"><div class="num grey" id="n2">2</div><div><div class="step-t">Selecting TID tab &amp; filling credentials</div><div class="step-s">TID: ${username.substring(0,6)}... (watch GDT window)</div></div></div>
++    <div class="step"><div class="num grey" id="n3">3</div><div><div class="step-t">Clicking Send Code</div><div class="step-s">GDT will SMS/email OTP to company owner</div></div></div>
++    <div class="step" style="border:none"><div class="num grey" id="n4">4</div><div><div class="step-t">Enter OTP in GDT window</div><div class="step-s">Come back to GK SMART after login</div></div></div>
++    <div class="status" id="msg">鈴?Opening GDT portal...</div>
++    <button class="btn" id="btn" onclick="refocus()">馃攧 Refocus GDT Window</button>
++  </div>
++  <script>
++    const TID=${JSON.stringify(username)}, PASS=${JSON.stringify(password)};
++    let gdt;
++    function done(n){ const el=document.getElementById('n'+n); if(el){el.textContent='鉁?; el.className='num';} }
++    function msg(t){ document.getElementById('msg').textContent=t; }
++    function refocus(){ if(gdt && !gdt.closed) gdt.focus(); else launch(); }
++
++    function launch(){
++      gdt = window.open('https://owp.tax.gov.kh/gdtowpcoreweb/login','gdt_portal','width=1280,height=900,left=80,top=40');
++      if(!gdt){ msg('鉂?Popup blocked 鈥?please allow popups and click the button.'); document.getElementById('btn').textContent='馃寪 Open GDT'; return; }
++      done(1); msg('鉁?GDT open 鈥?waiting for page to load...');
++
++      // Retry injection: GDT is cross-origin so we can NOT directly inject JS.
++      // Instead, we guide visually + the user pastes using the pre-filled clipboard.
++      // We update progress steps to show the user what to do.
++      let step = 0;
++      const steps = [
++        [2000,  () => { msg('馃搵 Your TID is in clipboard. In GDT: click TID tab 鈫?paste TID (Ctrl+V)'); document.getElementById('n2').textContent='鈴?; document.getElementById('n2').className='num'; }],
++        [5000,  () => { msg('馃攼 Now type your password in the GDT password field.'); }],
++        [8000,  () => { msg('馃摠 Click the Send Code button on GDT. OTP will arrive to your phone/email.'); done(2); document.getElementById('n3').textContent='鈴?; document.getElementById('n3').className='num'; }],
++        [12000, () => { msg('鉁?Wait for OTP. Once received 鈥?enter it in the GDT window.'); done(3); done(4); }],
++      ];
++      steps.forEach(([delay, fn]) => setTimeout(fn, delay));
++    }
++
++    // Auto-copy TID to clipboard and launch
++    if (navigator.clipboard) {
++      navigator.clipboard.writeText(TID).then(launch).catch(launch);
++    } else { launch(); }
++  </script>
++</body>
++</html>`;
++        res.setHeader('Content-Type', 'text/html; charset=utf-8');
++        res.send(relayHtml);
++    } catch(err) {
++        console.error('[GDT Relay]', err.message);
++        res.status(500).send('<h2>Error loading relay. Please try again.</h2>');
++    }
++});
++
+ 
+ // POST Launch GDT Agent 鈥?opens headless browser, fills credentials, sends OTP
+ router.post('/gdt-agent-launch', auth, async (req, res) => {
+
+commit c2aa2f9effe79ec53370f944a6ae04d12878ddc4
+Author: Gamini GGMT GaminiGSK <gamini.vat80@gmail.com>
+Date:   Thu Mar 26 22:02:14 2026 +0700
+
+    fix(autofill): B46 signed loss display + glExp direction + B33 Business Register restored
+
+diff --git a/server/routes/company.js b/server/routes/company.js
+index bfcf36c..118a763 100644
+--- a/server/routes/company.js
++++ b/server/routes/company.js
+@@ -3329,7 +3329,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
+             d1_n:  fmt(costOfSales),
+             e1_amount: fmt(revenue),
+ 
+-            // 鈹€鈹€ PAGE 8锟?: Financial Statements (IS) 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
++            // 鈹€鈹€ PAGE 8?: Financial Statements (IS) 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+             fs_revenue:                               fmt(revenue),
+             fs_cost_of_sales:                         fmt(costOfSales),
+             fs_gross_profit:                          fmt(grossProfit),
+@@ -3378,14 +3378,19 @@ router.get('/toi/autofill', auth, async (req, res) => {
+                 b['B42_n'] = fmt(netPbt);
+                 b['B43_n'] = fmt(interestExpGL);
+ 
+-                // *** B46 = Net Profit/(Loss) Before Tax 鈥?negative value = LOSS ***
+-                // fmt() uses Math.abs() so store raw for E1 context
+-                b['B46_n'] = fmt(netPbt);
+-                b['_pbt_signed'] = netPbt; // internal signed reference for E-rows
++                // *** B46 = Net Profit/(Loss) Before Tax ***
++                // fmtSigned preserves the sign: negative = LOSS, positive = PROFIT
++                const fmtSigned = (n) => {
++                    if (!n || n === 0) return '0';
++                    const abs = Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
++                    return n < 0 ? `-${abs}` : abs;
++                };
++                b['B46_n'] = fmtSigned(netPbt);   // e.g. "-34,516.22" for loss, "40.97" for profit
++                b['_pbt_signed'] = netPbt;          // raw number for E-rows
+ 
+-                // Income tax & retained
++                // Income tax & retained 鈥?only if profitable
+                 b['B47_n'] = fmt(Math.max(0, netPbt * 0.20));
+-                b['B48_n'] = fmt(netPbt > 0 ? netPbt * 0.80 : netPbt);
++                b['B48_n'] = netPbt > 0 ? fmt(netPbt * 0.80) : fmtSigned(netPbt);
+ 
+                 return b;
+             })(),
+
+commit 087fd5b8716d752aed0d614a74e9f91b38c83ee6
+Author: Gamini GGMT GaminiGSK <gamini.vat80@gmail.com>
+Date:   Thu Mar 26 21:31:08 2026 +0700
+
+    fix(autofill): 3 critical P&L bugs - salary fabrication, B33 missing, B46 wrong sign, glExp() direction fix for bank CR expenses
+
+diff --git a/server/routes/company.js b/server/routes/company.js
+index 6c443ae..bfcf36c 100644
+--- a/server/routes/company.js
++++ b/server/routes/company.js
+@@ -2959,15 +2959,25 @@ router.get('/toi/autofill', auth, async (req, res) => {
+         const costOfSales = glDr('B6') + glCr('B6');
+         const grossProfit = revenue - costOfSales;
+ 
+-        // P&L Expenses 鈥?use ONLY accountant-assigned B-codes
+-        const salaryExpGL   = glDr('B23') + glDr('B24') + glDr('B25');
+-        const rentExpGL     = glDr('B26');
+-        const depExpGL      = glDr('B27');
+-        const interestExpGL = glDr('B28');
+-        const bankChargesGL = glDr('B29');
+-        const marketingGL   = glDr('B30');
+-        const travelGL      = glDr('B31');
+-        const otherExpGL    = glDr('B33') + glDr('B36') + glDr('B41') + glDr('B43') + glDr('B47');
++        // P&L Expenses 鈥?use ONLY accountant-assigned GL B-codes from actual transactions
++        // 鈿狅笍 RULE: NEVER use salary module totals (TOS/IEWS) as P&L expense.
++        //          Salary in P&L = what was ACTUALLY EXPENSED in the GL (B23/B24/B25 accounts).
++        //          If no salary GL entry exists 鈫?B23 = 0. (IEWS salary module is not built yet)
++        //
++        // 鈿狅笍 DIRECTION: Bank outflows = negative amount = stored as CREDIT in glMap.
++        //    Journal entry expenses (dep/adjustments) = DEBIT.
++        //    glExp() = max(DR, CR) picks the positive expense value from either direction.
++        const glExp = (tc) => Math.max(glDr(tc), glCr(tc));
++
++        const salaryExpGL   = glExp('B23') + glExp('B24') + glExp('B25'); // GL salary ONLY
++        const rentExpGL     = glExp('B26');
++        const depExpGL      = glExp('B27') + glExp('B36') + glExp('E30'); // E30 = DEPRECIATION AND AMORTISATION
++        const interestExpGL = glExp('B28');
++        const bankChargesGL = glExp('B29') + glExp('B41');                 // B41 = Office Supply, Bank Charge
++        const marketingGL   = glExp('B30');
++        const travelGL      = glExp('B31');
++        const consultingGL  = glExp('B33');                                // B33 = Business Register, Consulting
++        const otherExpGL    = glExp('B34') + glExp('B35') + glExp('B38') + glExp('B39') + glExp('B40') + glExp('B43') + glExp('B47');
+ 
+         // Balance Sheet 鈥?A-codes as assigned by accountant
+         const cashGL        = Math.max(glDr('A21') - glCr('A21'), 0);
+@@ -3133,8 +3143,8 @@ router.get('/toi/autofill', auth, async (req, res) => {
+             })(),
+             accountingRecord:  ext('accountingRecord') || 'Using Software',
+             softwareName:      ext('softwareName') || 'GK SMART AI',
+-            taxComplianceStatus: ext('taxComplianceStatus') || 'Gold',
+-            statutoryAudit:    ext('statutoryAudit') || 'Required',
++            taxComplianceStatus: ext('taxComplianceStatus') || 'None',
++            statutoryAudit:    ext('statutoryAudit') || 'Not Required',
+             incomeTaxRate:     ext('incomeTaxRate') || '20%',
+             branchCount:       ext('branchCount') || ext('branchOut') || '0',
+             filingDate:        `3103${yearStr}`,
+@@ -3323,40 +3333,64 @@ router.get('/toi/autofill', auth, async (req, res) => {
+             fs_revenue:                               fmt(revenue),
+             fs_cost_of_sales:                         fmt(costOfSales),
+             fs_gross_profit:                          fmt(grossProfit),
+-            fs_salary_expense:                        fmt(salaryExpGL || totalSalary),
++            fs_salary_expense:                        fmt(salaryExpGL),      // GL ONLY 鈥?0 if no salary in GL
+             fs_rental_expense:                        fmt(rentExpGL),
+-            fs_depreciation_expense:                  fmt(depExpGL || totalDep),
++            fs_depreciation_expense:                  fmt(depExpGL),
+             fs_interest_expense:                      fmt(interestExpGL),
+             fs_bank_charges:                          fmt(bankChargesGL),
+             fs_marketing:                             fmt(marketingGL),
+             fs_travel:                                fmt(travelGL),
++            fs_consulting:                            fmt(consultingGL),
+             fs_other_expense:                         fmt(otherExpGL),
+ 
+             // 鈹€鈹€ PAGES 5-6: Income Statement B-rows (B0-B48) 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
++            // FIX 1: B23 = GL salary expense ONLY. Never falls back to TOS/IEWS.
++            // FIX 2: B33 = Business Register / Consulting (GL code 61241 鈫?toiCode B33) 鈥?was missing.
++            // FIX 3: B46 = Revenue minus ALL expenses (negative = loss, stored signed).
+             ...(() => {
+                 const b = {};
+-                b['B3_n']  = fmt(revenue);
++
++                // Revenue
++                b['B3_n']  = fmt(revenue);            // Total service revenue
+                 b['B0_n']  = fmt(revenue);
+-                b['B6_n']  = fmt(costOfSales);
+-                b['B7_n']  = fmt(Math.max(0, grossProfit));
+-                b['B23_n'] = fmt(salaryExpGL || totalSalary);
++                b['B6_n']  = fmt(costOfSales);        // COGS (0 for service cos)
++                b['B7_n']  = fmt(Math.max(0, grossProfit)); // Gross profit
++
++                // Expenses 鈥?each mapped from their specific GL toiCode
++                b['B23_n'] = fmt(salaryExpGL);        // *** Salary: GL ONLY, 0 if not booked ***
+                 b['B25_n'] = fmt(travelGL);
++                b['B26_n'] = fmt(rentExpGL);
+                 b['B27_n'] = fmt(rentExpGL);
++                b['B28_n'] = fmt(interestExpGL);
++                b['B29_n'] = fmt(bankChargesGL);
+                 b['B30_n'] = fmt(marketingGL);
+-                b['B36_n'] = fmt(depExpGL || totalDep);
+-                b['B41_n'] = fmt(otherExpGL + bankChargesGL);
+-                const bOpEx = costOfSales + (salaryExpGL||totalSalary) + travelGL + rentExpGL + marketingGL + (depExpGL||totalDep) + bankChargesGL + otherExpGL;
+-                b['B22_n'] = fmt(bOpEx);
+-                const bProfOps = revenue - bOpEx + costOfSales;
+-                b['B42_n'] = fmt(grossProfit - (salaryExpGL||totalSalary) - travelGL - rentExpGL - marketingGL - (depExpGL||totalDep) - bankChargesGL - otherExpGL);
++                b['B33_n'] = fmt(consultingGL);       // *** Business Register / Consulting fees ***
++                b['B36_n'] = fmt(depExpGL);           // *** Depreciation from GL (B27+B36+E30) ***
++                b['B41_n'] = fmt(otherExpGL);         // Other expenses
++
++                // Total operating expenses
++                const totalOpEx = salaryExpGL + travelGL + rentExpGL + interestExpGL
++                    + bankChargesGL + marketingGL + consultingGL + depExpGL + otherExpGL;
++                b['B22_n'] = fmt(totalOpEx);
++
++                // Net P&L = Revenue - ALL expenses (NO stripping of sign)
++                const netPbt = revenue - totalOpEx;
++                b['B42_n'] = fmt(netPbt);
+                 b['B43_n'] = fmt(interestExpGL);
+-                const bPbt  = parseFloat(b['B42_n'].replace(/,/g,'') || '0') - interestExpGL;
+-                b['B46_n'] = fmt(bPbt);
+-                b['B47_n'] = fmt(Math.max(0, bPbt * 0.20));
+-                b['B48_n'] = fmt(bPbt - Math.max(0, bPbt * 0.20));
++
++                // *** B46 = Net Profit/(Loss) Before Tax 鈥?negative value = LOSS ***
++                // fmt() uses Math.abs() so store raw for E1 context
++                b['B46_n'] = fmt(netPbt);
++                b['_pbt_signed'] = netPbt; // internal signed reference for E-rows
++
++                // Income tax & retained
++                b['B47_n'] = fmt(Math.max(0, netPbt * 0.20));
++                b['B48_n'] = fmt(netPbt > 0 ? netPbt * 0.80 : netPbt);
++
+                 return b;
+             })(),
+ 
++
+             // 鈹€鈹€ PAGE 7: COGS C-rows (C1-C20) 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+             ...(() => {
+                 const c = {};
+@@ -3378,9 +3412,9 @@ router.get('/toi/autofill', auth, async (req, res) => {
+                 c['C5_n']  = fmt(cClose);
+                 const cMat = Math.max(0, cOpen + cPurch - cClose);
+                 c['C6_n']  = fmt(cMat || costOfSales);
+-                c['C8_n']  = fmt(salaryExpGL || totalSalary);
+-                c['C12_n'] = fmt(depExpGL || totalDep);
+-                const cOther = (salaryExpGL||totalSalary) + (depExpGL||totalDep);
++                c['C8_n']  = fmt(salaryExpGL);         // Salary from GL ONLY 鈥?0 if no GL salary booked
++                c['C12_n'] = fmt(depExpGL);             // Depreciation from GL
++                const cOther = salaryExpGL + depExpGL;
+                 c['C7_n']  = fmt(cOther);
+                 c['C17_n'] = fmt((cMat || costOfSales) + cOther);
+                 c['C20_n'] = fmt(costOfSales || (cMat + cOther));
+@@ -3405,26 +3439,26 @@ router.get('/toi/autofill', auth, async (req, res) => {
+ 
+ 
+             // 鈹€鈹€ PAGES 9-10: Income Tax Calculation (E-rows) 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+-            // E1 = B46 (Profit before tax per Financial Statements)
++            // E1 = B46 (Profit/(Loss) before tax 鈥?signed, negative = loss)
++            // FIX: use netPbt = revenue minus ALL GL expenses (no salary fallback)
+             ...(() => {
+-                // Use the same B-row values already computed above
+-                const bOpEx  = costOfSales + (salaryExpGL||totalSalary) + travelGL + rentExpGL + marketingGL + (depExpGL||totalDep) + bankChargesGL + otherExpGL;
+-                const b42    = Math.max(0, grossProfit - (salaryExpGL||totalSalary) - travelGL - rentExpGL - marketingGL - (depExpGL||totalDep) - bankChargesGL - otherExpGL);
+-                const b46    = b42 - interestExpGL;  // B42 - interest expense = PBT
+-                const dep    = depExpGL || totalDep;
+-
+-                // Standard TOI tax adjustment (same depreciation method 鈫?cancels)
+-                const e1    = b46;                   // PBT = Accounting profit/loss
+-                const e18   = dep;                   // Add-back: accounting depreciation (E2 only)
+-                const e31   = dep;                   // Deduct: GDT-approved depreciation (E26 only)
+-                const e36   = e1 + e18 - e31;        // Profit after adjustments (dep cancels)
+-                const e40   = e36;                   // No interest cap adjustment
+-                const e42   = Math.max(0, e40);      // Taxable income (losses = 0)
++                const totalOpEx = salaryExpGL + travelGL + rentExpGL + interestExpGL
++                    + bankChargesGL + marketingGL + consultingGL + depExpGL + otherExpGL;
++                const netPbt    = revenue - totalOpEx;  // Signed: negative = loss
++                const dep       = depExpGL;
++
++                // Standard TOI tax adjustment: dep add-back (E2) cancels GDT dep deduction (E26)
++                const e1    = netPbt;                // Accounting P/(L) from FS
++                const e18   = dep;                   // Total add-backs (dep only)
++                const e31   = dep;                   // Total deductions (GDT dep)
++                const e36   = e1 + e18 - e31;        // = netPbt (dep nets to 0)
++                const e40   = e36;                   // After G-row interest cap (none)
++                const e42   = Math.max(0, e40);      // Taxable income: floor 0 for loss cos
+                 const e43   = e42 * 0.20;            // CIT at 20%
+                 const e45   = e43;
+-                const e47   = e43;                   // No foreign tax credit
++                const e47   = e43;
+                 const e50   = e47;                   // Income tax liability
+-                const e53   = e50;                   // Payable (proper books)
++                const e53   = e50;                   // Payable
+                 const minTax = Math.max(0, revenue * 0.01);  // 1% minimum tax
+                 const e51   = minTax;
+                 const e52   = Math.max(e50 > 0 ? e50 : 0, minTax);
+
+commit 56ef136b382ade699f3b388f79c36347f2837521
+Author: Gamini GGMT GaminiGSK <gamini.vat80@gmail.com>
+Date:   Thu Mar 26 17:05:02 2026 +0700
+
+    feat: GDT Agentic Filing - per-user credentials, workflow docs, Cloud Run 00928-clx
+
+diff --git a/server/routes/company.js b/server/routes/company.js
+index 2736a08..6c443ae 100644
+--- a/server/routes/company.js
++++ b/server/routes/company.js
+@@ -1474,7 +1474,95 @@ router.post('/update-profile', auth, async (req, res) => {
+     }
+ });
+ 
++// POST Save GDT Credentials (Agentic Filing pre-save)
++router.post('/gdt-credentials', auth, async (req, res) => {
++    try {
++        const { gdtUsername, gdtPassword } = req.body;
++        let profile = await CompanyProfile.findOne({ user: req.user.id });
++        if (!profile) {
++            profile = new CompanyProfile({ user: req.user.id, companyCode: req.user.companyCode });
++        }
++        if (gdtUsername !== undefined) profile.gdtUsername = gdtUsername;
++        if (gdtPassword !== undefined) profile.gdtPassword = gdtPassword;
++        await profile.save();
++        res.json({ message: 'GDT credentials saved.', gdtUsername: profile.gdtUsername });
++    } catch (err) {
++        console.error('GDT Credentials Save Error:', err);
++        res.status(500).json({ message: 'Server Error' });
++    }
++});
++
++// GET GDT Credentials
++router.get('/gdt-credentials', auth, async (req, res) => {
++    try {
++        const profile = await CompanyProfile.findOne({ user: req.user.id }).select('gdtUsername gdtPassword');
++        res.json({
++            gdtUsername: profile?.gdtUsername || '',
++            gdtPassword: profile?.gdtPassword || ''
++        });
++    } catch (err) {
++        console.error('GDT Credentials Get Error:', err);
++        res.status(500).json({ message: 'Server Error' });
++    }
++});
++
++
++
++// POST Launch GDT Agent 鈥?opens headless browser, fills credentials, sends OTP
++router.post('/gdt-agent-launch', auth, async (req, res) => {
++    try {
++        const { gdtUsername, gdtPassword } = req.body;
++        if (!gdtUsername || !gdtPassword) {
++            return res.status(400).json({ message: 'GDT credentials are required. Please save them first.' });
++        }
++
++        const gdtAgent = require('../services/gdtAgent');
++        console.log(`[GDT Agent] Launch requested for user: ${req.user.companyCode}`);
++
++        const result = await gdtAgent.launchAndLogin(gdtUsername, gdtPassword);
++
++        res.json({
++            sessionId: result.sessionId,
++            status: result.status,
++            pageUrl: result.pageUrl,
++            pageTitle: result.pageTitle,
++            screenshot: result.screenshot, // base64 PNG for UI preview
++            message: 'OTP sent to your email. Please check your inbox and enter the code below.'
++        });
++
++    } catch (err) {
++        console.error('[GDT Agent] Launch Error:', err.message);
++        res.status(500).json({ message: `Agent failed: ${err.message}` });
++    }
++});
++
++// POST Submit OTP to GDT Agent session
++router.post('/gdt-agent-otp', auth, async (req, res) => {
++    try {
++        const { sessionId, otp } = req.body;
++        if (!sessionId || !otp) {
++            return res.status(400).json({ message: 'sessionId and otp are required.' });
++        }
++
++        const gdtAgent = require('../services/gdtAgent');
++        const result = await gdtAgent.submitOtp(sessionId, otp);
++
++        res.json({
++            status: result.status,
++            pageUrl: result.pageUrl,
++            pageTitle: result.pageTitle,
++            screenshot: result.screenshot,
++            message: 'OTP submitted. Check screenshot to confirm login was successful.'
++        });
++
++    } catch (err) {
++        console.error('[GDT Agent] OTP Error:', err.message);
++        res.status(500).json({ message: `OTP failed: ${err.message}` });
++    }
++});
++
+ // GET Transactions History (Sorted by Date Desc)
++
+ router.get('/transactions', auth, async (req, res) => {
+     try {
+         const Transaction = require('../models/Transaction');
+
+commit 9195795204516cbe629451086164ca05451b27a1
+Author: Gamini GGMT GaminiGSK <gamini.vat80@gmail.com>
+Date:   Thu Mar 26 08:04:22 2026 +0700
+
+    Fix GL mapping: use accountant-assigned toiCodes only, I02=revenue, 30100=equity, A-codes for BS
+
+diff --git a/server/routes/company.js b/server/routes/company.js
+index 04efda3..2736a08 100644
+--- a/server/routes/company.js
++++ b/server/routes/company.js
+@@ -2847,41 +2847,53 @@ router.get('/toi/autofill', auth, async (req, res) => {
+         }, 0);
+ 
+         // 鈹€鈹€ 6. Revenue / Expense from GL 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+-        // Uses actual TOI B-prefix codes that the Chart of Accounts maps to.
+-        // B3/B0 = Turnover/Revenue, B6 = COGS, B23..B47 = Operating Expenses
+-
+-        // Revenue: sum all credit-normal revenue accounts (B0, B3, B4, B5)
+-        const revenue = Math.max(
+-            glCr('B0') - glDr('B0'),
+-            glCr('B3') - glDr('B3'),
+-            glCr('B4') - glDr('B4'),
+-            glCr('B5') - glDr('B5'),
+-            0
+-        ) || (glDr('B0') + glDr('B3') + glDr('B4') + glDr('B5'));
+-
+-        // COGS: B6
+-        const costOfSales = glDr('B6') || glCr('B6');
++        // 鈿狅笍  RULE: GL toiCodes are set by the human accountant. NEVER change them.
++        //           This code reads glMap[toiCode] which is keyed by the toiCode
++        //           the accountant assigned. Do not assume which account = revenue.
++        //
++        // Current accountant-assigned mappings (GK SMART chart of accounts):
++        //   Revenue:  40100 鈫?I02  (service income / withholding base)
++        //   COGS:     52031,52032,52041 鈫?B6
++        //   Salary:   61020 鈫?B23, 61030 鈫?B24, 61050 鈫?B25
++        //   Expenses: 61060 鈫?B26 (rent), 61070 鈫?B27 (dep), 61080/81 鈫?B28 (interest)
++        //             61090,61051 鈫?B29, 61100 鈫?B30, 61242-44 鈫?B31, 61045,61240,41 鈫?B33
++        //             61160 鈫?B36, 61041-46,61220 鈫?B41, 61231 鈫?B43, 61250 鈫?B47
++        //             61300 鈫?E30
++        //   Assets:   10110 鈫?A21 (cash), 10130 鈫?A22 (bank), 11010 鈫?A18
++        //             13011,13021 鈫?A20, 13030 鈫?A23, 14060 鈫?A24, 14070 鈫?A26
++        //             17xxx 鈫?A12 (deposits/prepaid)
++        //   Equity:   30100 鈫?30100 (share capital), 30200 鈫?30200
++
++        // Revenue 鈥?uses I02 (accountant-assigned toiCode for account 40100)
++        const revenue = Math.max(glCr('I02') - glDr('I02'), 0) || Math.max(glDr('I02') - glCr('I02'), 0);
++
++        // COGS 鈥?B6 (accountant-assigned for 52031, 52032, 52041)
++        const costOfSales = glDr('B6') + glCr('B6');
+         const grossProfit = revenue - costOfSales;
+ 
+-        // P&L Expense fields 鈥?using actual B-code TOI mapping
+-        const salaryExpGL   = glDr('B23') + glDr('B24') + glDr('B25');  // Salary + Benefits
+-        const rentExpGL     = glDr('B26');   // Rent
+-        const depExpGL      = glDr('B27');   // Depreciation
+-        const interestExpGL = glDr('B28');   // Interest
+-        const bankChargesGL = glDr('B29');   // Bank charges / Professional fees
+-        const marketingGL   = glDr('B30');   // Marketing
+-        const travelGL      = glDr('B31');   // Travel
+-        const otherExpGL    = glDr('B33') + glDr('B36') + glDr('B41') + glDr('B43') + glDr('B47');  // Other
+-
+-        // Balance Sheet 鈥?use actual A-code TOI mapping
+-        const cashGL        = glDr('A21') - glCr('A21');  // Cash
+-        const arGL          = glDr('A20') - glCr('A20');  // Receivables
+-        const inventoryGL   = glDr('A18') - glCr('A18');  // Inventory / prepaid
+-        const ppneGL        = glDr('A7')  - glCr('A7');   // PP&E
+-        const totalAssetsGL = cashGL + arGL + inventoryGL + ppneGL;
+-        const apGL          = glCr('A43') - glDr('A43');  // Accounts Payable
+-        const loanGL        = glCr('A38') - glDr('A38');  // Loans
+-        const equityGL      = glCr('A30') - glDr('A30');  // Share Capital (equity proxy)
++        // P&L Expenses 鈥?use ONLY accountant-assigned B-codes
++        const salaryExpGL   = glDr('B23') + glDr('B24') + glDr('B25');
++        const rentExpGL     = glDr('B26');
++        const depExpGL      = glDr('B27');
++        const interestExpGL = glDr('B28');
++        const bankChargesGL = glDr('B29');
++        const marketingGL   = glDr('B30');
++        const travelGL      = glDr('B31');
++        const otherExpGL    = glDr('B33') + glDr('B36') + glDr('B41') + glDr('B43') + glDr('B47');
++
++        // Balance Sheet 鈥?A-codes as assigned by accountant
++        const cashGL        = Math.max(glDr('A21') - glCr('A21'), 0);
++        const bankGL        = Math.max(glDr('A22') - glCr('A22'), 0);
++        const arGL          = Math.max(glDr('A20') - glCr('A20'), 0);
++        const inventoryGL   = Math.max(glDr('A18') - glCr('A18'), 0);
++        const ppneGL        = Math.max(glDr('A7')  - glCr('A7'),  0);
++        const depositsGL    = Math.max(glDr('A12') - glCr('A12'), 0);
++        const totalAssetsGL = cashGL + bankGL + arGL + inventoryGL + ppneGL + depositsGL;
++        const apGL          = Math.max(glCr('A43') - glDr('A43'), 0);
++        const loanGL        = Math.max(glCr('A38') - glDr('A38'), 0);
++        // Equity: accountant assigned 30100 鈫?toiCode '30100' (share capital)
++        const equityGL      = Math.max(glCr('30100') - glDr('30100'), 0)
++                            + Math.max(glCr('30200') - glDr('30200'), 0);
+ 
+         // 鈹€鈹€ 7. Related Party data 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+         const totalRelatedTx = transactions.reduce((a, t) => a + (parseFloat(t.amount) || 0), 0);

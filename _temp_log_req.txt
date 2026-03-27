@@ -1,0 +1,24 @@
+﻿e5e4764 fix(gdt): stone-carved rule enforced - relay page opens GDT visibly, auto-copies TID, guides user; rules written to knowledge base
+4619be5 fix(agentic-filing): STONE-CARVED RULE - GDT portal opens VISIBLY on screen. No more headless/hidden automation. User watches, fills credentials, gets OTP on phone, all in front of human eyes.
+0744e70 fix(docker): remove Chromium apt-get install - saves 400MB image size, no browser needed for HTTP-based GDT agent
+22e64c1 fix(gdt-agent): replace Puppeteer/Chromium with lightweight axios HTTP login - eliminates 503 OOM on 512MB Cloud Run
+d6d1f80 fix(gdt-agent): remove hard ul.nav-tabs dependency, add 3-strategy TID detection + diagnostic screenshots
+9e5af24 fix(security): scope TOI localStorage by companyCode to prevent cross-user data leakage
+c2aa2f9 fix(autofill): B46 signed loss display + glExp direction + B33 Business Register restored
+087fd5b fix(autofill): 3 critical P&L bugs - salary fabrication, B33 missing, B46 wrong sign, glExp() direction fix for bank CR expenses
+9f604b4 fix: restore Save button in internal TOI workspace
+b4b1367 deploy: Cloud Run 00931-c69 + Firebase - carved-in-iron workflow live
+5c22d3c carved-in-iron: full 17-step TOI filing workflow for BA agents - GDT session 2026-03-26 complete
+78ec09e docs: carve GDT TOI 3-step navigation into workflow - Steps 6-8 verified live 2026-03-26
+56ef136 feat: GDT Agentic Filing - per-user credentials, workflow docs, Cloud Run 00928-clx
+1ab1ff8 Landmark v1.0-TOI-GL-VERIFIED-2026-03-26: update BACKUP_911 to 00925-fgl
+9195795 Fix GL mapping: use accountant-assigned toiCodes only, I02=revenue, 30100=equity, A-codes for BS
+19a2b2b Fix critical GL mapping bug: use correct B-code TOI codes for revenue/expense, A-codes for BS
+f63d950 Fix branchOut=0, Khmer address priority, Khmer businessActivities priority
+09952d8 Fix duplicate storageKey declaration preventing frontend build
+4445e34 Fix TOI Smart Fill from overwriting UI state with array defaults and automatically default to 2024 if 2025 is empty
+8d4758f Fix dynamic tin and name regex extraction for poorly formed profiles
+a2164bb Fix TOI AutoFill persistence; Agent learned fields now stick across the UI
+06738a1 fix: whitespace-pre-wrap for Khmer+English business activity row
+496558a fix: KHR conversion for comma-formatted amounts + Khmer business activity lookup
+4c09bf0 feat: Add KHR/USD currency toggle to TOI ACAR workspace

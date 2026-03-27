@@ -1564,22 +1564,23 @@ router.get('/gdt-relay', auth, async (req, res) => {
       if(!gdt){ msg('❌ Popup blocked — please allow popups and click the button.'); document.getElementById('btn').textContent='🌐 Open GDT'; return; }
       done(1); msg('✅ GDT open — waiting for page to load...');
 
-      // Retry injection: GDT is cross-origin so we can NOT directly inject JS.
-      // Instead, we guide visually + the user pastes using the pre-filled clipboard.
-      // We update progress steps to show the user what to do.
+      document.getElementById('msg').innerHTML = '<p style="margin-bottom:8px">❌ <b>Warning:</b> Chrome might auto-fill an old password (like 150150Aa@@).</p>' + 
+      '<button onclick="navigator.clipboard.writeText(PASS); done(2);" style="padding:8px 16px; background:#f59e0b; color:#000; font-weight:bold; border-radius:8px; border:none; cursor:pointer;">📋 Copy Correct Password to Clipboard</button>';
+
       let step = 0;
       const steps = [
-        [2000,  () => { msg('📋 Your TID is in clipboard. In GDT: click TID tab → paste TID (Ctrl+V)'); document.getElementById('n2').textContent='⏳'; document.getElementById('n2').className='num'; }],
-        [5000,  () => { msg('🔐 Now type your password in the GDT password field.'); }],
-        [8000,  () => { msg('📨 Click the Send Code button on GDT. OTP will arrive to your phone/email.'); done(2); document.getElementById('n3').textContent='⏳'; document.getElementById('n3').className='num'; }],
-        [12000, () => { msg('✅ Wait for OTP. Once received — enter it in the GDT window.'); done(3); done(4); }],
+        [2000,  () => { if(document.getElementById('n2').textContent !== '✓') { document.getElementById('n2').textContent='⏳'; document.getElementById('n2').className='num';} }],
+        [4000,  () => { if(document.getElementById('n3').textContent !== '✓') { document.getElementById('n3').textContent='⏳'; document.getElementById('n3').className='num';} }],
       ];
       steps.forEach(([delay, fn]) => setTimeout(fn, delay));
     }
 
-    // Auto-copy TID to clipboard and launch
+    // Auto-copy TID to clipboard first
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(TID).then(launch).catch(launch);
+      navigator.clipboard.writeText(TID).then(() => {
+        // We cannot auto-copy two things at once. We auto-copy TID, and let user click button for Password.
+        launch();
+      }).catch(launch);
     } else { launch(); }
   </script>
 </body>
@@ -1989,8 +1990,12 @@ router.post('/transactions/tag', auth, async (req, res) => {
 router.get('/trial-balance', auth, async (req, res) => {
     try {
         const Transaction = require('../models/Transaction');
+        const JournalEntry = require('../models/JournalEntry');
         const AccountCode = require('../models/AccountCode');
         const ExchangeRate = require('../models/ExchangeRate');
+        
+        // --- 0. AUTO-SYNC MODULES TO GL (Permanent Fix for Missing Salary/Depreciation) ---
+        await require('../services/AutoReconService').syncModulesToGL(req.user.companyCode);
 
         // 1. Fetch Data
         const codes = await AccountCode.find({ companyCode: req.user.companyCode }).lean();
@@ -2896,17 +2901,16 @@ router.post('/toi/withholdings', auth, async (req, res) => {
     }
 });
 
-// =====================================================
-// TOI AUTO-FILL ENGINE �?Aggregates ALL data sources
-// GET /api/company/toi/autofill
-// Returns a full formData map for all 21 TOI pages
-// =====================================================
-
+// ===============================// GET /api/company/toi/autofill
+// Generates the JSON data required to fill the 17-page GDT Tax on Income declaration form
 router.get('/toi/autofill', auth, async (req, res) => {
     try {
         const userId      = req.user.id;
         const companyCode = req.user.companyCode;
         const year        = parseInt(req.query.year) || 2025;
+
+        // --- 0. AUTO-SYNC MODULES TO GL (Permanent Fix for Missing Salary/Depreciation) ---
+        await require('../services/AutoReconService').syncModulesToGL(companyCode);
 
         // ── 1. Company Profile ──────────────────────────────────────────
         const profile = await CompanyProfile.findOne({ user: userId });
@@ -3045,9 +3049,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
         const grossProfit = revenue - costOfSales;
 
         // P&L Expenses — use ONLY accountant-assigned GL B-codes from actual transactions
-        // ⚠️ RULE: NEVER use salary module totals (TOS/IEWS) as P&L expense.
-        //          Salary in P&L = what was ACTUALLY EXPENSED in the GL (B23/B24/B25 accounts).
-        //          If no salary GL entry exists → B23 = 0. (IEWS salary module is not built yet)
+        // (Salary & Depreciation modules are now auto-synced to GL via AutoReconService)
         //
         // ⚠️ DIRECTION: Bank outflows = negative amount = stored as CREDIT in glMap.
         //    Journal entry expenses (dep/adjustments) = DEBIT.

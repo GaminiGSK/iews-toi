@@ -215,28 +215,17 @@ Click **Next (4)**
 
 ### 📋 STEP 4/17 — Balance Sheet
 
-> Source: `/api/company/toi/autofill?year=2025` → Balance Sheet section
-> Exchange rate: ~4,000 KHR per USD
+**CRITICAL INSTRUCTION:** Do NOT use hardcoded numbers. You MUST fetch the actual 2025 numbers dynamically from the API endpoint:
+`GET /api/company/toi/autofill?year=2025`
 
-**Assets side**:
+From the JSON response, map the fields exactly to their respective layout locations:
+- "Cash in bank" (A22): Use `formData.pe_asset_info` -> "Cash & bank equivalent" OR `formData.bs_cash`
+- "Plant and equipment" (A7/A07): Use `formData.bs_ppe_nbv` (Net Book Value of PPE)
+- "Other long-term assets" (A12): Use `formData.bs_total_assets - (A7 + A22)` to balance.
+- "Paid in capital" (A30): Use `formData.pe_owners_equity`
+- "Profit/loss for the period" (A36): Use `formData.pe_net_profit`
 
-| Row | Description | Current Year (KHR) |
-|---|---|---|
-| A7 | Plant, Property & Equipment (Net) | 169,466,000 |
-| A12 | Other long-term assets | 18,605,560 |
-| A22 | Cash and bank | 163,880 |
-| All others | Leave 0 | — |
-
-**Equity & Liabilities side**:
-
-| Row | Description | Current Year (KHR) |
-|---|---|---|
-| A30 | Capital / Share capital | 335,180,320 |
-| A35 | Profit/(loss) brought forward | (previous years' accumulated loss) |
-| A36 | Profit/(loss) for the period | -170,944,880 |
-| All liabilities | 0 (no debt) | — |
-
-> ⚠️ Balance Sheet must balance: Total Assets = Total Equity + Liabilities
+> ⚠️ Total Assets MUST equal Total Equity + Liabilities.
 
 Click **Next (5)**
 
@@ -244,13 +233,17 @@ Click **Next (5)**
 
 ### 📋 STEP 5/17 — Income Statement
 
-| Row | Description | Amount (KHR) |
-|---|---|---|
-| B15 | Interest Income | 163,880 |
-| B23 | Salaries & wages | 24,000,000 |
-| B33 | Consulting/professional fees (Business Reg) | 98,600,000 |
-| B36 | Depreciation | 45,908,760 |
-| B41 | Other expenses | 2,600,000 |
+**CRITICAL INSTRUCTION:** Do NOT use hardcoded numbers. Fetch the actual 2025 numbers using:
+`GET /api/company/toi/autofill?year=2025`
+
+From the JSON response, map the fields:
+- Interest Income (B15): Use `formData.is_interest_income`
+- Salary & Wages (B23): Use `formData.is_salary_wages`
+- Depreciation (B36): Use `formData.is_depreciation`
+- Consulting/business register (B33): Use `formData.is_consulting`
+- Other expenses (B41): Use `formData.is_other_ope`
+
+> The net profit calculated at the bottom MUST perfectly match A36 from Step 4.
 
 > System auto-calculates totals (B42 = Total expenses, B46 = PBT/loss)
 
