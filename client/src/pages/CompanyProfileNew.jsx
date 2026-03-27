@@ -517,7 +517,7 @@ export default function CompanyProfile() {
         }
 
         const savedUser = JSON.parse(localStorage.getItem('user') || '{}');
-        if (savedUser.role === 'admin') {
+        if (['admin', 'superadmin'].includes(savedUser.role)) {
             fetchUsersList();
         }
 
@@ -542,9 +542,10 @@ export default function CompanyProfile() {
             const savedUser = JSON.parse(localStorage.getItem('user') || '{}');
 
             // ADMIN OVERRIDE: If admin has selected a target, fetch that instead
-            const endpoint = (savedUser.role === 'admin' && adminSelectedUser)
+            const endpoint = (['admin', 'superadmin'].includes(savedUser.role) && adminSelectedUser)
                 ? `/api/company/admin/profile/${adminSelectedUser}`
                 : '/api/company/profile';
+
 
             const res = await axios.get(endpoint, {
                 headers: { 'Authorization': `Bearer ${token}` }

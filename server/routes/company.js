@@ -319,8 +319,8 @@ router.get('/files/:fileId', auth, async (req, res) => {
 // GET Admin Profile Data for specific user
 router.get('/admin/profile/:username', auth, async (req, res) => {
     try {
-        if (req.user.role !== 'admin') {
-            console.warn(`[AdminAPI] Unauthorized access attempt by ${req.user.username}`);
+        if (!['admin', 'superadmin'].includes(req.user.role)) {
+            console.warn(`[AdminAPI] Unauthorized access attempt by ${req.user.username} (role: ${req.user.role})`);
             return res.status(403).json({ message: 'Unauthorized access' });
         }
 
@@ -394,7 +394,7 @@ router.get('/admin/profile/:username', auth, async (req, res) => {
 // POST /admin/rescan/:username (Recall Scan)
 router.post('/admin/rescan/:username', auth, async (req, res) => {
     try {
-        if (req.user.role !== 'admin') return res.status(403).json({ message: 'Unauthorized' });
+        if (!['admin', 'superadmin'].includes(req.user.role)) return res.status(403).json({ message: 'Unauthorized' });
         const { username } = req.params;
         const User = require('../models/User');
         const targetUser = await User.findOne({ username });
