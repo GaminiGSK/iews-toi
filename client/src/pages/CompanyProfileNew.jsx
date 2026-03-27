@@ -755,6 +755,30 @@ export default function CompanyProfile() {
             return;
         }
 
+        // STONE-CARVED RULE: Open the backend relay page in a new visible window.
+        // The relay page auto-opens GDT, auto-copies TID, guides user visibly.
+        const token = localStorage.getItem('token');
+        const relayUrl = `/api/company/gdt-relay?token=${encodeURIComponent(token)}`;
+        const relayWin = window.open(relayUrl, 'gdt_relay', 'width=600,height=620,left=600,top=40');
+
+        if (!relayWin) {
+            alert('Popup blocked! Please allow popups for this site and try again.');
+            return;
+        }
+
+        setGdtAgentStatus('otp_pending');
+        setGdtSessionId(`relay_${Date.now()}`);
+        setGdtOtp('');
+        setGdtAgentMsg('✅ GDT Agent window opened. Watch the relay panel — GDT portal will open automatically and your TID will be auto-copied to clipboard.');
+    };
+
+    // dead code below kept for safety — old async version removed
+    const _unused_handleLaunchGdtAgent = async () => {
+        if (!gdtCreds.gdtUsername || !gdtCreds.gdtPassword) {
+            alert('Please save your GDT credentials first (Step 1).');
+            return;
+        }
+
         // STONE-CARVED RULE: GDT portal MUST open visibly on screen in front of the human.
         // Agent NEVER works behind the screen. User watches, types OTP, has full control.
         const GDT_URL = 'https://owp.tax.gov.kh/gdtowpcoreweb/login';

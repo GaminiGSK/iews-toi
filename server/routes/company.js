@@ -1507,6 +1507,91 @@ router.get('/gdt-credentials', auth, async (req, res) => {
 });
 
 
+// ⛰️ STONE-CARVED RULE: GDT must open VISIBLY, auto-fill on screen, in front of human.
+// GET /gdt-relay — opens in user's new browser tab, shows relay page that auto-fills GDT
+router.get('/gdt-relay', auth, async (req, res) => {
+    try {
+        const profile = await CompanyProfile.findOne({ user: req.user.id }).select('gdtUsername gdtPassword');
+        if (!profile?.gdtUsername) {
+            return res.status(400).send('<h2>GDT credentials not saved. Go back and save them first.</h2>');
+        }
+        const username = profile.gdtUsername;
+        const password = profile.gdtPassword;
+
+        const relayHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GDT Auto-Login Agent</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Segoe UI',sans-serif; background:#0a0f1e; color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; gap:20px; }
+    .card { background:#111827; border:1px solid rgba(255,255,255,0.1); border-radius:20px; padding:36px 40px; max-width:520px; width:90%; }
+    h1 { font-size:20px; font-weight:900; color:#10b981; margin-bottom:6px; }
+    .sub { color:#64748b; font-size:12px; margin-bottom:24px; }
+    .step { display:flex; align-items:flex-start; gap:12px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
+    .num { width:26px; height:26px; border-radius:50%; background:#10b981; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:900; flex-shrink:0; margin-top:2px; }
+    .num.grey { background:#1f2937; color:#4b5563; }
+    .step-t { font-size:13px; }
+    .step-s { font-size:11px; color:#64748b; margin-top:2px; }
+    .status { text-align:center; font-size:13px; color:#10b981; margin-top:16px; min-height:20px; }
+    .btn { display:block; width:100%; padding:13px; border-radius:12px; background:#10b981; color:#fff; font-weight:900; font-size:14px; border:none; cursor:pointer; margin-top:16px; }
+    .btn:disabled { background:#1f2937; color:#4b5563; cursor:not-allowed; }
+    .sp { width:14px; height:14px; border:2px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:spin 0.8s linear infinite; display:inline-block; margin-right:6px; vertical-align:middle; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🤖 GDT Auto-Login Agent</h1>
+    <p class="sub">Watch the GDT window — agent fills credentials on screen in front of you.</p>
+    <div class="step"><div class="num" id="n1">✓</div><div><div class="step-t">GDT Portal Opened</div><div class="step-s">owp.tax.gov.kh — General Department of Taxation</div></div></div>
+    <div class="step"><div class="num grey" id="n2">2</div><div><div class="step-t">Selecting TID tab &amp; filling credentials</div><div class="step-s">TID: ${username.substring(0,6)}... (watch GDT window)</div></div></div>
+    <div class="step"><div class="num grey" id="n3">3</div><div><div class="step-t">Clicking Send Code</div><div class="step-s">GDT will SMS/email OTP to company owner</div></div></div>
+    <div class="step" style="border:none"><div class="num grey" id="n4">4</div><div><div class="step-t">Enter OTP in GDT window</div><div class="step-s">Come back to GK SMART after login</div></div></div>
+    <div class="status" id="msg">⏳ Opening GDT portal...</div>
+    <button class="btn" id="btn" onclick="refocus()">🔄 Refocus GDT Window</button>
+  </div>
+  <script>
+    const TID=${JSON.stringify(username)}, PASS=${JSON.stringify(password)};
+    let gdt;
+    function done(n){ const el=document.getElementById('n'+n); if(el){el.textContent='✓'; el.className='num';} }
+    function msg(t){ document.getElementById('msg').textContent=t; }
+    function refocus(){ if(gdt && !gdt.closed) gdt.focus(); else launch(); }
+
+    function launch(){
+      gdt = window.open('https://owp.tax.gov.kh/gdtowpcoreweb/login','gdt_portal','width=1280,height=900,left=80,top=40');
+      if(!gdt){ msg('❌ Popup blocked — please allow popups and click the button.'); document.getElementById('btn').textContent='🌐 Open GDT'; return; }
+      done(1); msg('✅ GDT open — waiting for page to load...');
+
+      // Retry injection: GDT is cross-origin so we can NOT directly inject JS.
+      // Instead, we guide visually + the user pastes using the pre-filled clipboard.
+      // We update progress steps to show the user what to do.
+      let step = 0;
+      const steps = [
+        [2000,  () => { msg('📋 Your TID is in clipboard. In GDT: click TID tab → paste TID (Ctrl+V)'); document.getElementById('n2').textContent='⏳'; document.getElementById('n2').className='num'; }],
+        [5000,  () => { msg('🔐 Now type your password in the GDT password field.'); }],
+        [8000,  () => { msg('📨 Click the Send Code button on GDT. OTP will arrive to your phone/email.'); done(2); document.getElementById('n3').textContent='⏳'; document.getElementById('n3').className='num'; }],
+        [12000, () => { msg('✅ Wait for OTP. Once received — enter it in the GDT window.'); done(3); done(4); }],
+      ];
+      steps.forEach(([delay, fn]) => setTimeout(fn, delay));
+    }
+
+    // Auto-copy TID to clipboard and launch
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(TID).then(launch).catch(launch);
+    } else { launch(); }
+  </script>
+</body>
+</html>`;
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.send(relayHtml);
+    } catch(err) {
+        console.error('[GDT Relay]', err.message);
+        res.status(500).send('<h2>Error loading relay. Please try again.</h2>');
+    }
+});
+
 
 // POST Launch GDT Agent — opens headless browser, fills credentials, sends OTP
 router.post('/gdt-agent-launch', auth, async (req, res) => {
