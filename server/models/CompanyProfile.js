@@ -1,44 +1,89 @@
 const mongoose = require('mongoose');
 
 const CompanyProfileSchema = new mongoose.Schema({
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Link to User Model
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     companyCode: { type: String, required: true, unique: true },
+
+    // Core Identity
     companyNameEn: { type: String },
     companyNameKh: { type: String },
     registrationNumber: { type: String },
     oldRegistrationNumber: { type: String },
     incorporationDate: { type: String },
     companyType: { type: String },
-    address: { type: String },
-    shareholder: { type: String },
-    director: { type: String },
+    companySubType: { type: String },
+
+    // Addresses
+    address: { type: String },        // Physical address
+    postalAddress: { type: String },  // Postal address
+
+    // Contact
+    contactEmail: { type: String },
+    contactPhone: { type: String },
+
+    // Tax
     vatTin: { type: String },
+    taxRegistrationDate: { type: String },
+
+    // Business
     businessActivity: { type: String },
+
+    // Capital & Ownership
+    registeredShareCapitalKHR: { type: String },
+    moreThanOneClassOfShares: { type: Boolean, default: false },
+    majorityNationality: { type: String },
+    percentageOfMajorityShareholders: { type: String },
+
+    // Governance (flat strings — legacy / display)
+    director: { type: String },
+    shareholder: { type: String },
+
+    // Governance (full structured arrays — from BR extraction)
+    directors: [{
+        nameKh: String,
+        nameEn: String,
+        address: String,
+        isChairman: { type: Boolean, default: false }
+    }],
+    shareholders: [{
+        nameKh: String,
+        nameEn: String,
+        address: String,
+        numberOfShares: { type: Number, default: 0 },
+        nationality: String,
+        isChairman: { type: Boolean, default: false }
+    }],
 
     // Structured Documents List
     documents: [{
-        docType: { type: String, required: true }, // 'moc_cert', 'kh_extract', 'en_extract', 'tax_patent', 'tax_id', 'bank_opening'
+        docType: { type: String, required: true },
         originalName: String,
         path: String,
-        data: String, // Base64 Storage (TOI-Style)
+        data: String,    // Base64 Storage
         mimeType: String,
-        status: { type: String, default: 'Pending' }, // 'Pending', 'Verified', 'Error'
-        extractedData: { type: mongoose.Schema.Types.Mixed }, // Structured AI Data
-        rawText: String, // Full OCR extraction
+        status: { type: String, default: 'Pending' },
+        extractedData: { type: mongoose.Schema.Types.Mixed },
+        rawText: String,
         uploadedAt: { type: Date, default: Date.now }
     }],
 
-    // Bank Details (Extracted)
+    // Bank Details
     bankName: { type: String },
     bankAccountName: { type: String },
     bankAccountNumber: { type: String },
     bankCurrency: { type: String },
-    organizedProfile: { type: String }, // AI-generated natural language summary
-    extractedData: { type: Map, of: String }, // For flexibility
-    abaOpeningBalance: { type: Number, default: 0 }, // Pre-import bank balance anchor
-    // GDT e-Tax Portal Credentials (pre-saved for Agentic Filing)
+
+    // AI Profile
+    organizedProfile: { type: String },
+    extractedData: { type: Map, of: String },
+
+    // Accounting
+    abaOpeningBalance: { type: Number, default: 0 },
+
+    // GDT e-Tax Portal Credentials
     gdtUsername: { type: String, default: '' },
-    gdtPassword: { type: String, default: '' }  // stored as entered (user's responsibility)
-}, { timestamps: true });
+    gdtPassword: { type: String, default: '' }
+
+}, { timestamps: true, strict: false }); // strict:false allows flexible field additions
 
 module.exports = mongoose.model('CompanyProfile', CompanyProfileSchema);

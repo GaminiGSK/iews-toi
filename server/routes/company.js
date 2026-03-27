@@ -64,19 +64,25 @@ router.post('/template', auth, async (req, res) => {
     }
 });
 
-// POST BR Extract (Full Automated Workflow: OCR -> Org -> Drive -> DB)
+// POST BR Extract (Full Automated Workflow: OCR + Structured Extraction -> Drive -> DB)
 router.post('/br-extract', auth, upload.single('file'), async (req, res) => {
+
     try {
-        if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
-        const User = require('../models/User');
-        const { username } = req.body;
+        // Auto-detect doc type from filename
+        const nameLower = req.file.originalname.toLowerCase();
+        let detectedDocType = 'br_extraction';
+        if (nameLower.includes('cert') || nameLower.includes('incorporation')) detectedDocType = 'moc_cert';
+        else if (nameLower.includes('patent') || nameLower.includes('tax_id')) detectedDocType = 'tax_patent';
+        else if (nameLower.includes('bank')) detectedDocType = 'bank_opening';
 
-        console.log(`[BR Core] Starting Automated Workflow for: ${req.file.originalname}`);
+        // 1. Run raw OCR + structured extraction in PARALLEL
+        const [rawText, structuredData] = await Promise.all([
+            googleAI.extractRawText(req.file.path),
+            googleAI.extractDocumentData(req.file.path, detectedDocType)
+        ]);
+        console.log(`[BR Core] Raw: ${rawText?.length || 0} chars | Structured fields: ${Object.keys(structuredData || {}).length}`);
 
-        // 1. AI OCR (Gemini 2.0 Vision)
-        const rawText = await googleAI.extractRawText(req.file.path);
-
-        // 2. Initial Drive Sync (Raw File)
+        // 2. Drive Sync
         let rawDriveId = null;
         let targetFolderId = req.user.brFolderId;
         let targetUser = null;
@@ -84,48 +90,38 @@ router.post('/br-extract', auth, upload.single('file'), async (req, res) => {
         try {
             if (username) {
                 targetUser = await User.findOne({ username });
-                if (targetUser && targetUser.brFolderId) {
-                    targetFolderId = targetUser.brFolderId;
-                }
+                if (targetUser && targetUser.brFolderId) targetFolderId = targetUser.brFolderId;
             } else {
                 targetUser = await User.findById(req.user.id);
             }
-
             if (targetFolderId) {
-                console.log(`[BR Drive] Syncing Raw File...`);
                 const driveData = await uploadFile(req.file.path, req.file.mimetype, req.file.originalname, targetFolderId);
                 rawDriveId = (typeof driveData === 'object') ? driveData.id : driveData;
             }
-        } catch (driveErr) {
-            console.error("[BR Drive] Raw Sync Failed:", driveErr.message);
-        }
+        } catch (driveErr) { console.error('[BR Drive] Raw Sync Failed:', driveErr.message); }
 
-        // 3. AI Organization (Natural Language Synthesis)
-        console.log(`[BR Core] Synthesizing Business Profile...`);
+        // 3. AI Natural Language Synthesis
+        console.log('[BR Core] Synthesizing Business Profile...');
         const organizedProfile = await googleAI.summarizeToProfile(rawText);
 
-        // 4. Secondary Drive Sync (Organized MD Profile)
+        // 4. Secondary Drive Sync (MD Profile)
         let profileDriveId = null;
         try {
             if (targetFolderId) {
                 const tempPath = `./tmp/profile_${Date.now()}.md`;
                 if (!fs.existsSync('./tmp')) fs.mkdirSync('./tmp');
                 fs.writeFileSync(tempPath, organizedProfile);
-
                 const profileFileName = `Business Profile - ${req.file.originalname.split('.')[0]}.md`;
-                const profileDriveData = await uploadFile(tempPath, 'text/markdown', profileFileName, targetFolderId);
-                profileDriveId = (typeof profileDriveData === 'object') ? profileDriveData.id : profileDriveData;
-
-                fs.unlink(tempPath, (err) => { if (err) console.error("Temp Cleanup Err:", err); });
+                const pDrive = await uploadFile(tempPath, 'text/markdown', profileFileName, targetFolderId);
+                profileDriveId = (typeof pDrive === 'object') ? pDrive.id : pDrive;
+                fs.unlink(tempPath, () => {});
             }
-        } catch (orgDriveErr) {
-            console.error("[BR Drive] Profile Sync Failed:", orgDriveErr.message);
-        }
+        } catch (e) { console.error('[BR Drive] Profile Sync Failed:', e.message); }
 
-        // 5. Database Sync (Update User Dashboard & File Pool)
+        // 5. Database Sync — map ALL structured fields into CompanyProfile
         try {
             if (targetUser) {
-                console.log(`[BR DB] Updating profile for user: ${targetUser.username} (${targetUser._id})`);
+                console.log(`[BR DB] Saving full profile for: ${targetUser.username}`);
                 let profileInDb = await CompanyProfile.findOne({ user: targetUser._id });
                 if (!profileInDb) {
                     profileInDb = new CompanyProfile({
@@ -134,77 +130,86 @@ router.post('/br-extract', auth, upload.single('file'), async (req, res) => {
                     });
                 }
 
-                // Append to Documents Pool if it doesn't exist, or update it
-                const existingDocIndex = profileInDb.documents.findIndex(d => d.originalName === req.file.originalname);
-
-                // Read file to Base64 for DB persistence (Future Proofing against Drive Quota)
+                // Append doc to pool
                 const binaryData = fs.readFileSync(req.file.path).toString('base64');
-
+                const existingDocIndex = profileInDb.documents.findIndex(d => d.originalName === req.file.originalname);
+                const docEntry = {
+                    docType: detectedDocType,
+                    originalName: req.file.originalname,
+                    path: rawDriveId ? `drive:${rawDriveId}` : req.file.path,
+                    data: binaryData,
+                    mimeType: req.file.mimetype,
+                    status: 'Verified',
+                    rawText: rawText,
+                    extractedData: structuredData,
+                    uploadedAt: new Date()
+                };
                 if (existingDocIndex > -1) {
-                    const currentDoc = profileInDb.documents[existingDocIndex];
-                    if (!currentDoc.rawText || currentDoc.rawText.includes("failed")) {
-                        currentDoc.rawText = rawText;
-                        currentDoc.data = binaryData;
-                        currentDoc.mimeType = req.file.mimetype;
-                        currentDoc.status = 'Verified';
-                        currentDoc.uploadedAt = new Date();
-                        if (rawDriveId) currentDoc.path = `drive:${rawDriveId}`;
-                    }
+                    Object.assign(profileInDb.documents[existingDocIndex], docEntry);
                 } else {
-                    profileInDb.documents.push({
-                        docType: 'br_extraction',
-                        originalName: req.file.originalname,
-                        path: rawDriveId ? `drive:${rawDriveId}` : req.file.path,
-                        data: binaryData,
-                        mimeType: req.file.mimetype,
-                        status: 'Verified',
-                        rawText: rawText,
-                        uploadedAt: new Date()
-                    });
+                    profileInDb.documents.push(docEntry);
                 }
 
-                // Update natural language summary
+                // === MAP ALL STRUCTURED FIELDS ===
+                const d = structuredData || {};
+                const setField = (key, val) => { if (val !== null && val !== undefined && val !== '') profileInDb[key] = val; };
+
+                setField('companyNameEn', d.companyNameEn);
+                setField('companyNameKh', d.companyNameKh);
+                setField('registrationNumber', d.registrationNumber || d.companyNumber);
+                setField('incorporationDate', d.incorporationDate);
+                setField('address', d.physicalAddress);
+                setField('postalAddress', d.postalAddress);
+                setField('contactEmail', d.contactEmail);
+                setField('contactPhone', d.contactPhone);
+                setField('businessActivity', d.businessActivities);
+                setField('companyType', d.companyType);
+                setField('vatTin', d.vatTin);
+                setField('bankName', d.bankName);
+                setField('bankAccountNumber', d.bankAccountNumber);
+                setField('bankAccountName', d.bankAccountName);
+                setField('registeredShareCapitalKHR', d.registeredShareCapitalKHR);
+                setField('majorityNationality', d.majorityNationality);
+                setField('percentageOfMajorityShareholders', d.percentageOfMajorityShareholders);
+
+                // Directors: flatten to string + store full array
+                if (Array.isArray(d.directors) && d.directors.length > 0) {
+                    profileInDb.director = d.directors.map(dir => dir.nameEn || dir.nameKh).filter(Boolean).join(', ');
+                    profileInDb.directors = d.directors;
+                }
+                // Shareholders: flatten to string + store full array
+                if (Array.isArray(d.shareholders) && d.shareholders.length > 0) {
+                    profileInDb.shareholder = d.shareholders.map(s => `${s.nameEn || s.nameKh} (${s.numberOfShares || 0} shares)`).filter(Boolean).join(', ');
+                    profileInDb.shareholders = d.shareholders;
+                }
+
                 profileInDb.organizedProfile = organizedProfile;
-
-                // --- STRUCTURED FIELD MAPPING ---
-                // Parse the AI summary to fill into top-level model fields for User Dashboard
-                if (organizedProfile.includes("GK SMART")) {
-                    profileInDb.companyNameEn = "GK SMART";
-                    profileInDb.companyNameKh = "ជីខេ ស្អាត";
-                    profileInDb.registrationNumber = "50015732";
-                    profileInDb.incorporationDate = "13 April 2021";
-                    profileInDb.director = "Gunasingha Kassapa Gamini";
-                    profileInDb.vatTin = "K009-902103452";
-                }
-
-                // Generic Catch (Heuristic extract if name not matched yet)
-                const nameMatch = organizedProfile.match(/\*\*Entity Name:\*\*\s*(.+)/);
-                if (nameMatch && !profileInDb.companyNameEn) profileInDb.companyNameEn = nameMatch[1].trim();
-
                 if (targetUser.companyCode) profileInDb.companyCode = targetUser.companyCode;
 
                 await profileInDb.save();
-                console.log(`[BR DB] Dashboard & Documents Pool updated with Binary Persistence.`);
+                console.log(`[BR DB] ✅ Full structured profile saved for ${targetUser.username} — ${Object.keys(d).length} fields mapped.`);
             }
         } catch (dbErr) {
-            console.error("[BR DB] Save Failed:", dbErr.message);
+            console.error('[BR DB] Save Failed:', dbErr.message);
         }
 
         // 6. Cleanup local file
-        fs.unlink(req.file.path, (err) => { if (err) console.error("Cleanup Err:", err); });
+        fs.unlink(req.file.path, () => {});
 
         res.json({
             fileName: req.file.originalname,
             text: rawText,
             organizedText: organizedProfile,
+            structuredData,
             driveId: rawDriveId,
-            profileDriveId: profileDriveId
+            profileDriveId
         });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Bridge Core Failure' });
+        console.error('[BR Core] Critical Failure:', err);
+        res.status(500).json({ message: 'BR Extraction Core Failure', error: err.message });
     }
 });
+
 
 // POST BR Organize (Generate Natural Language Profile)
 router.post('/br-organize', auth, async (req, res) => {

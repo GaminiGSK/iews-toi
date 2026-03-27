@@ -67,81 +67,85 @@ function fileToGenerativePart(path, mimeType) {
 exports.extractDocumentData = async (filePath, docType) => {
     console.log(`[GeminiAI] Processing Document (Vision 2.0): ${filePath} (Type: ${docType})`);
     try {
-        let prompt = "Analyze this business document image visually and extract all data into a strict JSON object.";
+        let prompt = '';
 
-        // Contextual Prompts based on Doc Type
         switch (docType) {
-            case 'moc_cert':
-                prompt += `
-                Extract specific fields from this MOC Certificate:
-                - companyNameEn (String)
-                - companyNameKh (String)
-                - registrationNumber (String)
-                - incorporationDate (Format: DD/MM/YYYY)
-                - address (String: Full Address)
-                `;
-                break;
-            case 'kh_extract':
-            case 'en_extract':
-                prompt += `
-                Extract from this Business Extract:
-                - companyNameEn
-                - companyNameKh
-                - registrationNumber
-                - businessActivity (String summary)
-                - capitalAmount (Number or String)
-                - directorName (String: Comma-separated list if multiple directors)
-                - shareholder (String: Comma-separated list if multiple shareholders)
-                `;
-                break;
             case 'tax_patent':
             case 'tax_id':
-                prompt += `
-                Extract from Tax/VAT Certificate:
-                - vatTin (String)
-                - companyNameKh
-                - taxRegistrationDate
-                `;
+                prompt = `Extract from this Cambodian Tax/Patent Certificate into raw JSON only (no markdown):
+{"vatTin":"...","companyNameKh":"...","companyNameEn":"...","taxRegistrationDate":"..."}`;
                 break;
             case 'bank_opening':
-                prompt += `
-                Extract from Bank Account Confirmation Letter:
-                - bankName
-                - bankAccountNumber
-                - bankAccountName
-                - bankCurrency
-                `;
+                prompt = `Extract from this Bank Account Confirmation Letter into raw JSON only (no markdown):
+{"bankName":"...","bankAccountNumber":"...","bankAccountName":"...","bankCurrency":"..."}`;
+                break;
+            case 'moc_cert':
+                prompt = `Extract from this Cambodian MOC Certificate into raw JSON only (no markdown):
+{"companyNameEn":"...","companyNameKh":"...","registrationNumber":"...","incorporationDate":"DD/MM/YYYY","physicalAddress":"...","companyType":"..."}`;
                 break;
             default:
-                prompt += " Extract: companyNameEn, companyNameKh, registrationNumber, address, vatTin.";
+                // MASTER EXTRACTOR — covers all Cambodia MOC Business Extract fields (EN + KH versions)
+                prompt = `You are an expert Document Intelligence Agent for Cambodian MOC Business Registration Extracts.
+Carefully read this document and extract EVERY data field with 100% accuracy.
+Return ONLY a strict JSON object — no markdown, no code fences, no explanation.
+
+{
+  "companyNumber": "Company registration number",
+  "companyNameKh": "Company name in Khmer script",
+  "companyNameEn": "Company name in English",
+  "companyType": "e.g. Private Limited Liability Company",
+  "companySubType": "Sub-type if present",
+  "registrationNumber": "Same as companyNumber",
+  "incorporationDate": "DD-Month-YYYY or DD/MM/YYYY",
+  "businessActivities": "ALL activity codes and names comma-separated",
+  "physicalAddress": "Full physical registered office address",
+  "postalAddress": "Postal registered office address",
+  "contactEmail": "Email address",
+  "contactPhone": "Telephone number",
+  "directors": [
+    {"nameKh":"Khmer name or null","nameEn":"English name","address":"Full address","isChairman":false}
+  ],
+  "shareholders": [
+    {"nameKh":"Khmer name or null","nameEn":"English name","address":"Full address","numberOfShares":0,"nationality":"Foreigner or Cambodian","isChairman":false}
+  ],
+  "registeredShareCapitalKHR": "Capital in KHR",
+  "moreThanOneClassOfShares": false,
+  "majorityNationality": "Foreigner or Cambodian",
+  "percentageOfMajorityShareholders": "100.00",
+  "vatTin": null,
+  "bankName": null,
+  "bankAccountNumber": null
+}
+
+IMPORTANT:
+- Extract ALL directors listed — do not stop at one.
+- Extract ALL shareholders with their exact share count.
+- Extract ALL business activity codes and descriptions.
+- If a field is absent, return null.
+- Return ONLY the JSON object.`;
         }
 
-        prompt += `
-        \nRETURN ONLY RAW JSON. No Markdown. No Code Blocks.
-        If a field is not found, return null for that field.
-        `;
-
-        // Vision Model supports various image types
         const ext = path.extname(filePath).toLowerCase();
         let mimeType = 'image/jpeg';
         if (ext === '.png') mimeType = 'image/png';
         if (ext === '.webp') mimeType = 'image/webp';
         if (ext === '.pdf') mimeType = 'application/pdf';
+        if (ext === '.jpg' || ext === '.jpeg') mimeType = 'image/jpeg';
 
         const imagePart = fileToGenerativePart(filePath, mimeType);
-
         const result = await callGeminiWithRetry(() => getModel().generateContent([prompt, imagePart]));
         const response = await result.response;
         const text = response.text();
 
-        console.log("[GeminiAI] Doc Extract Raw:", text.substring(0, 50) + "...");
+        console.log('[GeminiAI] BR Full Extract (first 200):', text.substring(0, 200) + '...');
         return cleanAndParseJSON(text);
 
     } catch (error) {
-        console.error("Gemini API Error (Doc):", error);
-        return { error: "Extraction failed", details: error.message };
+        console.error('Gemini API Error (Doc):', error);
+        return { error: 'Extraction failed', details: error.message };
     }
 };
+
 
 exports.extractBankStatement = async (filePath) => {
     console.log(`[GeminiAI] Scanning Bank Statement (Vision 2.0): ${filePath}`);
