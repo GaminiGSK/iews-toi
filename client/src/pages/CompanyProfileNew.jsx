@@ -749,48 +749,37 @@ export default function CompanyProfile() {
     const [gdtAgentMsg, setGdtAgentMsg] = useState('');
     const [gdtOtp, setGdtOtp] = useState('');
 
-    const handleLaunchGdtAgent = async () => {
+    const handleLaunchGdtAgent = () => {
         if (!gdtCreds.gdtUsername || !gdtCreds.gdtPassword) {
             alert('Please save your GDT credentials first (Step 1).');
             return;
         }
-        setGdtAgentStatus('launching');
-        setGdtAgentMsg('🤖 Agent opening GDT portal and filling your credentials...');
-        setGdtScreenshot(null);
-        setGdtOtp('');
-        try {
-            const token = localStorage.getItem('token');
-            const res = await axios.post('/api/company/gdt-agent-launch',
-                { gdtUsername: gdtCreds.gdtUsername, gdtPassword: gdtCreds.gdtPassword },
-                { headers: { Authorization: `Bearer ${token}` }, timeout: 60000 }
-            );
-            setGdtSessionId(res.data.sessionId);
-            setGdtScreenshot(res.data.screenshot || null);
-            setGdtAgentMsg(res.data.message || 'OTP sent to your email.');
-            setGdtAgentStatus('otp_pending');
-        } catch (e) {
-            setGdtAgentMsg(`❌ Agent error: ${e.response?.data?.message || e.message}`);
-            setGdtAgentStatus('error');
+
+        // STONE-CARVED RULE: GDT portal MUST open visibly on screen in front of the human.
+        // Agent NEVER works behind the screen. User watches, types OTP, has full control.
+        const GDT_URL = 'https://owp.tax.gov.kh/gdtowpcoreweb/login';
+        const gdtWindow = window.open(GDT_URL, 'gdt_portal', 'width=1280,height=900,left=100,top=50');
+
+        if (!gdtWindow) {
+            alert('Popup blocked! Please allow popups for this site and try again.');
+            return;
         }
+
+        setGdtAgentStatus('otp_pending');
+        setGdtSessionId(`local_${Date.now()}`);
+        setGdtOtp('');
+        setGdtAgentMsg('✅ GDT portal is now open on your screen.\n\n👉 STEPS:\n1. Select the TID tab on GDT\n2. Enter your TID: ' + gdtCreds.gdtUsername + '\n3. Enter your password\n4. Click Send Code\n5. GDT will send OTP to your registered phone/email\n6. Come back here and enter the OTP below');
+
+        // Copy TID to clipboard automatically for quick paste
+        navigator.clipboard?.writeText(gdtCreds.gdtUsername).catch(() => {});
     };
 
-    const handleSubmitOtp = async () => {
-        if (!gdtOtp.trim()) { alert('Please enter the OTP from your email.'); return; }
-        setGdtAgentStatus('submitting_otp');
-        setGdtAgentMsg('🤖 Submitting OTP...');
-        try {
-            const token = localStorage.getItem('token');
-            const res = await axios.post('/api/company/gdt-agent-otp',
-                { sessionId: gdtSessionId, otp: gdtOtp.trim() },
-                { headers: { Authorization: `Bearer ${token}` }, timeout: 30000 }
-            );
-            setGdtScreenshot(res.data.screenshot || null);
-            setGdtAgentMsg(res.data.message || 'Login complete!');
-            setGdtAgentStatus('done');
-        } catch (e) {
-            setGdtAgentMsg(`❌ OTP error: ${e.response?.data?.message || e.message}`);
-            setGdtAgentStatus('error');
-        }
+    const handleSubmitOtp = () => {
+        if (!gdtOtp.trim()) { alert('Please enter the OTP code from GDT.'); return; }
+        // User has already entered OTP into the visible GDT browser window.
+        // This just confirms completion and shows next steps.
+        setGdtAgentStatus('done');
+        setGdtAgentMsg(`✅ OTP ${gdtOtp} recorded. Please enter it into the GDT portal that is open on your screen, then proceed with the TOI filing.`);
     };
 
     const renderAgenticFiling = () => (
@@ -867,7 +856,7 @@ export default function CompanyProfile() {
                         <div className="w-8 h-8 rounded-full bg-green-500/20 border border-green-500/40 flex items-center justify-center text-green-400 font-black text-sm">2</div>
                         <div>
                             <h2 className="text-white font-black text-base uppercase tracking-wider">Launch Agent</h2>
-                            <p className="text-slate-500 text-xs mt-0.5">Agent opens GDT headlessly, fills your credentials, and clicks Send Code — fully automatic.</p>
+                            <p className="text-slate-500 text-xs mt-0.5">Opens GDT portal on your screen. You watch the browser, enter your TID/password — GDT sends OTP to your phone.</p>
                         </div>
                     </div>
 
@@ -878,17 +867,29 @@ export default function CompanyProfile() {
                         <div className="flex justify-between"><span>Portal</span><span className="text-blue-400">owp.tax.gov.kh → TID tab</span></div>
                     </div>
 
-                    {/* Agent status message */}
-                    {gdtAgentMsg && (
+                    {/* Credential helper — visible copy panel */}
+                    {gdtAgentStatus === 'otp_pending' || gdtAgentStatus === 'done' ? (
+                        <div className="bg-green-900/10 border border-green-500/20 rounded-xl px-4 py-3 space-y-2">
+                            <div className="flex items-center justify-between">
+                                <span className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Your GDT TID (auto-copied)</span>
+                                <button onClick={() => navigator.clipboard?.writeText(gdtCreds.gdtUsername)} className="text-[10px] text-green-400 hover:text-green-300 font-bold">Copy again</button>
+                            </div>
+                            <div className="font-mono text-green-300 text-sm tracking-widest">{gdtCreds.gdtUsername}</div>
+                            <div className="flex items-center justify-between mt-1">
+                                <span className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Password</span>
+                                <button onClick={() => navigator.clipboard?.writeText(gdtCreds.gdtPassword)} className="text-[10px] text-green-400 hover:text-green-300 font-bold">Copy</button>
+                            </div>
+                            <div className="font-mono text-slate-400 text-sm">{'•'.repeat(gdtCreds.gdtPassword.length)}</div>
+                            <div className="text-[10px] text-amber-400 mt-2">👆 GDT is open. Select TID tab → paste TID → enter password → click Send Code</div>
+                        </div>
+                    ) : gdtAgentMsg ? (
                         <div className={`rounded-xl px-4 py-3 text-xs font-mono border ${
                             gdtAgentStatus === 'error' ? 'bg-red-900/20 border-red-500/30 text-red-300' :
-                            gdtAgentStatus === 'done' ? 'bg-green-900/20 border-green-500/30 text-green-300' :
                             'bg-slate-900/60 border-white/5 text-slate-300'
                         }`}>
-                            {gdtAgentStatus === 'launching' && <span className="animate-pulse">⏳ </span>}
                             {gdtAgentMsg}
                         </div>
-                    )}
+                    ) : null}
 
                     {/* Live screenshot from agent */}
                     {gdtScreenshot && (
@@ -900,13 +901,11 @@ export default function CompanyProfile() {
 
                     <button
                         onClick={handleLaunchGdtAgent}
-                        disabled={['launching', 'submitting_otp'].includes(gdtAgentStatus)}
-                        className="w-full py-4 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 disabled:from-slate-700 disabled:to-slate-700 text-white font-black text-base tracking-wider uppercase transition-all shadow-lg shadow-green-900/30 active:scale-95"
+                        className="w-full py-4 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-black text-base tracking-wider uppercase transition-all shadow-lg shadow-green-900/30 active:scale-95"
                     >
-                        {gdtAgentStatus === 'launching' ? '⏳ Agent Working...' :
-                         gdtAgentStatus === 'otp_pending' ? '🔄 Re-launch Agent' :
-                         gdtAgentStatus === 'done' ? '✓ Done — Re-launch' :
-                         '🤖 Launch Agent & Auto-Fill GDT'}
+                        {gdtAgentStatus === 'otp_pending' ? '🔄 Re-Open GDT Portal' :
+                         gdtAgentStatus === 'done' ? '✓ Done — Open GDT Again' :
+                         '🌐 Open GDT Portal On Screen'}
                     </button>
                 </div>
 
@@ -919,8 +918,8 @@ export default function CompanyProfile() {
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 font-black text-sm">3</div>
                         <div>
-                            <h2 className="text-white font-black text-base uppercase tracking-wider">Enter OTP — Agent Will Submit</h2>
-                            <p className="text-slate-500 text-xs mt-0.5">Check your email for the GDT authentication code. Type it here — agent enters it automatically.</p>
+                            <h2 className="text-white font-black text-base uppercase tracking-wider">Enter OTP Code</h2>
+                            <p className="text-slate-500 text-xs mt-0.5">GDT sends a code to your registered phone/email after you click Send Code on their portal. Enter it in the GDT portal window that is open on your screen.</p>
                         </div>
                     </div>
 
@@ -940,9 +939,7 @@ export default function CompanyProfile() {
                         disabled={gdtAgentStatus !== 'otp_pending' || !gdtOtp}
                         className="w-full py-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 disabled:from-slate-700 disabled:to-slate-700 text-white font-black text-base tracking-wider uppercase transition-all active:scale-95"
                     >
-                        {gdtAgentStatus === 'submitting_otp' ? '⏳ Submitting...' :
-                         gdtAgentStatus === 'done' ? '✓ OTP Accepted!' :
-                         '📨 Submit OTP to Agent'}
+                        {gdtAgentStatus === 'done' ? '✓ Confirmed!' : '✅ Confirm OTP Entered'}
                     </button>
 
                     {gdtAgentStatus !== 'otp_pending' && gdtAgentStatus !== 'submitting_otp' && gdtAgentStatus !== 'done' && (
