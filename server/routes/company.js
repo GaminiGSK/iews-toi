@@ -2005,7 +2005,6 @@ router.get('/trial-balance', auth, async (req, res) => {
         }).populate('accountCode').lean();
 
         // Fetch Manual Journal Entries (Adjustments)
-        const JournalEntry = require('../models/JournalEntry');
         const journalEntries = await JournalEntry.find({
             companyCode: req.user.companyCode,
             status: 'Posted'
