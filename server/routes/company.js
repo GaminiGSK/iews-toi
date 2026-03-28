@@ -100,29 +100,15 @@ router.post('/br-extract', auth, upload.single('file'), async (req, res) => {
             }
         } catch (driveErr) { console.error('[BR Drive] Raw Sync Failed:', driveErr.message); }
 
-        // 3. AI Natural Language Synthesis
-        console.log('[BR Core] Synthesizing Business Profile...');
-        const organizedProfile = await googleAI.summarizeToProfile(rawText);
-
-        // 4. Secondary Drive Sync (MD Profile)
-        let profileDriveId = null;
-        try {
-            if (targetFolderId) {
-                const tempPath = `./tmp/profile_${Date.now()}.md`;
-                if (!fs.existsSync('./tmp')) fs.mkdirSync('./tmp');
-                fs.writeFileSync(tempPath, organizedProfile);
-                const profileFileName = `Business Profile - ${req.file.originalname.split('.')[0]}.md`;
-                const pDrive = await uploadFile(tempPath, 'text/markdown', profileFileName, targetFolderId);
-                profileDriveId = (typeof pDrive === 'object') ? pDrive.id : pDrive;
-                fs.unlink(tempPath, () => {});
-            }
-        } catch (e) { console.error('[BR Drive] Profile Sync Failed:', e.message); }
-
-        // 5. Database Sync — map ALL structured fields into CompanyProfile
+        // 3. Database Accumulation & Aggregation
+        let aggregatedRawText = '';
+        let aggregatedData = {};
+        let profileInDb = null;
+        
         try {
             if (targetUser) {
-                console.log(`[BR DB] Saving full profile for: ${targetUser.username}`);
-                let profileInDb = await CompanyProfile.findOne({ user: targetUser._id });
+                console.log(`[BR DB] Accessing profile pool for: ${targetUser.username}`);
+                profileInDb = await CompanyProfile.findOne({ user: targetUser._id });
                 if (!profileInDb) {
                     profileInDb = new CompanyProfile({
                         user: targetUser._id,
@@ -150,8 +136,39 @@ router.post('/br-extract', auth, upload.single('file'), async (req, res) => {
                     profileInDb.documents.push(docEntry);
                 }
 
-                // === MAP ALL STRUCTURED FIELDS ===
-                const d = structuredData || {};
+                // Aggregate ALL documents for this entity
+                for (const doc of profileInDb.documents) {
+                    if (doc.rawText) {
+                        aggregatedRawText += `\n\n--- DOCUMENT: ${doc.originalName} ---\n\n` + doc.rawText;
+                    }
+                    if (doc.extractedData) {
+                        for (const [key, val] of Object.entries(doc.extractedData)) {
+                            if (Array.isArray(val) && val.length > 0) {
+                                aggregatedData[key] = val;
+                            } else if (!Array.isArray(val) && val !== null && val !== undefined && val !== '') {
+                                aggregatedData[key] = val;
+                            }
+                        }
+                    }
+                }
+            } else {
+                // Fallback if no targetUser (unlikely in BR, but just in case)
+                aggregatedRawText = rawText;
+                aggregatedData = structuredData || {};
+            }
+        } catch (dbErr) {
+            console.error('[BR DB] Accumulation Failed:', dbErr.message);
+        }
+
+        // 4. AI Master Natural Language Synthesis
+        console.log('[BR Core] Synthesizing MASTER Business Profile...');
+        const organizedProfile = await googleAI.summarizeToProfile(aggregatedRawText, aggregatedData);
+
+        // 5. DB Field Mapping & Save
+        let profileDriveId = null;
+        try {
+            if (profileInDb) {
+                const d = aggregatedData;
                 const setField = (key, val) => { if (val !== null && val !== undefined && val !== '') profileInDb[key] = val; };
 
                 setField('companyNameEn', d.companyNameEn);
@@ -165,9 +182,11 @@ router.post('/br-extract', auth, upload.single('file'), async (req, res) => {
                 setField('businessActivity', d.businessActivities);
                 setField('companyType', d.companyType);
                 setField('vatTin', d.vatTin);
+                setField('taxRegistrationDate', d.taxRegistrationDate);
                 setField('bankName', d.bankName);
                 setField('bankAccountNumber', d.bankAccountNumber);
                 setField('bankAccountName', d.bankAccountName);
+                setField('bankCurrency', d.bankCurrency);
                 setField('registeredShareCapitalKHR', d.registeredShareCapitalKHR);
                 setField('majorityNationality', d.majorityNationality);
                 setField('percentageOfMajorityShareholders', d.percentageOfMajorityShareholders);
@@ -184,14 +203,28 @@ router.post('/br-extract', auth, upload.single('file'), async (req, res) => {
                 }
 
                 profileInDb.organizedProfile = organizedProfile;
-                if (targetUser.companyCode) profileInDb.companyCode = targetUser.companyCode;
+                if (targetUser && targetUser.companyCode) profileInDb.companyCode = targetUser.companyCode;
 
+                profileInDb.markModified('documents');
                 await profileInDb.save();
-                console.log(`[BR DB] ✅ Full structured profile saved for ${targetUser.username} — ${Object.keys(d).length} fields mapped.`);
+                console.log(`[BR DB] ✅ Full aggregated structured profile saved for ${targetUser.username} — ${Object.keys(d).length} fields mapped.`);
             }
         } catch (dbErr) {
-            console.error('[BR DB] Save Failed:', dbErr.message);
+            console.error('[BR DB] Map/Save Failed:', dbErr.message);
         }
+
+        // 6. Secondary Drive Sync (MD Profile)
+        try {
+            if (targetFolderId) {
+                const tempPath = `./tmp/profile_${Date.now()}.md`;
+                if (!fs.existsSync('./tmp')) fs.mkdirSync('./tmp');
+                fs.writeFileSync(tempPath, organizedProfile);
+                const profileFileName = `Business Profile - MASTER SYNTHESIS.md`;
+                const pDrive = await uploadFile(tempPath, 'text/markdown', profileFileName, targetFolderId);
+                profileDriveId = (typeof pDrive === 'object') ? pDrive.id : pDrive;
+                fs.unlink(tempPath, () => {});
+            }
+        } catch (e) { console.error('[BR Drive] Profile Sync Failed:', e.message); }
 
         // 6. Cleanup local file
         fs.unlink(req.file.path, () => {});

@@ -79,6 +79,7 @@ const CompanyProfileSchema = new mongoose.Schema({
 
     // Accounting
     abaOpeningBalance: { type: Number, default: 0 },
+    lockedGLYears: [{ type: String }], // e.g. ["2024", "2025"]
 
     // GDT e-Tax Portal Credentials
     gdtUsername: { type: String, default: '' },

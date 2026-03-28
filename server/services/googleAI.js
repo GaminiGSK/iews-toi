@@ -67,26 +67,9 @@ function fileToGenerativePart(path, mimeType) {
 exports.extractDocumentData = async (filePath, docType) => {
     console.log(`[GeminiAI] Processing Document (Vision 2.0): ${filePath} (Type: ${docType})`);
     try {
-        let prompt = '';
-
-        switch (docType) {
-            case 'tax_patent':
-            case 'tax_id':
-                prompt = `Extract from this Cambodian Tax/Patent Certificate into raw JSON only (no markdown):
-{"vatTin":"...","companyNameKh":"...","companyNameEn":"...","taxRegistrationDate":"..."}`;
-                break;
-            case 'bank_opening':
-                prompt = `Extract from this Bank Account Confirmation Letter into raw JSON only (no markdown):
-{"bankName":"...","bankAccountNumber":"...","bankAccountName":"...","bankCurrency":"..."}`;
-                break;
-            case 'moc_cert':
-                prompt = `Extract from this Cambodian MOC Certificate into raw JSON only (no markdown):
-{"companyNameEn":"...","companyNameKh":"...","registrationNumber":"...","incorporationDate":"DD/MM/YYYY","physicalAddress":"...","companyType":"..."}`;
-                break;
-            default:
-                // MASTER EXTRACTOR — covers all Cambodia MOC Business Extract fields (EN + KH versions)
-                prompt = `You are an expert Document Intelligence Agent for Cambodian MOC Business Registration Extracts.
+        const prompt = `You are an expert Document Intelligence Agent for Cambodian Corporate & Tax Documents.
 Carefully read this document and extract EVERY data field with 100% accuracy.
+Identify if it is a MOC Extract, Patent, Tax Certificate, or Bank Letter, and extract all relevant fields.
 Return ONLY a strict JSON object — no markdown, no code fences, no explanation.
 
 {
@@ -112,18 +95,20 @@ Return ONLY a strict JSON object — no markdown, no code fences, no explanation
   "moreThanOneClassOfShares": false,
   "majorityNationality": "Foreigner or Cambodian",
   "percentageOfMajorityShareholders": "100.00",
-  "vatTin": null,
-  "bankName": null,
-  "bankAccountNumber": null
+  "vatTin": "Tax Identification Number (TIN) if present",
+  "taxRegistrationDate": "DD/MM/YYYY if present",
+  "bankName": "Bank Name if present",
+  "bankAccountNumber": "Bank Account Number if present",
+  "bankAccountName": "Bank Account Name if present",
+  "bankCurrency": "Bank Currency (USD, KHR) if present"
 }
 
 IMPORTANT:
 - Extract ALL directors listed — do not stop at one.
 - Extract ALL shareholders with their exact share count.
 - Extract ALL business activity codes and descriptions.
-- If a field is absent, return null.
+- If a field is absent from the document, return null. DO NOT guess.
 - Return ONLY the JSON object.`;
-        }
 
         const ext = path.extname(filePath).toLowerCase();
         let mimeType = 'image/jpeg';
@@ -286,14 +271,15 @@ exports.extractFromBuffer = async (buffer, mimeType) => {
     }
 };
 
-exports.summarizeToProfile = async (rawText) => {
+exports.summarizeToProfile = async (rawText, structuredData = {}) => {
     console.log(`[GeminiAI] Organizing Raw Text into Business Profile...`);
     try {
+        const strictDataString = JSON.stringify(structuredData, null, 2);
         const prompt = `
             You are a Senior Business Analyst and Corporate Documentation Specialist. 
-            Your task is to transform raw OCR text (Khmer and English) into a comprehensive "Business Profile Dossier".
+            Your task is to transform raw OCR text (Khmer and English) and Structured JSON Data into a comprehensive "Business Profile Dossier".
             
-            This document must be exhaustive. Reconstruct the entity's complete identity.
+            This document must be exhaustive. Reconstruct the entity's complete identity. Use the Structured JSON Data as the ultimate source of truth, and use the Raw Text to add flavor and context.
             
             STRUCTURE THE DOCUMENT AS FOLLOWS:
 
@@ -317,7 +303,11 @@ exports.summarizeToProfile = async (rawText) => {
             # V. ANALYST STRATEGIC DOSSIER
             (8-10 sentence formal strategic overview talking about the entity's longevity, diversity of objectives, and verified leadership structure.)
 
-            RAW DATA:
+            ---
+            STRUCTURED JSON DATA (SOURCE OF TRUTH):
+            ${strictDataString}
+
+            RAW OCR TEXT:
             ${rawText}
             
             STRICT RULES:
@@ -363,23 +353,33 @@ exports.generateMatchDescription = async (code, description) => {
     }
 };
 
-exports.suggestAccountingCodes = async (transactions, codes) => {
-    console.log(`[GeminiAI] Auto-Tagging ${transactions.length} transactions with ${codes.length} codes.`);
+exports.suggestAccountingCodes = async (transactions, codes, organicMemory = []) => {
+    console.log(`[GeminiAI] Auto-Tagging ${transactions.length} transactions with ${codes.length} codes. Context Memory: ${organicMemory.length} human mappings.`);
 
     // Prepare the Prompt Data
     // We only need basic info to save tokens
     const codeList = codes.map(c => `${c.code}: ${c.description} ${c.matchDescription ? `(Matching: ${c.matchDescription})` : ''} (TOI: ${c.toiCode})`).join('\n');
     const txList = transactions.map(t => `ID: ${t._id} | Desc: ${t.description} | Amount: ${t.amount}`).join('\n');
+    
+    // Organic Memory String
+    let organicMemoryStr = "No historical human mappings available yet.";
+    if (organicMemory.length > 0) {
+        organicMemoryStr = organicMemory.map(m => `Historically, "${m.description}" was tagged to ${m.code}`).join('\n');
+    }
 
     const prompt = `
         You are an expert Accountant.
         Here is my Chart of Accounts:
         ${codeList}
 
-        Here is a list of Bank Transactions:
+        Below is your "Organic Memory" based on how human operators previously tagged transactions. 
+        CRITICAL PRIORITY: If a pending transaction closely matches one of these historical descriptions, you MUST overwhelmingly prioritize assigning it to the same historical account code!
+        ${organicMemoryStr}
+
+        Here is a list of Bank Transactions that need to be categorized:
         ${txList}
 
-        CRITICAL RULES (User Defined):
+        CRITICAL RULES (User Defined Defaults):
         1. **Income (Positive Amount)**: 
            - IF Description contains "Kassapa Gamini Gunasingha" OR "Capital Injection": ALWAYS tag as "30100" (Share Capital / Paid-in Capital).
            - IF Description contains "Shareholder Loan": Tag as "21100" (Liability - Related Party).
@@ -492,7 +492,11 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
                - **Foreign Service Income / Dividends**: Revenue "40000" or Dividend Income "42100".
                - **Otherwise**: General Revenue "10110".
             3. **Expense Cleanup**: Always check Account 17250 and Account 61070 for missing or untagged transactions. Recommend reclassification of "Registration" fees to 61241 and "Owner Withdrawals" to Equity/Drawings exactly as seen in the sync export.
-            4. **Visuals**: Use the Recharts library to generate "Assets vs. Liabilities + Equity" or "Money In vs. Money Out" bar charts to explicitly prove your math checks.
+            4. **Cambodian Business Context (Strict Vendor Knowledge)**:
+               - **EZECOM / SINET**: These are Cambodian Internet Service Providers (ISPs). Payments to them MUST be classified as Office Expenses, Internet, or Telecommunications (e.g. 61050 or 61220 series depending on the COA).
+               - **UNITED FREIGHT SOLUTIONS / Freight / Logistics**: These are logistics, shipping, and forwarding companies. Payments MUST be classified as Freight, Delivery, or Logistics Expenses.
+               - **NSSF**: National Social Security Fund. Classify as Social Security / Employee Benefits.
+            5. **Visuals**: Use the Recharts library to generate "Assets vs. Liabilities + Equity" or "Money In vs. Money Out" bar charts to explicitly prove your math checks.
 
             **ULTRA-PERSISTENT SCANNING & MANDATORY EXHAUSTIVENESS**:
             When the user asks for "Business Activities" or "Codes", you MUST enter "Exhaustive Audit Mode".
@@ -585,8 +589,8 @@ ${s.transactions.map(t => `  ${t.date} | IN:$${t.moneyIn||0} OUT:$${t.moneyOut||
             2. **propose_journal_entry**: Prepares a manual journal adjustment (depreciate, accrue, manual move).
                Schema: { "tool_use": "propose_journal_entry", "journal_data": { "description": "...", "entries": [{ "code": "...", "amount": 0 }] }, "reply_text": "I've prepared the adjustment." }
 
-            3. **tag_single_transaction**: Categorizes/tags ONE specific transaction in the general ledger. You MUST provide a unique 'description_match' substring (like the exact vendor name or ID from the user's prompt).
-               Schema: { "tool_use": "workspace_action", "action": "tag_single_transaction", "params": { "targetCode": "10110", "description_match": "STARTUP NEST" }, "reply_text": "I've updated that specific transaction for you." }
+            3. **tag_single_transaction**: Categorizes/tags ALL transactions in the general ledger that match your target substring. You MUST provide a unique 'description_match' substring (like the exact vendor name or ID from the user's prompt).
+               Schema: { "tool_use": "workspace_action", "action": "tag_single_transaction", "params": { "targetCode": "10110", "description_match": "STARTUP NEST" }, "reply_text": "I've updated the matching transactions for you." }
 
             4. **bulk_tag_ledger**: Categorizes/tags MULTIPLE transactions based on conditions (e.g. "change ALL rental expenses to 61220"). To target specific types, you MUST provide 'description_match'. If the user says "change all money out", leave 'description_match' blank.
                Schema: { "tool_use": "workspace_action", "action": "bulk_tag_ledger", "params": { "condition": "money_in", "targetCode": "10110", "description_match": "rental" }, "reply_text": "Processed the bulk tag update for your matching ledger items." }
@@ -608,12 +612,19 @@ ${s.transactions.map(t => `  ${t.date} | IN:$${t.moneyIn||0} OUT:$${t.moneyOut||
             9. **generate_chart**: When the user asks to "show a chart," "graph," or visual correlation of the data instead of just text, you can respond with a JSON dataset designed for a Recharts Frontend Component.
                Schema: { "tool_use": "generate_chart", "chart_data": { "type": "bar" | "pie" | "line", "title": "Chart Title", "data": [ { "name": "Category A", "value": 100 }, { "name": "Category B", "value": 200 } ] }, "reply_text": "Here is the visual chart representing the data you requested." }
 
+            10. **propose_reclassifications**: Use this tool to suggest bulk changes when auditing bank statement descriptions against current system codes. Outputs a structured interactive UI table for the user to quickly approve or decline your logic. 
+                Schema: { "tool_use": "propose_reclassifications", "suggestions": [{ "description_match": "EZECOM", "current_code": "10110", "suggested_code": "61050", "reasoning": "ISP payments are Office Expenses." }], "reply_text": "I analyzed the bank statement data. Here are my identified discrepancies and suggested reclassifications:" }
+
             10. **save_br_data**: USE THIS IMMEDIATELY when the user pastes Business Registration data (like MOC certificates or Tax Posters).
                 Schema: { "tool_use": "workspace_action", "action": "save_br_data", "params": { "companyNameEn": "...", "companyNameKh": "...", "regId": "...", "taxId": "...", "incDate": "...", "addr": "...", "type": "...", "directorName": "...", "shareholder": "...", "businessActivities": "..." }, "reply_text": "I have successfully extracted your business registration info and saved it to the profile." }
 
              11. **fill_toi_workspace**: Use this ONLY for the Annual "TOI" Tax Return Form (e.g., "fill in page one"). DO NOT use this for the Statement of Financial Position or Trial Balance. If the user asks to update data in any subject/field on the TOI form, dynamically extract those details from context and output the JSON.
                Schema: { "tool_use": "fill_toi_workspace", "reply_text": "A friendly conversational response acknowledging ONLY the specific fields you updated.", "params": { "tin": "extract regId or taxId, ensuring hyphens if any", "name": "extract nameKh FIRST, then nameEn if Kh is missing", "branchOut": "001", "registrationDate": "extract incDate, e.g. 15/07/2021", "directorName": "extract nameKh FIRST, then nameEn if Kh is missing", "businessActivities": "extract Khmer type FIRST, then English if missing", "agentName": "Tax Agent Name", "agentLicense": "Tax Agent License Number", "address1": "extract pure Khmer text of the address. Strip ALL english text.", "address2": "extract exactly the same pure Khmer address as address1", "address3": "N/A", "taxMonths": "12", "fromDate": "01012026", "untilDate": "31122026", "accountingRecord": "Using Software / Not Using Software", "softwareName": "Software if used", "taxComplianceStatus": "Gold / Silver / Bronze", "statutoryAudit": "Required / Not Required", "legalForm": "Private Limited Company", "yearFirstRevenue": "Year of first revenue", "yearFirstProfit": "Year of first profit", "priorityPeriodYear": "Priority period year", "incomeTaxRate": "30% / 20% / 5% / 0% / 0-20% / Progressive Rate", "incomeTaxDue": "Amount", "taxCreditCarriedForward": "Amount", "taxOfficeNo": "No", "taxOfficialId": "Tax ID array mapped", "filedIn": "Location", "filingDate": "DDMMYYYY", "signatoryName": "Name" } }
                - Only include keys in 'params' if you are actively filling or updating them. Do not send nulls unless clearing a field.
+
+             12. **edit_account_code**: Use this when the user explicitly asks you to amend, explain, or edit the actual definition/description of an Accounting Code in the database based on business nature.
+                 CRITICAL IFRS GATEKEEPER RULE: Before proposing this edit, you MUST evaluate the new description against the IFRS structural category of the code block (1=Asset, 2=Liability, 3=Equity, 4/7=Revenue, 5/6=Expense). If the requested classification violates IFRS (e.g., turning a 10000-level Asset code into Revenue/Expenses), you MUST REJECT the user's request. Explain why it breaks the Trial Balance, and suggest an alternative compliant code block. Do NOT execute the tool if it violates IFRS.
+                 Schema: { "tool_use": "edit_account_code", "params": { "code": "61220", "description": "Bank Fees & Internet", "matchDescription": "ABA fees and EZECOM ISP", "note": "Updated per user request" }, "reply_text": "I have updated the accounting code description in the database to better reflect your business nature." }
 
             **CRITICAL EXECUTOR LOOP**:
             1. Is the user asking about bank statement data, Q1/Q2/Q3/Q4 data, GL comparison, audit, balance check, or ANY financial data? Answer in PLAIN TEXT using the context already provided. NEVER use escalate_to_antigravity for financial queries.
@@ -728,19 +739,28 @@ ${s.transactions.map(t => `  ${t.date} | IN:$${t.moneyIn||0} OUT:$${t.moneyOut||
 // Utilities
 function cleanAndParseJSON(text) {
     try {
-        // 1. Attempt strict clean
-        let clean = text.replace(/```json/g, '').replace(/```/g, '').trim();
+        // Find outer curly braces or square brackets
+        const firstBrace = text.indexOf('{');
+        const lastBrace = text.lastIndexOf('}');
+        const firstBracket = text.indexOf('[');
+        const lastBracket = text.lastIndexOf(']');
 
-        // 2. Regex fallback: Find the first '[' and last ']' OR '{' and '}' if object
-        const matchArray = clean.match(/\[[\s\S]*\]/);
-        const matchObj = clean.match(/\{[\s\S]*\}/);
+        let cleanText = text;
 
-        if (matchArray) clean = matchArray[0];
-        else if (matchObj) clean = matchObj[0];
+        if (firstBrace !== -1 && lastBrace !== -1 && (firstBracket === -1 || firstBrace < firstBracket)) {
+            cleanText = text.substring(firstBrace, lastBrace + 1);
+        } else if (firstBracket !== -1 && lastBracket !== -1 && (firstBrace === -1 || firstBracket < firstBrace)) {
+            // It's an array at the outermost level
+            cleanText = text.substring(firstBracket, lastBracket + 1);
+        } else {
+            // Try fallback replace
+            cleanText = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+        }
 
-        return JSON.parse(clean);
+        return JSON.parse(cleanText);
     } catch (e) {
-        console.error("JSON Parse Fail. Raw extract:", text.substring(0, 100));
+        console.error("JSON Parse Fail:", e.message);
+        console.error("Raw string length:", text.length, "Ends with:", text.substring(text.length - 100));
         return null;
     }
 }
