@@ -24,6 +24,7 @@ export default function Login() {
             } else if (res.data.user.role === 'admin') {
                 navigate('/admin');
             } else {
+                // unit, user, or any other role → their own financial dashboard
                 navigate('/dashboard');
             }
         } catch (err) {
