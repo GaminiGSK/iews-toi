@@ -167,14 +167,32 @@ router.post('/create-user', auth, async (req, res) => {
     }
 });
 
-// Get All Units (Admin sees all units; Superadmin sees all)
+// Get All Units (Admin sees assigned units + self; Superadmin sees all)
 router.get('/users', auth, async (req, res) => {
     if (req.user.role !== 'admin' && req.user.role !== 'superadmin') return res.status(403).json({ message: 'Forbidden' });
     try {
-        const query = {
-            role: { $in: ['unit', 'user'] },
-            username: { $nin: ['Admin', 'ADMIN'] }
-        };
+        let query;
+        if (req.user.role === 'superadmin') {
+            // Superadmin sees all units + explicit RSW test account
+            query = {
+                $or: [
+                    { role: { $in: ['unit', 'user'] } },
+                    { username: 'RSW' },
+                    { username: 'rsw' }
+                ],
+                username: { $nin: ['Admin', 'ADMIN'] }
+            };
+        } else {
+            // Normal admin (client) sees only their own assigned units and themselves
+            query = {
+                $or: [
+                    { createdBy: req.user.id },
+                    { _id: req.user.id }
+                ],
+                username: { $nin: ['Admin', 'ADMIN'] }
+            };
+        }
+
         const users = await User.find(query).select('username companyName loginCode createdAt role createdBy');
         res.json(users);
     } catch (err) {
