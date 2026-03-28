@@ -800,50 +800,7 @@ export default function AdminDashboard() {
                     </div>
                 </div>
             )}
-            {/* ── FIRST LOGIN: Password Change Modal ── */}
-            {showPwChange && (
-                <div className="fixed inset-0 bg-black/95 backdrop-blur-xl flex items-center justify-center z-[200]">
-                    <div className="bg-slate-900 border border-white/10 p-10 rounded-[40px] shadow-2xl w-full max-w-sm">
-                        <div className="flex items-center justify-center mb-6">
-                            <div className="w-14 h-14 bg-blue-600/20 rounded-2xl flex items-center justify-center">
-                                <KeyRound className="w-7 h-7 text-blue-400" />
-                            </div>
-                        </div>
-                        <h2 className="text-xl font-black text-white text-center mb-1">Change Your Access Code</h2>
-                        <p className="text-xs text-slate-500 text-center mb-6 uppercase tracking-wider">First login — set your personal 6-digit code</p>
-                        {pwChangeError && (
-                            <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-xl p-3 mb-4 font-semibold text-center">{pwChangeError}</div>
-                        )}
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-[10px] font-black text-slate-500 mb-1.5 uppercase tracking-widest">New 6-Digit Code</label>
-                                <input
-                                    type="password" placeholder="••••••" maxLength={6}
-                                    value={pwChangeCode}
-                                    onChange={e => setPwChangeCode(e.target.value.replace(/\D/g, ''))}
-                                    className="w-full px-4 py-3 bg-slate-800 border border-white/5 rounded-xl text-white text-center font-mono tracking-[0.5em] text-xl placeholder:text-slate-700 focus:ring-2 focus:ring-blue-500/30 outline-none"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-[10px] font-black text-slate-500 mb-1.5 uppercase tracking-widest">Confirm New Code</label>
-                                <input
-                                    type="password" placeholder="••••••" maxLength={6}
-                                    value={pwChangeCode2}
-                                    onChange={e => setPwChangeCode2(e.target.value.replace(/\D/g, ''))}
-                                    className="w-full px-4 py-3 bg-slate-800 border border-white/5 rounded-xl text-white text-center font-mono tracking-[0.5em] text-xl placeholder:text-slate-700 focus:ring-2 focus:ring-blue-500/30 outline-none"
-                                />
-                            </div>
-                        </div>
-                        <button
-                            onClick={handlePwChange} disabled={pwChanging}
-                            className="w-full mt-6 bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl text-xs uppercase tracking-widest transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                        >
-                            {pwChanging ? <Loader2 className="w-4 h-4 animate-spin" /> : <KeyRound className="w-4 h-4" />}
-                            {pwChanging ? 'Updating...' : 'Set New Code & Continue'}
-                        </button>
-                    </div>
-                </div>
-            )}
+            {/* ── First-Login Password Change Modal Removed ── */}
         </div>
     );
 };
