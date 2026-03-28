@@ -204,27 +204,28 @@ class AgentExecutor {
         }
 
         if (targetCodeObj) {
-            // Find exactly ONE transaction to tag
+            // Find ALL transactions to tag
             const query = { 
                 companyCode: trustedCompanyCode,
                 description: { $regex: new RegExp(description_match.trim(), 'i') }
             };
             
             // Find one first to report back accurately
-            const targetTx = await Transaction.findOne(query);
+            const targetTxs = await Transaction.find(query);
             
-            if (!targetTx) {
+            if (targetTxs.length === 0) {
                 socket.emit('agent:message', { text: `I couldn't find any transaction matching "${description_match}" in your ledger.` });
                 return;
             }
 
-            targetTx.accountCode = targetCodeObj._id;
-            targetTx.code = targetCodeObj.code;
-            targetTx.tagSource = 'ai';
-            await targetTx.save();
+            const result = await Transaction.updateMany(query, {
+                accountCode: targetCodeObj._id,
+                code: targetCodeObj.code,
+                tagSource: 'ai'
+            });
 
             socket.emit('agent:message', {
-                text: `I surgically tagged one transaction matching "${description_match}" to ${targetCodeObj.code} (${targetCodeObj.description}).`
+                text: `I surgically tagged ${result.modifiedCount || targetTxs.length} transaction(s) matching "${description_match}" to ${targetCodeObj.code} (${targetCodeObj.description}).`
             });
             socket.emit('ledger:updated');
         } else {

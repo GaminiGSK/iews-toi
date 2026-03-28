@@ -29,20 +29,27 @@ const auth = async (req, res, next) => {
 
         // --- ADMIN / SUPERADMIN SPOOFING FOR DASHBOARD ---
         // Superadmin and Admin can impersonate a unit for support
-        const canSpoof = req.user.role === 'admin' || req.user.role === 'superadmin';
+        const canSpoof = user.role === 'admin' || user.role === 'superadmin';
         if (canSpoof) {
             const targetUserHeader = req.header('x-target-user') || req.query.targetUser;
             if (targetUserHeader) {
-                const target = await User.findOne({ username: targetUserHeader }).select('_id username companyCode driveFolderId bankStatementsFolderId brFolderId');
+                const target = await User.findOne({ username: targetUserHeader }).select('_id username companyCode driveFolderId bankStatementsFolderId brFolderId createdBy');
                 if (target) {
-                    req.user.id = target._id;
-                    req.user._id = target._id;
-                    req.user.username = target.username;
-                    req.user.companyCode = target.companyCode;
-                    req.user.driveFolderId = target.driveFolderId;
-                    req.user.bankStatementsFolderId = target.bankStatementsFolderId;
-                    req.user.brFolderId = target.brFolderId;
-                    req.user._isSpoofed = true;
+                    // SECURE TENANCY ENFORCEMENT:
+                    const isSuperadmin = user.role === 'superadmin';
+                    const isSelf = target._id.equals(user._id);
+                    const isOwnedUnit = target.createdBy && target.createdBy.equals(user._id);
+                    
+                    if (isSuperadmin || isSelf || isOwnedUnit) {
+                        req.user.id = target._id;
+                        req.user._id = target._id;
+                        req.user.username = target.username;
+                        req.user.companyCode = target.companyCode;
+                        req.user.driveFolderId = target.driveFolderId;
+                        req.user.bankStatementsFolderId = target.bankStatementsFolderId;
+                        req.user.brFolderId = target.brFolderId;
+                        req.user._isSpoofed = true;
+                    }
                 }
             }
         }

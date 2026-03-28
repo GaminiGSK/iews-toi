@@ -177,47 +177,60 @@ router.post('/message', auth, async (req, res) => {
         const rawCodes = await AccountCode.find({ companyCode }).sort({ code: 1 }).lean();
         const codes = rawCodes.map(c => ({ code: c.code, description: c.description }));
 
-        // Fetch recent harvested Bank Statements (V2 Model)
-        const bankStatements = await BankStatement.find({ companyCode })
-            .sort({ createdAt: -1 })
-            .limit(2)
-            .lean();
+        // PHASE 1: Zero-State Lazy Loading. Only fetch heavy Bank/Audit data if relevant
+        let harvestedBankContext = [];
+        let auditSessions = [];
+        const msgLower = (message || '').toLowerCase();
+        const wantsBankData = msgLower.includes('bank') || msgLower.includes('statement') || msgLower.includes('upload') || msgLower.includes('audit') || image;
 
-        let harvestedBankContext = bankStatements.map(bs => ({
-            bankName: bs.bankName || 'Unknown Bank',
-            accountNumber: bs.accountNumber || '',
-            dateRange: `${bs.dateRangeStart || 'Unknown'} to ${bs.dateRangeEnd || 'Unknown'}`,
-            transactions: (bs.transactions || []).slice(0, 50).map(tx => ({
-                date: tx.date ? new Date(tx.date).toISOString().split('T')[0] : 'N/A',
-                desc: tx.description || '',
-                in: tx.moneyIn || 0,
-                out: tx.moneyOut || 0
-            }))
-        }));
+        if (wantsBankData) {
+            // Fetch recent harvested Bank Statements (V2 Model)
+            const bankStatements = await BankStatement.find({ companyCode })
+                .sort({ createdAt: -1 })
+                .limit(2)
+                .lean();
 
-        // Fallback: If no V2 statements, try to pull metadata from old V1 BankFile models to satisfy AI prompts
-        if (harvestedBankContext.length === 0) {
-            const mongoose = require('mongoose');
-            const oldBankFiles = await mongoose.connection.db.collection('bankfiles').find({ companyCode }).sort({ uploadedAt: -1 }).limit(2).toArray();
+            harvestedBankContext = bankStatements.map(bs => ({
+                bankName: bs.bankName || 'Unknown Bank',
+                accountNumber: bs.accountNumber || '',
+                dateRange: `${bs.dateRangeStart || 'Unknown'} to ${bs.dateRangeEnd || 'Unknown'}`,
+                transactions: (bs.transactions || []).slice(0, 50).map(tx => ({
+                    date: tx.date ? new Date(tx.date).toISOString().split('T')[0] : 'N/A',
+                    desc: tx.description || '',
+                    in: tx.moneyIn || 0,
+                    out: tx.moneyOut || 0
+                }))
+            }));
 
-            if (oldBankFiles.length > 0) {
-                // Fetch the transactions associated with these old files to give context
-                for (const oldFile of oldBankFiles) {
-                    const txs = await mongoose.connection.db.collection('transactions').find({ companyCode, originalData: { $exists: true } }).limit(20).toArray(); // Very rough heuristic for V1
+            // Fallback: If no V2 statements, try to pull metadata from old V1 BankFile models to satisfy AI prompts
+            if (harvestedBankContext.length === 0) {
+                const mongoose = require('mongoose');
+                const oldBankFiles = await mongoose.connection.db.collection('bankfiles').find({ companyCode }).sort({ uploadedAt: -1 }).limit(2).toArray();
 
-                    harvestedBankContext.push({
-                        bankName: "Harvested Document",
-                        accountNumber: "Original File: " + oldFile.originalName,
-                        dateRange: oldFile.dateRange || 'Unknown',
-                        transactions: txs.map(tx => ({
-                            date: tx.date ? new Date(tx.date).toISOString().split('T')[0] : 'N/A',
-                            desc: tx.description || '',
-                            in: tx.amount > 0 ? tx.amount : 0,
-                            out: tx.amount < 0 ? Math.abs(tx.amount) : 0
-                        }))
-                    });
+                if (oldBankFiles.length > 0) {
+                    for (const oldFile of oldBankFiles) {
+                        const txs = await mongoose.connection.db.collection('transactions').find({ companyCode, originalData: { $exists: true } }).limit(20).toArray();
+
+                        harvestedBankContext.push({
+                            bankName: "Harvested Document",
+                            accountNumber: "Original File: " + oldFile.originalName,
+                            dateRange: oldFile.dateRange || 'Unknown',
+                            transactions: txs.map(tx => ({
+                                date: tx.date ? new Date(tx.date).toISOString().split('T')[0] : 'N/A',
+                                desc: tx.description || '',
+                                in: tx.amount > 0 ? tx.amount : 0,
+                                out: tx.amount < 0 ? Math.abs(tx.amount) : 0
+                            }))
+                        });
+                    }
                 }
             }
+
+            // Fetch stored audit sessions
+            auditSessions = await AuditSession.find({ companyCode })
+                .sort({ parsedAt: -1 })
+                .limit(8)
+                .lean();
         }
 
         let backendBrData = [];
@@ -229,12 +242,6 @@ router.post('/message', auth, async (req, res) => {
                     text: doc.rawText
                 }));
         }
-
-        // Fetch stored audit sessions so BA retains bank statement memory across chats
-        const auditSessions = await AuditSession.find({ companyCode })
-            .sort({ parsedAt: -1 })
-            .limit(8)
-            .lean();
 
         const context = {
             companyCode,
@@ -299,7 +306,7 @@ router.post('/message', auth, async (req, res) => {
                 const toolPayload = JSON.parse(cleanJson);
 
                 // --- NORMALIZE AI MISTAKES ---
-                if (toolPayload.action && toolPayload.tool_use !== 'workspace_action' && toolPayload.tool_use !== 'propose_journal_entry' && toolPayload.tool_use !== 'generate_chart' && toolPayload.tool_use !== 'fill_toi_workspace') {
+                if (toolPayload.action && toolPayload.tool_use !== 'workspace_action' && toolPayload.tool_use !== 'propose_journal_entry' && toolPayload.tool_use !== 'generate_chart' && toolPayload.tool_use !== 'fill_toi_workspace' && toolPayload.tool_use !== 'edit_account_code') {
                     // Force it to a workspace action so the frontend processor runs it
                     toolPayload.tool_use = 'workspace_action';
                 }
@@ -340,6 +347,27 @@ router.post('/message', auth, async (req, res) => {
                         }
                     } else {
                         finalText = "I understood you want to create a rule, but I couldn't identify the specific code or criteria. Please try again.";
+                    }
+                }
+
+                // --- EDIT ACCOUNT CODE DEFINITION ---
+                if (toolPayload.tool_use === 'edit_account_code') {
+                    const codeUpdates = toolPayload.params;
+                    if (codeUpdates && codeUpdates.code) {
+                        const existingCode = await AccountCode.findOne({ companyCode, code: codeUpdates.code });
+                        if (existingCode) {
+                            if (codeUpdates.description) existingCode.description = codeUpdates.description;
+                            if (codeUpdates.note !== undefined) existingCode.note = codeUpdates.note;
+                            if (codeUpdates.matchDescription !== undefined) existingCode.matchDescription = codeUpdates.matchDescription;
+                            existingCode.updatedBy = 'human'; 
+                            await existingCode.save();
+                            finalText = `Successfully updated Accounting Code ${codeUpdates.code} to: ${existingCode.description}`;
+                            console.log(`[BA Audit] Updated accounting code ${codeUpdates.code} for ${companyCode}`);
+                        } else {
+                            finalText = `Error: Accounting Code ${codeUpdates.code} not found in your Chart of Accounts.`;
+                        }
+                    } else {
+                        finalText = "I need the account code number to edit it. Please try again.";
                     }
                 }
 

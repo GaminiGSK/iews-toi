@@ -34,3 +34,18 @@
 - After OTP: agent handles remaining TOI filing steps on GDT — still visibly on screen
 
 ### This rule was set: 2026-03-27 by the platform owner.
+
+## ⛰️ STONE-CARVED RULE 3: Cloud Run (CR) vs. Firebase (FB) Deployment Workflow
+
+**Set by user on 2026-03-28. Dictates the exact workflow for deployments and Subagent testing.**
+
+### The Law: Development and Testing isolate on Cloud Run. Firebase is strictly Production.
+
+1. **Development & Subagent Testing happens on Cloud Run (CR):**
+   - Active development updates are deployed ONLY to Cloud Run.
+   - When the command `"subagent check [user] [password]"` is given, the AI subagent MUST navigate to the live Cloud Run URL (`https://iews-toi-588941282431.asia-southeast1.run.app`) to test the functionality.
+   - The subagent should *never* test on `localhost`.
+   
+2. **Firebase (FB) is explicitly gated:**
+   - **DO NOT** execute `firebase deploy` or push to the Firebase Hosting bucket unless the user explicitly commands: `"update firebase"` or `"update FB"`.
+   - The user will coordinate with human accountants to ensure they log off and stop working before executing a Firebase push. Firebase is the hard production line.

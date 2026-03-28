@@ -10,6 +10,7 @@ const AccountCodeSchema = new mongoose.Schema({
 
     // Audit Features
     note: { type: String, trim: true, default: '' }, // Audit Note Ref (e.g., "A12")
+    updatedBy: { type: String, enum: ['system', 'ai', 'human'], default: 'system' }, // Tracks ownership of code definition
 
     // Prior Year Comparatives (Manual Input)
     priorYearDr: { type: Number, default: 0 },

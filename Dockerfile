@@ -14,6 +14,9 @@ COPY server/package*.json ./server/
 RUN cd client && npm install
 RUN cd server && npm install
 
+# Force cache invalidation
+ENV BUILD_DATE="2026-03-28T12:48:00Z"
+
 # Copy Source
 COPY . .
 

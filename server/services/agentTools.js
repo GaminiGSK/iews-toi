@@ -37,6 +37,19 @@ const agentToolsDefinitions = {
                         type: "object",
                         properties: {} // No arguments needed
                     }
+                },
+                {
+                    name: "edit_account_code",
+                    description: "CRITICAL TOOL: Edits the description and AI parsing rules (matchDescription) for a specific accounting code. IFRS GATEKEEPER RULE: You MUST evaluate the user's requested new description against the fundamental IFRS category of the requested account code block (1=Asset, 2=Liability, 3=Equity, 4/7=Revenue, 5/6=Expense). If the requested classification violates IFRS (e.g., turning an Asset code into Revenue), YOU MUST REJECT the request, explain why, and suggest a compliant alternative code block.",
+                    parameters: {
+                        type: "object",
+                        properties: {
+                            code: { type: "string", description: "The strict 5-digit account code (e.g. '10110')." },
+                            newDescription: { type: "string", description: "The new human-readable label for the account." },
+                            newAiRules: { type: "string", description: "A comma-separated string of highly specific keywords or phrases that define what transactions belong to this code (e.g., 'Shopify payouts, Stripe deposits'). This overrides the default tagging logic." }
+                        },
+                        required: ["code", "newDescription", "newAiRules"]
+                    }
                 }
             ]
         }
@@ -141,6 +154,45 @@ const executeAgentTool = async (functionName, args, companyCode) => {
                  "Is_Balanced": (recalcAssets - (recalcLiabilities + recalcEquity)) === 0,
                  "DiscrepancyAmount": parseFloat((recalcAssets - (recalcLiabilities + recalcEquity)).toFixed(2))
              };
+
+        case "edit_account_code":
+            console.log(`[Agent Tool Exec] edit_account_code`, args);
+            try {
+                // IFRS Logic Check as fail-safe backup backend layer (Gemini should block first)
+                const firstDigit = args.code.charAt(0);
+                const descUpper = args.newDescription.toUpperCase();
+                
+                // Extremely basic structural fail-safes
+                if (firstDigit === '1' && (descUpper.includes('REVENUE') || descUpper.includes('EXPENSE'))) {
+                    return { error: "IFRS Violation: Cannot set a Revenue/Expense description on a 10000-level Asset code." };
+                }
+                
+                const updatedCode = await AccountCode.findOneAndUpdate(
+                    { companyCode: companyCode, code: args.code },
+                    { 
+                        $set: { 
+                            description: args.newDescription,
+                            matchDescription: args.newAiRules,
+                            updatedBy: 'human'   // Treat conversational edits as human proxy overrides
+                        } 
+                    },
+                    { new: true }
+                );
+                
+                if (!updatedCode) {
+                    return { error: `Account Code ${args.code} not found in this company's profile. Please verify the code using get_account_codes.` };
+                }
+                
+                return { 
+                    success: true, 
+                    message: `Account code ${args.code} updated successfully.`,
+                    code: updatedCode.code,
+                    description: updatedCode.description,
+                    matchDescription: updatedCode.matchDescription
+                };
+            } catch (e) {
+                return { error: "Failed to edit account code: " + e.message };
+            }
 
         default:
             return { error: `Tool ${functionName} is not recognized by the system.` };
