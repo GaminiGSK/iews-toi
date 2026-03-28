@@ -167,35 +167,31 @@ router.post('/create-user', auth, async (req, res) => {
     }
 });
 
-// Get All Units (Admin sees assigned units + self; Superadmin sees all)
+// Get All Units
+// - Superadmin: sees only admin accounts (admin1, admin2, RSW-level admins). Superadmin does NOT own or manage units.
+// - Admin: sees ONLY units/users they created (createdBy = their _id)
 router.get('/users', auth, async (req, res) => {
     if (req.user.role !== 'admin' && req.user.role !== 'superadmin') return res.status(403).json({ message: 'Forbidden' });
     try {
-        let query;
+        const mongoose = require('mongoose');
+        let users;
         if (req.user.role === 'superadmin') {
-            // Superadmin sees all units + explicit RSW test account
-            query = {
-                $or: [
-                    { role: { $in: ['unit', 'user'] } },
-                    { username: 'RSW' },
-                    { username: 'rsw' }
-                ],
+            // LOCKED DOWN: superadmin manages admin accounts ONLY — not units
+            users = await User.find({
+                role: 'admin',
                 username: { $nin: ['Admin', 'ADMIN'] }
-            };
+            }).select('username companyName loginCode createdAt role createdBy');
         } else {
-            // Normal admin (client) sees only their own assigned units and themselves
-            query = {
-                $or: [
-                    { createdBy: req.user.id },
-                    { _id: req.user.id }
-                ],
+            // Admin sees units they created. Use ObjectId cast to ensure proper matching.
+            const adminId = new mongoose.Types.ObjectId(req.user.id);
+            users = await User.find({
+                createdBy: adminId,
                 username: { $nin: ['Admin', 'ADMIN'] }
-            };
+            }).select('username companyName loginCode createdAt role createdBy');
         }
-
-        const users = await User.find(query).select('username companyName loginCode createdAt role createdBy');
         res.json(users);
     } catch (err) {
+        console.error('[GET /users]', err.message);
         res.status(500).send('Server Error');
     }
 });

@@ -46,46 +46,6 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'OK', database: dbStatus, timestamp: new Date() });
 });
 
-// TEMP DIAGNOSTIC — list all users with ownership info + reassign fix (DELETE AFTER USE)
-app.get('/api/debug/users-ownership', async (req, res) => {
-    try {
-        const User = require('./models/User');
-        const users = await User.find({}).select('_id username role companyCode createdBy').lean();
-        res.json(users.map(u => ({
-            _id: u._id.toString(),
-            username: u.username,
-            role: u.role,
-            companyCode: u.companyCode,
-            createdBy: u.createdBy ? u.createdBy.toString() : null
-        })));
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
-
-// TEMP FIX — reassign superadmin-owned units to admin1
-app.post('/api/debug/fix-admin1-ownership', async (req, res) => {
-    try {
-        const User = require('./models/User');
-        const superadmin = await User.findOne({ username: 'Admin', role: 'superadmin' }).lean();
-        const admin1 = await User.findOne({ username: 'admin1' }).lean();
-        if (!superadmin || !admin1) return res.status(404).json({ error: 'superadmin or admin1 not found' });
-
-        // Units owned by superadmin (the old pre-RBAC units)
-        // exclude RSW (it's an admin, not a unit), and admin2
-        const result = await User.updateMany(
-            {
-                role: { $in: ['unit', 'user'] },
-                createdBy: superadmin._id
-            },
-            { $set: { createdBy: admin1._id } }
-        );
-        res.json({ ok: true, updated: result.modifiedCount, admin1Id: admin1._id.toString() });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
-
 // Routes
 console.log('[Startup] Loading API Routes...');
 app.use('/api/auth', authRoutes);
