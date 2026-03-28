@@ -46,6 +46,22 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'OK', database: dbStatus, timestamp: new Date() });
 });
 
+// TEMP DIAGNOSTIC — list all users with ownership info (DELETE AFTER USE)
+app.get('/api/debug/users-ownership', async (req, res) => {
+    try {
+        const User = require('./models/User');
+        const users = await User.find({}).select('username role companyCode createdBy').lean();
+        res.json(users.map(u => ({
+            username: u.username,
+            role: u.role,
+            companyCode: u.companyCode,
+            createdBy: u.createdBy ? u.createdBy.toString() : null
+        })));
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // Routes
 console.log('[Startup] Loading API Routes...');
 app.use('/api/auth', authRoutes);
