@@ -184,7 +184,7 @@ router.get('/users', auth, async (req, res) => {
         } else {
             // Admin sees all units (bypassing createdBy for legacy units like coco)
             users = await User.find({
-                role: 'unit',
+                role: { $in: ['unit', 'user'] },
                 username: { $nin: ['Admin', 'ADMIN'] }
             }).select('username companyName loginCode createdAt role createdBy');
         }
