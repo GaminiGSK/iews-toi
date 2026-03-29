@@ -1770,9 +1770,6 @@ router.get('/transactions', auth, async (req, res) => {
 // POST Toggle Year Lock
 router.post('/lock-year', auth, async (req, res) => {
     try {
-        if (!['admin', 'superadmin'].includes(req.user.role)) {
-            return res.status(403).json({ message: 'Forbidden: Only administrators can lock or unlock fiscal years' });
-        }
         const { year, locked, companyCode } = req.body;
         const targetCompanyCode = (['admin', 'superadmin'].includes(req.user.role) && companyCode) ? companyCode : req.user.companyCode;
         const CompanyProfile = require('../models/CompanyProfile');
