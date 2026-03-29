@@ -87,13 +87,14 @@ const INITIAL_SCHEMA = {
   ],
 };
 
-const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear = "2026" }) => {
+const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear: propsActiveYear }) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const packageId =
     searchParams.get("packageId") ||
     searchParams.get("year") ||
     "admin_preview";
+  const activeYear = propsActiveYear || (packageId.includes('_') ? packageId.split('_')[1] : "2026");
   const socket = useSocket();
   const [isSyncing, setIsSyncing] = useState(false);
   const [activePage, setActivePage] = useState(1);
@@ -339,13 +340,15 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear = "20
 
           <div className="flex items-center gap-3">
             <button
-              onClick={() =>
+              onClick={() => {
+                const yearComponent = packageId.split('_').pop();
+                const targetYear = parseInt(yearComponent) || parseInt(activeYear) || 2026;
                 socket?.emit("workspace:perform_action", {
                   action: "fill_year",
                   packageId,
-                  params: { year: 2026 },
+                  params: { year: targetYear },
                 })
-              }
+              }}
               className="flex items-center gap-2 px-4 py-1.5 bg-blue-600/90 hover:bg-blue-500 text-white rounded-lg text-xs font-black uppercase tracking-wider transition-all hover:shadow-lg hover:shadow-blue-900/20 active:scale-95"
             >
               <RefreshCw
@@ -367,7 +370,7 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear = "20
                 socket?.emit("workspace:perform_action", {
                   action: "fill_company",
                   packageId,
-                  params: { companyCode: "GK_SMART_AI" },
+                  params: { companyCode: packageId.split('_')[0] },
                 })
               }
               className="flex items-center gap-2 px-4 py-1.5 bg-indigo-600/90 hover:bg-indigo-500 text-white rounded-lg text-xs font-black uppercase tracking-wider transition-all hover:shadow-lg hover:shadow-indigo-900/20 active:scale-95"

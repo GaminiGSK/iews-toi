@@ -456,6 +456,7 @@ const FinancialStatements = ({ onBack }) => {
                                 </div>
                             </div>
                             <div className="text-center mb-8 print:hidden">
+                                <h1 className="text-3xl font-bold text-gray-900 mb-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{companyNameKh}</h1>
                                 <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-widest mb-2">{companyNameEn}</h2>
                                 <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase flex items-center justify-center gap-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>របាយការណ៍លទ្ធផល / INCOME STATEMENT <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">FS1</span></h3>
                                 <p className="text-sm text-gray-500 italic">{fiscalYear === 'all' ? 'All Periods To Date' : `For the year ended 31 December ${displayYear}`}</p>
@@ -508,6 +509,7 @@ const FinancialStatements = ({ onBack }) => {
                                 </div>
                             </div>
                             <div className="text-center mb-8 print:hidden">
+                                <h1 className="text-3xl font-bold text-gray-900 mb-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{companyNameKh}</h1>
                                 <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-widest mb-2">{companyNameEn}</h2>
                                 <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase flex items-center justify-center gap-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>របាយការណ៍ស្ថានភាពហិរញ្ញវត្ថុ / STATEMENT OF FINANCIAL POSITION <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">FS2</span></h3>
                                 <p className="text-sm text-gray-500 italic">As at 31 December {displayYear}</p>
@@ -571,6 +573,7 @@ const FinancialStatements = ({ onBack }) => {
                                 </div>
                             </div>
                             <div className="text-center mb-8 print:hidden">
+                                <h1 className="text-3xl font-bold text-gray-900 mb-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{companyNameKh}</h1>
                                 <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-widest mb-2">{companyNameEn}</h2>
                                 <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase flex items-center justify-center gap-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>របាយការណ៍លំហូរសាច់ប្រាក់/ STATEMENT OF CASH FLOWS <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">FS3</span></h3>
                                 <p className="text-sm text-gray-500 italic">{fiscalYear === 'all' ? 'All Periods To Date' : `For the year ended 31 December ${displayYear}`}</p>
@@ -658,6 +661,7 @@ const FinancialStatements = ({ onBack }) => {
                                 </div>
                             </div>
                             <div className="text-center mb-8 print:hidden">
+                                <h1 className="text-3xl font-bold text-gray-900 mb-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{companyNameKh}</h1>
                                 <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-widest mb-2">{companyNameEn}</h2>
                                 <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase flex items-center justify-center gap-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>តារាងបម្រែបម្រួលមូលធន/ STATEMENT OF CHANGES IN EQUITY <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">FS4</span></h3>
                                 <p className="text-sm text-gray-500 italic">{fiscalYear === 'all' ? 'All Periods To Date' : `For the year ended 31 December ${displayYear}`}</p>
@@ -714,6 +718,7 @@ const FinancialStatements = ({ onBack }) => {
                                 </div>
                             </div>
                             <div className="text-center mb-8 print:hidden">
+                                <h1 className="text-3xl font-bold text-gray-900 mb-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{companyNameKh}</h1>
                                 <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-widest mb-2">{companyNameEn}</h2>
                                 <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase flex items-center justify-center gap-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>កំណត់សម្គាល់លើរបាយការណ៍ហិរញ្ញវត្ថុ/ NOTES TO THE FINANCIAL STATEMENTS <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">FS5</span></h3>
                                 <p className="text-sm text-gray-500 italic">{fiscalYear === 'all' ? 'All Periods To Date' : `For the year ended 31 December ${displayYear}`}</p>
@@ -741,6 +746,7 @@ const FinancialStatements = ({ onBack }) => {
                     {viewMode === 'monthly' && (
                         <div className="print-section">
                             <div className="text-center mb-8 print:hidden">
+                                <h1 className="text-3xl font-bold text-gray-900 mb-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{companyNameKh}</h1>
                                 <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-widest mb-2">{companyNameEn}</h2>
                                 <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase font-bold" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
                                     {activeTab === 'pl' ? (

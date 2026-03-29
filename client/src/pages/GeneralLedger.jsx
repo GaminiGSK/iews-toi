@@ -99,9 +99,11 @@ const GeneralLedger = ({ onBack }) => {
         try {
             setTagging(true);
             const token = localStorage.getItem('token');
+            const targetCompanyCode = new URLSearchParams(window.location.search).get('companyCode');
             const res = await axios.post('/api/company/lock-year', {
                 year: fiscalYear,
-                locked: !isLocked
+                locked: !isLocked,
+                companyCode: targetCompanyCode
             }, { headers: { 'Authorization': `Bearer ${token}` } });
             
             setLockedGLYears(res.data.lockedGLYears || []);

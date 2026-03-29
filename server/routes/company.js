@@ -853,7 +853,7 @@ router.get('/document-image/:docType', auth, async (req, res) => {
     try {
         const { docType } = req.params;
         // DB Lookup - Include Base64 Data here because we need it
-        const profile = await CompanyProfile.findOne({ user: req.user.id });
+        const profile = await CompanyProfile.findOne({ companyCode: req.user.companyCode });
         if (!profile) return res.status(404).send('Profile not found');
 
         const doc = profile.documents.find(d => d.docType === docType);
@@ -910,7 +910,7 @@ router.delete('/document/:docType', auth, async (req, res) => {
         // Check if we need to delete from Drive
         // (We need the old doc path which we just pulled... actually findOneAndUpdate returns the NEW doc by default with {new:true})
         // Better strategy: Find first, then Pull.
-        const originalProfile = await CompanyProfile.findOne({ user: req.user.id });
+        const originalProfile = await CompanyProfile.findOne({ companyCode: req.user.companyCode });
         const docToDelete = originalProfile.documents.find(d => d.docType === docType);
 
         if (docToDelete && docToDelete.path && docToDelete.path.startsWith('drive:')) {
@@ -953,7 +953,7 @@ router.post('/regenerate-document', auth, async (req, res) => {
         const { docType } = req.body;
         if (!docType) return res.status(400).json({ message: 'DocType required' });
 
-        const profile = await CompanyProfile.findOne({ user: req.user.id });
+        const profile = await CompanyProfile.findOne({ companyCode: req.user.companyCode });
         if (!profile) return res.status(404).json({ message: 'Profile not found' });
 
         const doc = profile.documents.find(d => d.docType === docType);
@@ -1522,7 +1522,7 @@ router.post('/update-profile', auth, async (req, res) => {
         const { extractedData, companyNameEn, companyNameKh, registrationNumber, incorporationDate, companyType, address, shareholder, director, vatTin, businessActivity, businessRegistration } = req.body;
         const companyCode = req.user.companyCode;
 
-        let profile = await CompanyProfile.findOne({ user: req.user.id });
+        let profile = await CompanyProfile.findOne({ companyCode: req.user.companyCode });
 
         if (!profile) {
             profile = new CompanyProfile({
@@ -1560,7 +1560,7 @@ router.post('/update-profile', auth, async (req, res) => {
 router.post('/gdt-credentials', auth, async (req, res) => {
     try {
         const { gdtUsername, gdtPassword } = req.body;
-        let profile = await CompanyProfile.findOne({ user: req.user.id });
+        let profile = await CompanyProfile.findOne({ companyCode: req.user.companyCode });
         if (!profile) {
             profile = new CompanyProfile({ user: req.user.id, companyCode: req.user.companyCode });
         }
@@ -1577,7 +1577,7 @@ router.post('/gdt-credentials', auth, async (req, res) => {
 // GET GDT Credentials
 router.get('/gdt-credentials', auth, async (req, res) => {
     try {
-        const profile = await CompanyProfile.findOne({ user: req.user.id }).select('gdtUsername gdtPassword');
+        const profile = await CompanyProfile.findOne({ companyCode: req.user.companyCode }).select('gdtUsername gdtPassword');
         res.json({
             gdtUsername: profile?.gdtUsername || '',
             gdtPassword: profile?.gdtPassword || ''
@@ -1593,7 +1593,7 @@ router.get('/gdt-credentials', auth, async (req, res) => {
 // GET /gdt-relay — opens in user's new browser tab, shows relay page that auto-fills GDT
 router.get('/gdt-relay', auth, async (req, res) => {
     try {
-        const profile = await CompanyProfile.findOne({ user: req.user.id }).select('gdtUsername gdtPassword');
+        const profile = await CompanyProfile.findOne({ companyCode: req.user.companyCode }).select('gdtUsername gdtPassword');
         if (!profile?.gdtUsername) {
             return res.status(400).send('<h2>GDT credentials not saved. Go back and save them first.</h2>');
         }
@@ -1773,10 +1773,11 @@ router.post('/lock-year', auth, async (req, res) => {
         if (!['admin', 'superadmin'].includes(req.user.role)) {
             return res.status(403).json({ message: 'Forbidden: Only administrators can lock or unlock fiscal years' });
         }
-        const { year, locked } = req.body;
+        const { year, locked, companyCode } = req.body;
+        const targetCompanyCode = (['admin', 'superadmin'].includes(req.user.role) && companyCode) ? companyCode : req.user.companyCode;
         const CompanyProfile = require('../models/CompanyProfile');
         
-        const profile = await CompanyProfile.findOne({ user: req.user.id });
+        const profile = await CompanyProfile.findOne({ companyCode: targetCompanyCode });
         if (!profile) return res.status(404).json({ message: 'Profile not found' });
         
         let years = profile.lockedGLYears || [];
@@ -1868,7 +1869,7 @@ router.get('/ledger', auth, async (req, res) => {
         });
 
         const CompanyProfile = require('../models/CompanyProfile');
-        const profile = await CompanyProfile.findOne({ user: req.user.id });
+        const profile = await CompanyProfile.findOne({ companyCode: req.user.companyCode });
 
         res.json({ 
             transactions: enrichedTransactions,
@@ -2078,7 +2079,7 @@ router.post('/transactions/tag', auth, async (req, res) => {
         if (!existingTx) return res.status(404).json({ message: 'Transaction not found' });
         
         const CompanyProfile = require('../models/CompanyProfile');
-        const profile = await CompanyProfile.findOne({ user: req.user.id });
+        const profile = await CompanyProfile.findOne({ companyCode: req.user.companyCode });
         if (profile && profile.lockedGLYears && existingTx.date) {
             const txYear = new Date(existingTx.date).getFullYear().toString();
             if (profile.lockedGLYears.includes(txYear)) {
@@ -2392,7 +2393,7 @@ router.get('/trial-balance', auth, async (req, res) => {
 
         // Fetch Company Profile for Name
         const CompanyProfile = require('../models/CompanyProfile');
-        const profile = await CompanyProfile.findOne({ user: req.user.id });
+        const profile = await CompanyProfile.findOne({ companyCode: req.user.companyCode });
 
         let nameEn = req.user.companyCode;
         let nameKh = '';
@@ -2400,8 +2401,12 @@ router.get('/trial-balance', auth, async (req, res) => {
             nameEn = profile.companyNameEn || (profile.extractedData?.get ? profile.extractedData.get('companyNameEn') : profile.extractedData?.companyNameEn) || '';
             nameKh = profile.companyNameKh || (profile.extractedData?.get ? profile.extractedData.get('companyNameKh') : profile.extractedData?.companyNameKh) || '';
             if (!nameEn && profile.organizedProfile) {
+                const multiLineMatch = profile.organizedProfile.match(/\*\*Legal Name\*\*:[ \t]*\n\s*-\s*English:\s*([^\n]+)\n\s*-\s*Khmer:\s*([^\n]+)/i);
                 const nameLinesMatch = profile.organizedProfile.match(/\*\*Legal Name\*\*\s*:\s*([^/!]+)\/\s*([^-\n]+)/i);
-                if (nameLinesMatch) {
+                if (multiLineMatch) {
+                    nameKh = nameKh || multiLineMatch[2].trim();
+                    nameEn = multiLineMatch[1].trim();
+                } else if (nameLinesMatch) {
                     nameKh = nameKh || nameLinesMatch[1].trim();
                     nameEn = nameLinesMatch[2].trim();
                 } else {
@@ -2626,8 +2631,12 @@ router.get('/financials-monthly', auth, async (req, res) => {
             nameEn = profile.companyNameEn || (profile.extractedData?.get ? profile.extractedData.get('companyNameEn') : profile.extractedData?.companyNameEn) || '';
             nameKh = profile.companyNameKh || (profile.extractedData?.get ? profile.extractedData.get('companyNameKh') : profile.extractedData?.companyNameKh) || '';
             if (!nameEn && profile.organizedProfile) {
+                const multiLineMatch = profile.organizedProfile.match(/\*\*Legal Name\*\*:[ \t]*\n\s*-\s*English:\s*([^\n]+)\n\s*-\s*Khmer:\s*([^\n]+)/i);
                 const nameLinesMatch = profile.organizedProfile.match(/\*\*Legal Name\*\*\s*:\s*([^/!]+)\/\s*([^-\n]+)/i);
-                if (nameLinesMatch) {
+                if (multiLineMatch) {
+                    nameKh = nameKh || multiLineMatch[2].trim();
+                    nameEn = multiLineMatch[1].trim();
+                } else if (nameLinesMatch) {
                     nameKh = nameKh || nameLinesMatch[1].trim();
                     nameEn = nameLinesMatch[2].trim();
                 } else {
@@ -3073,7 +3082,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
         await require('../services/AutoReconService').syncModulesToGL(companyCode);
 
         // ── 1. Company Profile ──────────────────────────────────────────
-        const profile = await CompanyProfile.findOne({ user: userId });
+        const profile = await CompanyProfile.findOne({ companyCode });
 
         const p = profile || {};
         // Helper: extract extracted data value safely
@@ -3084,15 +3093,42 @@ router.get('/toi/autofill', auth, async (req, res) => {
             const tinMatch = p.organizedProfile.match(/TIN[:\-]\s*([A-Z0-9\-]{5,})/i);
             if (tinMatch && tinMatch[1]) p.vatTin = tinMatch[1].trim();
         }
-        if (!p.companyNameEn && !p.companyNameKh && p.organizedProfile) {
-            const nameLinesMatch = p.organizedProfile.match(/\*\*Legal Name\*\*\s*:\s*([^/]+)\/\s*([^-\n]+)/i);
-            if (nameLinesMatch) {
-                p.companyNameKh = nameLinesMatch[1].trim();
-                p.companyNameEn = nameLinesMatch[2].trim();
-            } else {
-                const enMatch = p.organizedProfile.match(/\*\*Legal Name\*\*\s*:\s*([^-\n]+)/i);
-                if (enMatch) p.companyNameEn = enMatch[1].trim();
-            }
+        if ((!p.companyNameEn || !p.companyNameKh) && p.organizedProfile) {
+                const multiLineMatch = p.organizedProfile.match(/\*\*Legal Name\*\*:[ \t]*\n\s*-\s*English:\s*([^\n]+)\n\s*-\s*Khmer:\s*([^\n]+)/i);
+                const nameLinesMatch = p.organizedProfile.match(/\*\*Legal Name\*\*\s*:\s*([^/]+)\/\s*([^-\n]+)/i);
+                const combinedLineMatch = p.organizedProfile.match(/\*\*Legal Name\*\*\s*:\s*([^\n]+)/i);
+
+                if (multiLineMatch) {
+                    p.companyNameKh = multiLineMatch[2].trim();
+                    p.companyNameEn = multiLineMatch[1].trim();
+                } else if (nameLinesMatch) {
+                    p.companyNameKh = nameLinesMatch[1].trim();
+                    p.companyNameEn = nameLinesMatch[2].trim();
+                } else if (combinedLineMatch) {
+                    const nameStr = combinedLineMatch[1].trim();
+                    if (/[\u1780-\u17FF]/.test(nameStr)) {
+                        const parts = nameStr.split(/[\/\(-\|]/);
+                        if (parts.length > 1) {
+                            if (/[\u1780-\u17FF]/.test(parts[0])) {
+                                p.companyNameKh = parts[0].trim();
+                                p.companyNameEn = parts[1].trim().replace(/\)$/, '');
+                            } else {
+                                p.companyNameEn = parts[0].trim();
+                                p.companyNameKh = parts[1].trim().replace(/\)$/, '');
+                            }
+                        } else {
+                            const khmerMatch = nameStr.match(/([\u1780-\u17FF\s]+)/);
+                            if (khmerMatch) {
+                                p.companyNameKh = khmerMatch[1].trim();
+                                p.companyNameEn = nameStr.replace(khmerMatch[1], '').replace(/[\/\(-\|]/g, '').trim();
+                            } else {
+                                p.companyNameEn = nameStr;
+                            }
+                        }
+                    } else {
+                        p.companyNameEn = nameStr;
+                    }
+                }
         }
         if (!p.incorporationDate && p.organizedProfile) {
             const incMatch = p.organizedProfile.match(/Incorporation Date[^\n]*(2[0-9]{3}[-\sA-Za-z0-9]*)/i);
@@ -3338,6 +3374,23 @@ router.get('/toi/autofill', auth, async (req, res) => {
                 const savedKh = typeof structured === 'string' ? structured : '';
                 if (savedKh) return savedKh;
                 
+                // --- NEW FALLBACK: Parse from organizedProfile ---
+                if (p.organizedProfile) {
+                    const activitySectionMatch = p.organizedProfile.match(/\*\*Business Activities\*\*:\s*([\s\S]*?)(?=\n#|\n\*\*|$)/i) || 
+                                                 p.organizedProfile.match(/\*\*2\.? My Business Activities\*\*[\s\S]*?([\s\S]*?)(?=\n#|\n\*\*|$)/i) ||
+                                                 p.organizedProfile.match(/\*\*Business Objectives\*\*:\s*([\s\S]*?)(?=\n#|\n\*\*|$)/i);
+                    if (activitySectionMatch && activitySectionMatch[1]) {
+                        // Extract list items starting with '-' or '*'
+                        const lines = activitySectionMatch[1].split('\n')
+                            .filter(line => /^\s*[-*]\s+/.test(line))
+                            .map(line => line.replace(/^\s*[-*]\s+/, '').trim());
+                            
+                        if (lines.length > 0) {
+                            return lines.join('\n');
+                        }
+                    }
+                }
+
                 const actEn = p.businessActivity || ext('businessActivity') || '';
                 const isicKhmer = {
                     '62010': 'ការសរសេរកម្មវិធី',
@@ -3363,6 +3416,54 @@ router.get('/toi/autofill', auth, async (req, res) => {
                 }
                 return kh ? kh + '\n' + actEn : actEn;
             })(),
+            
+            mainActivity: (() => {
+                const structured = p.businessActivities || ext('businessActivities');
+                if (Array.isArray(structured) && structured.length > 0) {
+                    return structured.map(b => [b.descriptionKh, b.descriptionEn, b.code ? `(${b.code})` : ''].filter(Boolean).join(' ')).join('\n');
+                }
+                const savedKh = typeof structured === 'string' ? structured : '';
+                if (savedKh) return savedKh;
+                
+                if (p.organizedProfile) {
+                    const activitySectionMatch = p.organizedProfile.match(/\*\*Business Activities\*\*:\s*([\s\S]*?)(?=\n#|\n\*\*|$)/i) || 
+                                                 p.organizedProfile.match(/\*\*2\.? My Business Activities\*\*[\s\S]*?([\s\S]*?)(?=\n#|\n\*\*|$)/i) ||
+                                                 p.organizedProfile.match(/\*\*Business Objectives\*\*:\s*([\s\S]*?)(?=\n#|\n\*\*|$)/i);
+                    if (activitySectionMatch && activitySectionMatch[1]) {
+                        const lines = activitySectionMatch[1].split('\n')
+                            .filter(line => /^\s*[-*]\s+/.test(line))
+                            .map(line => line.replace(/^\s*[-*]\s+/, '').trim());
+                            
+                        if (lines.length > 0) return lines.join('\n');
+                    }
+                }
+
+                const actEn = p.businessActivity || ext('businessActivity') || '';
+                const isicKhmer = {
+                    '62010': 'ការសរសេរកម្មវិធី',
+                    '62020': 'ការផ្ដល់ប្រឹក្សា IT',
+                    '62090': 'សកម្មភាព IT ផ្សេងៗ',
+                    '620':   'ការសរសេរកម្មវិធី ការផ្ដល់ប្រឹក្សា',
+                    '63110': 'ដំណើរការទិន្នន័យ',
+                    '63120': 'វេទិកា Internet',
+                    '47':    'ការលក់រាយ',
+                    '46':    'ការលក់ដុំ',
+                    '56':    'ម្ហូបអាហារ និងភេស្សភ័ជ',
+                    '41':    'សំណង់',
+                    '68':    'អចលនទ្រព្យ',
+                    '69':    'ច្បាប់ និងគណនេយ្យ',
+                    '70':    'ការគ្រប់គ្រង',
+                    '73':    'ផ្សព្វផ្សាយ',
+                    '85':    'ការអប់រំ',
+                    '86':    'សុខភាព',
+                };
+                let kh = '';
+                for (const [code, khLabel] of Object.entries(isicKhmer)) {
+                    if (actEn.includes(code)) { kh = khLabel; break; }
+                }
+                return kh ? kh + '\n' + actEn : actEn;
+            })(),
+
 
             // ── Rows 7-10: Addresses (Khmer only) ───────────────────────
             agentName:         '',

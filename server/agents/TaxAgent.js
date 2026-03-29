@@ -95,11 +95,26 @@ const TaxAgent = {
             }
 
             const pkg = await TaxPackage.findById(packageId);
+            let activitiesStr = profile.businessActivity || "";
+            if (Array.isArray(profile.businessActivities) && profile.businessActivities.length > 0) {
+                activitiesStr = profile.businessActivities.map(b => [b.descriptionKh, b.descriptionEn, b.code ? `(${b.code})` : ''].filter(Boolean).join(' ')).join('\n');
+            } else if (profile.organizedProfile) {
+                const activitySectionMatch = profile.organizedProfile.match(/\*\*Business Activities\*\*:\s*([\s\S]*?)(?=\n#|\n\*\*|$)/i) || 
+                                             profile.organizedProfile.match(/\*\*2\.? My Business Activities\*\*[\s\S]*?([\s\S]*?)(?=\n#|\n\*\*|$)/i) ||
+                                             profile.organizedProfile.match(/\*\*Business Objectives\*\*:\s*([\s\S]*?)(?=\n#|\n\*\*|$)/i);
+                if (activitySectionMatch && activitySectionMatch[1]) {
+                    const lines = activitySectionMatch[1].split('\n')
+                        .filter(line => /^\s*[-*]\s+/.test(line))
+                        .map(line => line.replace(/^\s*[-*]\s+/, '').trim());
+                    if (lines.length > 0) activitiesStr = lines.join('\n');
+                }
+            }
+
             const mapping = {
                 tin: profile.tin || profile.vatTin,
-                enterpriseName: profile.companyNameEn,
+                enterpriseName: [profile.companyNameKh, profile.companyNameEn].filter(Boolean).join(' - ') || profile.companyNameEn,
                 registeredAddress: profile.address,
-                mainActivity: profile.businessActivity,
+                mainActivity: activitiesStr,
                 directorName: profile.directorName
             };
 
