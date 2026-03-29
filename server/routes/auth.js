@@ -179,14 +179,20 @@ router.get('/users', auth, async (req, res) => {
             // LOCKED DOWN: superadmin manages admin accounts ONLY — not units
             users = await User.find({
                 role: 'admin',
-                username: { $nin: ['Admin', 'ADMIN'] }
-            }).select('username companyName loginCode createdAt role createdBy');
+                username: { $nin: ['Admin', 'ADMIN', 'TEST', 'test'] }
+            })
+            .collation({ locale: 'en' })
+            .sort({ username: 1 })
+            .select('username companyName loginCode createdAt role createdBy');
         } else {
-            // Admin sees all units (bypassing createdBy for legacy units like coco)
+            // Admin sees all units. Catch all roles except superadmin to prevent disappearing rogue accounts, and sort alphabetically.
             users = await User.find({
-                role: { $in: ['unit', 'user'] },
-                username: { $nin: ['Admin', 'ADMIN'] }
-            }).select('username companyName loginCode createdAt role createdBy');
+                role: { $in: ['unit', 'user', 'admin'] },
+                username: { $nin: ['Admin', 'ADMIN', 'superadmin', 'TEST', 'test', req.user.username] }
+            })
+            .collation({ locale: 'en' })
+            .sort({ username: 1 })
+            .select('username companyName loginCode createdAt role createdBy');
         }
         res.json(users);
     } catch (err) {
