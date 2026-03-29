@@ -422,8 +422,9 @@ const GeneralLedger = ({ onBack }) => {
                                 onChange={(e) => setFiscalYear(e.target.value)}
                                 className="appearance-none bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold rounded-lg h-9 pl-3 pr-8 focus:ring-2 focus:ring-blue-500 outline-none shadow-sm cursor-pointer hover:border-blue-400 transition"
                             >
-                                <option value="2025">Year: 2025</option>
-                                <option value="2024">Year: 2024</option>
+                                {[...new Set(transactions.map(t => new Date(t.date).getFullYear()).filter(y => !isNaN(y)))].sort().reverse().map(year => (
+                                    <option key={year} value={year.toString()}>Year: {year}</option>
+                                ))}
                                 <option value="all">All Years</option>
                             </select>
                             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-blue-500">
