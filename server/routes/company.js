@@ -1770,6 +1770,9 @@ router.get('/transactions', auth, async (req, res) => {
 // POST Toggle Year Lock
 router.post('/lock-year', auth, async (req, res) => {
     try {
+        if (!['admin', 'superadmin'].includes(req.user.role)) {
+            return res.status(403).json({ message: 'Forbidden: Only administrators can lock or unlock fiscal years' });
+        }
         const { year, locked } = req.body;
         const CompanyProfile = require('../models/CompanyProfile');
         
@@ -1871,7 +1874,8 @@ router.get('/ledger', auth, async (req, res) => {
             transactions: enrichedTransactions,
             companyNameEn: profile ? profile.companyNameEn : req.user.companyCode,
             companyNameKh: profile ? profile.companyNameKh : '',
-            lockedGLYears: profile ? profile.lockedGLYears || [] : []
+            lockedGLYears: profile ? profile.lockedGLYears || [] : [],
+            userRole: req.user.role || 'unit'
         });
     } catch (err) {
         console.error('Fetch Ledger Error:', err);

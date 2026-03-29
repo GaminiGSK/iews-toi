@@ -12,6 +12,7 @@ const GeneralLedger = ({ onBack }) => {
     const [error, setError] = useState(null);
     const [taggingStatus, setTaggingStatus] = useState('');
     const [lockedGLYears, setLockedGLYears] = useState([]);
+    const [userRole, setUserRole] = useState('unit');
 
     // Fetch TOI BR Database data for Company name if available
     const [filledData, setFilledData] = useState(() => {
@@ -48,6 +49,7 @@ const GeneralLedger = ({ onBack }) => {
             setTransactions(ledgerRes.data.transactions || []);
             setCodes(codesRes.data.codes || []);
             setLockedGLYears(ledgerRes.data.lockedGLYears || []);
+            setUserRole(ledgerRes.data.userRole || 'unit');
             setError(null);
         } catch (err) {
             console.error(err);
@@ -427,18 +429,20 @@ const GeneralLedger = ({ onBack }) => {
                             </div>
                         </div>
 
-                        {/* Lock Status Button */}
-                        <button
-                            onClick={handleToggleLock}
-                            disabled={tagging || fiscalYear === 'all'}
-                            title={fiscalYear === 'all' ? "Select a specific Year to Lock or Unlock" : ""}
-                            className={`px-3 focus:outline-none flex-shrink-0 py-[7px] border rounded text-xs font-bold transition flex items-center gap-1.5 shadow-sm ${
-                                fiscalYear === 'all' ? 'bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed opacity-60' 
-                                : lockedGLYears.includes(fiscalYear) ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100' : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'
-                            }`}
-                        >
-                            {lockedGLYears.includes(fiscalYear) ? <><Lock size={12} /> LOCKED</> : <><Unlock size={12} /> {fiscalYear === 'all' ? 'SELECT YEAR TO LOCK' : 'UNLOCKED'}</>}
-                        </button>
+                        {/* Lock Status Button (Only Admins/Superadmins) */}
+                        {['admin', 'superadmin'].includes(userRole) && (
+                            <button
+                                onClick={handleToggleLock}
+                                disabled={tagging || fiscalYear === 'all'}
+                                title={fiscalYear === 'all' ? "Select a specific Year to Lock or Unlock" : ""}
+                                className={`px-3 focus:outline-none flex-shrink-0 py-[7px] border rounded text-xs font-bold transition flex items-center gap-1.5 shadow-sm ${
+                                    fiscalYear === 'all' ? 'bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed opacity-60' 
+                                    : lockedGLYears.includes(fiscalYear) ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100' : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'
+                                }`}
+                            >
+                                {lockedGLYears.includes(fiscalYear) ? <><Lock size={12} /> LOCKED</> : <><Unlock size={12} /> {fiscalYear === 'all' ? 'SELECT YEAR TO LOCK' : 'UNLOCKED'}</>}
+                            </button>
+                        )}
 
                         {/* Filter Dropdown */}
                         <div className="relative">
