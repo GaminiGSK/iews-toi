@@ -2395,8 +2395,8 @@ router.get('/trial-balance', auth, async (req, res) => {
             totals: totals,
             currentYear: isAllYears ? 'all' : currentYear,
             availableYears: availableYears,
-            companyNameEn: profile ? profile.companyNameEn : req.user.companyCode,
-            companyNameKh: profile ? profile.companyNameKh : ''
+            companyNameEn: profile ? (profile.companyNameEn || (profile.extractedData?.get ? profile.extractedData.get('companyNameEn') : profile.extractedData?.companyNameEn)) : req.user.companyCode,
+            companyNameKh: profile ? (profile.companyNameKh || (profile.extractedData?.get ? profile.extractedData.get('companyNameKh') : profile.extractedData?.companyNameKh)) : ''
         });
 
     } catch (err) {
@@ -2602,8 +2602,8 @@ router.get('/financials-monthly', auth, async (req, res) => {
             pl: Object.values(plData).filter(r => r.months[0] !== 0 || ['41000','51000','61000'].includes(r.code)), 
             bs: bsRows, // Include ALL BS accounts including 10130 (ABA bank cash)
             currentYear,
-            companyNameEn: profile ? profile.companyNameEn : companyCode,
-            companyNameKh: profile ? profile.companyNameKh : ''
+            companyNameEn: profile ? (profile.companyNameEn || (profile.extractedData?.get ? profile.extractedData.get('companyNameEn') : profile.extractedData?.companyNameEn)) : companyCode,
+            companyNameKh: profile ? (profile.companyNameKh || (profile.extractedData?.get ? profile.extractedData.get('companyNameKh') : profile.extractedData?.companyNameKh)) : ''
         });
 
     } catch (err) {

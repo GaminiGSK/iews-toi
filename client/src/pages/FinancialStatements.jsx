@@ -229,7 +229,11 @@ const FinancialStatements = ({ onBack }) => {
         doc.text(titleMap[activeTab] || "FINANCIAL REPORT", 14, 28);
         doc.setFontSize(10);
         doc.setFont('serif', 'normal');
-        doc.text(`For the year ended 31 December ${displayYear}`, 14, 34);
+        if (fiscalYear === 'all') {
+            doc.text(`All Periods To Date`, 14, 34);
+        } else {
+            doc.text(`For the year ended 31 December ${displayYear}`, 14, 34);
+        }
         doc.text(`Expressed in ${inUSD ? "United States Dollar (USD)" : "Cambodian Riel (KHR)"}`, 14, 40);
 
         // Content
@@ -373,7 +377,7 @@ const FinancialStatements = ({ onBack }) => {
                         onClick={() => setActiveTab('bs')}
                         className={`px-6 py-3 rounded-t-xl font-medium text-sm transition-all ${activeTab === 'bs' ? 'bg-white text-blue-700 shadow-sm border-t border-x border-gray-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
                     >
-                        តារាងតុល្យការ / Balance Sheet
+                        របាយការណ៍ស្ថានភាពហិរញ្ញវត្ថុ / Balance Sheet
                     </button>
                     {viewMode === 'annual' && (
                         <>
@@ -448,13 +452,13 @@ const FinancialStatements = ({ onBack }) => {
                             <div className="hidden print:block pb-6 mb-8 border-b-2 border-black mt-2">
                                 <div className="flex justify-between items-start mb-8">
                                     <div><h1 className="text-3xl font-bold text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{companyNameKh}</h1><h2 className="text-xl font-bold text-black uppercase tracking-widest mt-2 px-1">{companyNameEn}</h2></div>
-                                    <div className="text-right flex flex-col items-end gap-1"><div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Report Detail</div><h3 className="text-xl font-bold text-black uppercase tracking-widest mt-1">របាយការណ៍លទ្ធផល / INCOME STATEMENT <span className="text-blue-600 bg-blue-100 px-2 py-0.5 rounded ml-2">FS1</span></h3><div className="text-sm font-bold text-black mt-1">For the year ended 31 December {displayYear}</div><div className="text-sm font-bold text-black">Reporting Currency: {inUSD ? "USD" : "KHR"}</div></div>
+                                    <div className="text-right flex flex-col items-end gap-1"><div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Report Detail</div><h3 className="text-xl font-bold text-black uppercase tracking-widest mt-1">របាយការណ៍លទ្ធផល / INCOME STATEMENT <span className="text-blue-600 bg-blue-100 px-2 py-0.5 rounded ml-2">FS1</span></h3><div className="text-sm font-bold text-black mt-1">{fiscalYear === 'all' ? 'All Periods To Date' : `For the year ended 31 December ${displayYear}`}</div><div className="text-sm font-bold text-black">Reporting Currency: {inUSD ? "USD" : "KHR"}</div></div>
                                 </div>
                             </div>
                             <div className="text-center mb-8 print:hidden">
                                 <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-widest mb-2">{companyNameEn}</h2>
                                 <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase flex items-center justify-center gap-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>របាយការណ៍លទ្ធផល / INCOME STATEMENT <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">FS1</span></h3>
-                                <p className="text-sm text-gray-500 italic">For the year ended 31 December {displayYear}</p>
+                                <p className="text-sm text-gray-500 italic">{fiscalYear === 'all' ? 'All Periods To Date' : `For the year ended 31 December ${displayYear}`}</p>
                             </div>
                             <div className="overflow-x-auto print-content-wrapper">
                                 <table className="w-full text-sm border-collapse">
@@ -500,12 +504,12 @@ const FinancialStatements = ({ onBack }) => {
                             <div className="hidden print:block pb-6 mb-8 border-b-2 border-black mt-2">
                                 <div className="flex justify-between items-start mb-8">
                                     <div><h1 className="text-3xl font-bold text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{companyNameKh}</h1><h2 className="text-xl font-bold text-black uppercase tracking-widest mt-2 px-1">{companyNameEn}</h2></div>
-                                    <div className="text-right flex flex-col items-end gap-1"><div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Report Detail</div><h3 className="text-xl font-bold text-black uppercase tracking-widest mt-1">តារាងតុល្យការ / BALANCE SHEET <span className="text-blue-600 bg-blue-100 px-2 py-0.5 rounded ml-2">FS2</span></h3><div className="text-sm font-bold text-black mt-1">As at 31 December {displayYear}</div><div className="text-sm font-bold text-black">Reporting Currency: {inUSD ? "USD" : "KHR"}</div></div>
+                                    <div className="text-right flex flex-col items-end gap-1"><div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Report Detail</div><h3 className="text-xl font-bold text-black uppercase tracking-widest mt-1">របាយការណ៍ស្ថានភាពហិរញ្ញវត្ថុ / STATEMENT OF FINANCIAL POSITION <span className="text-blue-600 bg-blue-100 px-2 py-0.5 rounded ml-2">FS2</span></h3><div className="text-sm font-bold text-black mt-1">As at 31 December {displayYear}</div><div className="text-sm font-bold text-black">Reporting Currency: {inUSD ? "USD" : "KHR"}</div></div>
                                 </div>
                             </div>
                             <div className="text-center mb-8 print:hidden">
                                 <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-widest mb-2">{companyNameEn}</h2>
-                                <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase flex items-center justify-center gap-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>តារាងតុល្យការ / BALANCE SHEET <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">FS2</span></h3>
+                                <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase flex items-center justify-center gap-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>របាយការណ៍ស្ថានភាពហិរញ្ញវត្ថុ / STATEMENT OF FINANCIAL POSITION <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">FS2</span></h3>
                                 <p className="text-sm text-gray-500 italic">As at 31 December {displayYear}</p>
                             </div>
                             <div className="overflow-x-auto print-content-wrapper">
@@ -514,8 +518,8 @@ const FinancialStatements = ({ onBack }) => {
                                         <tr className="bg-slate-100 border-b border-gray-300">
                                             <th className="p-3 text-left font-bold text-gray-600 uppercase text-xs" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បរិយាយ / DESCRIPTION</th>
                                             <th className="p-3 text-center font-bold text-gray-600 uppercase text-xs w-20" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ចំណាំ<br/>NOTE</th>
-                                            <th className="p-3 text-center font-bold text-gray-800 uppercase text-xs w-48 bg-white border-l border-gray-200" style={{ borderTop: '4px solid #3B82F6', fontFamily: '"Kantumruy Pro", sans-serif' }}>សម្រាប់ឆ្នាំបញ្ជប់<br/>FOR THE YEAR ENDED<br/><span className="text-blue-600 text-[10px] uppercase font-mono mt-1 block">31-Dec-{displayYear} {inUSD ? 'USD' : 'KHR'}</span></th>
-                                            <th className="p-3 text-center font-bold text-gray-600 uppercase text-xs w-48 bg-slate-50 border-l border-gray-200" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>សម្រាប់ឆ្នាំបញ្ជប់<br/>FOR THE YEAR ENDED<br/><span className="text-gray-500 text-[10px] uppercase font-mono mt-1 block">31-Dec-{displayPriorYear} {inUSD ? 'USD' : 'KHR'}</span></th>
+                                            <th className="p-3 text-center font-bold text-gray-800 uppercase text-xs w-48 bg-white border-l border-gray-200" style={{ borderTop: '4px solid #3B82F6', fontFamily: '"Kantumruy Pro", sans-serif' }}>ត្រឹមថ្ងៃទី<br/>AS AT<br/><span className="text-blue-600 text-[10px] uppercase font-mono mt-1 block">31-Dec-{displayYear} {inUSD ? 'USD' : 'KHR'}</span></th>
+                                            <th className="p-3 text-center font-bold text-gray-600 uppercase text-xs w-48 bg-slate-50 border-l border-gray-200" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>ត្រឹមថ្ងៃទី<br/>AS AT<br/><span className="text-gray-500 text-[10px] uppercase font-mono mt-1 block">31-Dec-{displayPriorYear} {inUSD ? 'USD' : 'KHR'}</span></th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -563,13 +567,13 @@ const FinancialStatements = ({ onBack }) => {
                             <div className="hidden print:block pb-6 mb-8 border-b-2 border-black mt-2">
                                 <div className="flex justify-between items-start mb-8">
                                     <div><h1 className="text-3xl font-bold text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{companyNameKh}</h1><h2 className="text-xl font-bold text-black uppercase tracking-widest mt-2 px-1">{companyNameEn}</h2></div>
-                                    <div className="text-right flex flex-col items-end gap-1"><div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Report Detail</div><h3 className="text-xl font-bold text-black uppercase tracking-widest mt-1">របាយការណ៍លំហូរសាច់ប្រាក់/ STATEMENT OF CASH FLOWS <span className="text-blue-600 bg-blue-100 px-2 py-0.5 rounded ml-2">FS3</span></h3><div className="text-sm font-bold text-black mt-1">For the year ended 31 December {displayYear}</div><div className="text-sm font-bold text-black">Reporting Currency: {inUSD ? "USD" : "KHR"}</div></div>
+                                    <div className="text-right flex flex-col items-end gap-1"><div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Report Detail</div><h3 className="text-xl font-bold text-black uppercase tracking-widest mt-1">របាយការណ៍លំហូរសាច់ប្រាក់/ STATEMENT OF CASH FLOWS <span className="text-blue-600 bg-blue-100 px-2 py-0.5 rounded ml-2">FS3</span></h3><div className="text-sm font-bold text-black mt-1">{fiscalYear === 'all' ? 'All Periods To Date' : `For the year ended 31 December ${displayYear}`}</div><div className="text-sm font-bold text-black">Reporting Currency: {inUSD ? "USD" : "KHR"}</div></div>
                                 </div>
                             </div>
                             <div className="text-center mb-8 print:hidden">
                                 <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-widest mb-2">{companyNameEn}</h2>
                                 <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase flex items-center justify-center gap-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>របាយការណ៍លំហូរសាច់ប្រាក់/ STATEMENT OF CASH FLOWS <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">FS3</span></h3>
-                                <p className="text-sm text-gray-500 italic">For the year ended 31 December {displayYear}</p>
+                                <p className="text-sm text-gray-500 italic">{fiscalYear === 'all' ? 'All Periods To Date' : `For the year ended 31 December ${displayYear}`}</p>
                             </div>
                             <div className="overflow-x-auto print-content-wrapper">
                                 <table className="w-full text-sm border-collapse">
@@ -650,13 +654,13 @@ const FinancialStatements = ({ onBack }) => {
                             <div className="hidden print:block pb-6 mb-8 border-b-2 border-black mt-2">
                                 <div className="flex justify-between items-start mb-8">
                                     <div><h1 className="text-3xl font-bold text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{companyNameKh}</h1><h2 className="text-xl font-bold text-black uppercase tracking-widest mt-2 px-1">{companyNameEn}</h2></div>
-                                    <div className="text-right flex flex-col items-end gap-1"><div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Report Detail</div><h3 className="text-xl font-bold text-black uppercase tracking-widest mt-1">តារាងបម្រែបម្រួលមូលធន/ STATEMENT OF CHANGES IN EQUITY <span className="text-blue-600 bg-blue-100 px-2 py-0.5 rounded ml-2">FS4</span></h3><div className="text-sm font-bold text-black mt-1">For the year ended 31 December {displayYear}</div><div className="text-sm font-bold text-black">Reporting Currency: {inUSD ? "USD" : "KHR"}</div></div>
+                                    <div className="text-right flex flex-col items-end gap-1"><div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Report Detail</div><h3 className="text-xl font-bold text-black uppercase tracking-widest mt-1">តារាងបម្រែបម្រួលមូលធន/ STATEMENT OF CHANGES IN EQUITY <span className="text-blue-600 bg-blue-100 px-2 py-0.5 rounded ml-2">FS4</span></h3><div className="text-sm font-bold text-black mt-1">{fiscalYear === 'all' ? 'All Periods To Date' : `For the year ended 31 December ${displayYear}`}</div><div className="text-sm font-bold text-black">Reporting Currency: {inUSD ? "USD" : "KHR"}</div></div>
                                 </div>
                             </div>
                             <div className="text-center mb-8 print:hidden">
                                 <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-widest mb-2">{companyNameEn}</h2>
                                 <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase flex items-center justify-center gap-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>តារាងបម្រែបម្រួលមូលធន/ STATEMENT OF CHANGES IN EQUITY <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">FS4</span></h3>
-                                <p className="text-sm text-gray-500 italic">For the year ended 31 December {displayYear}</p>
+                                <p className="text-sm text-gray-500 italic">{fiscalYear === 'all' ? 'All Periods To Date' : `For the year ended 31 December ${displayYear}`}</p>
                             </div>
                             <div className="overflow-x-auto print-content-wrapper">
                                 <table className="w-full text-sm border-collapse">
@@ -706,13 +710,13 @@ const FinancialStatements = ({ onBack }) => {
                             <div className="hidden print:block pb-6 mb-8 border-b-2 border-black mt-2">
                                 <div className="flex justify-between items-start mb-8">
                                     <div><h1 className="text-3xl font-bold text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{companyNameKh}</h1><h2 className="text-xl font-bold text-black uppercase tracking-widest mt-2 px-1">{companyNameEn}</h2></div>
-                                    <div className="text-right flex flex-col items-end gap-1"><div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Report Detail</div><h3 className="text-xl font-bold text-black uppercase tracking-widest mt-1">កំណត់សម្គាល់លើរបាយការណ៍ហិរញ្ញវត្ថុ/ NOTES TO THE FINANCIAL STATEMENTS <span className="text-blue-600 bg-blue-100 px-2 py-0.5 rounded ml-2">FS5</span></h3><div className="text-sm font-bold text-black mt-1">For the year ended 31 December {displayYear}</div><div className="text-sm font-bold text-black">Reporting Currency: {inUSD ? "USD" : "KHR"}</div></div>
+                                    <div className="text-right flex flex-col items-end gap-1"><div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Report Detail</div><h3 className="text-xl font-bold text-black uppercase tracking-widest mt-1">កំណត់សម្គាល់លើរបាយការណ៍ហិរញ្ញវត្ថុ/ NOTES TO THE FINANCIAL STATEMENTS <span className="text-blue-600 bg-blue-100 px-2 py-0.5 rounded ml-2">FS5</span></h3><div className="text-sm font-bold text-black mt-1">{fiscalYear === 'all' ? 'All Periods To Date' : `For the year ended 31 December ${displayYear}`}</div><div className="text-sm font-bold text-black">Reporting Currency: {inUSD ? "USD" : "KHR"}</div></div>
                                 </div>
                             </div>
                             <div className="text-center mb-8 print:hidden">
                                 <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-widest mb-2">{companyNameEn}</h2>
                                 <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase flex items-center justify-center gap-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>កំណត់សម្គាល់លើរបាយការណ៍ហិរញ្ញវត្ថុ/ NOTES TO THE FINANCIAL STATEMENTS <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">FS5</span></h3>
-                                <p className="text-sm text-gray-500 italic">For the year ended 31 December {displayYear}</p>
+                                <p className="text-sm text-gray-500 italic">{fiscalYear === 'all' ? 'All Periods To Date' : `For the year ended 31 December ${displayYear}`}</p>
                             </div>
                             <div className="overflow-x-auto print-content-wrapper">
                                 <div className="p-6 font-sans w-full block">
