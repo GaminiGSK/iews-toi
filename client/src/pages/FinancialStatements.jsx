@@ -746,7 +746,7 @@ const FinancialStatements = ({ onBack }) => {
                                     {activeTab === 'pl' ? (
                                         <span className="flex items-center gap-2">របាយការណ៍លទ្ធផលបំបែកប្រចាំខែ / MONTHLY INCOME STATEMENT <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">FS6</span></span>
                                     ) : (
-                                        <span className="flex items-center gap-2">តារាងតុល្យការ / BALANCE SHEET <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">FS7</span></span>
+                                        <span className="flex items-center gap-2">របាយការណ៍ស្ថានភាពហិរញ្ញវត្ថុ / STATEMENT OF FINANCIAL POSITION <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">FS7</span></span>
                                     )}
                                 </h3>
                                 {/* FS7 Balance / Activity toggle */}

@@ -2390,13 +2390,31 @@ router.get('/trial-balance', auth, async (req, res) => {
         const CompanyProfile = require('../models/CompanyProfile');
         const profile = await CompanyProfile.findOne({ user: req.user.id });
 
+        let nameEn = req.user.companyCode;
+        let nameKh = '';
+        if (profile) {
+            nameEn = profile.companyNameEn || (profile.extractedData?.get ? profile.extractedData.get('companyNameEn') : profile.extractedData?.companyNameEn) || '';
+            nameKh = profile.companyNameKh || (profile.extractedData?.get ? profile.extractedData.get('companyNameKh') : profile.extractedData?.companyNameKh) || '';
+            if (!nameEn && profile.organizedProfile) {
+                const nameLinesMatch = profile.organizedProfile.match(/\*\*Legal Name\*\*\s*:\s*([^/!]+)\/\s*([^-\n]+)/i);
+                if (nameLinesMatch) {
+                    nameKh = nameKh || nameLinesMatch[1].trim();
+                    nameEn = nameLinesMatch[2].trim();
+                } else {
+                    const enMatch = profile.organizedProfile.match(/\*\*Legal Name\*\*\s*:\s*([^-\n]+)/i);
+                    if (enMatch) nameEn = enMatch[1].trim();
+                }
+            }
+            if (!nameEn) nameEn = req.user.companyCode;
+        }
+
         res.json({
             report: report,
             totals: totals,
             currentYear: isAllYears ? 'all' : currentYear,
             availableYears: availableYears,
-            companyNameEn: profile ? (profile.companyNameEn || (profile.extractedData?.get ? profile.extractedData.get('companyNameEn') : profile.extractedData?.companyNameEn)) : req.user.companyCode,
-            companyNameKh: profile ? (profile.companyNameKh || (profile.extractedData?.get ? profile.extractedData.get('companyNameKh') : profile.extractedData?.companyNameKh)) : ''
+            companyNameEn: nameEn,
+            companyNameKh: nameKh
         });
 
     } catch (err) {
@@ -2598,12 +2616,30 @@ router.get('/financials-monthly', auth, async (req, res) => {
             activityMonths: bsActivity[r.code] || Array(13).fill(0)
         }));
 
+        let nameEn = companyCode;
+        let nameKh = '';
+        if (profile) {
+            nameEn = profile.companyNameEn || (profile.extractedData?.get ? profile.extractedData.get('companyNameEn') : profile.extractedData?.companyNameEn) || '';
+            nameKh = profile.companyNameKh || (profile.extractedData?.get ? profile.extractedData.get('companyNameKh') : profile.extractedData?.companyNameKh) || '';
+            if (!nameEn && profile.organizedProfile) {
+                const nameLinesMatch = profile.organizedProfile.match(/\*\*Legal Name\*\*\s*:\s*([^/!]+)\/\s*([^-\n]+)/i);
+                if (nameLinesMatch) {
+                    nameKh = nameKh || nameLinesMatch[1].trim();
+                    nameEn = nameLinesMatch[2].trim();
+                } else {
+                    const enMatch = profile.organizedProfile.match(/\*\*Legal Name\*\*\s*:\s*([^-\n]+)/i);
+                    if (enMatch) nameEn = enMatch[1].trim();
+                }
+            }
+            if (!nameEn) nameEn = companyCode;
+        }
+
         res.json({
             pl: Object.values(plData).filter(r => r.months[0] !== 0 || ['41000','51000','61000'].includes(r.code)), 
             bs: bsRows, // Include ALL BS accounts including 10130 (ABA bank cash)
             currentYear,
-            companyNameEn: profile ? (profile.companyNameEn || (profile.extractedData?.get ? profile.extractedData.get('companyNameEn') : profile.extractedData?.companyNameEn)) : companyCode,
-            companyNameKh: profile ? (profile.companyNameKh || (profile.extractedData?.get ? profile.extractedData.get('companyNameKh') : profile.extractedData?.companyNameKh)) : ''
+            companyNameEn: nameEn,
+            companyNameKh: nameKh
         });
 
     } catch (err) {
@@ -3276,10 +3312,10 @@ router.get('/toi/autofill', auth, async (req, res) => {
             tin:               (p.vatTin || ext('tin') || ext('vatTin') || '').replace(/[^0-9A-Z]/g, ''),
 
             // ── Row 2: Name of Enterprise (key = "name" in ToiAcar.jsx) ──
-            name:              p.companyNameKh || p.companyNameEn || ext('companyNameKh') || ext('companyNameEn') || ext('name') || '',
+            name:              [p.companyNameKh || ext('companyNameKh'), p.companyNameEn || ext('companyNameEn') || ext('name')].filter(Boolean).join(' - '),
             companyNameKH:     p.companyNameKh || ext('companyNameKh') || '',
             companyNameEN:     p.companyNameEn || ext('companyNameEn') || ext('name') || '',
-            enterpriseName:    p.companyNameKh || p.companyNameEn || ext('companyNameKh') || ext('companyNameEn') || ext('name') || '',
+            enterpriseName:    [p.companyNameKh || ext('companyNameKh'), p.companyNameEn || ext('companyNameEn') || ext('name')].filter(Boolean).join(' - '),
 
             // ── Row 3: Branch count (key = "branchOut") ───────────────────
             branchOut:         ext('branchOut') || ext('branchCount') || '0',
@@ -3291,11 +3327,14 @@ router.get('/toi/autofill', auth, async (req, res) => {
 
             // ── Row 6: Business Activities ───────────────────────────────
             businessActivities: (() => {
-                // Priority 1: explicitly saved Khmer text (via update-profile)
-                const savedKh = ext('businessActivities');
+                const structured = p.businessActivities || ext('businessActivities');
+                if (Array.isArray(structured) && structured.length > 0) {
+                    return structured.map(b => [b.descriptionKh, b.descriptionEn, b.code ? `(${b.code})` : ''].filter(Boolean).join(' ')).join('\n');
+                }
+                const savedKh = typeof structured === 'string' ? structured : '';
                 if (savedKh) return savedKh;
+                
                 const actEn = p.businessActivity || ext('businessActivity') || '';
-                // GDT ISIC code → Khmer description lookup
                 const isicKhmer = {
                     '62010': 'ការសរសេរកម្មវិធី',
                     '62020': 'ការផ្ដល់ប្រឹក្សា IT',
