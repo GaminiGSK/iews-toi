@@ -320,10 +320,9 @@ const FinancialStatements = ({ onBack }) => {
                             className="bg-transparent border-none text-xs font-semibold text-gray-700 outline-none cursor-pointer w-full"
                         >
                             <option value="all">All Years</option>
-                            <option value="2026">2026</option>
-                            <option value="2025">2025</option>
-                            <option value="2024">2024</option>
-                            <option value="2023">2023</option>
+                            {Array.from({length: 21}, (_, i) => new Date().getFullYear() + 2 - i).map(year => (
+                                <option key={year} value={year}>{year}</option>
+                            ))}
                         </select>
                     </div>
                     <div className="flex items-center gap-2 cursor-pointer select-none bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-200 transition">

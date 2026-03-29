@@ -241,7 +241,7 @@ const TrialBalance = ({ onBack }) => {
                             disabled={loading}
                         >
                             <option value="all">All Years (Total)</option>
-                            {availableYears.map(year => (
+                            {Array.from({length: 21}, (_, i) => new Date().getFullYear() + 2 - i).map(year => (
                                 <option key={year} value={year}>{year}</option>
                             ))}
                         </select>

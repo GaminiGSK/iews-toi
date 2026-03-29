@@ -422,7 +422,7 @@ const GeneralLedger = ({ onBack }) => {
                                 onChange={(e) => setFiscalYear(e.target.value)}
                                 className="appearance-none bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold rounded-lg h-9 pl-3 pr-8 focus:ring-2 focus:ring-blue-500 outline-none shadow-sm cursor-pointer hover:border-blue-400 transition"
                             >
-                                {[...new Set(transactions.map(t => new Date(t.date).getFullYear()).filter(y => !isNaN(y)))].sort().reverse().map(year => (
+                                {Array.from({length: 21}, (_, i) => new Date().getFullYear() + 2 - i).map(year => (
                                     <option key={year} value={year.toString()}>Year: {year}</option>
                                 ))}
                                 <option value="all">All Years</option>
