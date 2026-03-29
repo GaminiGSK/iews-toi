@@ -3352,10 +3352,10 @@ router.get('/toi/autofill', auth, async (req, res) => {
             tin:               (p.vatTin || ext('tin') || ext('vatTin') || '').replace(/[^0-9A-Z]/g, ''),
 
             // ── Row 2: Name of Enterprise (key = "name" in ToiAcar.jsx) ──
-            name:              [p.companyNameKh || ext('companyNameKh'), p.companyNameEn || ext('companyNameEn') || ext('name')].filter(Boolean).join(' - '),
-            companyNameKH:     p.companyNameKh || ext('companyNameKh') || '',
-            companyNameEN:     p.companyNameEn || ext('companyNameEn') || ext('name') || '',
-            enterpriseName:    [p.companyNameKh || ext('companyNameKh'), p.companyNameEn || ext('companyNameEn') || ext('name')].filter(Boolean).join(' - '),
+            name:              [(() => { const parts = (p.companyNameKh || ext('companyNameKh') || '').split('/'); return parts[parts.length - 1].trim(); })(), (() => { const parts = (p.companyNameEn || ext('companyNameEn') || ext('name') || '').split('/'); return parts[parts.length - 1].trim(); })()].filter(Boolean).join(' - '),
+            companyNameKH:     (() => { const parts = (p.companyNameKh || ext('companyNameKh') || '').split('/'); return parts[parts.length - 1].trim(); })(),
+            companyNameEN:     (() => { const parts = (p.companyNameEn || ext('companyNameEn') || ext('name') || '').split('/'); return parts[parts.length - 1].trim(); })(),
+            enterpriseName:    [(() => { const parts = (p.companyNameKh || ext('companyNameKh') || '').split('/'); return parts[parts.length - 1].trim(); })(), (() => { const parts = (p.companyNameEn || ext('companyNameEn') || ext('name') || '').split('/'); return parts[parts.length - 1].trim(); })()].filter(Boolean).join(' - '),
 
             // ── Row 3: Branch count (key = "branchOut") ───────────────────
             branchOut:         ext('branchOut') || ext('branchCount') || '0',

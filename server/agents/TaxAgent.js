@@ -149,9 +149,15 @@ const TaxAgent = {
                 }
             }
 
+            const cleanName = (str) => {
+                if (!str) return '';
+                const parts = str.split('/');
+                return parts[parts.length - 1].trim();
+            };
+
             const mapping = {
                 tin: profile.tin || profile.vatTin,
-                enterpriseName: [profile.companyNameKh, profile.companyNameEn].filter(Boolean).join(' - ') || profile.companyNameEn,
+                enterpriseName: [cleanName(profile.companyNameKh), cleanName(profile.companyNameEn)].filter(Boolean).join(' - ') || cleanName(profile.companyNameEn),
                 registeredAddress: profile.address,
                 mainActivity: activitiesStr,
                 directorName: profile.directorName
