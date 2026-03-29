@@ -94,7 +94,13 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear: prop
     searchParams.get("packageId") ||
     searchParams.get("year") ||
     "admin_preview";
-  const activeYear = propsActiveYear || (packageId.includes('_') ? packageId.split('_')[1] : "2026");
+  let parsedYear = "2026";
+  if (packageId.includes("_") && !packageId.startsWith("admin_")) {
+    parsedYear = packageId.split("_")[1];
+  } else if (/^20\d\d$/.test(packageId)) {
+    parsedYear = packageId;
+  }
+  const activeYear = propsActiveYear || parsedYear || "2026";
   const socket = useSocket();
   const [isSyncing, setIsSyncing] = useState(false);
   const [activePage, setActivePage] = useState(1);

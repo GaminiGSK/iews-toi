@@ -94,6 +94,45 @@ const TaxAgent = {
                 return socket.emit('agent:message', { text: "I couldn't find a Company Profile for your account. Please complete it in the Dashboard first.", isSystem: false });
             }
 
+            const p = profile;
+            if ((!p.companyNameEn || !p.companyNameKh) && p.organizedProfile) {
+                const multiLineMatch = p.organizedProfile.match(/\*\*Legal Name\*\*:[ \t]*\n\s*-\s*English:\s*([^\n]+)\n\s*-\s*Khmer:\s*([^\n]+)/i);
+                const nameLinesMatch = p.organizedProfile.match(/\*\*Legal Name\*\*\s*:\s*([^/]+)\/\s*([^-\n]+)/i);
+                const combinedLineMatch = p.organizedProfile.match(/\*\*Legal Name\*\*\s*:\s*([^\n]+)/i);
+
+                if (multiLineMatch) {
+                    p.companyNameKh = multiLineMatch[2].trim();
+                    p.companyNameEn = multiLineMatch[1].trim();
+                } else if (nameLinesMatch) {
+                    p.companyNameKh = nameLinesMatch[1].trim();
+                    p.companyNameEn = nameLinesMatch[2].trim();
+                } else if (combinedLineMatch) {
+                    const nameStr = combinedLineMatch[1].trim();
+                    if (/[\u1780-\u17FF]/.test(nameStr)) {
+                        const parts = nameStr.split(/[\/\(-\|]/);
+                        if (parts.length > 1) {
+                            if (/[\u1780-\u17FF]/.test(parts[0])) {
+                                p.companyNameKh = parts[0].trim();
+                                p.companyNameEn = parts[1].trim().replace(/\)$/, '');
+                            } else {
+                                p.companyNameEn = parts[0].trim();
+                                p.companyNameKh = parts[1].trim().replace(/\)$/, '');
+                            }
+                        } else {
+                            const khmerMatch = nameStr.match(/([\u1780-\u17FF\s]+)/);
+                            if (khmerMatch) {
+                                p.companyNameKh = khmerMatch[1].trim();
+                                p.companyNameEn = nameStr.replace(khmerMatch[1], '').replace(/[\/\(-\|]/g, '').trim();
+                            } else {
+                                p.companyNameEn = nameStr;
+                            }
+                        }
+                    } else {
+                        p.companyNameEn = nameStr;
+                    }
+                }
+            }
+
             const pkg = await TaxPackage.findById(packageId);
             let activitiesStr = profile.businessActivity || "";
             if (Array.isArray(profile.businessActivities) && profile.businessActivities.length > 0) {
