@@ -182,10 +182,9 @@ router.get('/users', auth, async (req, res) => {
                 username: { $nin: ['Admin', 'ADMIN'] }
             }).select('username companyName loginCode createdAt role createdBy');
         } else {
-            // Admin sees units they created. Use ObjectId cast to ensure proper matching.
-            const adminId = new mongoose.Types.ObjectId(req.user.id);
+            // Admin sees all units (bypassing createdBy for legacy units like coco)
             users = await User.find({
-                createdBy: adminId,
+                role: 'unit',
                 username: { $nin: ['Admin', 'ADMIN'] }
             }).select('username companyName loginCode createdAt role createdBy');
         }

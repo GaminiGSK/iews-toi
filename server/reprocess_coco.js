@@ -61,7 +61,30 @@ async function run() {
         for (const [key, val] of Object.entries(structuredData || {})) {
             // Keep meaningful values (arrays with length > 0, non-empty strings)
             if (Array.isArray(val) && val.length > 0) {
-                aggregatedData[key] = val;
+                                if (!aggregatedData[key]) {
+                                    aggregatedData[key] = [...val];
+                                } else if (Array.isArray(aggregatedData[key])) {
+                                    const combined = [...aggregatedData[key], ...val];
+                                    const uniqueMap = new Map();
+                                    combined.forEach(item => {
+                                        if (item && typeof item === 'object') {
+                                            const id = item.nameEn || item.nameKh || item.code || item.descriptionEn || JSON.stringify(item);
+                                            if (!uniqueMap.has(id)) {
+                                                uniqueMap.set(id, { ...item });
+                                            } else {
+                                                const existing = uniqueMap.get(id);
+                                                Object.keys(item).forEach(k => {
+                                                    if (!existing[k] && item[k]) {
+                                                        existing[k] = item[k];
+                                                    }
+                                                });
+                                            }
+                                        } else {
+                                            if (!uniqueMap.has(item)) uniqueMap.set(item, item);
+                                        }
+                                    });
+                                    aggregatedData[key] = Array.from(uniqueMap.values());
+                                }
             } else if (!Array.isArray(val) && val !== null && val !== undefined && val !== '') {
                 aggregatedData[key] = val;
             }
@@ -87,7 +110,12 @@ async function run() {
     setField('postalAddress', d.postalAddress);
     setField('contactEmail', d.contactEmail);
     setField('contactPhone', d.contactPhone);
-    setField('businessActivity', d.businessActivities);
+    if (Array.isArray(d.businessActivities)) {
+        profile.businessActivity = d.businessActivities.map(b => b.descriptionEn || b.descriptionKh || b.code).join(', ');
+        profile.businessActivities = d.businessActivities;
+    } else {
+        setField('businessActivity', d.businessActivities);
+    }
     setField('companyType', d.companyType);
     setField('vatTin', d.vatTin);
     setField('taxRegistrationDate', d.taxRegistrationDate);

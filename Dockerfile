@@ -15,7 +15,7 @@ RUN cd client && npm install
 RUN cd server && npm install
 
 # Force cache invalidation
-ENV BUILD_DATE="2026-03-28T12:48:00Z"
+ENV BUILD_DATE="2026-03-29T03:38:00Z"
 
 # Copy Source
 COPY . .

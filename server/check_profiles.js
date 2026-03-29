@@ -1,25 +1,20 @@
 const mongoose = require('mongoose');
-require('dotenv').config({ path: __dirname + '/.env' });
+require('dotenv').config();
 
-async function run() {
-    await mongoose.connect(process.env.MONGODB_URI);
-    const CompanyProfile = require('./models/CompanyProfile');
-    const User = require('./models/User');
-
-    const profiles = await CompanyProfile.find().lean();
-    console.log(`Found ${profiles.length} profiles.`);
-
-    for (const p of profiles) {
-        const user = await User.findById(p.user);
-        console.log(`\n--- PROFILE for ${user ? user.username : p.user} (${p.companyCode}) ---`);
-        console.log(`Docs: ${p.documents.length}`);
-        p.documents.forEach((d, i) => {
-            console.log(` [${i}] ${d.originalName} (${d.docType}) - Text Length: ${d.rawText ? d.rawText.length : 0} - Status: ${d.status}`);
+mongoose.connect('mongodb://admin_gsk:admingsk1235@ac-3keouu4-shard-00-00.pipzn70.mongodb.net:27017,ac-3keouu4-shard-00-01.pipzn70.mongodb.net:27017,ac-3keouu4-shard-00-02.pipzn70.mongodb.net:27017/gksmart_live?ssl=true&authSource=admin&retryWrites=true&w=majority')
+    .then(async () => {
+        const CompanyProfile = require('./models/CompanyProfile');
+        const profiles = await CompanyProfile.find({});
+        console.log("=== COMPREHENSIVE UNIT STATUS REPORT ===\n");
+        profiles.forEach(p => {
+            console.log(`Unit Code: ${p.companyCode}`);
+            console.log(`Name EN: ${p.companyNameEn || "MISSING"}`);
+            // Check extractedData object explicitly:
+            const extData = Object.fromEntries(p.extractedData || new Map());
+            console.log(`Extracted Name EN: ${extData.companyNameEn || "MISSING"}`);
+            console.log(`Extracted Name KH: ${extData.companyNameKh || "MISSING"}`);
+            console.log(`----------------------------------------`);
         });
-        console.log(`Organized Summary Length: ${p.organizedProfile ? p.organizedProfile.length : 0}`);
-    }
-
-    process.exit();
-}
-
-run();
+        process.exit();
+    })
+    .catch(err => { console.error(err); process.exit(1); });

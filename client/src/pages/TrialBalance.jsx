@@ -8,8 +8,8 @@ const TrialBalance = ({ onBack }) => {
     const [fiscalYear, setFiscalYear] = useState('all'); // Explicitly start with 'all' to prevent zero-data 0 rendering
     const [availableYears, setAvailableYears] = useState([]);
     const [totals, setTotals] = useState({ drUSD: 0, crUSD: 0, drKHR: 0, crKHR: 0 });
-    const [companyNameEn, setCompanyNameEn] = useState('GK SMART CO., LTD.');
-    const [companyNameKh, setCompanyNameKh] = useState('ក្រុមហ៊ុន ជីខេ ស្មាត ឯ.ក');
+    const [companyNameEn, setCompanyNameEn] = useState('');
+    const [companyNameKh, setCompanyNameKh] = useState('');
     const [currency, setCurrency] = useState('KHR'); // Toggle for main visual currency display
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -40,8 +40,8 @@ const TrialBalance = ({ onBack }) => {
             // Set Year if available
             if (res.data.currentYear) setFiscalYear(res.data.currentYear.toString());
             if (res.data.availableYears) setAvailableYears(res.data.availableYears);
-            if (res.data.companyNameEn) setCompanyNameEn(res.data.companyNameEn);
-            if (res.data.companyNameKh) setCompanyNameKh(res.data.companyNameKh);
+            setCompanyNameEn(res.data.companyNameEn || '');
+            setCompanyNameKh(res.data.companyNameKh || '');
             setError(null);
         } catch (err) {
             console.error(err);
@@ -360,10 +360,10 @@ const TrialBalance = ({ onBack }) => {
                                             <tbody>
                                                 {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map(prefix => {
                                                     const groupName = {
-                                                        '1': 'ASSETS', '2': 'LIABILITIES', '3': 'EQUITY',
-                                                        '4': 'INCOME', '5': 'COST OF SALES', '6': 'EXPENSES',
-                                                        '7': 'OTHER INCOME', '8': 'OTHER EXPENSES', '9': 'NON-OPERATING'
-                                                    }[prefix] || 'OTHER';
+                                                        '1': 'ទ្រព្យសកម្ម / ASSETS', '2': 'បំណុល / LIABILITIES', '3': 'មូលធន / EQUITY',
+                                                        '4': 'ចំណូល / INCOME', '5': 'ថ្លៃដើមលក់ / COST OF SALES', '6': 'ចំណាយប្រតិបត្តិការ / EXPENSES',
+                                                        '7': 'ចំណូលផ្សេងៗ / OTHER INCOME', '8': 'ចំណាយផ្សេងៗ / OTHER EXPENSES', '9': 'ប្រតិបត្តិការផ្សេងៗ / NON-OPERATING'
+                                                    }[prefix] || 'ផ្សេងៗ / OTHER';
 
                                                     const groupRows = report.filter(r => r.code.startsWith(prefix)).sort((a, b) => a.code.localeCompare(b.code));
                                                     if (groupRows.length === 0) return null;
@@ -459,10 +459,10 @@ const TrialBalance = ({ onBack }) => {
                                             <tbody>
                                                 {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map(prefix => {
                                                     const groupName = {
-                                                        '1': 'ASSETS', '2': 'LIABILITIES', '3': 'EQUITY',
-                                                        '4': 'INCOME', '5': 'COST OF SALES', '6': 'EXPENSES',
-                                                        '7': 'OTHER INCOME', '8': 'OTHER EXPENSES', '9': 'NON-OPERATING'
-                                                    }[prefix] || 'OTHER';
+                                                        '1': 'ទ្រព្យសកម្ម / ASSETS', '2': 'បំណុល / LIABILITIES', '3': 'មូលធន / EQUITY',
+                                                        '4': 'ចំណូល / INCOME', '5': 'ថ្លៃដើមលក់ / COST OF SALES', '6': 'ចំណាយប្រតិបត្តិការ / EXPENSES',
+                                                        '7': 'ចំណូលផ្សេងៗ / OTHER INCOME', '8': 'ចំណាយផ្សេងៗ / OTHER EXPENSES', '9': 'ប្រតិបត្តិការផ្សេងៗ / NON-OPERATING'
+                                                    }[prefix] || 'ផ្សេងៗ / OTHER';
 
                                                     const groupRows = report.filter(r => r.code.startsWith(prefix)).sort((a, b) => a.code.localeCompare(b.code));
                                                     if (groupRows.length === 0) return null;
@@ -568,10 +568,10 @@ const TrialBalance = ({ onBack }) => {
                                             <tbody className="bg-[#030712] text-white">
                                                 {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map(prefix => {
                                                     const groupName = {
-                                                        '1': 'ASSETS', '2': 'LIABILITIES', '3': 'EQUITY',
-                                                        '4': 'INCOME', '5': 'COST OF SALES', '6': 'EXPENSES',
-                                                        '7': 'OTHER INCOME', '8': 'OTHER EXPENSES', '9': 'NON-OPERATING'
-                                                    }[prefix] || 'OTHER';
+                                                        '1': 'ទ្រព្យសកម្ម / ASSETS', '2': 'បំណុល / LIABILITIES', '3': 'មូលធន / EQUITY',
+                                                        '4': 'ចំណូល / INCOME', '5': 'ថ្លៃដើមលក់ / COST OF SALES', '6': 'ចំណាយប្រតិបត្តិការ / EXPENSES',
+                                                        '7': 'ចំណូលផ្សេងៗ / OTHER INCOME', '8': 'ចំណាយផ្សេងៗ / OTHER EXPENSES', '9': 'ប្រតិបត្តិការផ្សេងៗ / NON-OPERATING'
+                                                    }[prefix] || 'ផ្សេងៗ / OTHER';
 
                                                     const groupRows = report.filter(r => r.code.startsWith(prefix)).sort((a, b) => a.code.localeCompare(b.code));
                                                     if (groupRows.length === 0) return null;

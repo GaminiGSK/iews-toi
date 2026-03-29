@@ -80,7 +80,9 @@ Return ONLY a strict JSON object — no markdown, no code fences, no explanation
   "companySubType": "Sub-type if present",
   "registrationNumber": "Same as companyNumber",
   "incorporationDate": "DD-Month-YYYY or DD/MM/YYYY",
-  "businessActivities": "ALL activity codes and names comma-separated",
+  "businessActivities": [
+    {"code": "ISIC code or null", "descriptionEn": "English description", "descriptionKh": "Khmer description or null"}
+  ],
   "physicalAddress": "Full physical registered office address",
   "postalAddress": "Postal registered office address",
   "contactEmail": "Email address",
@@ -279,16 +281,18 @@ exports.summarizeToProfile = async (rawText, structuredData = {}) => {
             You are a Senior Business Analyst and Corporate Documentation Specialist. 
             Your task is to transform raw OCR text (Khmer and English) and Structured JSON Data into a comprehensive "Business Profile Dossier".
             
-            This document must be exhaustive. Reconstruct the entity's complete identity. Use the Structured JSON Data as the ultimate source of truth, and use the Raw Text to add flavor and context.
+            CRITICAL DIRECTIVE ON BILINGUAL CROSS-REFERENCING:
+            The Structured JSON Data is your primary logical structure, but it may only contain English terms. The Raw OCR Text contains the critical Khmer translations for names, directors, shareholders, and activities. YOU MUST cross-reference the English names in the JSON with the RAW OCR TEXT to find their exact Khmer counterparts and merge them together in the final output. Do NOT skip the Khmer text.
             
-            STRUCTURE THE DOCUMENT AS FOLLOWS:            # I. EXECUTIVE CORPORATE ARCHITECTURE
+            STRUCTURE THE DOCUMENT AS FOLLOWS:            
+            # I. EXECUTIVE CORPORATE ARCHITECTURE
             - **Legal Name**: (MUST be Unified English & Khmer)
             - **Identifiers**: (Company ID, Tax TIN, Patent IDs)
             - **Legal Status**: (Company Type, Incorporation Date)
             
             # II. GOVERNANCE & SHAREHOLDERS
-            - **Board of Directors**: (Exhaustive list of directors/authorized signatories. You MUST pull BOTH Khmer and English names if present.)
-            - **Shareholders**: (Detailed ownership list with percentage/nationalities if found. You MUST pull BOTH Khmer and English names if present.)
+            - **Board of Directors**: (Exhaustive list of directors/authorized signatories. You MUST pull BOTH Khmer and English names by finding the English name in the JSON, and locating its Khmer spelling in the Raw OCR Text.)
+            - **Shareholders**: (Detailed ownership list with percentage/nationalities if found. You MUST pull BOTH Khmer and English names for every shareholder.)
             
             # III. OPERATIONAL FOOTPRINT
             - **Headquarters**: (Full physical address. You MUST output BOTH Khmer and English addresses separately.)
@@ -302,14 +306,14 @@ exports.summarizeToProfile = async (rawText, structuredData = {}) => {
             (8-10 sentence formal strategic overview talking about the entity's longevity, diversity of objectives, and verified leadership structure.)
 
             ---
-            STRUCTURED JSON DATA (SOURCE OF TRUTH):
+            STRUCTURED JSON DATA (SOURCE OF TRUTH FOR STRUCTURE):
             ${strictDataString}
 
-            RAW OCR TEXT:
+            RAW OCR TEXT (SOURCE OF TRUTH FOR KHMER/ENGLISH SPELLINGS):
             ${rawText}
             
             STRICT RULES:
-            - **BILINGUAL REQUIREMENT**: Provide EXACT Khmer text alongside English text for EVERY name, address, and activity. This is completely non-negotiable.
+            - **BILINGUAL REQUIREMENT**: Provide EXACT Khmer text alongside English text for EVERY name, director, shareholder, address, and activity. Format as 'English Name / Khmer Name'. If Khmer is in the Raw OCR, you MUST find it and merge it. This is completely non-negotiable.
             - **Exhaustive Detail**: If a shareholder or objective is in the raw text, INCLUDE IT. Do not skip any rows.
             - **Fidelity**: No hallucinations. Professional, objective tone.
             - **Format**: Markdown with high-end hierarchy (headings, bold keys).
@@ -615,7 +619,7 @@ ${s.transactions.map(t => `  ${t.date} | IN:$${t.moneyIn||0} OUT:$${t.moneyOut||
                 Schema: { "tool_use": "propose_reclassifications", "suggestions": [{ "description_match": "EZECOM", "current_code": "10110", "suggested_code": "61050", "reasoning": "ISP payments are Office Expenses." }], "reply_text": "I analyzed the bank statement data. Here are my identified discrepancies and suggested reclassifications:" }
 
             10. **save_br_data**: USE THIS IMMEDIATELY when the user pastes Business Registration data (like MOC certificates or Tax Posters).
-                Schema: { "tool_use": "workspace_action", "action": "save_br_data", "params": { "companyNameEn": "...", "companyNameKh": "...", "regId": "...", "taxId": "...", "incDate": "...", "addr": "...", "type": "...", "directorName": "...", "shareholder": "...", "businessActivities": "..." }, "reply_text": "I have successfully extracted your business registration info and saved it to the profile." }
+                Schema: { "tool_use": "workspace_action", "action": "save_br_data", "params": { "companyNameEn": "...", "companyNameKh": "...", "regId": "...", "taxId": "...", "incDate": "...", "addr": "...", "type": "...", "directorName": "...", "shareholder": "...", "businessActivities": "..." }, "reply_text": "I have successfully extracted your business registration info. Here is the full Detailed Markdown Summary: [INSERT FULL DETAILED MARKDOWN SUMMARY HERE]" }
 
              11. **fill_toi_workspace**: Use this ONLY for the Annual "TOI" Tax Return Form (e.g., "fill in page one"). DO NOT use this for the Statement of Financial Position or Trial Balance. If the user asks to update data in any subject/field on the TOI form, dynamically extract those details from context and output the JSON.
                Schema: { "tool_use": "fill_toi_workspace", "reply_text": "A friendly conversational response acknowledging ONLY the specific fields you updated.", "params": { "tin": "extract regId or taxId, ensuring hyphens if any", "name": "extract nameKh FIRST, then nameEn if Kh is missing", "branchOut": "001", "registrationDate": "extract incDate, e.g. 15/07/2021", "directorName": "extract nameKh FIRST, then nameEn if Kh is missing", "businessActivities": "extract Khmer type FIRST, then English if missing", "agentName": "Tax Agent Name", "agentLicense": "Tax Agent License Number", "address1": "extract pure Khmer text of the address. Strip ALL english text.", "address2": "extract exactly the same pure Khmer address as address1", "address3": "N/A", "taxMonths": "12", "fromDate": "01012026", "untilDate": "31122026", "accountingRecord": "Using Software / Not Using Software", "softwareName": "Software if used", "taxComplianceStatus": "Gold / Silver / Bronze", "statutoryAudit": "Required / Not Required", "legalForm": "Private Limited Company", "yearFirstRevenue": "Year of first revenue", "yearFirstProfit": "Year of first profit", "priorityPeriodYear": "Priority period year", "incomeTaxRate": "30% / 20% / 5% / 0% / 0-20% / Progressive Rate", "incomeTaxDue": "Amount", "taxCreditCarriedForward": "Amount", "taxOfficeNo": "No", "taxOfficialId": "Tax ID array mapped", "filedIn": "Location", "filingDate": "DDMMYYYY", "signatoryName": "Name" } }

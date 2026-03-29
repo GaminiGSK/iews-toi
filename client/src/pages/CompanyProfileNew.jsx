@@ -978,21 +978,80 @@ export default function CompanyProfile() {
 
 
 
-    // --- IEWS Placeholder ---
+    // --- IEWS Module ---
     const renderIEWS = () => (
-        <div className="w-full h-[calc(100vh-80px)] pt-6 px-10 animate-fade-in flex flex-col bg-slate-900">
-            <div className="mb-4 flex items-center gap-4">
-                <button onClick={() => setView('home')} className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition shadow-md shrink-0">
-                    <ArrowLeft size={20} />
+        <div className="w-full h-[calc(100vh-80px)] flex flex-col bg-[#080c14] overflow-y-auto relative">
+
+            {/* Ambient glow background */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[340px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute bottom-0 right-0 w-[400px] h-[300px] bg-violet-600/8 rounded-full blur-[100px] pointer-events-none" />
+
+            {/* Top bar */}
+            <div className="flex items-center gap-4 px-8 py-4 border-b border-white/5 bg-slate-900/60 backdrop-blur-md shrink-0 relative z-10">
+                <button onClick={() => setView('home')} className="w-9 h-9 bg-white/5 hover:bg-white/10 border border-white/8 rounded-xl flex items-center justify-center text-slate-400 hover:text-white transition-all active:scale-95">
+                    <ArrowLeft size={16} />
                 </button>
-                <span className="text-gray-500 text-sm font-bold uppercase tracking-widest">IEWS Data Processing</span>
-            </div>
-            <div className="flex-1 flex items-center justify-center bg-slate-950/30 rounded-3xl border border-white/5">
-                <div className="text-center">
-                    <ShieldCheck size={48} className="text-indigo-400 opacity-20 mx-auto mb-4" />
-                    <h3 className="text-xl font-bold text-slate-400">Pipeline Offline</h3>
-                    <p className="text-slate-600 text-xs mt-2 italic">Awaiting rebuild instructions.</p>
+                <div className="flex items-center gap-2">
+                    <ShieldCheck size={14} className="text-indigo-400" />
+                    <span className="text-white font-black text-sm uppercase tracking-wider">IEWS</span>
+                    <span className="text-slate-600 text-[10px] font-bold uppercase tracking-widest ml-1">Enterprise Work System</span>
                 </div>
+                <div className="ml-auto">
+                    <span className="bg-indigo-500/15 text-indigo-400 border border-indigo-500/30 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest animate-pulse">
+                        ● Initializing
+                    </span>
+                </div>
+            </div>
+
+            {/* Main Content */}
+            <div className="flex-1 flex flex-col items-center justify-center px-8 py-12 relative z-10">
+
+                {/* Giant IEWS Wordmark */}
+                <div className="text-center mb-16">
+                    <div className="flex items-center justify-center gap-5 mb-6">
+                        <div className="w-20 h-20 rounded-3xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shadow-2xl shadow-indigo-500/10">
+                            <ShieldCheck size={40} className="text-indigo-400" />
+                        </div>
+                    </div>
+                    <h1 className="text-8xl font-black tracking-tight mb-3"
+                        style={{ background: 'linear-gradient(135deg, #ffffff 0%, #a5b4fc 50%, #6366f1 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                        IEWS
+                    </h1>
+                    <p className="text-slate-400 text-base font-medium tracking-widest uppercase mb-2">
+                        Enterprise Work System
+                    </p>
+                    <p className="text-slate-600 text-xs">
+                        Workflow package management &amp; compliance pipeline
+                    </p>
+                </div>
+
+                {/* Feature Pipeline Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-3xl">
+                    {[
+                        { icon: '📦', label: 'Package Manager', desc: 'Create and manage yearly TOI tax packages', status: 'Building' },
+                        { icon: '⚡', label: 'Workflow Engine', desc: 'Automated compliance task pipelines', status: 'Planned' },
+                        { icon: '🔗', label: 'Data Bridge', desc: 'Sync filings with GDT e-Tax portal', status: 'Planned' },
+                    ].map((item, i) => (
+                        <div key={i} className="bg-slate-800/30 border border-white/5 rounded-2xl p-6 flex flex-col gap-3">
+                            <div className="text-3xl">{item.icon}</div>
+                            <div>
+                                <h3 className="text-white font-bold text-sm mb-1">{item.label}</h3>
+                                <p className="text-slate-500 text-xs leading-relaxed">{item.desc}</p>
+                            </div>
+                            <span className={`self-start px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${
+                                item.status === 'Building'
+                                    ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
+                                    : 'bg-slate-700/50 text-slate-500 border border-white/5'
+                            }`}>
+                                {item.status}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+
+                <p className="text-slate-700 text-[10px] uppercase tracking-widest mt-12 font-bold">
+                    A2 · Local Build · Rebuild In Progress
+                </p>
             </div>
         </div>
     );
@@ -1498,14 +1557,14 @@ export default function CompanyProfile() {
                                                                 <CheckCircle size={20} className="text-emerald-600" />
                                                             </div>
                                                         </div>
-                                                        <div className="prose prose-slate max-w-none text-slate-800 leading-relaxed space-y-4">
+                                                        <div className="max-w-7xl mx-auto prose prose-slate text-slate-800 leading-relaxed space-y-6">
                                                             {formData.organizedProfile.split('\n').map((line, i) => {
                                                                 const cleanLine = line.trim();
                                                                 if (!cleanLine) return <div key={i} className="h-2" />;
                                                                 if (/^[IVX]+\./.test(cleanLine) || cleanLine.startsWith('#')) {
                                                                     return (
-                                                                        <h4 key={i} className="text-md font-black text-slate-900 uppercase tracking-widest pt-6 border-t border-slate-100 mb-2 flex items-center gap-3">
-                                                                            <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full"></span>
+                                                                        <h4 key={i} className="text-2xl font-black text-slate-900 uppercase tracking-[0.2em] pt-10 border-t-2 border-slate-200 mt-6 mb-4 flex items-center gap-4">
+                                                                            <span className="w-2.5 h-2.5 bg-indigo-500 rounded-full shadow-[0_0_10px_rgba(99,102,241,0.5)]"></span>
                                                                             {cleanLine.replace(/#/g, '').trim()}
                                                                         </h4>
                                                                     );
@@ -1514,18 +1573,18 @@ export default function CompanyProfile() {
                                                                     const parts = cleanLine.split('**:');
                                                                     if (parts.length > 1) {
                                                                         return (
-                                                                            <div key={i} className="flex gap-4 py-1.5 border-b border-slate-50 items-start">
-                                                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest w-40 shrink-0 pt-0.5">
+                                                                            <div key={i} className="flex gap-6 py-3 border-b border-slate-100 items-start">
+                                                                                <span className="text-sm font-black text-slate-500 uppercase tracking-[0.1em] w-[280px] shrink-0 pt-1">
                                                                                     {parts[0].replace(/[-*]/g, '').trim()}
                                                                                 </span>
-                                                                                <span className="text-sm font-bold text-slate-700 whitespace-pre-wrap">
+                                                                                <span className="text-xl font-bold text-slate-700 whitespace-pre-wrap break-words leading-loose w-full">
                                                                                     {parts[1].trim()}
                                                                                 </span>
                                                                             </div>
                                                                         );
                                                                     }
                                                                 }
-                                                                return <p key={i} className="text-sm font-medium text-slate-600 leading-relaxed text-justify mb-2">{cleanLine}</p>
+                                                                return <p key={i} className="text-xl font-medium text-slate-600 leading-loose text-justify mb-6 break-words">{cleanLine}</p>
                                                             })}
                                                         </div>
                                                     </div>

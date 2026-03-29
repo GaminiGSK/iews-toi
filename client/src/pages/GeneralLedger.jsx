@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { ArrowLeft, Tag, Sparkles, Wand2, Calendar, Layers } from 'lucide-react';
+import { ArrowLeft, Tag, Sparkles, Wand2, Calendar, Layers, Lock, Unlock } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import ErrorBoundary from '../components/ErrorBoundary';
 
@@ -11,6 +11,7 @@ const GeneralLedger = ({ onBack }) => {
     const [tagging, setTagging] = useState(false);
     const [error, setError] = useState(null);
     const [taggingStatus, setTaggingStatus] = useState('');
+    const [lockedGLYears, setLockedGLYears] = useState([]);
 
     // Fetch TOI BR Database data for Company name if available
     const [filledData, setFilledData] = useState(() => {
@@ -46,6 +47,7 @@ const GeneralLedger = ({ onBack }) => {
 
             setTransactions(ledgerRes.data.transactions || []);
             setCodes(codesRes.data.codes || []);
+            setLockedGLYears(ledgerRes.data.lockedGLYears || []);
             setError(null);
         } catch (err) {
             console.error(err);
@@ -84,6 +86,31 @@ const GeneralLedger = ({ onBack }) => {
     };
 
 
+
+    // Toggle Lock Year
+    const handleToggleLock = async () => {
+        if (fiscalYear === 'all') return;
+        const isLocked = lockedGLYears.includes(fiscalYear);
+        const actionStr = isLocked ? 'UNLOCK' : 'LOCK';
+        if (!window.confirm(`Are you sure you want to ${actionStr} the entire fiscal year ${fiscalYear}?\n\nIf locked, no transactions from this year can be re-categorized.`)) return;
+
+        try {
+            setTagging(true);
+            const token = localStorage.getItem('token');
+            const res = await axios.post('/api/company/lock-year', {
+                year: fiscalYear,
+                locked: !isLocked
+            }, { headers: { 'Authorization': `Bearer ${token}` } });
+            
+            setLockedGLYears(res.data.lockedGLYears || []);
+            alert(res.data.message);
+        } catch (err) {
+            console.error(err);
+            alert('Failed to toggle year lock');
+        } finally {
+            setTagging(false);
+        }
+    };
 
     // Unassign all ABA (10130) transactions (Undo/Reset)
     const handleUnassignABA = async () => {
@@ -271,10 +298,10 @@ const GeneralLedger = ({ onBack }) => {
                             <td className="px-6 py-4 text-xs align-top print:px-2 print:py-4">
                                 {/* Screen UI */}
                                 <div className="flex items-center gap-2 print:hidden">
-                                    {tx.isJournalEntry ? (
-                                        <div className="flex-1 px-2 py-1 text-xs font-mono bg-orange-50 text-orange-800 border-orange-200 border rounded-lg flex items-center gap-1 shadow-sm">
-                                            <Tag size={12} className="text-orange-500" />
-                                            {codes.find(c => c._id === tx.accountCode)?.code || 'LOCKED (JE)'}
+                                    {(tx.isJournalEntry || (tx.date && lockedGLYears.includes(new Date(tx.date).getFullYear().toString()))) ? (
+                                        <div className={`flex-1 px-2 py-1 text-xs font-mono border rounded-lg flex items-center gap-1 shadow-sm ${tx.isJournalEntry ? 'bg-orange-50 text-orange-800 border-orange-200' : 'bg-red-50 text-red-800 border-red-200'}`}>
+                                            {tx.isJournalEntry ? <Tag size={12} className="text-orange-500" /> : <Lock size={12} className="text-red-500" />}
+                                            {codes.find(c => c._id === tx.accountCode)?.code || (tx.isJournalEntry ? 'LOCKED (JE)' : 'LOCKED (YEAR)')}
                                         </div>
                                     ) : (
                                         <select
@@ -399,6 +426,19 @@ const GeneralLedger = ({ onBack }) => {
                                 <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
                             </div>
                         </div>
+
+                        {/* Lock Status Button */}
+                        <button
+                            onClick={handleToggleLock}
+                            disabled={tagging || fiscalYear === 'all'}
+                            title={fiscalYear === 'all' ? "Select a specific Year to Lock or Unlock" : ""}
+                            className={`px-3 focus:outline-none flex-shrink-0 py-[7px] border rounded text-xs font-bold transition flex items-center gap-1.5 shadow-sm ${
+                                fiscalYear === 'all' ? 'bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed opacity-60' 
+                                : lockedGLYears.includes(fiscalYear) ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100' : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'
+                            }`}
+                        >
+                            {lockedGLYears.includes(fiscalYear) ? <><Lock size={12} /> LOCKED</> : <><Unlock size={12} /> {fiscalYear === 'all' ? 'SELECT YEAR TO LOCK' : 'UNLOCKED'}</>}
+                        </button>
 
                         {/* Filter Dropdown */}
                         <div className="relative">

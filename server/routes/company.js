@@ -144,7 +144,31 @@ router.post('/br-extract', auth, upload.single('file'), async (req, res) => {
                     if (doc.extractedData) {
                         for (const [key, val] of Object.entries(doc.extractedData)) {
                             if (Array.isArray(val) && val.length > 0) {
-                                aggregatedData[key] = val;
+                                if (!aggregatedData[key]) {
+                                    aggregatedData[key] = [...val];
+                                } else if (Array.isArray(aggregatedData[key])) {
+                                    const combined = [...aggregatedData[key], ...val];
+                                    const uniqueMap = new Map();
+                                    combined.forEach(item => {
+                                        if (item && typeof item === 'object') {
+                                            const id = item.nameEn || item.nameKh || item.code || item.descriptionEn || JSON.stringify(item);
+                                            if (!uniqueMap.has(id)) {
+                                                uniqueMap.set(id, { ...item }); // Clone object
+                                            } else {
+                                                // Merge object properties
+                                                const existing = uniqueMap.get(id);
+                                                Object.keys(item).forEach(k => {
+                                                    if (!existing[k] && item[k]) {
+                                                        existing[k] = item[k];
+                                                    }
+                                                });
+                                            }
+                                        } else {
+                                            if (!uniqueMap.has(item)) uniqueMap.set(item, item);
+                                        }
+                                    });
+                                    aggregatedData[key] = Array.from(uniqueMap.values());
+                                }
                             } else if (!Array.isArray(val) && val !== null && val !== undefined && val !== '') {
                                 aggregatedData[key] = val;
                             }
@@ -179,7 +203,13 @@ router.post('/br-extract', auth, upload.single('file'), async (req, res) => {
                 setField('postalAddress', d.postalAddress);
                 setField('contactEmail', d.contactEmail);
                 setField('contactPhone', d.contactPhone);
-                setField('businessActivity', d.businessActivities);
+                // Business Activities: map array to string + store full array
+                if (Array.isArray(d.businessActivities) && d.businessActivities.length > 0) {
+                    profileInDb.businessActivity = d.businessActivities.map(b => b.descriptionEn || b.descriptionKh || b.code).join(', ');
+                    profileInDb.businessActivities = d.businessActivities;
+                } else {
+                    setField('businessActivity', d.businessActivities);
+                }
                 setField('companyType', d.companyType);
                 setField('vatTin', d.vatTin);
                 setField('taxRegistrationDate', d.taxRegistrationDate);
@@ -1737,7 +1767,32 @@ router.get('/transactions', auth, async (req, res) => {
     }
 });
 
-// GET General Ledger (All History, Sorted Date ASC)
+// POST Toggle Year Lock
+router.post('/lock-year', auth, async (req, res) => {
+    try {
+        const { year, locked } = req.body;
+        const CompanyProfile = require('../models/CompanyProfile');
+        
+        const profile = await CompanyProfile.findOne({ user: req.user.id });
+        if (!profile) return res.status(404).json({ message: 'Profile not found' });
+        
+        let years = profile.lockedGLYears || [];
+        if (locked && !years.includes(year)) {
+            years.push(year);
+        } else if (!locked && years.includes(year)) {
+            years = years.filter(y => y !== year);
+        }
+        
+        profile.lockedGLYears = years;
+        await profile.save();
+        
+        res.json({ message: `Year ${year} ${locked ? 'locked' : 'unlocked'} successfully`, lockedGLYears: profile.lockedGLYears });
+    } catch (err) {
+        console.error('Lock Year Route Error:', err);
+        res.status(500).json({ message: 'Error updating locked year' });
+    }
+});
+
 // GET General Ledger (All History, Sorted Date ASC)
 router.get('/ledger', auth, async (req, res) => {
     try {
@@ -1815,7 +1870,8 @@ router.get('/ledger', auth, async (req, res) => {
         res.json({ 
             transactions: enrichedTransactions,
             companyNameEn: profile ? profile.companyNameEn : req.user.companyCode,
-            companyNameKh: profile ? profile.companyNameKh : ''
+            companyNameKh: profile ? profile.companyNameKh : '',
+            lockedGLYears: profile ? profile.lockedGLYears || [] : []
         });
     } catch (err) {
         console.error('Fetch Ledger Error:', err);
@@ -2013,6 +2069,19 @@ router.post('/transactions/tag', auth, async (req, res) => {
         const { transactionId, accountCodeId } = req.body;
 
         if (!transactionId) return res.status(400).json({ message: 'Transaction ID required' });
+
+        const existingTx = await Transaction.findOne({ _id: transactionId, companyCode: req.user.companyCode });
+        if (!existingTx) return res.status(404).json({ message: 'Transaction not found' });
+        
+        const CompanyProfile = require('../models/CompanyProfile');
+        const profile = await CompanyProfile.findOne({ user: req.user.id });
+        if (profile && profile.lockedGLYears && existingTx.date) {
+            const txYear = new Date(existingTx.date).getFullYear().toString();
+            if (profile.lockedGLYears.includes(txYear)) {
+                return res.status(403).json({ message: `Cannot modify transaction. Fiscal Year ${txYear} is locked.` });
+            }
+        }
+
         let targetCode = '';
         if (accountCodeId) {
             const AccountCode = require('../models/AccountCode');
@@ -2021,7 +2090,7 @@ router.post('/transactions/tag', auth, async (req, res) => {
         }
 
         const updatePayload = accountCodeId 
-            ? { accountCode: accountCodeId, code: targetCode }
+            ? { accountCode: accountCodeId, code: targetCode, tagSource: 'manual' }
             : { $unset: { accountCode: 1, code: 1 } };
 
         // Update the transaction
