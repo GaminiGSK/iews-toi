@@ -3131,8 +3131,23 @@ router.get('/toi/autofill', auth, async (req, res) => {
                 }
         }
         if (!p.incorporationDate && p.organizedProfile) {
-            const incMatch = p.organizedProfile.match(/Incorporation Date[^\n]*(2[0-9]{3}[-\sA-Za-z0-9]*)/i);
+            const incMatch = p.organizedProfile.match(/(?:Incorporation Date|Registration Date)[^\n]*?(20[0-9]{2}[-\sA-Za-z0-9]*|[0-9]{1,2}[/-][0-9]{1,2}[/-]20[0-9]{2})/i);
             if (incMatch) p.incorporationDate = incMatch[1].trim();
+        }
+
+        if (!p.director && p.organizedProfile) {
+            const dirMatch = p.organizedProfile.match(/(?:Director|Owner|Chairman).*?:\s*([^\n]+)/i);
+            if (dirMatch) p.director = dirMatch[1].trim();
+        }
+
+        if (!p.vatTin && p.organizedProfile) {
+            const tinMatch = p.organizedProfile.match(/TIN[):\-\s/]*([A-Z0-9\-]{5,})/i) || p.organizedProfile.match(/Identification Number.*?[:\-\s]+([A-Z0-9\-]{5,})/i);
+            if (tinMatch && tinMatch[1]) p.vatTin = tinMatch[1].trim();
+        }
+
+        if (!p.address && p.organizedProfile) {
+            const addrMatch = p.organizedProfile.match(/(?:Registered Address|Office Address).*?:\s*([\s\S]*?)(?=\n[A-Z]|\n\*\*|$)/i);
+            if (addrMatch) p.address = addrMatch[1].replace(/\n/g, ' ').trim();
         }
 
         // ── 2. Load TOI Modules ───────────────────────────────────────────
@@ -3361,7 +3376,25 @@ router.get('/toi/autofill', auth, async (req, res) => {
             branchOut:         ext('branchOut') || ext('branchCount') || '0',
 
             // ── Rows 4,5 ─────────────────────────────────────────────────
-            registrationDate:  p.incorporationDate || ext('incorporationDate') || ext('registrationDate') || '',
+            registrationDate:  (() => {
+                let dt = p.incorporationDate || ext('incorporationDate') || ext('registrationDate') || '';
+                if (!dt) return '';
+                if (/^[0-9]{8}$/.test(dt)) return dt;
+                
+                // Try parse Date
+                const d = new Date(dt);
+                if (!isNaN(d.getTime())) {
+                    return String(d.getDate()).padStart(2, '0') + 
+                           String(d.getMonth() + 1).padStart(2, '0') + 
+                           String(d.getFullYear());
+                }
+                
+                // If regex found something like DD/MM/YYYY, strip slashes
+                const parts = dt.match(/([0-9]{1,2})[\/\-]([0-9]{1,2})[\/\-](\d{4})/);
+                if (parts) return parts[1].padStart(2, '0') + parts[2].padStart(2, '0') + parts[3];
+                
+                return dt.replace(/[^0-9]/g, '');
+            })(),
             directorName:      p.director || ext('director') || '',
             signatoryName:     p.director || ext('director') || '',
 
@@ -3466,7 +3499,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
 
 
             // ── Rows 7-10: Addresses (Khmer only) ───────────────────────
-            agentName:         '',
+            agentName:         'GK SMART AI',
             address1:          addrKh,    // Current Registered Office (Khmer)
             address2:          addrKh,    // Current Principal Establishment (Khmer)
             address3:          '',
@@ -3477,8 +3510,8 @@ router.get('/toi/autofill', auth, async (req, res) => {
             //       No suffix (e.g. "GK SMART") → Sole Proprietorship / Physical Person
             // Confirmed by BR: GK SMART = Sole Proprietorship (MOC Cert + Patent Tax 2025)
             legalForm: (() => {
-                const taught = ext('legalForm');
-                if (taught) return taught;
+                const taught = ext('legalForm') || p.registrationType || '';
+                if (/sole|proprietor|physical/i.test(taught)) return 'Sole Proprietorship / Physical Person';
 
                 const nameEn = (p.companyNameEn || '').toUpperCase();
                 if (/CO\.\s*,?\s*LTD|LIMITED COMPANY|PTE\.?\s*LTD|CORPORATION|CORP\./i.test(nameEn)) return 'Private Limited Company';
@@ -3486,11 +3519,8 @@ router.get('/toi/autofill', auth, async (req, res) => {
                 if (/PUBLIC LIMITED/i.test(nameEn)) return 'Public Limited Company';
                 if (/GENERAL PARTNERSHIP/i.test(nameEn)) return 'General Partnership';
                 if (/LIMITED PARTNERSHIP/i.test(nameEn)) return 'Limited Partnership';
-                
-                // ARAKAN hack (Private Limited is more common for standard companies lacking the literal english word in profile name)
-                if (nameEn && nameEn.length < 30 && !nameEn.includes(' ')) return 'Private Limited Company';
 
-                return 'Sole Proprietorship / Physical Person';  // Default: no Co.,Ltd suffix
+                return 'Private Limited Company';  // Default to Private Limited Company for vast majority of clients
             })(),
             accountingRecord:  ext('accountingRecord') || 'Using Software',
             softwareName:      ext('softwareName') || 'GK SMART AI',
