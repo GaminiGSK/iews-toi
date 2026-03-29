@@ -1487,10 +1487,54 @@ export default function CompanyProfile() {
                                         {/* CHAT/PROMPT HISTORY (CLEANED) */}
                                         <div className="flex-1 overflow-y-auto mb-10 space-y-12 custom-scrollbar pr-4">
                                             {workspaceChat.length === 0 ? (
-                                                <div className="h-full flex flex-col items-center justify-center opacity-10">
-                                                    <Brain size={120} className="mb-8" />
-                                                    <p className="text-xl font-black uppercase tracking-[0.5em]">Agent Synced • Awaiting Command</p>
-                                                </div>
+                                                formData.organizedProfile ? (
+                                                    <div className="bg-white border border-slate-200 rounded-[40px] p-16 shadow-2xl relative overflow-hidden animate-in zoom-in duration-500 text-black mx-4 mt-4 mb-4">
+                                                        <div className="border-b-2 border-slate-900 pb-6 mb-8 flex justify-between items-end">
+                                                            <div>
+                                                                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] mb-2">SYSTEM SYNTHESIS REPORT</h3>
+                                                                <h4 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Bilingual Entity Intelligence</h4>
+                                                            </div>
+                                                            <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center">
+                                                                <CheckCircle size={20} className="text-emerald-600" />
+                                                            </div>
+                                                        </div>
+                                                        <div className="prose prose-slate max-w-none text-slate-800 leading-relaxed space-y-4">
+                                                            {formData.organizedProfile.split('\n').map((line, i) => {
+                                                                const cleanLine = line.trim();
+                                                                if (!cleanLine) return <div key={i} className="h-2" />;
+                                                                if (/^[IVX]+\./.test(cleanLine) || cleanLine.startsWith('#')) {
+                                                                    return (
+                                                                        <h4 key={i} className="text-md font-black text-slate-900 uppercase tracking-widest pt-6 border-t border-slate-100 mb-2 flex items-center gap-3">
+                                                                            <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full"></span>
+                                                                            {cleanLine.replace(/#/g, '').trim()}
+                                                                        </h4>
+                                                                    );
+                                                                }
+                                                                if (cleanLine.startsWith('- **') || cleanLine.startsWith('**')) {
+                                                                    const parts = cleanLine.split('**:');
+                                                                    if (parts.length > 1) {
+                                                                        return (
+                                                                            <div key={i} className="flex gap-4 py-1.5 border-b border-slate-50 items-start">
+                                                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest w-40 shrink-0 pt-0.5">
+                                                                                    {parts[0].replace(/[-*]/g, '').trim()}
+                                                                                </span>
+                                                                                <span className="text-sm font-bold text-slate-700 whitespace-pre-wrap">
+                                                                                    {parts[1].trim()}
+                                                                                </span>
+                                                                            </div>
+                                                                        );
+                                                                    }
+                                                                }
+                                                                return <p key={i} className="text-sm font-medium text-slate-600 leading-relaxed text-justify mb-2">{cleanLine}</p>
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="h-full flex flex-col items-center justify-center opacity-10">
+                                                        <Brain size={120} className="mb-8" />
+                                                        <p className="text-xl font-black uppercase tracking-[0.5em]">Agent Synced • Awaiting Command</p>
+                                                    </div>
+                                                )
                                             ) : (
                                                 workspaceChat.map((msg, i) => (
                                                     <div key={i} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start animate-in fade-in slide-in-from-bottom-4'}`}>
@@ -1517,7 +1561,7 @@ export default function CompanyProfile() {
                                         {/* RAPID INTEL BUTTONS - CLEAN COMMAND CENTER */}
                                         <div className="grid grid-cols-2 gap-6 relative z-10 p-6 bg-slate-900/80 rounded-[32px] border border-white/10 shadow-2xl backdrop-blur-3xl">
                                             <button
-                                                onClick={() => handleSendWorkspaceChat("Perform a full administrative summary of my business profile using all available registration documents. Please list all key IDs, dates, names, and addresses. **CRITICAL: You must explicitly separate and preserve the pure Khmer strings from the English strings for all Names, Addresses, and Business Activities (e.g. show English Address and Khmer Address on separate lines).**")}
+                                                onClick={() => handleSendWorkspaceChat("Perform a full administrative summary of my business profile using all available registration documents. Please list all key IDs, dates, Names, and Addresses. **CRITICAL: You must explicitly separate and preserve the pure Khmer strings from the English strings for all Names, Addresses, and Business Activities.** \\n\\nALSO CRITICAL: If you use the `fill_toi_workspace` tool, you MUST put the FULL, COMPLETE, DETAILED MARKDOWN SUMMARY inside the `reply_text` property. Do not just say 'I have extracted...'. I need to see the entire detailed summary on my screen in the chat.")}
                                                 className="h-20 bg-amber-500/5 hover:bg-amber-500/20 border-2 border-amber-500/40 hover:border-amber-400 rounded-2xl text-[14px] font-black uppercase tracking-[0.2em] text-amber-50 transition-all flex items-center justify-center gap-6 active:scale-[0.98] group shadow-[0_0_30px_rgba(245,158,11,0.05)]"
                                                 disabled={isAgentThinking}
                                             >
@@ -2129,6 +2173,10 @@ export default function CompanyProfile() {
 
                     <span className="bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest hidden sm:flex items-center shadow-inner gap-1.5">
                         GK SMART & AI · V1.0 Public
+                    </span>
+
+                    <span className="bg-orange-500/20 text-orange-400 border border-orange-500/40 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest hidden sm:flex items-center gap-1.5 animate-pulse">
+                        ⚡ A2 · LOCAL
                     </span>
 
                     <button

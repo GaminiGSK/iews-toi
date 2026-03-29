@@ -281,20 +281,18 @@ exports.summarizeToProfile = async (rawText, structuredData = {}) => {
             
             This document must be exhaustive. Reconstruct the entity's complete identity. Use the Structured JSON Data as the ultimate source of truth, and use the Raw Text to add flavor and context.
             
-            STRUCTURE THE DOCUMENT AS FOLLOWS:
-
-            # I. EXECUTIVE CORPORATE ARCHITECTURE
-            - **Legal Name**: (Unified English & Khmer)
+            STRUCTURE THE DOCUMENT AS FOLLOWS:            # I. EXECUTIVE CORPORATE ARCHITECTURE
+            - **Legal Name**: (MUST be Unified English & Khmer)
             - **Identifiers**: (Company ID, Tax TIN, Patent IDs)
             - **Legal Status**: (Company Type, Incorporation Date)
             
             # II. GOVERNANCE & SHAREHOLDERS
-            - **Board of Directors**: (Exhaustive list of directors/authorized signatories)
-            - **Shareholders**: (Detailed ownership list with percentage/nationalities if found)
+            - **Board of Directors**: (Exhaustive list of directors/authorized signatories. You MUST pull BOTH Khmer and English names if present.)
+            - **Shareholders**: (Detailed ownership list with percentage/nationalities if found. You MUST pull BOTH Khmer and English names if present.)
             
             # III. OPERATIONAL FOOTPRINT
-            - **Headquarters**: (Full physical address in EN/KH)
-            - **Business Objectives**: (List every identified commercial activity mentioned)
+            - **Headquarters**: (Full physical address. You MUST output BOTH Khmer and English addresses separately.)
+            - **Business Objectives**: (List every identified commercial activity mentioned. You MUST output BOTH Khmer and English descriptions separately.)
             
             # IV. FINANCIAL & LEGAL ASSETS
             - **Capital**: (Capital value, currency, share distribution)
@@ -311,7 +309,8 @@ exports.summarizeToProfile = async (rawText, structuredData = {}) => {
             ${rawText}
             
             STRICT RULES:
-            - **Exhaustive Detail**: If a shareholder or objective is in the raw text, INCLUDE IT.
+            - **BILINGUAL REQUIREMENT**: Provide EXACT Khmer text alongside English text for EVERY name, address, and activity. This is completely non-negotiable.
+            - **Exhaustive Detail**: If a shareholder or objective is in the raw text, INCLUDE IT. Do not skip any rows.
             - **Fidelity**: No hallucinations. Professional, objective tone.
             - **Format**: Markdown with high-end hierarchy (headings, bold keys).
         `;

@@ -17,6 +17,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.80.0",
     "@copilotkit/backend": "^0.37.0",
     "@copilotkit/runtime": "^0.37.0",
     "@google-cloud/documentai": "^9.5.0",

@@ -46,20 +46,6 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'OK', database: dbStatus, timestamp: new Date() });
 });
 
-// TEMP: fix RSW role from admin → unit so it lands on /dashboard instead of /admin
-app.post('/api/debug/fix-rsw-role', async (req, res) => {
-    try {
-        const User = require('./models/User');
-        const result = await User.updateOne(
-            { username: 'RSW', role: 'admin' },
-            { $set: { role: 'unit' } }
-        );
-        res.json({ ok: true, matched: result.matchedCount, modified: result.modifiedCount });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
-
 // Routes
 console.log('[Startup] Loading API Routes...');
 app.use('/api/auth', authRoutes);

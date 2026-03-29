@@ -782,6 +782,20 @@ router.post('/save-registration-data', auth, async (req, res) => {
             updateIfPres('vatTin', extractedData.vatTin);
             updateIfPres('businessActivity', extractedData.businessActivity);
             updateIfPres('director', extractedData.directorName);
+            
+            // Critical entity fields for TOI/GDT
+            updateIfPres('directors', extractedData.directors);
+            updateIfPres('shareholders', extractedData.shareholders);
+            updateIfPres('registeredShareCapitalKHR', extractedData.registeredShareCapitalKHR);
+            updateIfPres('companyType', extractedData.companyType);
+            updateIfPres('companySubType', extractedData.companySubType);
+            updateIfPres('majorityNationality', extractedData.majorityNationality);
+            updateIfPres('percentageOfMajorityShareholders', extractedData.percentageOfMajorityShareholders);
+            
+            // Handle booleans explicitly since updateIfPres assumes truthiness for null checks
+            if (extractedData.moreThanOneClassOfShares !== undefined && extractedData.moreThanOneClassOfShares !== null) {
+                profile.moreThanOneClassOfShares = extractedData.moreThanOneClassOfShares;
+            }
 
             // Bank Info
             updateIfPres('bankAccountNumber', extractedData.bankAccountNumber);
