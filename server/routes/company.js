@@ -3458,10 +3458,18 @@ router.get('/toi/autofill', auth, async (req, res) => {
 
             // ── Row 6: Business Activities ───────────────────────────────
             businessActivities: (() => {
+                // Helper: strip AI hallucinated placeholders from descriptionKh
+                const cleanKh = (kh) => {
+                    if (!kh) return null;
+                    if (!/[\u1780-\u17FF]/.test(kh)) return null; // No actual Khmer chars → discard
+                    if (/not available|transliterated|khmer script/i.test(kh)) return null;
+                    return kh.trim();
+                };
                 const structured = p.businessActivities || ext('businessActivities');
                 if (Array.isArray(structured) && structured.length > 0) {
                     return structured.map(b => {
-                        let text = (b.descriptionKh && /[\u1780-\u17FF]/.test(b.descriptionKh)) ? b.descriptionKh : b.descriptionEn;
+                        const kh = cleanKh(b.descriptionKh);
+                        let text = kh ? kh : (b.descriptionEn || '');
                         return extractKhmerText(text) + (b.code ? ` (${b.code})` : '');
                     }).filter(Boolean).join('\n');
                 }
@@ -3512,10 +3520,17 @@ router.get('/toi/autofill', auth, async (req, res) => {
             })(),
             
             mainActivity: (() => {
+                const cleanKh = (kh) => {
+                    if (!kh) return null;
+                    if (!/[\u1780-\u17FF]/.test(kh)) return null;
+                    if (/not available|transliterated|khmer script/i.test(kh)) return null;
+                    return kh.trim();
+                };
                 const structured = p.businessActivities || ext('businessActivities');
                 if (Array.isArray(structured) && structured.length > 0) {
                     return structured.map(b => {
-                        let text = (b.descriptionKh && /[\u1780-\u17FF]/.test(b.descriptionKh)) ? b.descriptionKh : b.descriptionEn;
+                        const kh = cleanKh(b.descriptionKh);
+                        let text = kh ? kh : (b.descriptionEn || '');
                         return extractKhmerText(text) + (b.code ? ` (${b.code})` : '');
                     }).filter(Boolean).join('\n');
                 }
@@ -3574,17 +3589,34 @@ router.get('/toi/autofill', auth, async (req, res) => {
             //       No suffix (e.g. "GK SMART") → Sole Proprietorship / Physical Person
             // Confirmed by BR: GK SMART = Sole Proprietorship (MOC Cert + Patent Tax 2025)
             legalForm: (() => {
+                // Priority 1: AI agent override (from fill_toi_workspace tool params)
                 const taught = ext('legalForm') || p.registrationType || '';
                 if (/sole|proprietor|physical/i.test(taught)) return 'Sole Proprietorship / Physical Person';
+                if (/single member/i.test(taught)) return 'Single Member Private Limited Company';
+                if (/public limited/i.test(taught)) return 'Public Limited Company';
+                if (/general partnership/i.test(taught)) return 'General Partnership';
+                if (/limited partnership/i.test(taught)) return 'Limited Partnership';
+                if (/private limited|co\.?\s*,?\s*ltd|pte/i.test(taught)) return 'Private Limited Company';
 
+                // Priority 2: companyType from extracted BR document
+                const ct = (p.companyType || '').toLowerCase();
+                if (/sole|proprietor|physical/i.test(ct)) return 'Sole Proprietorship / Physical Person';
+                if (/single member/i.test(ct)) return 'Single Member Private Limited Company';
+                if (/public limited/i.test(ct)) return 'Public Limited Company';
+                if (/general partnership/i.test(ct)) return 'General Partnership';
+                if (/limited partnership/i.test(ct)) return 'Limited Partnership';
+                if (/private limited|co\.?\s*ltd|pte/i.test(ct)) return 'Private Limited Company';
+
+                // Priority 3: infer from company name suffix
                 const nameEn = (p.companyNameEn || '').toUpperCase();
                 if (/CO\.\s*,?\s*LTD|LIMITED COMPANY|PTE\.?\s*LTD|CORPORATION|CORP\./i.test(nameEn)) return 'Private Limited Company';
                 if (/SINGLE MEMBER/i.test(nameEn)) return 'Single Member Private Limited Company';
                 if (/PUBLIC LIMITED/i.test(nameEn)) return 'Public Limited Company';
-                if (/GENERAL PARTNERSHIP/i.test(nameEn)) return 'General Partnership';
-                if (/LIMITED PARTNERSHIP/i.test(nameEn)) return 'Limited Partnership';
 
-                return 'Private Limited Company';  // Default to Private Limited Company for vast majority of clients
+                // Priority 4: majority nationality — foreign-owned sole prop
+                if (/foreigner/i.test(p.majorityNationality || '')) return 'Sole Proprietorship / Physical Person';
+
+                return 'Sole Proprietorship / Physical Person'; // Safer default for Cambodia SP-heavy client base
             })(),
             accountingRecord:  ext('accountingRecord') || 'Using Software',
             softwareName:      ext('softwareName') || 'GK SMART AI',

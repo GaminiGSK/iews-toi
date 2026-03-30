@@ -110,6 +110,7 @@ IMPORTANT:
 - Extract ALL shareholders with their exact share count.
 - Extract ALL business activity codes and descriptions.
 - If a field is absent from the document, return null. DO NOT guess.
+- For "descriptionKh": ONLY return actual Khmer Unicode script (ក-ឿ character range). NEVER return phrases like "Khmer script not available", "not available", "transliterated from English", or any English text in this field. If there is no actual Khmer text for the business activity, return null.
 - Return ONLY the JSON object.`;
 
         const ext = path.extname(filePath).toLowerCase();
