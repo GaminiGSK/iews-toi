@@ -3589,34 +3589,20 @@ router.get('/toi/autofill', auth, async (req, res) => {
             //       No suffix (e.g. "GK SMART") → Sole Proprietorship / Physical Person
             // Confirmed by BR: GK SMART = Sole Proprietorship (MOC Cert + Patent Tax 2025)
             legalForm: (() => {
-                // Priority 1: AI agent override (from fill_toi_workspace tool params)
                 const taught = ext('legalForm') || p.registrationType || '';
                 if (/sole|proprietor|physical/i.test(taught)) return 'Sole Proprietorship / Physical Person';
                 if (/single member/i.test(taught)) return 'Single Member Private Limited Company';
                 if (/public limited/i.test(taught)) return 'Public Limited Company';
-                if (/general partnership/i.test(taught)) return 'General Partnership';
-                if (/limited partnership/i.test(taught)) return 'Limited Partnership';
                 if (/private limited|co\.?\s*,?\s*ltd|pte/i.test(taught)) return 'Private Limited Company';
-
-                // Priority 2: companyType from extracted BR document
                 const ct = (p.companyType || '').toLowerCase();
                 if (/sole|proprietor|physical/i.test(ct)) return 'Sole Proprietorship / Physical Person';
                 if (/single member/i.test(ct)) return 'Single Member Private Limited Company';
                 if (/public limited/i.test(ct)) return 'Public Limited Company';
-                if (/general partnership/i.test(ct)) return 'General Partnership';
-                if (/limited partnership/i.test(ct)) return 'Limited Partnership';
                 if (/private limited|co\.?\s*ltd|pte/i.test(ct)) return 'Private Limited Company';
-
-                // Priority 3: infer from company name suffix
                 const nameEn = (p.companyNameEn || '').toUpperCase();
-                if (/CO\.\s*,?\s*LTD|LIMITED COMPANY|PTE\.?\s*LTD|CORPORATION|CORP\./i.test(nameEn)) return 'Private Limited Company';
-                if (/SINGLE MEMBER/i.test(nameEn)) return 'Single Member Private Limited Company';
-                if (/PUBLIC LIMITED/i.test(nameEn)) return 'Public Limited Company';
-
-                // Priority 4: majority nationality — foreign-owned sole prop
-                if (/foreigner/i.test(p.majorityNationality || '')) return 'Sole Proprietorship / Physical Person';
-
-                return 'Sole Proprietorship / Physical Person'; // Safer default for Cambodia SP-heavy client base
+                if (/CO\.\s*,?\s*LTD|LIMITED COMPANY|PTE\.?\s*LTD/.test(nameEn)) return 'Private Limited Company';
+                if (/SINGLE MEMBER/.test(nameEn)) return 'Single Member Private Limited Company';
+                return 'Sole Proprietorship / Physical Person';
             })(),
             accountingRecord:  ext('accountingRecord') || 'Using Software',
             softwareName:      ext('softwareName') || 'GK SMART AI',
@@ -3627,89 +3613,78 @@ router.get('/toi/autofill', auth, async (req, res) => {
             filingDate:        `3103${yearStr}`,
             filedIn:           addrKh || 'Phnom Penh',
 
-            // ── PAGE 2: SMART Shareholders Array ─────────────────────────
-            // Build shareholders[] from ALL sources, dedup by name, sort by pct desc
-            // Source priority: 1) RelatedParty parties (ownershipPct > 0 or is Shareholder/Director)
-            //                  2) SalaryModule shareholderEmployees (position = role)
-            //                  3) CompanyProfile director/shareholder as fallback
+            // ── PAGE 2: Shareholders — from BR data only
 
             shareholders: (() => {
-                // Use smart GL-derived share capital (opening = start of year, final = end of year)
                 const totalEquityStart = shareCapitalOpeningFinal;
                 const totalEquityEnd   = shareCapitalFinal;
-                const totalEquity = totalEquityEnd || totalEquityStart;
+                const totalEquity      = totalEquityEnd || totalEquityStart;
                 const seen = new Set();
                 const list = [];
 
-                // Source 1 �?Related Party parties with ownership
+                const addPerson = (name, position, pct, nationality) => {
+                    if (!name) return;
+                    const key = name.trim().toLowerCase();
+                    if (seen.has(key)) return;
+                    seen.add(key);
+                    const p100 = pct || 100;
+                    list.push({
+                        name:        name.trim(),
+                        address:     addrKh || '',
+                        nationality: nationality || 'Cambodian',
+                        position:    position || 'Owner',
+                        pctStart:    p100,
+                        amtStart:    Math.round(totalEquityStart * p100 / 100),
+                        pctEnd:      p100,
+                        amtEnd:      Math.round(totalEquityEnd   * p100 / 100),
+                    });
+                };
+
+                // Source 1: RelatedParty parties (entered by user, most reliable)
                 for (const party of parties) {
                     const pct = parseFloat(party.ownershipPct) || 0;
-                    if (!party.name) continue;
-                    const key = party.name.trim().toLowerCase();
-                    if (seen.has(key)) continue;
-                    seen.add(key);
-                    list.push({
-                        name:        party.name.trim(),
-                        address:     addrKh || party.country || '',
-                        nationality: party.nationality || 'Cambodian',
-                        position:    party.relationship || 'Shareholder',
-                        pctStart:    pct || 100,
-                        amtStart:    pct ? Math.round(totalEquityStart * pct / 100) : totalEquityStart,
-                        pctEnd:      pct || 100,
-                        amtEnd:      pct ? Math.round(totalEquityEnd   * pct / 100) : totalEquityEnd,
-                    });
+                    addPerson(
+                        party.name,
+                        party.relationship || 'Shareholder',
+                        pct || (parties.length === 1 ? 100 : 0),
+                        party.nationality
+                    );
                 }
 
-                // Source 2 — Salary shareholder-employees not already in list
-                // Only add if we can identify a REAL person name. Never use emp.position as a person name.
-                for (const emp of shEmps) {
-                    if (!emp.position) continue;
-                    const personName = p.director || p.shareholder;
-                    if (!personName) continue; // No real name available — skip, don't use position title as name
-                    const key = personName.trim().toLowerCase();
-                    if (seen.has(key)) continue;
-                    seen.add(key);
-                    list.push({
-                        name:        personName.trim(),
-                        address:     addrKh || '',
-                        nationality: 'Cambodian',
-                        position:    emp.position.trim(),
-                        pctStart:    100 / Math.max(shEmps.length, 1),
-                        amtStart:    Math.round(totalEquityStart / Math.max(shEmps.length, 1)),
-                        pctEnd:      100 / Math.max(shEmps.length, 1),
-                        amtEnd:      Math.round(totalEquityEnd   / Math.max(shEmps.length, 1)),
-                    });
+                // Source 2: p.shareholders[] array extracted from BR by AI
+                const brShareholders = Array.isArray(p.shareholders) ? p.shareholders : [];
+                for (const sh of brShareholders) {
+                    const pct = parseFloat(sh.ownershipPct || sh.pct || sh.shares) || 0;
+                    addPerson(
+                        sh.name || sh.fullName,
+                        sh.position || sh.role || 'Shareholder',
+                        pct || (brShareholders.length === 1 ? 100 : 0),
+                        sh.nationality
+                    );
                 }
 
-                // Source 3 �?CompanyProfile director as fallback if still empty
+                // Source 3: p.director / p.shareholder string from BR (absolute fallback)
                 if (list.length === 0) {
-                    const name = p.shareholder || p.director || '';
-                    if (name) {
-                        list.push({
-                            name,
-                            address:     addrKh || '',
-                            nationality: 'Cambodian',
-                            position:    'Managing Director',
-                            pctStart:    100,
-                            amtStart:    totalEquityStart,
-                            pctEnd:      100,
-                            amtEnd:      totalEquityEnd,
-                        });
-                    }
+                    addPerson(
+                        p.shareholder || p.director || '',
+                        'Owner / ម្ចាស់',
+                        100,
+                        'Cambodian'
+                    );
                 }
 
                 // Normalise percentages to sum to 100
                 const totalPct = list.reduce((s, x) => s + x.pctStart, 0);
-                if (totalPct > 0 && totalPct !== 100) {
+                if (totalPct > 0 && Math.abs(totalPct - 100) > 0.5) {
+                    const factor = 100 / totalPct;
                     list.forEach(x => {
-                        x.pctStart = Math.round(x.pctStart / totalPct * 100 * 100) / 100;
+                        x.pctStart = Math.round(x.pctStart * factor * 100) / 100;
                         x.pctEnd   = x.pctStart;
                         x.amtStart = Math.round(totalEquity * x.pctStart / 100);
                         x.amtEnd   = x.amtStart;
                     });
                 }
 
-                // Format amounts
                 return list.map(x => ({
                     ...x,
                     amtStart: fmt(x.amtStart),
@@ -3718,6 +3693,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
                     pctEnd:   String(x.pctEnd),
                 }));
             })(),
+
 
             // ── PAGE 2: Flat keys for ToiAcar.jsx print preview (capitalReg* / capitalPaid*) ──
             // Auto-generated �?supports up to 5 rows on the official GDT form
