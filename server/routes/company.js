@@ -3651,26 +3651,37 @@ router.get('/toi/autofill', auth, async (req, res) => {
                     );
                 }
 
-                // Source 2: p.shareholders[] array extracted from BR by AI
+                // Source 2: p.shareholders[] array — BR schema uses nameEn / nameKh
                 const brShareholders = Array.isArray(p.shareholders) ? p.shareholders : [];
                 for (const sh of brShareholders) {
-                    const pct = parseFloat(sh.ownershipPct || sh.pct || sh.shares) || 0;
+                    const pct = parseFloat(sh.ownershipPct || sh.pct || sh.numberOfShares) || 0;
                     addPerson(
-                        sh.name || sh.fullName,
-                        sh.position || sh.role || 'Shareholder',
+                        sh.nameEn || sh.nameKh || sh.name || '',
+                        'Shareholder',
                         pct || (brShareholders.length === 1 ? 100 : 0),
                         sh.nationality
                     );
                 }
 
-                // Source 3: p.director / p.shareholder string from BR (absolute fallback)
-                if (list.length === 0) {
+                // Source 3: p.directors[] array — BR schema uses nameEn / nameKh
+                const brDirectors = Array.isArray(p.directors) ? p.directors : [];
+                for (const d of brDirectors) {
                     addPerson(
-                        p.shareholder || p.director || '',
-                        'Owner / ម្ចាស់',
-                        100,
+                        d.nameEn || d.nameKh || '',
+                        'Director',
+                        brDirectors.length === 1 ? 100 : 0,
                         'Cambodian'
                     );
+                }
+
+                // Source 4: flat p.shareholder / p.director string — last resort
+                // Filter out AI system-message phrases that are not real names
+                if (list.length === 0) {
+                    const rawName = p.shareholder || p.director || '';
+                    const isSystemText = /no board|not applicable|listed in|provided data|n\/a|none/i.test(rawName);
+                    if (!isSystemText) {
+                        addPerson(rawName, 'Owner / ម្ចាស់', 100, 'Cambodian');
+                    }
                 }
 
                 // Normalise percentages to sum to 100
