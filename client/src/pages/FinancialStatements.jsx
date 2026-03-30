@@ -211,7 +211,7 @@ const FinancialStatements = ({ onBack }) => {
         </tr>
     );
 
-    const handleDownloadPDF = () => {
+    const handleDownloadPDF = (targetTab = activeTab) => {
         const doc = new jsPDF(viewMode === 'monthly' ? 'l' : 'p');
         const titleMap = {
             pl: "STATEMENT OF PROFIT OR LOSS",
@@ -226,7 +226,7 @@ const FinancialStatements = ({ onBack }) => {
         doc.setFont('serif', 'bold');
         doc.text(companyNameEn.toUpperCase(), 14, 20);
         doc.setFontSize(12);
-        doc.text(titleMap[activeTab] || "FINANCIAL REPORT", 14, 28);
+        doc.text(titleMap[targetTab] || "FINANCIAL REPORT", 14, 28);
         doc.setFontSize(10);
         doc.setFont('serif', 'normal');
         if (fiscalYear === 'all') {
@@ -237,7 +237,7 @@ const FinancialStatements = ({ onBack }) => {
         doc.text(`Expressed in ${inUSD ? "United States Dollar (USD)" : "Cambodian Riel (KHR)"}`, 14, 40);
 
         // Content
-        if (activeTab === 'notes') {
+        if (targetTab === 'notes') {
             doc.setFontSize(10);
             const notesText = `
                 1. BASIS OF PREPARATION
@@ -250,7 +250,7 @@ const FinancialStatements = ({ onBack }) => {
             doc.text(splitText, 14, 50);
         } else {
             doc.autoTable({
-                html: 'table',
+                html: `#table-${viewMode}-${targetTab}`,
                 startY: 50,
                 styles: { font: 'serif', fontSize: 9 },
                 headStyles: { fillColor: [41, 128, 185], textColor: 255 },
@@ -259,7 +259,12 @@ const FinancialStatements = ({ onBack }) => {
             });
         }
 
-        doc.save(`${companyNameEn}_${activeTab}_${viewMode}.pdf`);
+        let fileName = `${companyNameEn}_${targetTab}_${viewMode}.pdf`;
+        if (targetTab === 'bs') {
+            fileName = `${companyNameEn} balance sheet ${displayYear}.pdf`;
+        }
+
+        doc.save(fileName);
     };
 
     if (loading) return (
@@ -461,7 +466,7 @@ const FinancialStatements = ({ onBack }) => {
                                 <p className="text-sm text-gray-500 italic">{fiscalYear === 'all' ? 'All Periods To Date' : `For the year ended 31 December ${displayYear}`}</p>
                             </div>
                             <div className="overflow-x-auto print-content-wrapper">
-                                <table className="w-full text-sm border-collapse">
+                                <table id="table-annual-pl" className="w-full text-sm border-collapse">
                                     <thead>
                                         <tr className="bg-slate-100 border-b border-gray-300">
                                             <th className="p-3 text-left font-bold text-gray-600 uppercase text-xs" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បរិយាយ / DESCRIPTION</th>
@@ -504,17 +509,20 @@ const FinancialStatements = ({ onBack }) => {
                             <div className="hidden print:block pb-6 mb-8 border-b-2 border-black mt-2">
                                 <div className="flex justify-between items-start mb-8">
                                     <div><h1 className="text-3xl font-bold text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{companyNameKh}</h1><h2 className="text-xl font-bold text-black uppercase tracking-widest mt-2 px-1">{companyNameEn}</h2></div>
-                                    <div className="text-right flex flex-col items-end gap-1"><div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Report Detail</div><h3 className="text-xl font-bold text-black uppercase tracking-widest mt-1">របាយការណ៍ស្ថានភាពហិរញ្ញវត្ថុ / STATEMENT OF FINANCIAL POSITION <span className="text-blue-600 bg-blue-100 px-2 py-0.5 rounded ml-2">FS2</span></h3><div className="text-sm font-bold text-black mt-1">As at 31 December {displayYear}</div><div className="text-sm font-bold text-black">Reporting Currency: {inUSD ? "USD" : "KHR"}</div></div>
+                                    <div className="text-right flex flex-col items-end gap-1"><div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Report Detail</div><h3 className="text-xl font-bold text-black uppercase tracking-widest mt-1">របាយការណ៍ស្ថានភាពហិរញ្ញវត្ថុ / BALANCE SHEET <span className="text-blue-600 bg-blue-100 px-2 py-0.5 rounded ml-2">FS2</span></h3><div className="text-sm font-bold text-black mt-1">As at 31 December {displayYear}</div><div className="text-sm font-bold text-black">Reporting Currency: {inUSD ? "USD" : "KHR"}</div></div>
                                 </div>
                             </div>
                             <div className="text-center mb-8 print:hidden">
                                 <h1 className="text-3xl font-bold text-gray-900 mb-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{companyNameKh}</h1>
                                 <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-widest mb-2">{companyNameEn}</h2>
-                                <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase flex items-center justify-center gap-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>របាយការណ៍ស្ថានភាពហិរញ្ញវត្ថុ / STATEMENT OF FINANCIAL POSITION <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">FS2</span></h3>
+                                <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase flex items-center justify-center gap-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                    របាយការណ៍ស្ថានភាពហិរញ្ញវត្ថុ / BALANCE SHEET <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">FS2</span>
+                                    <button onClick={() => handleDownloadPDF('bs')} className="ml-3 bg-blue-600 hover:bg-blue-700 text-white shadow min-w-[140px] px-3 py-1.5 rounded-lg text-xs font-sans tracking-normal flex items-center justify-center gap-2 transition"><Download size={14} /> Download PDF</button>
+                                </h3>
                                 <p className="text-sm text-gray-500 italic">As at 31 December {displayYear}</p>
                             </div>
                             <div className="overflow-x-auto print-content-wrapper">
-                                <table className="w-full text-sm border-collapse">
+                                <table id="table-annual-bs" className="w-full text-sm border-collapse">
                                     <thead>
                                         <tr className="bg-slate-100 border-b border-gray-300">
                                             <th className="p-3 text-left font-bold text-gray-600 uppercase text-xs" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បរិយាយ / DESCRIPTION</th>
@@ -578,7 +586,7 @@ const FinancialStatements = ({ onBack }) => {
                                 <p className="text-sm text-gray-500 italic">{fiscalYear === 'all' ? 'All Periods To Date' : `For the year ended 31 December ${displayYear}`}</p>
                             </div>
                             <div className="overflow-x-auto print-content-wrapper">
-                                <table className="w-full text-sm border-collapse">
+                                <table id="table-annual-cf" className="w-full text-sm border-collapse">
                                     <thead>
                                         <tr className="bg-slate-100 border-b border-gray-300">
                                             <th className="p-3 text-left font-bold text-gray-600 uppercase text-xs" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>បរិយាយ / DESCRIPTION</th>
@@ -666,7 +674,7 @@ const FinancialStatements = ({ onBack }) => {
                                 <p className="text-sm text-gray-500 italic">{fiscalYear === 'all' ? 'All Periods To Date' : `For the year ended 31 December ${displayYear}`}</p>
                             </div>
                             <div className="overflow-x-auto print-content-wrapper">
-                                <table className="w-full text-sm border-collapse">
+                                <table id="table-annual-sce" className="w-full text-sm border-collapse">
                                     <tbody>
                                         <tr className="bg-gray-50 font-bold border-b border-gray-300">
                                             <td className="p-3">Description</td>
@@ -751,7 +759,7 @@ const FinancialStatements = ({ onBack }) => {
                                     {activeTab === 'pl' ? (
                                         <span className="flex items-center gap-2">របាយការណ៍លទ្ធផលបំបែកប្រចាំខែ / MONTHLY INCOME STATEMENT <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">FS6</span></span>
                                     ) : (
-                                        <span className="flex items-center gap-2">របាយការណ៍ស្ថានភាពហិរញ្ញវត្ថុ / STATEMENT OF FINANCIAL POSITION <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">FS7</span></span>
+                                        <span className="flex items-center gap-2">របាយការណ៍ស្ថានភាពហិរញ្ញវត្ថុ / BALANCE SHEET <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">FS7</span></span>
                                     )}
                                 </h3>
                                 {/* FS7 Balance / Activity toggle */}
@@ -773,7 +781,7 @@ const FinancialStatements = ({ onBack }) => {
                                 )}
                             </div>
                             <div className="overflow-x-auto print-content-wrapper">
-                                <table className="w-full text-sm border-collapse">
+                                <table id={`table-monthly-${activeTab}`} className="w-full text-sm border-collapse">
                                     <thead>
                                         <tr className="border-b border-gray-300">
                                             <th className="p-2 text-left bg-gray-50 sticky left-0 z-10 border-r border-gray-200 min-w-[150px] shadow-[4px_0_4px_-4px_rgba(0,0,0,0.1)]">Account</th>

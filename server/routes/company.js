@@ -105,10 +105,26 @@ router.post('/br-extract', auth, upload.single('file'), async (req, res) => {
             } else {
                 targetUser = await User.findById(req.user.id);
             }
-            if (targetFolderId) {
-                const driveData = await uploadFile(req.file.path, req.file.mimetype, req.file.originalname, targetFolderId);
-                rawDriveId = (typeof driveData === 'object') ? driveData.id : driveData;
+            if (targetUser && !targetFolderId) {
+                try {
+                    const { findFolder, createFolder } = require('../services/googleDrive');
+                    const rootFolderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
+                    const folderName = `BR_${targetUser.companyCode || targetUser.username}`;
+                    let sysFolder = await findFolder(folderName, rootFolderId);
+                    if (!sysFolder) {
+                        sysFolder = await createFolder(folderName, rootFolderId);
+                    }
+                    targetFolderId = sysFolder.id;
+                    targetUser.brFolderId = targetFolderId;
+                    await targetUser.save();
+                } catch(dirErr) {
+                    console.error("[BR Drive] Failed to auto-create folder, falling back to ROOT", dirErr.message);
+                }
             }
+            
+            // Force upload to Google Drive. The internal uploadFile handles fallback if targetFolderId is null.
+            const driveData = await uploadFile(req.file.path, req.file.mimetype, req.file.originalname, targetFolderId);
+            rawDriveId = (typeof driveData === 'object') ? driveData.id : driveData;
         } catch (driveErr) { console.error('[BR Drive] Raw Sync Failed:', driveErr.message); }
 
         // 3. Database Accumulation & Aggregation (atomic — race-condition safe)
@@ -3418,7 +3434,15 @@ router.get('/toi/autofill', auth, async (req, res) => {
             taxMonths:         '12',
             fromDate:          fromDateStr,
             untilDate:         untilDateStr,
-            tin:               (p.vatTin || ext('tin') || ext('vatTin') || '').replace(/[^0-9A-Z]/g, ''),
+            tin:               (() => {
+                let text = p.vatTin || ext('tin') || ext('vatTin') || '';
+                if (!text && p.organizedProfile) {
+                    const match = p.organizedProfile.match(/(?:TIN|VAT TIN|Tax Identification Number|អត្តសញ្ញាណកម្មសារពើពន្ធ)[\s:]*([A-Za-z0-9\-]{9,15})/i);
+                    if (match) text = match[1];
+                }
+                if (!text) text = p.registrationNumber || '';
+                return text.replace(/[^0-9A-Z]/gi, '');
+            })(),
 
             // ── Row 2: Name of Enterprise (key = "name" in ToiAcar.jsx) ──
             name:              [(() => { const parts = (p.companyNameKh || ext('companyNameKh') || '').split('/'); return parts[parts.length - 1].trim(); })(), (() => { const parts = (p.companyNameEn || ext('companyNameEn') || ext('name') || '').split('/'); return parts[parts.length - 1].trim(); })()].filter(Boolean).join(' - '),
@@ -3494,6 +3518,14 @@ router.get('/toi/autofill', auth, async (req, res) => {
                 }
 
                 const actEn = p.businessActivity || ext('businessActivity') || '';
+                const extractedKh = extractKhmerText(actEn);
+                
+                // If the single string already has both languages, format it nicely
+                if (extractedKh && extractedKh.trim().length > 0) {
+                    const cleanEn = actEn.replace(/[\u1780-\u17FF]/g, '').replace(/[/\|]/g, '').trim();
+                    return extractedKh + (cleanEn ? '\n' + cleanEn : '');
+                }
+
                 const isicKhmer = {
                     '62010': 'ការសរសេរកម្មវិធី',
                     '62020': 'ការផ្ដល់ប្រឹក្សា IT',
@@ -3501,21 +3533,37 @@ router.get('/toi/autofill', auth, async (req, res) => {
                     '620':   'ការសរសេរកម្មវិធី ការផ្ដល់ប្រឹក្សា',
                     '63110': 'ដំណើរការទិន្នន័យ',
                     '63120': 'វេទិកា Internet',
-                    '47':    'ការលក់រាយ',
-                    '46':    'ការលក់ដុំ',
-                    '56':    'ម្ហូបអាហារ និងភេស្សភ័ជ',
-                    '41':    'សំណង់',
+                    '47':    'ការលក់រាយ ទំនិញទូទៅ',
+                    '46':    'ការលក់ដុំ ទំនិញទូទៅ',
+                    '56':    'ម្ហូបអាហារ និងភេសជ្ជៈ',
+                    '41':    'ការសាងសង់',
                     '68':    'អចលនទ្រព្យ',
-                    '69':    'ច្បាប់ និងគណនេយ្យ',
-                    '70':    'ការគ្រប់គ្រង',
-                    '73':    'ផ្សព្វផ្សាយ',
-                    '85':    'ការអប់រំ',
-                    '86':    'សុខភាព',
+                    '69':    'សេវាកម្មច្បាប់ និងគណនេយ្យ',
+                    '70':    'សេវាកម្មប្រឹក្សាគ្រប់គ្រង',
+                    '73':    'សេវាកម្មផ្សព្វផ្សាយពាណិជ្ជកម្ម',
+                    '85':    'សេវាកម្មអប់រំ',
+                    '86':    'សេវាកម្មថែទាំសុខភាព',
                 };
                 let kh = '';
                 for (const [code, khLabel] of Object.entries(isicKhmer)) {
-                    if (actEn.includes(code)) { kh = khLabel; break; }
+                    // check if the English description contains the code or a word matching the category
+                    if (actEn.includes(code) || (code.length < 4 && actEn.toLowerCase().includes(khLabel.replace(/ការ|សេវាកម្ម/g,'').trim().toLowerCase()))) { 
+                        kh = khLabel; 
+                        break; 
+                    }
                 }
+                
+                // Fallback translations for common unstructured English inputs
+                if (!kh) {
+                    const lowerEn = actEn.toLowerCase();
+                    if (lowerEn.includes('wholesale')) kh = 'ការលក់ដុំទំនិញទូទៅ';
+                    else if (lowerEn.includes('retail')) kh = 'ការលក់រាយទំនិញទូទៅ';
+                    else if (lowerEn.includes('software') || lowerEn.includes('tech')) kh = 'សេវាកម្មបច្ចេកវិទ្យា និងកម្មវិធីកុំព្យូទ័រ';
+                    else if (lowerEn.includes('consult')) kh = 'សេវាកម្មប្រឹក្សាយោបល់';
+                    else if (lowerEn.includes('design')) kh = 'សេវាកម្មរចនា';
+                    else if (lowerEn.includes('trade')) kh = 'ពាណិជ្ជកម្មទូទៅ';
+                }
+
                 return kh ? kh + '\n' + actEn : actEn;
             })(),
             
@@ -3551,6 +3599,13 @@ router.get('/toi/autofill', auth, async (req, res) => {
                 }
 
                 const actEn = p.businessActivity || ext('businessActivity') || '';
+                const extractedKh = extractKhmerText(actEn);
+                
+                if (extractedKh && extractedKh.trim().length > 0) {
+                    const cleanEn = actEn.replace(/[\u1780-\u17FF]/g, '').replace(/[/\|]/g, '').trim();
+                    return extractedKh + (cleanEn ? '\n' + cleanEn : '');
+                }
+
                 const isicKhmer = {
                     '62010': 'ការសរសេរកម្មវិធី',
                     '62020': 'ការផ្ដល់ប្រឹក្សា IT',
@@ -3558,21 +3613,35 @@ router.get('/toi/autofill', auth, async (req, res) => {
                     '620':   'ការសរសេរកម្មវិធី ការផ្ដល់ប្រឹក្សា',
                     '63110': 'ដំណើរការទិន្នន័យ',
                     '63120': 'វេទិកា Internet',
-                    '47':    'ការលក់រាយ',
-                    '46':    'ការលក់ដុំ',
-                    '56':    'ម្ហូបអាហារ និងភេស្សភ័ជ',
-                    '41':    'សំណង់',
+                    '47':    'ការលក់រាយ ទំនិញទូទៅ',
+                    '46':    'ការលក់ដុំ ទំនិញទូទៅ',
+                    '56':    'ម្ហូបអាហារ និងភេសជ្ជៈ',
+                    '41':    'ការសាងសង់',
                     '68':    'អចលនទ្រព្យ',
-                    '69':    'ច្បាប់ និងគណនេយ្យ',
-                    '70':    'ការគ្រប់គ្រង',
-                    '73':    'ផ្សព្វផ្សាយ',
-                    '85':    'ការអប់រំ',
-                    '86':    'សុខភាព',
+                    '69':    'សេវាកម្មច្បាប់ និងគណនេយ្យ',
+                    '70':    'សេវាកម្មប្រឹក្សាគ្រប់គ្រង',
+                    '73':    'សេវាកម្មផ្សព្វផ្សាយពាណិជ្ជកម្ម',
+                    '85':    'សេវាកម្មអប់រំ',
+                    '86':    'សេវាកម្មថែទាំសុខភាព',
                 };
                 let kh = '';
                 for (const [code, khLabel] of Object.entries(isicKhmer)) {
-                    if (actEn.includes(code)) { kh = khLabel; break; }
+                    if (actEn.includes(code) || (code.length < 4 && actEn.toLowerCase().includes(khLabel.replace(/ការ|សេវាកម្ម/g,'').trim().toLowerCase()))) { 
+                        kh = khLabel; 
+                        break; 
+                    }
                 }
+                
+                if (!kh) {
+                    const lowerEn = actEn.toLowerCase();
+                    if (lowerEn.includes('wholesale')) kh = 'ការលក់ដុំទំនិញទូទៅ';
+                    else if (lowerEn.includes('retail')) kh = 'ការលក់រាយទំនិញទូទៅ';
+                    else if (lowerEn.includes('software') || lowerEn.includes('tech')) kh = 'សេវាកម្មបច្ចេកវិទ្យា និងកម្មវិធីកុំព្យូទ័រ';
+                    else if (lowerEn.includes('consult')) kh = 'សេវាកម្មប្រឹក្សាយោបល់';
+                    else if (lowerEn.includes('design')) kh = 'សេវាកម្មរចនា';
+                    else if (lowerEn.includes('trade')) kh = 'ពាណិជ្ជកម្មទូទៅ';
+                }
+
                 return kh ? kh + '\n' + actEn : actEn;
             })(),
 
