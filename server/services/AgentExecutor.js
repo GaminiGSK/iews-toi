@@ -149,9 +149,12 @@ class AgentExecutor {
         if (targetCodeObj) {
             const query = { companyCode: companyCode };
             
-            // Protect against reckless ALL changing
-            if (!description_match || description_match.trim().length === 0) {
-                socket.emit('agent:message', { text: `Safety Lock: I cannot blanket-tag multiple transactions without a specific keyword. Please tell me the exact description (e.g. 'change ALL rental expenses to 61070').` });
+            // Safety Lock: only block if there is NO direction filter (condition='all') AND no description keyword
+            // Commands like "all money in to capital" already have a direction filter — safe without a keyword.
+            // Only truly dangerous: condition='all' + empty description = would reclassify EVERY transaction.
+            const isUndirected = condition !== 'money_in' && condition !== 'money_out';
+            if (isUndirected && (!description_match || description_match.trim().length === 0)) {
+                socket.emit('agent:message', { text: `Safety Lock: I cannot reclassify ALL transactions with no filter at all — that would change everything. Please say "all money in" or "all money out" to limit by direction, or give me a description keyword.` });
                 return;
             }
 
