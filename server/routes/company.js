@@ -1,4 +1,4 @@
-const express = require('express');
+﻿const express = require('express');
 const router = express.Router();
 const upload = require('../middleware/upload');
 const googleAI = require('../services/googleAI');
@@ -3707,60 +3707,71 @@ router.get('/toi/autofill', auth, async (req, res) => {
 
 
             // ── PAGE 2: Flat keys for ToiAcar.jsx print preview (capitalReg* / capitalPaid*) ──
-            // Auto-generated �?supports up to 5 rows on the official GDT form
+            // BR data only — same source priority as shareholders[] above
             ...(() => {
                 const seen = new Set();
                 const list = [];
+                const SYSTEM_TEXT = /no board|not applicable|listed in|provided data|n\/a|^\s*none\s*$/i;
 
+                // Source 1: RelatedParty parties
                 for (const party of parties) {
                     if (!party.name) continue;
                     const key = party.name.trim().toLowerCase();
                     if (seen.has(key)) continue;
                     seen.add(key);
                     const pct = parseFloat(party.ownershipPct) || 0;
-                    list.push({ name: party.name.trim(), address: addrKh || '', position: party.relationship || 'Shareholder', pct: pct || 100 });
+                    list.push({ name: party.name.trim(), address: addrKh || '', position: party.relationship || 'Shareholder', pct: pct || (parties.length === 1 ? 100 : 0) });
                 }
-                const rawNames = p.shareholder || p.director || '';
-                if (rawNames) {
-                    const names = rawNames.split(',').map(n => n.trim()).filter(Boolean);
-                    if (names.length > 0) {
-                        for (const personName of names) {
-                            const key = personName.toLowerCase();
-                            if (seen.has(key)) continue;
-                            seen.add(key);
-                            list.push({ name: personName, address: addrKh || '', position: 'Shareholder / Director', pct: 100 / names.length });
-                        }
-                    }
-                }
-
-                for (const emp of shEmps) {
-                    if (!emp.position) continue;
-                    const personName = emp.position;
-                    const key = personName.trim().toLowerCase();
+                // Source 2: p.shareholders[] — BR schema uses nameEn / nameKh
+                const brs = Array.isArray(p.shareholders) ? p.shareholders : [];
+                for (const sh of brs) {
+                    const name = (sh.nameEn || sh.nameKh || '').trim();
+                    if (!name) continue;
+                    const key = name.toLowerCase();
                     if (seen.has(key)) continue;
                     seen.add(key);
-                    list.push({ name: personName.trim(), address: addrKh || '', position: emp.position.trim(), pct: 100 / Math.max(shEmps.length, 1) });
+                    list.push({ name, address: addrKh || '', position: 'Shareholder', pct: brs.length === 1 ? 100 : 0 });
+                }
+                // Source 3: p.directors[] — BR schema uses nameEn / nameKh
+                const brd = Array.isArray(p.directors) ? p.directors : [];
+                for (const d of brd) {
+                    const name = (d.nameEn || d.nameKh || '').trim();
+                    if (!name) continue;
+                    const key = name.toLowerCase();
+                    if (seen.has(key)) continue;
+                    seen.add(key);
+                    list.push({ name, address: addrKh || '', position: 'Director', pct: brd.length === 1 ? 100 : 0 });
+                }
+                // Source 4: flat p.shareholder / p.director string — only if not a system phrase
+                if (list.length === 0) {
+                    const rawNames = p.shareholder || p.director || '';
+                    if (rawNames && !SYSTEM_TEXT.test(rawNames)) {
+                        rawNames.split(',').map(n => n.trim()).filter(Boolean).forEach((personName, _i, arr) => {
+                            const key = personName.toLowerCase();
+                            if (seen.has(key)) return;
+                            seen.add(key);
+                            list.push({ name: personName, address: addrKh || '', position: 'Owner', pct: 100 / arr.length });
+                        });
+                    }
                 }
                 // Normalise pct to 100
                 const totalPct = list.reduce((s, x) => s + x.pct, 0);
-                if (totalPct > 0 && totalPct !== 100) list.forEach(x => { x.pct = Math.round(x.pct / totalPct * 10000) / 100; });
+                if (totalPct > 0 && Math.abs(totalPct - 100) > 0.5) list.forEach(x => { x.pct = Math.round(x.pct / totalPct * 10000) / 100; });
 
                 const flat = {};
                 for (let i = 0; i < 5; i++) {
                     const sh = list[i];
                     const idx = i + 1;
-                    const pctStr    = sh ? String(sh.pct) + '%' : '';
-                    const amtStart  = sh ? fmt(Math.round(shareCapitalOpeningFinal * sh.pct / 100)) : '';
-                    const amtEnd    = sh ? fmt(Math.round(shareCapitalFinal   * sh.pct / 100)) : '';
-                    // Registered Capital (Section A)
-                    flat[`capitalRegName${idx}`]     = sh?.name     || '';
-                    flat[`capitalRegAddress${idx}`]  = sh?.address  || '';
-                    flat[`capitalRegPos${idx}`]      = sh?.position || '';
-                    flat[`capitalRegStartPct${idx}`] = pctStr;
-                    flat[`capitalRegStartAmt${idx}`] = amtStart;
-                    flat[`capitalRegEndPct${idx}`]   = pctStr;
-                    flat[`capitalRegEndAmt${idx}`]   = amtEnd;
-                    // Paid-up Capital (Section B �?mirrors registered)
+                    const pctStr   = sh ? String(sh.pct) + '%' : '';
+                    const amtStart = sh ? fmt(Math.round(shareCapitalOpeningFinal * sh.pct / 100)) : '';
+                    const amtEnd   = sh ? fmt(Math.round(shareCapitalFinal * sh.pct / 100)) : '';
+                    flat[`capitalRegName${idx}`]      = sh?.name     || '';
+                    flat[`capitalRegAddress${idx}`]   = sh?.address  || '';
+                    flat[`capitalRegPos${idx}`]       = sh?.position || '';
+                    flat[`capitalRegStartPct${idx}`]  = pctStr;
+                    flat[`capitalRegStartAmt${idx}`]  = amtStart;
+                    flat[`capitalRegEndPct${idx}`]    = pctStr;
+                    flat[`capitalRegEndAmt${idx}`]    = amtEnd;
                     flat[`capitalPaidName${idx}`]     = sh?.name     || '';
                     flat[`capitalPaidAddress${idx}`]  = sh?.address  || '';
                     flat[`capitalPaidPos${idx}`]      = sh?.position || '';
