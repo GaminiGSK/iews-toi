@@ -505,10 +505,10 @@ const GeneralLedger = ({ onBack }) => {
                         <div className="flex justify-between items-start mb-8">
                             <div>
                                 <h1 className="text-3xl font-bold text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
-                                    {companyNameKh || (filledData ? filledData.name : 'ក្រុមហ៊ុន ជីខេ ស្មាត ឯ.ក')}
+                                    {companyNameKh || ''}
                                 </h1>
                                 <h2 className="text-xl font-bold text-black uppercase tracking-widest mt-2">
-                                    {companyNameEn || (filledData ? (filledData.nameEn || filledData.name) : 'GK SMART CO., LTD.')}
+                                    {companyNameEn}
                                 </h2>
                             </div>
                             <div className="text-right flex flex-col items-end gap-1">

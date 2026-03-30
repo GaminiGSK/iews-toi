@@ -1868,13 +1868,19 @@ router.get('/ledger', auth, async (req, res) => {
         const CompanyProfile = require('../models/CompanyProfile');
         const profile = await CompanyProfile.findOne({ companyCode: req.user.companyCode });
 
+        // Fetch the user record to get companyName as a reliable fallback
+        const User = require('../models/User');
+        const unitUser = await User.findOne({ companyCode: req.user.companyCode }).select('companyName');
+        const fallbackName = unitUser?.companyName || req.user.companyCode;
+
         res.json({ 
             transactions: enrichedTransactions,
-            companyNameEn: profile ? profile.companyNameEn : req.user.companyCode,
-            companyNameKh: profile ? profile.companyNameKh : '',
+            companyNameEn: (profile?.companyNameEn) || fallbackName,
+            companyNameKh: (profile?.companyNameKh) || '',
             lockedGLYears: profile ? profile.lockedGLYears || [] : [],
             userRole: req.user.role || 'unit'
         });
+
     } catch (err) {
         console.error('Fetch Ledger Error:', err);
         res.status(500).json({ message: 'Error fetching ledger' });
