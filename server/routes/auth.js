@@ -139,18 +139,18 @@ router.post('/create-user', auth, async (req, res) => {
 
         await newUser.save();
 
-        // --- Auto-Populate Default Account Codes & AI Rules from GK_SMART_AI ---
+        // --- Auto-Populate Default Account Codes & AI Rules from RSW ---
         try {
             const AccountCode = require('../models/AccountCode');
-            const masterCodes = await AccountCode.find({ companyCode: 'GK_SMART_AI' }).lean();
+            const masterCodes = await AccountCode.find({ companyCode: 'RSW' }).lean();
             if (masterCodes && masterCodes.length > 0) {
                 const newCodes = masterCodes.map(mc => ({
                     user: newUser._id,
                     companyCode: newUser.companyCode,
-                    code: mc.code,
-                    toiCode: mc.toiCode,
-                    description: mc.description,
-                    matchDescription: mc.matchDescription
+                    code: mc.code || 'UNKNOWN',
+                    toiCode: mc.toiCode || '0000',
+                    description: mc.description || 'Auto-generated code',
+                    matchDescription: mc.matchDescription || ''
                 }));
                 await AccountCode.insertMany(newCodes);
                 console.log(`[Admin] Cloned ${newCodes.length} default account codes for new user ${username}`);
@@ -171,6 +171,7 @@ router.post('/create-user', auth, async (req, res) => {
 // - Superadmin: sees only admin accounts (admin1, admin2, RSW-level admins). Superadmin does NOT own or manage units.
 // - Admin: sees ONLY units/users they created (createdBy = their _id)
 router.get('/users', auth, async (req, res) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     if (req.user.role !== 'admin' && req.user.role !== 'superadmin') return res.status(403).json({ message: 'Forbidden' });
     try {
         const mongoose = require('mongoose');

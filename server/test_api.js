@@ -1,24 +1,33 @@
-require('dotenv').config();
-const jwt = require('jsonwebtoken');
-require('mongoose').connect(process.env.MONGODB_URI).then(async () => {
-    const User = require('./models/User');
-    const u = await User.findOne({ username: 'admin1' });
+const https = require('https');
 
-    const payload = {
-        user: {
-            id: u.id,
-            companyCode: u.companyCode,
-            role: u.role,
-            isFirstLogin: u.isFirstLogin
-        }
-    };
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+const loginData = JSON.stringify({ username: 'admin1', code: 'admin123' });
+
+const req = https.request('https://iews-toi-588941282431.asia-southeast1.run.app/api/auth/login', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Content-Length': loginData.length
+  }
+}, (res) => {
+  let data = '';
+  res.on('data', chunk => data += chunk);
+  res.on('end', () => {
+    const r = JSON.parse(data);
+    if (!r.token) { console.error('Login failed', r); return; }
     
-    // Now make native fetch
-    const res = await fetch('https://iews-toi-588941282431.asia-southeast1.run.app/api/auth/users', {
-        headers: { 'x-auth-token': token }
+    https.get('https://iews-toi-588941282431.asia-southeast1.run.app/api/auth/users', {
+      headers: { 'Authorization': 'Bearer ' + r.token }
+    }, (res2) => {
+      let data2 = '';
+      res2.on('data', chunk => data2 += chunk);
+      res2.on('end', () => {
+        const users = JSON.parse(data2);
+        console.log('UNITS RETURNED BY API:');
+        console.log(users.map(u => u.username).join(', '));
+      });
     });
-    const data = await res.json();
-    console.log("FETCH RESULT:", data);
-    process.exit(0);
+  });
 });
+
+req.write(loginData);
+req.end();

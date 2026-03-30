@@ -2751,6 +2751,35 @@ router.post('/delete-file', auth, async (req, res) => {
     }
 });
 
+// POST Create Manual Adjustment Transaction
+router.post('/transactions/adjustment', auth, async (req, res) => {
+    try {
+        const { amount, accountCodeId, year } = req.body;
+        if (!accountCodeId) return res.status(400).json({ message: 'Account code is required' });
+
+        const Transaction = require('../models/Transaction');
+        
+        let targetYear = parseInt(year);
+        if (isNaN(targetYear)) targetYear = new Date().getFullYear();
+
+        const tx = new Transaction({
+            companyCode: req.user.companyCode,
+            date: new Date(`${targetYear}-12-31T23:59:00.000Z`), // End of year
+            description: "MANUAL ADJUSTMENT TO BALANCE CASHFLOW",
+            amount: parseFloat(amount),
+            balance: 0, // Not strictly tracking running bank balance for an adjustment
+            accountCode: accountCodeId,
+            tagSource: 'manual'
+        });
+        await tx.save();
+        
+        res.json({ message: `Adjustment of $${amount} created successfully.`, transaction: tx });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error creating adjustment transaction' });
+    }
+});
+
 // POST Tag Transaction (Manual)
 router.post('/transactions/tag', auth, async (req, res) => {
     try {
@@ -3128,8 +3157,8 @@ router.get('/toi/autofill', auth, async (req, res) => {
                 }
         }
         if (!p.incorporationDate && p.organizedProfile) {
-            const incMatch = p.organizedProfile.match(/(?:Incorporation Date|Registration Date)[^\n]*?(20[0-9]{2}[-\sA-Za-z0-9]*|[0-9]{1,2}[/-][0-9]{1,2}[/-]20[0-9]{2})/i);
-            if (incMatch) p.incorporationDate = incMatch[1].trim();
+            const dateMatch = p.organizedProfile.match(/([0-9]{1,2}\s+[A-Za-z]+\s+20[0-9]{2})/i) || p.organizedProfile.match(/([0-9]{1,2}[/-][0-9]{1,2}[/-]20[0-9]{2})/i);
+            if (dateMatch) p.incorporationDate = dateMatch[1];
         }
 
         if (!p.director && p.organizedProfile) {
@@ -3143,8 +3172,8 @@ router.get('/toi/autofill', auth, async (req, res) => {
         }
 
         if (!p.address && p.organizedProfile) {
-            const addrMatch = p.organizedProfile.match(/(?:Registered Address|Office Address).*?:\s*([\s\S]*?)(?=\n[A-Z]|\n\*\*|$)/i);
-            if (addrMatch) p.address = addrMatch[1].replace(/\n/g, ' ').trim();
+            const addrMatch = p.organizedProfile.match(/(?:Registered Address|Office Address|Headquarters|Address).*?:\s*([\s\S]*?)(?=\n\s*[-*#]|\n\s*[A-Z]|\n\s*\*\*|$)/i);
+            if (addrMatch) p.address = addrMatch[1].replace(/\n/g, ' ').replace(/^[-* ]+/, '').trim();
         }
 
         // ── 2. Load TOI Modules ───────────────────────────────────────────
@@ -3345,16 +3374,27 @@ router.get('/toi/autofill', auth, async (req, res) => {
             : equityGL > 0 ? equityGL
             : parseFloat(p.registeredCapital || p.shareCapital || 0);
 
+        // Helper to extract ONLY Khmer script from mixed text
+        function extractKhmerText(str) {
+            if (!str) return '';
+            if (!/[\u1780-\u17FF]/.test(str)) return str; // If no Khmer, return original
 
-        // Khmer-only address (strip English portion �?everything after first non-Khmer line)
-        // Check for explicitly saved Khmer address first (from extractedData), then fallback to profile.address
+            // First split by slash, pipe or newline (standard separators in patent)
+            const parts = str.split(/[\n/|]/);
+            const khmerParts = parts.filter(p => /[\u1780-\u17FF]/.test(p)).map(p => p.trim());
+            
+            if (khmerParts.length > 0) {
+                // Return only the parts having Khmer
+                return khmerParts.join(', ').replace(/\s+/g, ' ');
+            }
+            
+            // If it still hasn't worked (which is rare), strip all English letters
+            return str.replace(/[a-zA-Z]+\b/g, '').replace(/\s{2,}/g, ' ').trim();
+        }
+
+        // Khmer-only address (strip English portion)
         const addrRaw = ext('address1') || ext('address') || p.address || '';
-        // If address has Khmer chars, prefer Khmer substring; else use full address
-        const hasKhmer = /[\u1780-\u17FF]/.test(addrRaw);
-        // Split on newline or comma after Cambodian text ends
-        const addrKh = hasKhmer
-            ? addrRaw.replace(/,?\s*[A-Za-z0-9][A-Za-z0-9 ,\.\-]+$/, '').trim()
-            : addrRaw;
+        const addrKh = extractKhmerText(addrRaw);
 
         const formData = {
             // ── PAGE 1: Cover / TIN / Identification ─────────────────────
@@ -3376,33 +3416,40 @@ router.get('/toi/autofill', auth, async (req, res) => {
             registrationDate:  (() => {
                 let dt = p.incorporationDate || ext('incorporationDate') || ext('registrationDate') || '';
                 if (!dt) return '';
-                if (/^[0-9]{8}$/.test(dt)) return dt;
+                if (/^[0-9]{4,8}$/.test(dt) && dt.length === 8) {
+                    return dt.substring(0,2) + ' / ' + dt.substring(2,4) + ' / ' + dt.substring(4,8);
+                }
                 
                 // Try parse Date
                 const d = new Date(dt);
                 if (!isNaN(d.getTime())) {
                     return String(d.getDate()).padStart(2, '0') + 
+                           ' / ' +
                            String(d.getMonth() + 1).padStart(2, '0') + 
+                           ' / ' +
                            String(d.getFullYear());
                 }
                 
-                // If regex found something like DD/MM/YYYY, strip slashes
+                // If regex found something like DD/MM/YYYY
                 const parts = dt.match(/([0-9]{1,2})[\/\-]([0-9]{1,2})[\/\-](\d{4})/);
-                if (parts) return parts[1].padStart(2, '0') + parts[2].padStart(2, '0') + parts[3];
+                if (parts) return parts[1].padStart(2, '0') + ' / ' + parts[2].padStart(2, '0') + ' / ' + parts[3];
                 
-                return dt.replace(/[^0-9]/g, '');
+                return dt;
             })(),
-            directorName:      p.director || ext('director') || '',
-            signatoryName:     p.director || ext('director') || '',
+            directorName:      (p.director || ext('director') || '').replace(/\(Representative\)/i, '(Director)'),
+            signatoryName:     (p.director || ext('director') || '').replace(/\(Representative\)/i, '(Director)'),
 
             // ── Row 6: Business Activities ───────────────────────────────
             businessActivities: (() => {
                 const structured = p.businessActivities || ext('businessActivities');
                 if (Array.isArray(structured) && structured.length > 0) {
-                    return structured.map(b => [b.descriptionKh, b.descriptionEn, b.code ? `(${b.code})` : ''].filter(Boolean).join(' ')).join('\n');
+                    return structured.map(b => {
+                        let text = (b.descriptionKh && /[\u1780-\u17FF]/.test(b.descriptionKh)) ? b.descriptionKh : b.descriptionEn;
+                        return extractKhmerText(text) + (b.code ? ` (${b.code})` : '');
+                    }).filter(Boolean).join('\n');
                 }
                 const savedKh = typeof structured === 'string' ? structured : '';
-                if (savedKh) return savedKh;
+                if (savedKh) return extractKhmerText(savedKh);
                 
                 // --- NEW FALLBACK: Parse from organizedProfile ---
                 if (p.organizedProfile) {
@@ -3416,7 +3463,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
                             .map(line => line.replace(/^\s*[-*]\s+/, '').trim());
                             
                         if (lines.length > 0) {
-                            return lines.join('\n');
+                            return extractKhmerText(lines.join('\n'));
                         }
                     }
                 }
@@ -3450,10 +3497,13 @@ router.get('/toi/autofill', auth, async (req, res) => {
             mainActivity: (() => {
                 const structured = p.businessActivities || ext('businessActivities');
                 if (Array.isArray(structured) && structured.length > 0) {
-                    return structured.map(b => [b.descriptionKh, b.descriptionEn, b.code ? `(${b.code})` : ''].filter(Boolean).join(' ')).join('\n');
+                    return structured.map(b => {
+                        let text = (b.descriptionKh && /[\u1780-\u17FF]/.test(b.descriptionKh)) ? b.descriptionKh : b.descriptionEn;
+                        return extractKhmerText(text) + (b.code ? ` (${b.code})` : '');
+                    }).filter(Boolean).join('\n');
                 }
                 const savedKh = typeof structured === 'string' ? structured : '';
-                if (savedKh) return savedKh;
+                if (savedKh) return extractKhmerText(savedKh);
                 
                 if (p.organizedProfile) {
                     const activitySectionMatch = p.organizedProfile.match(/\*\*Business Activities\*\*:\s*([\s\S]*?)(?=\n#|\n\*\*|$)/i) || 
@@ -3464,7 +3514,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
                             .filter(line => /^\s*[-*]\s+/.test(line))
                             .map(line => line.replace(/^\s*[-*]\s+/, '').trim());
                             
-                        if (lines.length > 0) return lines.join('\n');
+                        if (lines.length > 0) return extractKhmerText(lines.join('\n'));
                     }
                 }
 
@@ -4219,6 +4269,53 @@ router.get('/toi/autofill', auth, async (req, res) => {
     } catch (err) {
         console.error('TOI AutoFill error:', err);
         res.status(500).json({ message: 'TOI auto-fill engine failed', error: err.message });
+    }
+});
+
+// Temporary Admin Route: Sync RSW Account Codes to All Users
+router.post('/transactions/sync-rsw-codes', auth, async (req, res) => {
+    try {
+        const User = require('../models/User');
+        const AccountCode = require('../models/AccountCode');
+        
+        // 1. Get RSW codes
+        const rswCodes = await AccountCode.find({ companyCode: 'RSW' }).lean();
+        if (rswCodes.length === 0) {
+            return res.status(404).json({ message: "RSW has no account codes to copy from." });
+        }
+
+        const allUsers = await User.find({ username: { $nin: ['Admin', 'ADMIN', 'superadmin'] } });
+        let updatedUsers = 0;
+        let totalOps = 0;
+
+        for (const targetUser of allUsers) {
+            if (targetUser.companyCode === 'RSW') continue;
+
+            const companyCode = targetUser.companyCode;
+            for (const masterCode of rswCodes) {
+                // We use findOneAndUpdate to upsert based on companyCode and the specific TOI accounting Code 
+                // That way "A1" from RSW creates/updates "A1" for ARKAN, etc.
+                await AccountCode.findOneAndUpdate(
+                    { companyCode: companyCode, code: masterCode.code },
+                    { 
+                        $set: {
+                            user: targetUser._id,
+                            toiCode: masterCode.toiCode,
+                            description: masterCode.description,
+                            matchDescription: masterCode.matchDescription
+                        }
+                    },
+                    { upsert: true, new: true }
+                );
+                totalOps++;
+            }
+            updatedUsers++;
+        }
+
+        res.json({ message: `Successfully synced ${rswCodes.length} codes to ${updatedUsers} companies. (${totalOps} operations)` });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error syncing codes', error: err.message });
     }
 });
 

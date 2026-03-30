@@ -286,7 +286,6 @@ const startServer = async () => {
         console.log('Master Account Status: Verified');
 
         // ── RBAC Auto-Migration (safe, idempotent) ───────────────────────────
-        // Upgrades old 'admin' role → 'superadmin', old 'user' → 'unit' where needed
         try {
             const adminUser = await User.findOne({ username: { $regex: /^admin$/i } });
             if (adminUser && adminUser.role === 'admin') {
@@ -294,24 +293,40 @@ const startServer = async () => {
                 console.log('[RBAC Migration] Admin -> superadmin');
             }
 
-            // FIX: Ensure user with loginCode 111111 has role 'admin'
-            const admin1User = await User.findOne({ loginCode: '111111' });
+            // FIX: Ensure admin1 specifically has role 'admin' — target by USERNAME not loginCode
+            // (loginCode 111111 is shared by many units — finding by code would corrupt them!)
+            const admin1User = await User.findOne({ username: { $regex: /^admin1$/i } });
             if (admin1User && !['admin', 'superadmin'].includes(admin1User.role)) {
                 await User.updateOne({ _id: admin1User._id }, { $set: { role: 'admin' } });
-                console.log(`[RBAC Migration] ${admin1User.username} (111111) -> role set to 'admin'`);
+                console.log(`[RBAC Migration] admin1 -> role set to 'admin'`);
             } else if (admin1User) {
-                console.log(`[RBAC Migration] ${admin1User.username} already has role '${admin1User.role}' OK`);
+                console.log(`[RBAC Migration] admin1 already has role '${admin1User.role}' OK`);
             }
-            // Assign createdBy for GKSMART, RSW, TEXLINK if not already set
-            if (adminUser) {
-                const unitNames = ['GKSMART', 'RSW', 'TEXLINK'];
-                for (const name of unitNames) {
-                    const u = await User.findOne({ username: { $regex: new RegExp(`^${name}$`, 'i') }, createdBy: null });
-                    if (u) {
-                        await User.updateOne({ _id: u._id }, { $set: { createdBy: adminUser._id } });
-                        console.log(`[RBAC Migration] ${name} → createdBy set`);
-                    }
+
+            // FIX: Ensure financial units always have role 'unit'
+            // This is a safety net against the incorrect loginCode-based RBAC above
+            const FINANCIAL_UNITS = ['GKSMART', 'TEXLINK', 'RSW', 'COCO', 'ARAKAN', 'CHANG ZHENG', 'IQBL'];
+            const brokenUnits = await User.find({
+                username: { $in: FINANCIAL_UNITS },
+                role: { $ne: 'unit' }
+            });
+            if (brokenUnits.length > 0) {
+                for (const bu of brokenUnits) {
+                    await User.updateOne({ _id: bu._id }, { $set: { role: 'unit' } });
+                    console.log(`[RBAC Migration] FIXED: ${bu.username} was '${bu.role}' → now 'unit'`);
                 }
+            }
+
+            // Assign createdBy for financial units to admin1
+            if (admin1User) {
+                const unitNames = FINANCIAL_UNITS;
+                for (const name of unitNames) {
+                    await User.updateOne(
+                        { username: { $regex: new RegExp(`^${name}$`, 'i') }, createdBy: { $ne: admin1User._id } },
+                        { $set: { createdBy: admin1User._id } }
+                    );
+                }
+                console.log(`[RBAC Migration] Ensured all financial units → createdBy admin1`);
             }
             console.log('[RBAC Migration] Complete');
         } catch (migrErr) {

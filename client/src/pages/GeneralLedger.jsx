@@ -13,6 +13,8 @@ const GeneralLedger = ({ onBack }) => {
     const [taggingStatus, setTaggingStatus] = useState('');
     const [lockedGLYears, setLockedGLYears] = useState([]);
     const [userRole, setUserRole] = useState('unit');
+    const [companyNameEn, setCompanyNameEn] = useState('');
+    const [companyNameKh, setCompanyNameKh] = useState('');
 
     // Fetch TOI BR Database data for Company name if available
     const [filledData, setFilledData] = useState(() => {
@@ -29,6 +31,7 @@ const GeneralLedger = ({ onBack }) => {
     const [filterCode, setFilterCode] = useState('');
     const [fiscalYear, setFiscalYear] = useState('all');
     const [bulkTargetCode, setBulkTargetCode] = useState('');
+    const [adjustCodeId, setAdjustCodeId] = useState('');
 
     useEffect(() => {
         fetchLedger();
@@ -50,6 +53,8 @@ const GeneralLedger = ({ onBack }) => {
             setCodes(codesRes.data.codes || []);
             setLockedGLYears(ledgerRes.data.lockedGLYears || []);
             setUserRole(ledgerRes.data.userRole || 'unit');
+            setCompanyNameEn(ledgerRes.data.companyNameEn || '');
+            setCompanyNameKh(ledgerRes.data.companyNameKh || '');
             setError(null);
         } catch (err) {
             console.error(err);
@@ -116,37 +121,40 @@ const GeneralLedger = ({ onBack }) => {
         }
     };
 
-    // Unassign all ABA (10130) transactions (Undo/Reset)
-    const handleUnassignABA = async () => {
-        const abaCode = codes.find(c => c.code === '10130' || (c.description && String(c.description).toUpperCase().includes('ABA')));
-        if (!abaCode) return;
-
-        const candidates = transactions.filter(t => t.accountCode === abaCode._id);
-
-        if (candidates.length === 0) {
-            alert('No ABA transactions found to reset.');
+    const handleAdjustBalance = async () => {
+        if (!adjustCodeId || fiscalYear === 'all') return;
+        
+        const currentNet = filteredTransactions
+            .filter(tx => !tx.isJournalEntry)
+            .reduce((acc, tx) => acc + (Number(String(tx.amount).replace(/[^0-9.-]+/g, "")) || 0), 0);
+            
+        if (currentNet === 0) {
+            alert('Net movement is already 0. No adjustment needed.');
             return;
         }
 
-        if (!window.confirm(`RESET: Unassign ${candidates.length} ABA transactions?\n\nThey will revert to 'Uncategorized'.`)) return;
+        const offsetAmount = currentNet * -1;
+        const targetName = codes.find(c => c._id === adjustCodeId)?.code || 'Unknown';
+        
+        if (!window.confirm(`ADJUSTMENT: This will create a $${offsetAmount.toFixed(2)} manual transaction under Code ${targetName} to bring the Net Movement exactly to zero.\n\nProceed?`)) return;
 
         try {
             setTagging(true);
             const token = localStorage.getItem('token');
-            const promises = candidates.map(t =>
-                axios.post('/api/company/transactions/tag', {
-                    transactionId: t._id,
-                    accountCodeId: null // Clear tag
-                }, { headers: { 'Authorization': `Bearer ${token}` } })
-            );
-
-            await Promise.all(promises);
-            alert('ABA transactions reset to Uncategorized.');
+            const res = await axios.post('/api/company/transactions/adjustment', {
+                amount: offsetAmount,
+                accountCodeId: adjustCodeId,
+                year: fiscalYear
+            }, { headers: { 'Authorization': `Bearer ${token}` } });
+            
+            alert(res.data.message);
+            setAdjustCodeId('');
             window.dispatchEvent(new Event('ledger:refresh'));
             fetchLedger();
         } catch (err) {
             console.error(err);
-            alert('Reset failed.');
+            alert('Failed to create adjustment. Ensure the fiscal year is set.');
+            fetchLedger();
         } finally {
             setTagging(false);
         }
@@ -497,10 +505,10 @@ const GeneralLedger = ({ onBack }) => {
                         <div className="flex justify-between items-start mb-8">
                             <div>
                                 <h1 className="text-3xl font-bold text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
-                                    {filledData ? filledData.name : 'ក្រុមហ៊ុន ជីខេ ស្មាត ឯ.ក'}
+                                    {companyNameKh || (filledData ? filledData.name : 'ក្រុមហ៊ុន ជីខេ ស្មាត ឯ.ក')}
                                 </h1>
                                 <h2 className="text-xl font-bold text-black uppercase tracking-widest mt-2">
-                                    {filledData ? filledData.nameEn || filledData.name : 'GK SMART CO., LTD.'}
+                                    {companyNameEn || (filledData ? (filledData.nameEn || filledData.name) : 'GK SMART CO., LTD.')}
                                 </h2>
                             </div>
                             <div className="text-right flex flex-col items-end gap-1">
@@ -565,7 +573,7 @@ const GeneralLedger = ({ onBack }) => {
                                 <div className="flex justify-between items-start">
                                     <div>
                                         <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                            {filterCode === 'uncategorized' ? 'Unassigned Balance' : 'Net Balance'}
+                                            {filterCode === 'uncategorized' ? 'Unassigned Balance' : 'Net Movement (In - Out)'}
                                         </p>
                                         <p className={`text-2xl font-bold mt-1 ${filteredTransactions.filter(tx => !tx.isJournalEntry).reduce((acc, tx) => acc + (Number(String(tx.amount).replace(/[^0-9.-]+/g, "")) || 0), 0) >= 0 ? 'text-green-600' : 'text-blue-900'
                                             }`}>
@@ -575,16 +583,28 @@ const GeneralLedger = ({ onBack }) => {
                                                 .toLocaleString('en-US', { minimumFractionDigits: 2 })}
                                         </p>
 
-                                        {/* Quick Actions for ABA (10130) */}
-                                        {!filterCode && (
+                                        {/* Adjust Net Movement Tool */}
+                                        {!filterCode && fiscalYear !== 'all' && (
                                             <div className="mt-4 pt-3 border-t border-blue-100 flex flex-col gap-2">
-                                                <p className="text-[10px] font-bold text-gray-500 uppercase">QUICK ACTIONS (ABA 10130)</p>
-                                                <button
-                                                    onClick={handleUnassignABA}
-                                                    disabled={tagging}
-                                                    className="w-full py-1.5 bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 border border-gray-200 hover:border-red-200 rounded text-xs font-bold transition"
+                                                <p className="text-[10px] font-bold text-gray-500 uppercase">ADJUST NET MOVEMENT (TO 0)</p>
+                                                <select
+                                                    value={adjustCodeId}
+                                                    onChange={(e) => setAdjustCodeId(e.target.value)}
+                                                    className="w-full text-xs border border-gray-200 rounded px-2 py-1.5 outline-none bg-white font-medium text-gray-700"
                                                 >
-                                                    Reset ABA Tags (Undo Mistake)
+                                                    <option value="">Select Adjustment Code...</option>
+                                                    {codes.map(c => (
+                                                        <option key={c._id} value={c._id}>
+                                                            {c.code} - {typeof c.description === 'object' ? JSON.stringify(c.description) : String(c.description || '')}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <button
+                                                    onClick={handleAdjustBalance}
+                                                    disabled={!adjustCodeId || tagging}
+                                                    className="w-full py-1.5 bg-blue-600 hover:bg-blue-700 text-white border border-transparent rounded text-[11px] font-bold transition disabled:opacity-50 tracking-wider"
+                                                >
+                                                    CREATE ZERO-OUT ENTRY
                                                 </button>
                                             </div>
                                         )}
