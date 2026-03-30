@@ -384,6 +384,11 @@ const GeneralLedger = ({ onBack }) => {
                     .print\:hidden { display: none !important; }
                     thead { display: table-header-group; }
                     tr { page-break-inside: avoid; }
+                    /* Eliminate blank gap from hidden summary cards */
+                    .print-summary-cards { display: none !important; }
+                    /* Code view groups: clean breaks */
+                    .code-group-block { page-break-inside: avoid; margin-bottom: 8px; border: 1px solid #ccc !important; border-radius: 0 !important; box-shadow: none !important; }
+                    .code-group-header { background: #f5f5f5 !important; padding: 4px 8px !important; }
                 }
             `}</style>
             <div className="gl-print-root min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900">
@@ -544,9 +549,9 @@ const GeneralLedger = ({ onBack }) => {
                         </div>
                     </div>
 
-                    {/* Summary Cards */}
+                    {/* Summary Cards — hidden in print to prevent blank gap */}
                     {!loading && (
-                        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 text-center print:hidden">
+                        <div className="print-summary-cards max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 text-center print:hidden">
                             <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
                                 <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
                                     {filterCode === 'uncategorized' ? 'Unassigned Money In' : 'Total Money In'}
@@ -655,14 +660,14 @@ const GeneralLedger = ({ onBack }) => {
                         ) : (
                             // CODE VIEW RENDER
                             getGroupedTransactions().map((group, idx) => (
-                                <div key={idx} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden animate-fade-in print:border-none print:break-inside-avoid print:shadow-none print:mb-4">
-                                    <div className={`px-6 py-4 border-b border-gray-200 flex justify-between items-center ${group.codeInfo._id === 'uncategorized' ? 'bg-red-50' : 'bg-gray-50'} print:bg-white print:border-black print:px-2 print:py-2`}>
+                                <div key={idx} className="code-group-block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden animate-fade-in print:border print:border-gray-300 print:shadow-none print:rounded-none print:mb-2" style={{pageBreakInside: 'avoid'}}>
+                                    <div className={`code-group-header px-6 py-4 border-b border-gray-200 flex justify-between items-center ${group.codeInfo._id === 'uncategorized' ? 'bg-red-50' : 'bg-gray-50'} print:bg-gray-100 print:px-3 print:py-2`}>
                                         <div className="flex items-center gap-3">
                                             <div className={`p-2 rounded-lg ${group.codeInfo._id === 'uncategorized' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'} print:hidden`}>
                                                 <Tag size={18} />
                                             </div>
                                             <div>
-                                                <h3 className="font-bold text-gray-800 text-lg flex items-center gap-2">
+                                                <h3 className="font-bold text-gray-800 text-lg flex items-center gap-2 print:text-sm print:font-bold">
                                                     <span className="font-mono text-blue-600">{group.codeInfo.code}</span>
                                                     <span>{typeof group.codeInfo.description === 'object' ? JSON.stringify(group.codeInfo.description) : String(group.codeInfo.description || '')}</span>
                                                 </h3>
@@ -671,8 +676,9 @@ const GeneralLedger = ({ onBack }) => {
                                         </div>
                                         <div className="text-right">
                                             <p className="text-xs font-bold text-gray-400 uppercase">Group Total</p>
-                                            <p className={`font-bold font-mono text-lg ${group.items.reduce((sum, t) => sum + (Number(String(t.amount).replace(/[^0-9.-]+/g, "")) || 0), 0) >= 0 ? 'text-green-600' : 'text-red-500'
-                                                }`}>
+                                            <p className={`font-bold font-mono text-lg print:text-sm ${
+                                                group.items.reduce((sum, t) => sum + (Number(String(t.amount).replace(/[^0-9.-]+/g, "")) || 0), 0) >= 0 ? 'text-green-600' : 'text-red-500'
+                                            }`}>
                                                 ${group.items.reduce((sum, t) => sum + (Number(String(t.amount).replace(/[^0-9.-]+/g, "")) || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                                             </p>
                                         </div>
