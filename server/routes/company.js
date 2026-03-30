@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const router = express.Router();
 const upload = require('../middleware/upload');
 const googleAI = require('../services/googleAI');
@@ -3622,8 +3622,10 @@ router.get('/toi/autofill', auth, async (req, res) => {
                 const seen = new Set();
                 const list = [];
 
+                const SYSTEM_TEXT = /no board|not applicable|listed in|provided data|n\/a|^\s*none\s*$/i;
                 const addPerson = (name, position, pct, nationality) => {
-                    if (!name) return;
+                    if (!name || typeof name !== 'string') return;
+                    if (SYSTEM_TEXT.test(name)) return;
                     const key = name.trim().toLowerCase();
                     if (seen.has(key)) return;
                     seen.add(key);
@@ -3726,7 +3728,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
                 const brs = Array.isArray(p.shareholders) ? p.shareholders : [];
                 for (const sh of brs) {
                     const name = (sh.nameEn || sh.nameKh || '').trim();
-                    if (!name) continue;
+                    if (!name || SYSTEM_TEXT.test(name)) continue;
                     const key = name.toLowerCase();
                     if (seen.has(key)) continue;
                     seen.add(key);
@@ -3736,7 +3738,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
                 const brd = Array.isArray(p.directors) ? p.directors : [];
                 for (const d of brd) {
                     const name = (d.nameEn || d.nameKh || '').trim();
-                    if (!name) continue;
+                    if (!name || SYSTEM_TEXT.test(name)) continue;
                     const key = name.toLowerCase();
                     if (seen.has(key)) continue;
                     seen.add(key);
