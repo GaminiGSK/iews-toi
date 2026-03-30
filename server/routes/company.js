@@ -68,6 +68,9 @@ router.post('/template', auth, async (req, res) => {
 router.post('/br-extract', auth, upload.single('file'), async (req, res) => {
 
     try {
+        // Extract target username (passed by admin when uploading for a unit)
+        const username = req.body?.username || null;
+
         // Auto-detect doc type from filename
         const nameLower = req.file.originalname.toLowerCase();
         let detectedDocType = 'br_extraction';
@@ -89,8 +92,16 @@ router.post('/br-extract', auth, upload.single('file'), async (req, res) => {
 
         try {
             if (username) {
-                targetUser = await User.findOne({ username });
-                if (targetUser && targetUser.brFolderId) targetFolderId = targetUser.brFolderId;
+                targetUser = await User.findOne({ username: { $regex: new RegExp(`^${username.trim()}$`, 'i') } });
+                // ── HARD GUARD ─────────────────────────────────────────────────
+                // If admin sends a username but we can't find that unit,
+                // REJECT the upload. Never silently save to admin's own profile.
+                if (!targetUser) {
+                    console.error(`[BR Core] ❌ GUARD: admin uploaded for username="${username}" but that user does not exist. Rejecting.`);
+                    return res.status(400).json({ message: `Target unit "${username}" not found. Upload rejected.` });
+                }
+                // ───────────────────────────────────────────────────────────────
+                if (targetUser.brFolderId) targetFolderId = targetUser.brFolderId;
             } else {
                 targetUser = await User.findById(req.user.id);
             }
@@ -100,25 +111,16 @@ router.post('/br-extract', auth, upload.single('file'), async (req, res) => {
             }
         } catch (driveErr) { console.error('[BR Drive] Raw Sync Failed:', driveErr.message); }
 
-        // 3. Database Accumulation & Aggregation
+        // 3. Database Accumulation & Aggregation (atomic — race-condition safe)
         let aggregatedRawText = '';
         let aggregatedData = {};
         let profileInDb = null;
-        
+
         try {
             if (targetUser) {
-                console.log(`[BR DB] Accessing profile pool for: ${targetUser.username}`);
-                profileInDb = await CompanyProfile.findOne({ user: targetUser._id });
-                if (!profileInDb) {
-                    profileInDb = new CompanyProfile({
-                        user: targetUser._id,
-                        companyCode: targetUser.companyCode || targetUser.username.toUpperCase()
-                    });
-                }
+                console.log(`[BR DB] Atomic doc push for: ${targetUser.username} | file: ${req.file.originalname}`);
 
-                // Append doc to pool
                 const binaryData = fs.readFileSync(req.file.path).toString('base64');
-                const existingDocIndex = profileInDb.documents.findIndex(d => d.originalName === req.file.originalname);
                 const docEntry = {
                     docType: detectedDocType,
                     originalName: req.file.originalname,
@@ -130,13 +132,31 @@ router.post('/br-extract', auth, upload.single('file'), async (req, res) => {
                     extractedData: structuredData,
                     uploadedAt: new Date()
                 };
-                if (existingDocIndex > -1) {
-                    Object.assign(profileInDb.documents[existingDocIndex], docEntry);
-                } else {
-                    profileInDb.documents.push(docEntry);
-                }
 
-                // Aggregate ALL documents for this entity
+                // ── ATOMIC UPSERT ────────────────────────────────────────────────
+                // Step 1: Ensure profile exists (upsert shell if new unit)
+                await CompanyProfile.findOneAndUpdate(
+                    { user: targetUser._id },
+                    { $setOnInsert: { user: targetUser._id, companyCode: targetUser.companyCode || targetUser.username.toUpperCase(), documents: [] } },
+                    { upsert: true }
+                );
+
+                // Step 2: Remove any old version of this exact filename (re-upload case)
+                await CompanyProfile.updateOne(
+                    { user: targetUser._id },
+                    { $pull: { documents: { originalName: req.file.originalname } } }
+                );
+
+                // Step 3: Atomically push THIS document — safe even under concurrent uploads
+                await CompanyProfile.updateOne(
+                    { user: targetUser._id },
+                    { $push: { documents: docEntry } }
+                );
+                // ────────────────────────────────────────────────────────────────
+
+                // Step 4: Re-read FULL committed profile to aggregate ALL docs
+                profileInDb = await CompanyProfile.findOne({ user: targetUser._id });
+
                 for (const doc of profileInDb.documents) {
                     if (doc.rawText) {
                         aggregatedRawText += `\n\n--- DOCUMENT: ${doc.originalName} ---\n\n` + doc.rawText;
@@ -153,15 +173,10 @@ router.post('/br-extract', auth, upload.single('file'), async (req, res) => {
                                         if (item && typeof item === 'object') {
                                             const id = item.nameEn || item.nameKh || item.code || item.descriptionEn || JSON.stringify(item);
                                             if (!uniqueMap.has(id)) {
-                                                uniqueMap.set(id, { ...item }); // Clone object
+                                                uniqueMap.set(id, { ...item });
                                             } else {
-                                                // Merge object properties
                                                 const existing = uniqueMap.get(id);
-                                                Object.keys(item).forEach(k => {
-                                                    if (!existing[k] && item[k]) {
-                                                        existing[k] = item[k];
-                                                    }
-                                                });
+                                                Object.keys(item).forEach(k => { if (!existing[k] && item[k]) existing[k] = item[k]; });
                                             }
                                         } else {
                                             if (!uniqueMap.has(item)) uniqueMap.set(item, item);
@@ -176,7 +191,6 @@ router.post('/br-extract', auth, upload.single('file'), async (req, res) => {
                     }
                 }
             } else {
-                // Fallback if no targetUser (unlikely in BR, but just in case)
                 aggregatedRawText = rawText;
                 aggregatedData = structuredData || {};
             }
@@ -184,60 +198,57 @@ router.post('/br-extract', auth, upload.single('file'), async (req, res) => {
             console.error('[BR DB] Accumulation Failed:', dbErr.message);
         }
 
+
         // 4. AI Master Natural Language Synthesis
         console.log('[BR Core] Synthesizing MASTER Business Profile...');
         const organizedProfile = await googleAI.summarizeToProfile(aggregatedRawText, aggregatedData);
 
-        // 5. DB Field Mapping & Save
+        // 5. DB Field Mapping — atomic $set (race-condition safe, documents already committed above)
         let profileDriveId = null;
         try {
-            if (profileInDb) {
+            if (profileInDb && targetUser) {
                 const d = aggregatedData;
-                const setField = (key, val) => { if (val !== null && val !== undefined && val !== '') profileInDb[key] = val; };
+                const setObj = {};
+                const setIfPresent = (key, val) => { if (val !== null && val !== undefined && val !== '') setObj[key] = val; };
 
-                setField('companyNameEn', d.companyNameEn);
-                setField('companyNameKh', d.companyNameKh);
-                setField('registrationNumber', d.registrationNumber || d.companyNumber);
-                setField('incorporationDate', d.incorporationDate);
-                setField('address', d.physicalAddress);
-                setField('postalAddress', d.postalAddress);
-                setField('contactEmail', d.contactEmail);
-                setField('contactPhone', d.contactPhone);
-                // Business Activities: map array to string + store full array
+                setIfPresent('companyNameEn', d.companyNameEn);
+                setIfPresent('companyNameKh', d.companyNameKh);
+                setIfPresent('registrationNumber', d.registrationNumber || d.companyNumber);
+                setIfPresent('incorporationDate', d.incorporationDate);
+                setIfPresent('address', d.physicalAddress);
+                setIfPresent('postalAddress', d.postalAddress);
+                setIfPresent('contactEmail', d.contactEmail);
+                setIfPresent('contactPhone', d.contactPhone);
                 if (Array.isArray(d.businessActivities) && d.businessActivities.length > 0) {
-                    profileInDb.businessActivity = d.businessActivities.map(b => b.descriptionEn || b.descriptionKh || b.code).join(', ');
-                    profileInDb.businessActivities = d.businessActivities;
+                    setObj.businessActivity = d.businessActivities.map(b => b.descriptionEn || b.descriptionKh || b.code).join(', ');
+                    setObj.businessActivities = d.businessActivities;
                 } else {
-                    setField('businessActivity', d.businessActivities);
+                    setIfPresent('businessActivity', d.businessActivities);
                 }
-                setField('companyType', d.companyType);
-                setField('vatTin', d.vatTin);
-                setField('taxRegistrationDate', d.taxRegistrationDate);
-                setField('bankName', d.bankName);
-                setField('bankAccountNumber', d.bankAccountNumber);
-                setField('bankAccountName', d.bankAccountName);
-                setField('bankCurrency', d.bankCurrency);
-                setField('registeredShareCapitalKHR', d.registeredShareCapitalKHR);
-                setField('majorityNationality', d.majorityNationality);
-                setField('percentageOfMajorityShareholders', d.percentageOfMajorityShareholders);
-
-                // Directors: flatten to string + store full array
+                setIfPresent('companyType', d.companyType);
+                setIfPresent('vatTin', d.vatTin);
+                setIfPresent('taxRegistrationDate', d.taxRegistrationDate);
+                setIfPresent('bankName', d.bankName);
+                setIfPresent('bankAccountNumber', d.bankAccountNumber);
+                setIfPresent('bankAccountName', d.bankAccountName);
+                setIfPresent('bankCurrency', d.bankCurrency);
+                setIfPresent('registeredShareCapitalKHR', d.registeredShareCapitalKHR);
+                setIfPresent('majorityNationality', d.majorityNationality);
+                setIfPresent('percentageOfMajorityShareholders', d.percentageOfMajorityShareholders);
                 if (Array.isArray(d.directors) && d.directors.length > 0) {
-                    profileInDb.director = d.directors.map(dir => dir.nameEn || dir.nameKh).filter(Boolean).join(', ');
-                    profileInDb.directors = d.directors;
+                    setObj.director = d.directors.map(dir => dir.nameEn || dir.nameKh).filter(Boolean).join(', ');
+                    setObj.directors = d.directors;
                 }
-                // Shareholders: flatten to string + store full array
                 if (Array.isArray(d.shareholders) && d.shareholders.length > 0) {
-                    profileInDb.shareholder = d.shareholders.map(s => `${s.nameEn || s.nameKh} (${s.numberOfShares || 0} shares)`).filter(Boolean).join(', ');
-                    profileInDb.shareholders = d.shareholders;
+                    setObj.shareholder = d.shareholders.map(s => `${s.nameEn || s.nameKh} (${s.numberOfShares || 0} shares)`).filter(Boolean).join(', ');
+                    setObj.shareholders = d.shareholders;
                 }
+                setObj.organizedProfile = organizedProfile;
+                if (targetUser.companyCode) setObj.companyCode = targetUser.companyCode;
 
-                profileInDb.organizedProfile = organizedProfile;
-                if (targetUser && targetUser.companyCode) profileInDb.companyCode = targetUser.companyCode;
-
-                profileInDb.markModified('documents');
-                await profileInDb.save();
-                console.log(`[BR DB] ✅ Full aggregated structured profile saved for ${targetUser.username} — ${Object.keys(d).length} fields mapped.`);
+                // Atomic $set — only updates scalar fields, never touches the documents array
+                await CompanyProfile.updateOne({ user: targetUser._id }, { $set: setObj });
+                console.log(`[BR DB] ✅ Full aggregated profile saved for ${targetUser.username} — ${Object.keys(setObj).length} fields.`);
             }
         } catch (dbErr) {
             console.error('[BR DB] Map/Save Failed:', dbErr.message);
