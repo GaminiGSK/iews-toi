@@ -160,7 +160,8 @@ class AgentExecutor {
             // if 'all', just leave the query as { companyCode }
 
             if (description_match) {
-                query.description = { $regex: new RegExp(description_match, 'i') };
+                const escaped = description_match.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                query.description = { $regex: new RegExp(escaped, 'i') };
             }
 
             const result = await Transaction.updateMany(query, { 
@@ -205,9 +206,10 @@ class AgentExecutor {
 
         if (targetCodeObj) {
             // Find ALL transactions to tag
+            const escapedMatch = description_match.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             const query = { 
                 companyCode: trustedCompanyCode,
-                description: { $regex: new RegExp(description_match.trim(), 'i') }
+                description: { $regex: new RegExp(escapedMatch, 'i') }
             };
             
             // Find one first to report back accurately
@@ -234,7 +236,8 @@ class AgentExecutor {
     }
 
     async autoMatchCodes(socket, params) {
-        const { companyCode } = params;
+        // SECURITY: Use JWT companyCode — not client-sent param
+        const companyCode = this._getAuthenticatedCompanyCode(socket) || params.companyCode;
         socket.emit('agent:message', { text: "Starting AI auto-matching for your untagged transactions... This might take a moment." });
 
         const Transaction = require('../models/Transaction');
@@ -275,7 +278,8 @@ class AgentExecutor {
     }
 
     async deleteUntaggedTransactions(socket, params) {
-        const { companyCode } = params;
+        // SECURITY: Use JWT companyCode — not client-sent param
+        const companyCode = this._getAuthenticatedCompanyCode(socket) || params.companyCode;
         socket.emit('agent:message', { text: "Deleting untagged transactions..." });
 
         const Transaction = require('../models/Transaction');

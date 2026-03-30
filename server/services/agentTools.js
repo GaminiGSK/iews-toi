@@ -65,7 +65,9 @@ const executeAgentTool = async (functionName, args, companyCode) => {
             // Construct Mongo match dynamically based on the AI's requested criteria
             let match = { companyCode: companyCode };
             if (args.description_contains) {
-                match.description = { $regex: args.description_contains, $options: 'i' };
+                // Escape regex metacharacters so descriptions with ( ) . * + etc. still match correctly
+                const escaped = args.description_contains.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                match.description = { $regex: escaped, $options: 'i' };
             }
             if (args.minimum_amount || args.maximum_amount) {
                 match.amount = {};
