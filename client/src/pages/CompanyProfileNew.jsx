@@ -1589,9 +1589,123 @@ export default function CompanyProfile() {
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <div className="h-full flex flex-col items-center justify-center opacity-10">
-                                                        <Brain size={120} className="mb-8" />
-                                                        <p className="text-xl font-black uppercase tracking-[0.5em]">Agent Synced • Awaiting Command</p>
+                                                    // ── BILINGUAL COMPANY DOSSIER CARD ──────────────────────────────────
+                                                    <div className="bg-white rounded-[32px] shadow-2xl overflow-hidden border border-slate-100 text-black animate-in zoom-in duration-500 mx-4 mt-4 mb-4">
+                                                        {/* Header Band */}
+                                                        <div className="bg-gradient-to-r from-blue-700 to-blue-900 px-12 py-8">
+                                                            <p className="text-blue-200 text-[10px] font-black uppercase tracking-[0.4em] mb-2">ព្រាប់គ្រូស / Company Dossier</p>
+                                                            <div className="space-y-1">
+                                                                <h2 className="text-white text-2xl font-bold leading-tight" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                                                    {formData.companyNameKh || formData.extractedData?.['company_name_kh'] || formData.extractedData?.name || '—'}
+                                                                </h2>
+                                                                <h3 className="text-blue-100 text-lg font-bold uppercase tracking-wide">
+                                                                    {formData.companyNameEn || formData.extractedData?.['company_name_en'] || formData.extractedData?.nameEn || '—'}
+                                                                </h3>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Fields Grid */}
+                                                        <div className="p-10 grid grid-cols-1 md:grid-cols-2 gap-0 divide-y md:divide-y-0 md:divide-x divide-slate-100">
+
+                                                            {/* LEFT COLUMN */}
+                                                            <div className="space-y-0 divide-y divide-slate-100 md:pr-8">
+
+                                                                {/* Registration Number */}
+                                                                <div className="py-4">
+                                                                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">លេខចុះបញ្ជី / Registration No.</p>
+                                                                    <p className="text-sm font-bold text-slate-900">{formData.registrationNumber || formData.extractedData?.['registration_number'] || formData.extractedData?.regNumber || '—'}</p>
+                                                                </div>
+
+                                                                {/* Entity ID */}
+                                                                <div className="py-4">
+                                                                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">អត្តសញ្ញាណស្ថាប័ន / Original Entity ID</p>
+                                                                    <p className="text-sm font-bold text-slate-900">{formData.oldRegistrationNumber || formData.extractedData?.entityId || '—'}</p>
+                                                                </div>
+
+                                                                {/* Company Type */}
+                                                                <div className="py-4">
+                                                                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">ប្រភេទក្រូមហ៊ុន / Company Type</p>
+                                                                    <p className="text-sm font-bold text-slate-900">{formData.companyType || '—'}</p>
+                                                                </div>
+
+                                                                {/* Incorporation Date */}
+                                                                <div className="py-4">
+                                                                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">កាលបរិច្ឆេទចុះបញ្ជី / Incorporation Date</p>
+                                                                    <p className="text-sm font-bold text-slate-900">{formData.incorporationDate || formData.extractedData?.['incorporation_date'] || formData.extractedData?.incorporationDate || '—'}</p>
+                                                                </div>
+
+                                                                {/* TIN */}
+                                                                <div className="py-4">
+                                                                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">លេខសម្គាល់អ្នកបង់ពន្ធ / TIN (VAT)</p>
+                                                                    <p className="text-sm font-bold text-slate-900">{formData.vatTin || formData.extractedData?.['vat_tin'] || '—'}</p>
+                                                                </div>
+
+                                                                {/* Director */}
+                                                                <div className="py-4">
+                                                                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">នាយក / Director</p>
+                                                                    <div>
+                                                                        {formData.directors && formData.directors.length > 0 ? (
+                                                                            formData.directors.map((d, i) => (
+                                                                                <div key={i} className="mb-2">
+                                                                                    {d.nameKh && <p className="text-sm font-bold text-slate-900" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{d.nameKh}</p>}
+                                                                                    {d.nameEn && <p className="text-sm text-slate-600">{d.nameEn}</p>}
+                                                                                </div>
+                                                                            ))
+                                                                        ) : (
+                                                                            <p className="text-sm font-bold text-slate-900">{formData.director || formData.extractedData?.['director_name'] || formData.extractedData?.directorNameEn || '—'}</p>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* RIGHT COLUMN */}
+                                                            <div className="space-y-0 divide-y divide-slate-100 md:pl-8 pt-4 md:pt-0">
+
+                                                                {/* Address */}
+                                                                <div className="py-4">
+                                                                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">អាសយដ្ឋានចុះបញ្ជី / Registered Address</p>
+                                                                    <p className="text-sm font-bold text-slate-900 leading-relaxed">{formData.address || formData.extractedData?.['registered_address'] || formData.extractedData?.address || '—'}</p>
+                                                                </div>
+
+                                                                {/* Business Activity */}
+                                                                <div className="py-4">
+                                                                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">សកម្មភាពអាជីវកម្ម / Business Activity</p>
+                                                                    <p className="text-sm font-bold text-slate-900 leading-relaxed">{formData.businessActivity || formData.extractedData?.['business_activity'] || formData.extractedData?.businessActivity || '—'}</p>
+                                                                </div>
+
+                                                                {/* Email */}
+                                                                <div className="py-4">
+                                                                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">អ៊ីម៉ែល / Email</p>
+                                                                    <p className="text-sm font-bold text-blue-700">{formData.contactEmail || formData.extractedData?.email || '—'}</p>
+                                                                </div>
+
+                                                                {/* Phone */}
+                                                                <div className="py-4">
+                                                                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">លេខទូរស័ព្ទ / Phone</p>
+                                                                    <p className="text-sm font-bold text-slate-900">{formData.contactPhone || formData.extractedData?.phone || '—'}</p>
+                                                                </div>
+
+                                                                {/* Nationality */}
+                                                                <div className="py-4">
+                                                                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">សញ្ជាតិ / Nationality (Majority)</p>
+                                                                    <p className="text-sm font-bold text-slate-900">{formData.majorityNationality || formData.extractedData?.directorNationality || '—'}</p>
+                                                                </div>
+
+                                                                {/* Status */}
+                                                                <div className="py-4">
+                                                                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">ស្ថានភាព / Status</p>
+                                                                    <span className="inline-block bg-green-100 text-green-700 text-xs font-black px-3 py-1 rounded-full uppercase tracking-widest">
+                                                                        {formData.extractedData?.companyStatus || 'Registered'}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Footer Band */}
+                                                        <div className="bg-slate-50 border-t border-slate-200 px-10 py-4 flex items-center justify-between">
+                                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Source: Ministry of Commerce, Kingdom of Cambodia</p>
+                                                            <p className="text-[10px] text-slate-400 font-bold">{formData.companyCode || ''}</p>
+                                                        </div>
                                                     </div>
                                                 )
                                             ) : (
