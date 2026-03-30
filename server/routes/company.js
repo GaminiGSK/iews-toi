@@ -3660,11 +3660,12 @@ router.get('/toi/autofill', auth, async (req, res) => {
                     });
                 }
 
-                // Source 2 �?Salary shareholder-employees not already in list
+                // Source 2 — Salary shareholder-employees not already in list
+                // Only add if we can identify a REAL person name. Never use emp.position as a person name.
                 for (const emp of shEmps) {
                     if (!emp.position) continue;
-                    // Use director/shareholder name from company profile, NOT the position title
-                    const personName = p.director || p.shareholder || emp.position;
+                    const personName = p.director || p.shareholder;
+                    if (!personName) continue; // No real name available — skip, don't use position title as name
                     const key = personName.trim().toLowerCase();
                     if (seen.has(key)) continue;
                     seen.add(key);
