@@ -27,7 +27,7 @@ This pushes changes live to: https://iews-toi-588941282431.asia-southeast1.run.a
 
 4. Deploy the server to Cloud Run (includes the new frontend dist)
    ```
-   cd e:\Antigravity\TOI\server && gcloud run deploy iews-toi --source . --region asia-southeast1 --allow-unauthenticated
+   cd e:\Antigravity\TOI && gcloud run deploy iews-toi --source . --region asia-southeast1 --allow-unauthenticated --clear-base-image
    ```
 
 5. Verify the live deployment is healthy

@@ -73,10 +73,10 @@ if (fs.existsSync(clientDist)) {
     // Serve static assets EXCEPT index.html through express.static
     app.use(express.static(clientDist, { index: false }));
 
-    app.get('*', (req, res) => {
+    app.use((req, res) => {
         // Skip for API and uploads
         if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
-            return res.status(404).json({ error: 'Endpoint not found' });
+            return res.status(req.method === 'OPTIONS' ? 200 : 404).json({ error: 'Endpoint not found' });
         }
 
         // Force no-cache for index.html (the entry point)
