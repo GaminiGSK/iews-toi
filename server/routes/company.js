@@ -136,12 +136,10 @@ router.post('/br-extract', auth, upload.single('file'), async (req, res) => {
             if (targetUser) {
                 console.log(`[BR DB] Atomic doc push for: ${targetUser.username} | file: ${req.file.originalname}`);
 
-                const binaryData = fs.readFileSync(req.file.path).toString('base64');
                 const docEntry = {
                     docType: detectedDocType,
                     originalName: req.file.originalname,
                     path: rawDriveId ? `drive:${rawDriveId}` : req.file.path,
-                    data: binaryData,
                     mimeType: req.file.mimetype,
                     status: 'Verified',
                     rawText: rawText,
@@ -212,8 +210,9 @@ router.post('/br-extract', auth, upload.single('file'), async (req, res) => {
             }
         } catch (dbErr) {
             console.error('[BR DB] Accumulation Failed:', dbErr.message);
+            // DO NOT swallow BSON size exceeding errors! This causes "flick and gone" bug.
+            throw new Error(`Database aggregation failed: ${dbErr.message}`);
         }
-
 
         // 4. AI Master Natural Language Synthesis
         console.log('[BR Core] Synthesizing MASTER Business Profile...');
@@ -378,6 +377,7 @@ router.post('/br-organize', auth, async (req, res) => {
             }
         } catch (dbErr) {
             console.error("[BR DB] Save Failed:", dbErr.message);
+            throw new Error(`Profile synchronization failed: ${dbErr.message}`);
         }
 
         res.json({
@@ -801,9 +801,32 @@ router.post('/save-registration-data', auth, async (req, res) => {
 
         // 1.5 UPLOAD TO DRIVE (BR SUB-FOLDER)
         let driveId = null;
+        let targetFolderId = req.user.brFolderId;
+
+        // Auto-create folder if it doesn't exist for this unit
+        if (!targetFolderId) {
+            try {
+                const { findFolder, createFolder } = require('../services/googleDrive');
+                const rootFolderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
+                const folderName = `BR_${req.user.companyCode || req.user.username}`;
+                let sysFolder = await findFolder(folderName, rootFolderId);
+                if (!sysFolder) {
+                    sysFolder = await createFolder(folderName, rootFolderId);
+                }
+                targetFolderId = sysFolder.id;
+                
+                // Update User record with new folder ID
+                const User = require('../models/User');
+                await User.findByIdAndUpdate(req.user.id, { brFolderId: targetFolderId });
+                req.user.brFolderId = targetFolderId; // Update current request object
+            } catch(dirErr) {
+                console.error("[BR Drive] Failed to auto-create folder in user upload, falling back to ROOT", dirErr.message);
+            }
+        }
+
         try {
             const mimeType = docType.endsWith('cert') ? 'image/jpeg' : 'application/pdf'; // Basic guess
-            const driveData = await uploadFile(filePath, mimeType, originalName || docType, req.user.brFolderId);
+            const driveData = await uploadFile(filePath, mimeType, originalName || docType, targetFolderId);
             driveId = driveData.id;
             // Cleanup local file
             try { fs.unlinkSync(filePath); } catch (e) { console.error('Delete Reg Temp Fail:', e); }
@@ -1111,23 +1134,102 @@ router.post('/save-bank-basket', auth, async (req, res) => {
                     if (tx.moneyIn > 0 && !tx.accountCode) tx.accountCode = "10110";
                 }
 
-                const bankStmtRecord = await BankStatement.create({
-                    companyCode: req.user.companyCode,
-                    originalName: file.originalName,
-                    path: file.driveId ? `drive:${file.driveId.id || file.driveId}` : file.path,
-                    driveId: file.driveId ? (file.driveId.id || file.driveId) : null,
-                    uploadedBy: req.user._id,
-                    bankName: file.bankName || bankName,
-                    accountNumber: file.accountNumber || accountNumber,
-                    dateRangeStart: minDate,
-                    dateRangeEnd: maxDate,
-                    transactions: file.transactions,
-                    isSticked: true,
-                    status: 'Saved',
-                    driveFolderId: basketFolderId
-                });
+                let bankStmtRecord;
+
+                if (file.dbId) {
+                    // Update existing
+                    bankStmtRecord = await BankStatement.findByIdAndUpdate(
+                        file.dbId,
+                        {
+                            companyCode: req.user.companyCode,
+                            originalName: file.originalName,
+                            bankName: file.bankName || bankName,
+                            accountNumber: file.accountNumber || accountNumber,
+                            dateRangeStart: minDate,
+                            dateRangeEnd: maxDate,
+                            transactions: file.transactions,
+                            isSticked: true,
+                            status: 'Saved',
+                            driveFolderId: basketFolderId
+                        },
+                        { new: true }
+                    );
+                } else {
+                    // Create new
+                    bankStmtRecord = await BankStatement.create({
+                        companyCode: req.user.companyCode,
+                        originalName: file.originalName,
+                        path: file.driveId ? `drive:${file.driveId.id || file.driveId}` : file.path,
+                        driveId: file.driveId ? (file.driveId.id || file.driveId) : null,
+                        uploadedBy: req.user._id,
+                        bankName: file.bankName || bankName,
+                        accountNumber: file.accountNumber || accountNumber,
+                        dateRangeStart: minDate,
+                        dateRangeEnd: maxDate,
+                        transactions: file.transactions,
+                        isSticked: true,
+                        status: 'Saved',
+                        driveFolderId: basketFolderId
+                    });
+                }
 
                 savedFileRecords.push(bankStmtRecord);
+
+                // 🔥 UPDATE START: Push directly into GL / Transactions
+                const Transaction = require('../models/Transaction');
+                const savedGLDocs = [];
+
+                // Helper to parse dates securely from the extraction
+                const parseDateStr = (dateStr) => {
+                    if (!dateStr) return new Date();
+                    if (dateStr instanceof Date) return dateStr;
+                    const parts = String(dateStr).split('/');
+                    if (parts.length === 3) {
+                        const day = parseInt(parts[0], 10);
+                        const month = parseInt(parts[1], 10) - 1;
+                        const year = parseInt(parts[2], 10);
+                        if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+                            return new Date(Date.UTC(year, month, day));
+                        }
+                    }
+                    const parsed = new Date(dateStr);
+                    return isNaN(parsed.getTime()) ? new Date() : parsed;
+                };
+
+                for (const tx of file.transactions) {
+                    if (tx.date === "DEBUG_ERR" || tx.date === "FATAL_ERR" || (tx.description && tx.description.includes("AI Parse Failed"))) {
+                        continue;
+                    }
+
+                    let amount = 0;
+                    if (tx.moneyIn > 0) amount = tx.moneyIn;
+                    if (tx.moneyOut > 0) amount = -tx.moneyOut;
+
+                    savedGLDocs.push({
+                        user: req.user.id,
+                        companyCode: req.user.companyCode,
+                        date: parseDateStr(tx.date),
+                        description: tx.description,
+                        amount: amount,
+                        balance: tx.balance || 0,
+                        currency: 'USD',
+                        sequence: tx.sequence || 0,
+                        accountCode: tx.accountCode || undefined,
+                        // Provide bridge details back to the BankStatement
+                        originalData: { ...tx, driveId: file.driveId ? (file.driveId.id || file.driveId) : null, statementId: bankStmtRecord._id }
+                    });
+                }
+
+                if (savedGLDocs.length > 0) {
+                    // First, clear old associated GL items if updating
+                    if (file.dbId) {
+                        await Transaction.deleteMany({ 'originalData.statementId': bankStmtRecord._id });
+                    }
+                    await Transaction.insertMany(savedGLDocs);
+                    console.log(`[Basket Ledger Sync] Inserted ${savedGLDocs.length} items to General Ledger.`);
+                }
+                // 🔥 UPDATE END
+
             }
         }
 
@@ -1167,6 +1269,7 @@ router.get('/saved-bank-baskets', auth, async (req, res) => {
                 bankName: s.bankName,
                 accountNumber: s.accountNumber,
                 status: 'Saved',
+                dbId: s._id,
                 transactions: s.transactions || [],
                 fileType: s.originalName && s.originalName.endsWith('pdf') ? 'pdf' : 'image',
                 extractedData: s.transactions && s.transactions.length > 0 ? "Data Preserved" : null
@@ -1900,10 +2003,32 @@ router.get('/ledger', auth, async (req, res) => {
         const unitUser = await User.findOne({ companyCode: req.user.companyCode }).select('companyName');
         const fallbackName = unitUser?.companyName || req.user.companyCode;
 
+        let nameEn = fallbackName;
+        let nameKh = '';
+        if (profile) {
+            nameEn = profile.companyNameEn || (profile.extractedData?.get ? profile.extractedData.get('companyNameEn') : profile.extractedData?.companyNameEn) || '';
+            nameKh = profile.companyNameKh || (profile.extractedData?.get ? profile.extractedData.get('companyNameKh') : profile.extractedData?.companyNameKh) || '';
+            if ((!nameEn || !nameKh) && profile.organizedProfile) {
+                const multiLineMatch = profile.organizedProfile.match(/\*\*Legal Name\*\*:[ \t]*\n\s*-\s*English:\s*([^\n]+)\n\s*-\s*Khmer:\s*([^\n]+)/i);
+                const nameLinesMatch = profile.organizedProfile.match(/\*\*Legal Name\*\*\s*:\s*([^/!]+)\/\s*([^-\n]+)/i);
+                if (multiLineMatch) {
+                    nameKh = nameKh || multiLineMatch[2].trim();
+                    nameEn = nameEn || multiLineMatch[1].trim();
+                } else if (nameLinesMatch) {
+                    nameKh = nameKh || nameLinesMatch[1].trim();
+                    nameEn = nameEn || nameLinesMatch[2].trim();
+                } else {
+                    const enMatch = profile.organizedProfile.match(/\*\*Legal Name\*\*\s*:\s*([^-\n]+)/i);
+                    if (enMatch && !nameEn) nameEn = enMatch[1].trim();
+                }
+            }
+            if (!nameEn) nameEn = fallbackName;
+        }
+
         res.json({ 
             transactions: enrichedTransactions,
-            companyNameEn: (profile?.companyNameEn) || fallbackName,
-            companyNameKh: (profile?.companyNameKh) || '',
+            companyNameEn: nameEn,
+            companyNameKh: nameKh,
             lockedGLYears: profile ? profile.lockedGLYears || [] : [],
             userRole: req.user.role || 'unit'
         });
@@ -2430,18 +2555,18 @@ router.get('/trial-balance', auth, async (req, res) => {
         if (profile) {
             nameEn = profile.companyNameEn || (profile.extractedData?.get ? profile.extractedData.get('companyNameEn') : profile.extractedData?.companyNameEn) || '';
             nameKh = profile.companyNameKh || (profile.extractedData?.get ? profile.extractedData.get('companyNameKh') : profile.extractedData?.companyNameKh) || '';
-            if (!nameEn && profile.organizedProfile) {
+            if ((!nameEn || !nameKh) && profile.organizedProfile) {
                 const multiLineMatch = profile.organizedProfile.match(/\*\*Legal Name\*\*:[ \t]*\n\s*-\s*English:\s*([^\n]+)\n\s*-\s*Khmer:\s*([^\n]+)/i);
                 const nameLinesMatch = profile.organizedProfile.match(/\*\*Legal Name\*\*\s*:\s*([^/!]+)\/\s*([^-\n]+)/i);
                 if (multiLineMatch) {
                     nameKh = nameKh || multiLineMatch[2].trim();
-                    nameEn = multiLineMatch[1].trim();
+                    nameEn = nameEn || multiLineMatch[1].trim();
                 } else if (nameLinesMatch) {
                     nameKh = nameKh || nameLinesMatch[1].trim();
-                    nameEn = nameLinesMatch[2].trim();
+                    nameEn = nameEn || nameLinesMatch[2].trim();
                 } else {
                     const enMatch = profile.organizedProfile.match(/\*\*Legal Name\*\*\s*:\s*([^-\n]+)/i);
-                    if (enMatch) nameEn = enMatch[1].trim();
+                    if (enMatch && !nameEn) nameEn = enMatch[1].trim();
                 }
             }
             if (!nameEn) nameEn = req.user.companyCode;
@@ -2660,18 +2785,18 @@ router.get('/financials-monthly', auth, async (req, res) => {
         if (profile) {
             nameEn = profile.companyNameEn || (profile.extractedData?.get ? profile.extractedData.get('companyNameEn') : profile.extractedData?.companyNameEn) || '';
             nameKh = profile.companyNameKh || (profile.extractedData?.get ? profile.extractedData.get('companyNameKh') : profile.extractedData?.companyNameKh) || '';
-            if (!nameEn && profile.organizedProfile) {
+            if ((!nameEn || !nameKh) && profile.organizedProfile) {
                 const multiLineMatch = profile.organizedProfile.match(/\*\*Legal Name\*\*:[ \t]*\n\s*-\s*English:\s*([^\n]+)\n\s*-\s*Khmer:\s*([^\n]+)/i);
                 const nameLinesMatch = profile.organizedProfile.match(/\*\*Legal Name\*\*\s*:\s*([^/!]+)\/\s*([^-\n]+)/i);
                 if (multiLineMatch) {
                     nameKh = nameKh || multiLineMatch[2].trim();
-                    nameEn = multiLineMatch[1].trim();
+                    nameEn = nameEn || multiLineMatch[1].trim();
                 } else if (nameLinesMatch) {
                     nameKh = nameKh || nameLinesMatch[1].trim();
-                    nameEn = nameLinesMatch[2].trim();
+                    nameEn = nameEn || nameLinesMatch[2].trim();
                 } else {
                     const enMatch = profile.organizedProfile.match(/\*\*Legal Name\*\*\s*:\s*([^-\n]+)/i);
-                    if (enMatch) nameEn = enMatch[1].trim();
+                    if (enMatch && !nameEn) nameEn = enMatch[1].trim();
                 }
             }
             if (!nameEn) nameEn = companyCode;
