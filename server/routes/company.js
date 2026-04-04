@@ -3561,11 +3561,11 @@ router.get('/toi/autofill', auth, async (req, res) => {
             if (typeof str === 'object' && str !== null) return str;
             try { const parsed = str ? JSON.parse(str) : null; return parsed && typeof parsed === 'object' ? parsed : {}; } catch (e) { return {}; }
         };
-        const ___scPatent = ___parseSafely(p.scarTaxPatent);
-        const ___scIdCard = ___parseSafely(p.scarTaxIdCard);
-        const ___scMoc = ___parseSafely(p.scarMoc);
-        const ___scMocEn = ___parseSafely(p.scarMocEn);
-        const ___scMocKh = ___parseSafely(p.scarMocKh);
+        const ___scPatent = ___parseSafely(p.get ? p.get('scarTaxPatent') : p.scarTaxPatent);
+        const ___scIdCard = ___parseSafely(p.get ? p.get('scarTaxIdCard') : p.scarTaxIdCard);
+        const ___scMoc = ___parseSafely(p.get ? p.get('scarMoc') : p.scarMoc);
+        const ___scMocEn = ___parseSafely(p.get ? p.get('scarMocEn') : p.scarMocEn);
+        const ___scMocKh = ___parseSafely(p.get ? p.get('scarMocKh') : p.scarMocKh);
 
         const scCompanyNameEn = ___scMocEn.entityName || ___scPatent.entityNameEn || ___scIdCard.entityNameEn || ___scMoc.entityNameEn;
         const scCompanyNameKh = ___scMocKh.entityNameKh || ___scPatent.entityNameKh || ___scIdCard.entityNameKh || ___scMoc.entityNameKh;
@@ -3897,9 +3897,9 @@ router.get('/toi/autofill', auth, async (req, res) => {
                     if (typeof str === 'object' && str !== null) return str;
                     try { const p = str ? JSON.parse(str) : null; return p && typeof p === 'object' ? p : {}; } catch (e) { return {}; }
                 };
-                const scPatent = parseSafely(p.scarTaxPatent);
-                const scMocEn = parseSafely(p.scarMocEn);
-                const scMocKh = parseSafely(p.scarMocKh);
+                const scPatent = parseSafely(p.get ? p.get('scarTaxPatent') : p.scarTaxPatent);
+                const scMocEn = parseSafely(p.get ? p.get('scarMocEn') : p.scarMocEn);
+                const scMocKh = parseSafely(p.get ? p.get('scarMocKh') : p.scarMocKh);
 
                 const scShareholders = scMocEn.shareholders || scMocKh.shareholdersKh || [];
                 for (const sh of scShareholders) {
@@ -3985,9 +3985,9 @@ router.get('/toi/autofill', auth, async (req, res) => {
                     if (typeof str === 'object' && str !== null) return str;
                     try { const p = str ? JSON.parse(str) : null; return p && typeof p === 'object' ? p : {}; } catch (e) { return {}; }
                 };
-                const scPatent = parseSafely(p.scarTaxPatent);
-                const scMocEn = parseSafely(p.scarMocEn);
-                const scMocKh = parseSafely(p.scarMocKh);
+                const scPatent = parseSafely(p.get ? p.get('scarTaxPatent') : p.scarTaxPatent);
+                const scMocEn = parseSafely(p.get ? p.get('scarMocEn') : p.scarMocEn);
+                const scMocKh = parseSafely(p.get ? p.get('scarMocKh') : p.scarMocKh);
 
                 const scShareholders = scMocEn.shareholders || scMocKh.shareholdersKh || [];
                 for (const sh of scShareholders) {
