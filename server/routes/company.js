@@ -3268,11 +3268,17 @@ router.get('/toi/autofill', auth, async (req, res) => {
         await require('../services/AutoReconService').syncModulesToGL(companyCode);
 
         // ── 1. Company Profile ──────────────────────────────────────────
-        const profile = await CompanyProfile.findOne({ companyCode });
+        const profile = await CompanyProfile.findOne({ companyCode }).lean();
+
+        // Debug logging for SCAR extraction data presence
+        if (companyCode === 'SCAR') {
+            console.log(`[SCAR-DEBUG] Autofill profile pull. Mongoose lean() used. Keys present:`, Object.keys(profile || {}));
+            console.log(`[SCAR-DEBUG] scarMocEn type: ${typeof profile?.scarMocEn}, length: ${String(profile?.scarMocEn).length}`);
+        }
 
         const p = profile || {};
-        // Helper: extract extracted data value safely
-        const ext = (key) => p.extractedData?.get?.(key) || p.extractedData?.[key] || '';
+        // Helper: extract extracted data value safely (supports Map or standard Object)
+        const ext = (key) => p.extractedData?.get ? p.extractedData.get(key) : (p.extractedData?.[key] || '');
 
         // Emergency Extract from organizedProfile if root fields are blank (Fallback for older Rescans)
         if (!p.vatTin && p.organizedProfile) {
