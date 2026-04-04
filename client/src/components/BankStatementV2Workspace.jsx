@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Layers, Plus, FolderUp, ArrowLeft, CloudUpload, Loader2, Save, Trash2, FileText, CheckCircle, AlertCircle, ShieldCheck, Eye, X, Tag, Table } from 'lucide-react';
+import { Layers, Plus, FolderUp, ArrowLeft, CloudUpload, Loader2, Save, Trash2, FileText, CheckCircle, AlertCircle, ShieldCheck, Eye, X, Tag, Table, Pencil } from 'lucide-react';
 import axios from 'axios';
 
 export default function BankStatementV2Workspace({ onBack }) {
@@ -11,6 +11,24 @@ export default function BankStatementV2Workspace({ onBack }) {
     const [uploadingBank, setUploadingBank] = useState(false);
     const [savingBank, setSavingBank] = useState(false);
     const [activeFileIndex, setActiveFileIndex] = useState(0);
+
+    const [editingTxRow, setEditingTxRow] = useState(null);
+    const [editFormData, setEditFormData] = useState({});
+
+    const handleSaveEditing = (idx) => {
+        setBaskets(prev => prev.map(b => {
+             if (b.id === activeBasketId) {
+                 const newFiles = [...b.files];
+                 const txList = [...newFiles[activeFileIndex].transactions];
+                 txList[idx] = { ...txList[idx], ...editFormData };
+                 newFiles[activeFileIndex] = { ...newFiles[activeFileIndex], transactions: txList };
+                 return { ...b, files: newFiles };
+             }
+             return b;
+        }));
+        setEditingTxRow(null);
+        setEditFormData({});
+    };
 
     const [message, setMessage] = useState('');
     const fileInputRef = useRef(null);
@@ -513,29 +531,53 @@ export default function BankStatementV2Workspace({ onBack }) {
                                             </td>
                                         </tr>
                                     ) : (
-                                        (currentFile?.transactions || []).map((tx, idx) => (
+                                        (currentFile?.transactions || []).map((tx, idx) => {
+                                            const isEditing = editingTxRow === idx;
+                                            return (
                                             <tr key={idx} className="hover:bg-gray-50 transition group">
                                                 <td className="px-4 py-3 text-xs text-gray-600 font-bold whitespace-nowrap align-top">
-                                                    {formatDateSafe(tx?.date)}
+                                                    {isEditing ? (
+                                                        <input type="text" className="w-[80px] border border-blue-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500" value={editFormData.date || ''} onChange={e => setEditFormData({...editFormData, date: e.target.value})} />
+                                                    ) : formatDateSafe(tx?.date)}
                                                 </td>
                                                 <td className="px-4 py-3 text-[11px] text-gray-700 font-medium align-top">
+                                                    {isEditing ? (
+                                                        <textarea className="w-full border border-blue-300 rounded px-2 py-1 min-h-[40px] text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" value={editFormData.description || ''} onChange={e => setEditFormData({...editFormData, description: e.target.value})} />
+                                                    ) : (
                                                     <div className="whitespace-pre-wrap leading-relaxed max-w-lg">
                                                         {tx?.description || ''}
                                                     </div>
+                                                    )}
                                                 </td>
                                                 <td className="px-4 py-3 text-[11px] text-right font-medium text-green-600 align-top whitespace-nowrap">
-                                                    {tx?.moneyIn && Number(String(tx.moneyIn).replace(/[^0-9.-]+/g, "")) > 0 ? Number(String(tx.moneyIn).replace(/[^0-9.-]+/g, "")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''}
+                                                    {isEditing ? (
+                                                        <input type="text" className="w-[80px] text-right border border-blue-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500" value={editFormData.moneyIn || ''} onChange={e => setEditFormData({...editFormData, moneyIn: e.target.value})} />
+                                                    ) : (tx?.moneyIn && Number(String(tx.moneyIn).replace(/[^0-9.-]+/g, "")) > 0 ? Number(String(tx.moneyIn).replace(/[^0-9.-]+/g, "")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '')}
                                                 </td>
                                                 <td className="px-4 py-3 text-[11px] text-right font-medium text-red-600 align-top whitespace-nowrap">
-                                                    {tx?.moneyOut && Number(String(tx.moneyOut).replace(/[^0-9.-]+/g, "")) > 0 ? Number(String(tx.moneyOut).replace(/[^0-9.-]+/g, "")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''}
+                                                    {isEditing ? (
+                                                        <input type="text" className="w-[80px] text-right border border-blue-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500" value={editFormData.moneyOut || ''} onChange={e => setEditFormData({...editFormData, moneyOut: e.target.value})} />
+                                                    ) : (tx?.moneyOut && Number(String(tx.moneyOut).replace(/[^0-9.-]+/g, "")) > 0 ? Number(String(tx.moneyOut).replace(/[^0-9.-]+/g, "")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '')}
                                                 </td>
                                                 <td className="px-4 py-3 text-[11px] text-right text-gray-800 font-bold align-top whitespace-nowrap">
-                                                    {tx?.balance ? Number(String(tx.balance).replace(/[^0-9.-]+/g, "")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}
+                                                    {isEditing ? (
+                                                        <input type="text" className="w-[80px] text-right border border-blue-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500" value={editFormData.balance || ''} onChange={e => setEditFormData({...editFormData, balance: e.target.value})} />
+                                                    ) : (tx?.balance ? Number(String(tx.balance).replace(/[^0-9.-]+/g, "")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-')}
                                                 </td>
                                                 <td className="px-4 py-3 text-xs align-top">
+                                                    {isEditing ? (
+                                                        <div className="flex gap-2">
+                                                            <button onClick={() => handleSaveEditing(idx)} className="p-1 bg-green-100 hover:bg-green-200 text-green-700 rounded transition"><CheckCircle size={14}/></button>
+                                                            <button onClick={() => setEditingTxRow(null)} className="p-1 bg-red-100 hover:bg-red-200 text-red-700 rounded transition"><X size={14}/></button>
+                                                        </div>
+                                                    ) : (
+                                                        <button onClick={() => { setEditingTxRow(idx); setEditFormData({...tx}); }} className="p-1.5 bg-blue-50 text-blue-500 hover:bg-blue-600 hover:text-white rounded-md transition shadow-sm ml-auto flex items-center gap-1 border border-blue-100" title="Edit extraction if there are errors">
+                                                            <Pencil size={12}/> <span className="text-[10px] font-bold">EDIT</span>
+                                                        </button>
+                                                    )}
                                                 </td>
                                             </tr>
-                                        ))
+                                        )})
                                     )}
                                 </tbody>
                             </table>

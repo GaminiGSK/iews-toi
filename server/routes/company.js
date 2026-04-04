@@ -423,17 +423,19 @@ router.get('/admin/profile/:username', auth, async (req, res) => {
             username: { $regex: new RegExp(`^${username.trim()}$`, 'i') }
         });
 
-        if (!targetUser) {
-            console.error(`[AdminAPI] User NOT found: ${username}`);
-            return res.status(404).json({ message: 'Target user not found' });
+        // 1. Try fetching by companyCode (Handles SCAR Lab & disjointed objects gracefully)
+        let profile = await CompanyProfile.findOne({ companyCode: { $regex: new RegExp(`^${username.trim()}$`, 'i') } });
+        
+        // 2. Fallback to searching by targetUser._id if found
+        if (!profile && targetUser) {
+            profile = await CompanyProfile.findOne({ user: targetUser._id });
         }
 
-        console.log(`[AdminAPI] Found User: ${targetUser.username} (${targetUser._id})`);
-
-        // IMPORTANT: Fetch FULL profile
-        let profile = await CompanyProfile.findOne({ user: targetUser._id });
-
         if (!profile) {
+            if (!targetUser) {
+                console.error(`[AdminAPI] User NOT found: ${username} (and no generic profile matching companyCode)`);
+                return res.status(404).json({ message: 'Target user not found' });
+            }
             console.log(`[AdminAPI] No profile entry found for ${targetUser.username}. Generating empty shell.`);
             return res.json({
                 documents: [],
@@ -470,9 +472,9 @@ router.get('/admin/profile/:username', auth, async (req, res) => {
             };
         });
 
-        profileData.username = targetUser.username;
+        profileData.username = targetUser ? targetUser.username : username;
 
-        console.log(`[AdminAPI] Returning ${profileData.documents.length} docs for ${targetUser.username}`);
+        console.log(`[AdminAPI] Returning ${profileData.documents.length} docs for ${profileData.username}`);
         res.json(profileData);
 
     } catch (err) {
@@ -4495,6 +4497,17 @@ router.get('/toi/autofill', auth, async (req, res) => {
             filing_location:         'Phnom Penh',
         };
 
+        let finalFormData = formData;
+        // Apply Natural Language Business Rules via AI engine IF rules exist
+        if (p.businessRules && p.businessRules.length > 0) {
+            try {
+                const googleAI = require('../services/googleAI');
+                finalFormData = await googleAI.applyBusinessRulesToToi(formData, p.businessRules);
+            } catch(e) {
+                console.error("Failed to apply business rules via AI, falling back to deterministic:", e);
+            }
+        }
+
         res.json({
             ok:       true,
             year,
@@ -4507,7 +4520,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
                 transactions:  txns.length,
                 journalEntries:jes.length,
             },
-            formData,
+            formData: finalFormData,
         });
 
     } catch (err) {
@@ -4563,5 +4576,151 @@ router.post('/transactions/sync-rsw-codes', auth, async (req, res) => {
     }
 });
 
-module.exports = router;
+// SCAR Extract Document Data (MOC, Patent, TaxID)
+router.post('/upload-scar-doc', auth, async (req, res) => {
+    const uploadMiddleware = upload.single('file');
+    uploadMiddleware(req, res, async function (err) {
+        if (err) {
+            console.error('MULTTER FATAL UPLOAD ERROR:', err);
+            return res.status(500).json({ message: 'Multer upload error: ' + err.message });
+        }
+        
+        try {
+            const { docType } = req.body;
+            if (!docType) return res.status(400).json({ message: 'Missing docType' });
+            if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
 
+            let companyCode = req.user.companyCode;
+            if (['admin', 'superadmin'].includes(req.user.role) && req.body.companyCode) {
+                companyCode = req.body.companyCode;
+            }
+
+            if (companyCode.toUpperCase() !== 'SCAR') {
+                return res.status(403).json({ message: 'Access denied. Reserved for SCAR lab.' });
+            }
+
+            let profile = await CompanyProfile.findOne({ companyCode });
+            if (!profile) {
+                console.log("[SCAR] Profile missing. Auto-generating SCAR lab profile framework.");
+                profile = new CompanyProfile({ user: req.user.id, companyCode: 'SCAR', companyNameEn: 'SCAR Extraction Lab' });
+                await profile.save();
+            }
+
+            const extractedRaw = await googleAI.extractScarDoc(req.file.path, docType);
+            const extractedData = typeof extractedRaw === 'object' ? JSON.stringify(extractedRaw, null, 2) : extractedRaw;
+
+            // Dynamically save to the SCAR-specific fields in the doc
+            let fieldName = '';
+            if (docType === 'taxPatent') fieldName = 'scarTaxPatent';
+            if (docType === 'taxIdCard') fieldName = 'scarTaxIdCard';
+            if (docType === 'moc') fieldName = 'scarMoc';
+            if (docType === 'mocEn') fieldName = 'scarMocEn';
+            if (docType === 'mocKh') fieldName = 'scarMocKh';
+
+            if (fieldName) {
+                 await CompanyProfile.updateOne(
+                     { companyCode },
+                     { $set: { [fieldName]: extractedData } }
+                 );
+            }
+
+            const fs = require('fs');
+            if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+
+            res.json({ message: 'Document Extracted Successfully', extractedData });
+        } catch (err) {
+            console.error('SCAR Upload Error:', err);
+            res.status(500).json({ message: 'Error extracting SCAR document' });
+        }
+    });
+});
+
+// DELETE SCAR Document Data
+router.post('/delete-scar-doc', auth, async (req, res) => {
+    try {
+        const { docType } = req.body;
+        
+        let companyCode = req.user.companyCode;
+        if (['admin', 'superadmin'].includes(req.user.role) && req.body.companyCode) {
+            companyCode = req.body.companyCode;
+        }
+
+        if (companyCode.toUpperCase() !== 'SCAR') {
+            return res.status(403).json({ message: 'Access denied. Reserved for SCAR lab.' });
+        }
+
+        let fieldName = '';
+        if (docType === 'taxPatent') fieldName = 'scarTaxPatent';
+        if (docType === 'taxIdCard') fieldName = 'scarTaxIdCard';
+        if (docType === 'moc') fieldName = 'scarMoc';
+        if (docType === 'mocEn') fieldName = 'scarMocEn';
+        if (docType === 'mocKh') fieldName = 'scarMocKh';
+
+        if (fieldName) {
+            await CompanyProfile.updateOne(
+                { companyCode },
+                { $set: { [fieldName]: null } }
+            );
+            res.json({ message: 'Document data cleared' });
+        } else {
+            res.status(400).json({ message: 'Invalid document type' });
+        }
+    } catch (err) {
+        console.error('SCAR Delete Error:', err);
+        res.status(500).json({ message: 'Error deleting SCAR document data' });
+    }
+});
+
+// Add Business Rule
+router.post('/rules', auth, async (req, res) => {
+    try {
+        let companyCode = req.user.companyCode;
+        if (['admin', 'superadmin'].includes(req.user.role) && req.body.companyCode) {
+            companyCode = req.body.companyCode;
+        }
+
+        const ruleContent = req.body.content;
+        if (!ruleContent) return res.status(400).json({ message: 'Rule content is required' });
+
+        const profile = await CompanyProfile.findOne({ companyCode });
+        if (!profile) return res.status(404).json({ message: 'Company profile not found' });
+
+        if (!profile.businessRules) profile.businessRules = [];
+        profile.businessRules.push({
+            content: ruleContent,
+            addedBy: req.user.username,
+            isActive: true
+        });
+
+        await profile.save();
+        res.json({ message: 'Rule added successfully', rules: profile.businessRules });
+    } catch (err) {
+        console.error('Add Rule Error:', err);
+        res.status(500).json({ message: 'Server error adding rule' });
+    }
+});
+
+// Delete Business Rule
+router.delete('/rules/:ruleId', auth, async (req, res) => {
+    try {
+        let companyCode = req.user.companyCode;
+        if (['admin', 'superadmin'].includes(req.user.role) && req.query.companyCode) {
+            companyCode = req.query.companyCode;
+        }
+
+        const profile = await CompanyProfile.findOne({ companyCode });
+        if (!profile) return res.status(404).json({ message: 'Company profile not found' });
+
+        if (profile.businessRules) {
+            profile.businessRules = profile.businessRules.filter(r => r._id.toString() !== req.params.ruleId);
+            await profile.save();
+        }
+
+        res.json({ message: 'Rule deleted successfully', rules: profile.businessRules });
+    } catch (err) {
+        console.error('Delete Rule Error:', err);
+        res.status(500).json({ message: 'Server error deleting rule' });
+    }
+});
+
+module.exports = router;

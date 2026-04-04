@@ -28,32 +28,16 @@ async function healAndNormalizeProfile(profile) {
                 modified = true;
             }
         }
-
-        // 2. RECORD HEALING: Recover missing Base64 data from Google Drive
-        if (!doc.data && doc.path && doc.path.startsWith('drive:')) {
-            const driveId = doc.path.split(':')[1];
-            try {
-                console.log(`[Heal] Automatically restoring wiped data for: ${doc.originalName} (${driveId})`);
-
-                // Get stream from Drive
-                const stream = await googleDrive.getFileStream(driveId);
-
-                // Buffer the stream to Base64
-                const chunks = [];
-                for await (const chunk of stream) {
-                    chunks.push(chunk);
-                }
-                const buffer = Buffer.concat(chunks);
-                doc.data = buffer.toString('base64');
-                modified = true;
-
-                console.log(`[Heal] Success: ${doc.originalName} restored to DB.`);
-            } catch (err) {
-                console.error(`[Heal] Critical Failure for ${doc.originalName}:`, err.message);
-                // If it fails, we keep going - don't block the profile load
-            }
+        // 2. We NO LONGER store large Base64 clusters in MongoDB to prevent hitting the 16MB limit.
+        // Google Drive is the sole physical asset repository (Drive-First Policy).
+        if (doc.data) {
+            console.log(`[Normalization] Purging legacy DB Base64 blob for: ${doc.originalName} to prevent storage limit crash.`);
+            doc.data = undefined;
+            modified = true;
         }
     }
+
+    if (modified) profile.markModified('documents');
 
     return modified;
 }

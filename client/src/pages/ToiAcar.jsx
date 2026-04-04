@@ -27,9 +27,12 @@ const ToiAcar = ({ onBack, packageId, year }) => {
       const yearProp = year;
       if (yearProp) return yearProp;
       const defaultY = (new Date().getFullYear() - 1).toString();
-      // If 2025 is empty but 2024 has user data, default to 2024 visually
-      if (!localStorage.getItem(`toiFilledData_${defaultY}`) && localStorage.getItem('toiFilledData_2024')) {
-          return '2024';
+      
+      // If default year data is empty, but previous year has data under the CURRENT scoped key, fallback to that year visually.
+      // This prevents the user from "losing" their data on reload if they were actively working on last year's form.
+      const prevY = (parseInt(defaultY) - 1).toString();
+      if (!localStorage.getItem(storageKey(defaultY)) && localStorage.getItem(storageKey(prevY))) {
+          return prevY;
       }
       return defaultY;
   });
@@ -98,33 +101,53 @@ const ToiAcar = ({ onBack, packageId, year }) => {
 
 
   const [filledData, setFilledData] = useState(() => {
-
     try {
-      const initYear = year || (new Date().getFullYear() - 1).toString();
-      const saved = localStorage.getItem(storageKey(initYear));
+      // Must use selectedYear's logic here!
+      // If we use a generic defaultY, we read 2025 data, but selectedYear could be 2024 due to the fallback.
+      const initialStoreYear = (() => {
+          const yearProp = year;
+          if (yearProp) return yearProp;
+          const defaultY = (new Date().getFullYear() - 1).toString();
+          const prevY = (parseInt(defaultY) - 1).toString();
+          if (!localStorage.getItem(storageKey(defaultY)) && localStorage.getItem(storageKey(prevY))) {
+              return prevY;
+          }
+          return defaultY;
+      })();
+
+      const saved = localStorage.getItem(storageKey(initialStoreYear));
       return saved ? JSON.parse(saved) : null;
     } catch {
       return null;
     }
   });
 
-  // ── Persist filledData for the currently selected year ────────────────────
+  // ── FIX FOR RACE CONDITION: Use a Ref to track year switches ──────────────
+  // We cannot blindly use an effect to save filledData when selectedYear changes.
+  // React batches effect hooks, which means when selectedYear flips to 2024,
+  // we would automatically save the active 2025 filledData state into the 2024 localStorage slot,
+  // destroying the user's 2024 data.
+  const activeYearRef = React.useRef(selectedYear);
+  
+  // 1. Detect Year Switch => Load new data, DO NOT SAVE OLD DATA INTO NEW SLOT
   React.useEffect(() => {
-    if (filledData) {
-      localStorage.setItem(storageKey(selectedYear), JSON.stringify(filledData));
-    }
-    // NOTE: We don't remove data when null — just don't overwrite
-  }, [filledData, selectedYear]);
-
-  // ── Reload year-specific data when year selector changes ──────────────────
-  React.useEffect(() => {
-    try {
-      const saved = localStorage.getItem(storageKey(selectedYear));
-      setFilledData(saved ? JSON.parse(saved) : null);
-    } catch {
-      setFilledData(null);
+    if (activeYearRef.current !== selectedYear) {
+      activeYearRef.current = selectedYear;
+      try {
+        const saved = localStorage.getItem(storageKey(selectedYear));
+        setFilledData(saved ? JSON.parse(saved) : null);
+      } catch {
+        setFilledData(null);
+      }
     }
   }, [selectedYear]);
+
+  // 2. Safely Autosave => Only persist if the year hasn't abruptly changed underneath
+  React.useEffect(() => {
+    if (filledData && activeYearRef.current === selectedYear) {
+      localStorage.setItem(storageKey(selectedYear), JSON.stringify(filledData));
+    }
+  }, [filledData, selectedYear]);
 
 
 

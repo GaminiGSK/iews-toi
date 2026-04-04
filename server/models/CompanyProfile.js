@@ -83,7 +83,15 @@ const CompanyProfileSchema = new mongoose.Schema({
 
     // GDT e-Tax Portal Credentials
     gdtUsername: { type: String, default: '' },
-    gdtPassword: { type: String, default: '' }
+    gdtPassword: { type: String, default: '' },
+
+    // Business AI Rules
+    businessRules: [{
+        content: String,
+        addedBy: String,
+        createdAt: { type: Date, default: Date.now },
+        isActive: { type: Boolean, default: true }
+    }]
 
 }, { timestamps: true, strict: false }); // strict:false allows flexible field additions
 

@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FileText, Download, TrendingUp, AlertCircle, RefreshCw, Bot, ArrowLeft, Calendar, Layout } from 'lucide-react';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
-
+import autoTable from 'jspdf-autotable';
 const FinancialStatements = ({ onBack }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -212,59 +211,63 @@ const FinancialStatements = ({ onBack }) => {
     );
 
     const handleDownloadPDF = (targetTab = activeTab) => {
-        const doc = new jsPDF(viewMode === 'monthly' ? 'l' : 'p');
-        const titleMap = {
-            pl: "STATEMENT OF PROFIT OR LOSS",
-            bs: "BALANCE SHEET",
-            cf: "STATEMENT OF CASH FLOWS",
-            sce: "STATEMENT OF CHANGES IN EQUITY",
-            notes: "NOTES TO THE FINANCIAL STATEMENTS"
-        };
-
-        // Header
-        doc.setFontSize(16);
-        doc.setFont('serif', 'bold');
-        doc.text(companyNameEn.toUpperCase(), 14, 20);
-        doc.setFontSize(12);
-        doc.text(titleMap[targetTab] || "FINANCIAL REPORT", 14, 28);
-        doc.setFontSize(10);
-        doc.setFont('serif', 'normal');
-        if (fiscalYear === 'all') {
-            doc.text(`All Periods To Date`, 14, 34);
-        } else {
-            doc.text(`For the year ended 31 December ${displayYear}`, 14, 34);
-        }
-        doc.text(`Expressed in ${inUSD ? "United States Dollar (USD)" : "Cambodian Riel (KHR)"}`, 14, 40);
-
-        // Content
-        if (targetTab === 'notes') {
-            doc.setFontSize(10);
-            const notesText = `
-                1. BASIS OF PREPARATION
-                These financial statements have been prepared in accordance with International Financial Reporting Standards (IFRS) as issued by the International Accounting Standards Board (IASB).
-                
-                2. SIGNIFICANT ACCOUNTING POLICIES
-                Revenue is recognized when control of goods or services is transferred to the customer. PPE is stated at cost less accumulated depreciation.
-            `;
-            const splitText = doc.splitTextToSize(notesText, 180);
-            doc.text(splitText, 14, 50);
-        } else {
-            doc.autoTable({
-                html: `#table-${viewMode}-${targetTab}`,
-                startY: 50,
-                styles: { font: 'serif', fontSize: 9 },
-                headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-                alternateRowStyles: { fillColor: [245, 245, 245] },
-                margin: { top: 50 }
-            });
-        }
-
-        let fileName = `${companyNameEn}_${targetTab}_${viewMode}.pdf`;
+        const safeName = (companyNameEn || 'Company').replace(/[^a-zA-Z0-9 -]/g, '').replace(/\s+/g, ' ').trim();
+        let fileName = `${safeName} ${targetTab.toUpperCase()} ${displayYear}`;
+        
         if (targetTab === 'bs') {
-            fileName = `${companyNameEn} balance sheet ${displayYear}.pdf`;
+            fileName = `${safeName} BALANCE SHEET ${displayYear}`;
+        } else if (targetTab === 'pl') {
+            fileName = `${safeName} IS ${displayYear}`;
         }
 
-        doc.save(fileName);
+        const originalTitle = document.title;
+        document.title = fileName;
+
+        // Clone the print container to break out of React's DOM layout constraints
+        const container = document.querySelector('.print-container');
+        if (!container) return window.print();
+
+        const overlay = document.createElement('div');
+        overlay.className = 'print-overlay-isolated';
+        overlay.innerHTML = container.outerHTML;
+        document.body.appendChild(overlay);
+
+        // Inject strong print CSS to nuke all other heights
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @media print {
+                html, body {
+                    height: auto !important;
+                    min-height: 0 !important;
+                    overflow: visible !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    background: white !important;
+                }
+                body > div:not(.print-overlay-isolated) {
+                    display: none !important;
+                }
+                .print-overlay-isolated {
+                    display: block !important;
+                    width: 100% !important;
+                    background: white !important;
+                }
+                .print-overlay-isolated .print-container {
+                    position: relative !important;
+                    visibility: visible !important;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Need slight delay to allow browser to register the new DOM nodes for printing
+        setTimeout(() => {
+            window.print();
+            // Cleanup
+            document.body.removeChild(overlay);
+            document.head.removeChild(style);
+            document.title = originalTitle;
+        }, 150);
     };
 
     if (loading) return (
@@ -449,10 +452,10 @@ const FinancialStatements = ({ onBack }) => {
                     )}
 
                     
-                    {viewMode === 'annual' && (
+                    {viewMode === 'annual' && activeTab === 'pl' && (
                     <div className="print-section">
                         {/* Page 1: Income Statement */}
-                        <div className={`${activeTab === 'pl' ? 'block' : 'hidden print:block'}`}>
+                        <div>
                             <div className="hidden print:block pb-6 mb-8 border-b-2 border-black mt-2">
                                 <div className="flex justify-between items-start mb-8">
                                     <div><h1 className="text-3xl font-bold text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{companyNameKh}</h1><h2 className="text-xl font-bold text-black uppercase tracking-widest mt-2 px-1">{companyNameEn}</h2></div>
@@ -462,7 +465,10 @@ const FinancialStatements = ({ onBack }) => {
                             <div className="text-center mb-8 print:hidden">
                                 <h1 className="text-3xl font-bold text-gray-900 mb-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{companyNameKh}</h1>
                                 <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-widest mb-2">{companyNameEn}</h2>
-                                <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase flex items-center justify-center gap-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>របាយការណ៍លទ្ធផល / INCOME STATEMENT <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">FS1</span></h3>
+                                <h3 className="text-lg font-bold text-gray-600 mb-1 leading-tight uppercase flex items-center justify-center gap-2" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>
+                                    របាយការណ៍លទ្ធផល / INCOME STATEMENT <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">FS1</span>
+                                    <button onClick={() => handleDownloadPDF('pl')} className="ml-3 bg-blue-600 hover:bg-blue-700 text-white shadow min-w-[140px] px-3 py-1.5 rounded-lg text-xs font-sans tracking-normal flex items-center justify-center gap-2 transition"><Download size={14} /> Download PDF</button>
+                                </h3>
                                 <p className="text-sm text-gray-500 italic">{fiscalYear === 'all' ? 'All Periods To Date' : `For the year ended 31 December ${displayYear}`}</p>
                             </div>
                             <div className="overflow-x-auto print-content-wrapper">
@@ -502,10 +508,10 @@ const FinancialStatements = ({ onBack }) => {
                     </div>
                     )}
 
-                    {viewMode === 'annual' && (
+                    {viewMode === 'annual' && activeTab === 'bs' && (
                     <div className="print-section">
                         {/* Page 2: Balance Sheet */}
-                        <div className={`${activeTab === 'bs' ? 'block' : 'hidden print:block'}`}>
+                        <div>
                             <div className="hidden print:block pb-6 mb-8 border-b-2 border-black mt-2">
                                 <div className="flex justify-between items-start mb-8">
                                     <div><h1 className="text-3xl font-bold text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{companyNameKh}</h1><h2 className="text-xl font-bold text-black uppercase tracking-widest mt-2 px-1">{companyNameEn}</h2></div>
@@ -569,10 +575,10 @@ const FinancialStatements = ({ onBack }) => {
                     </div>
                     )}
 
-                    {viewMode === 'annual' && (
+                    {viewMode === 'annual' && activeTab === 'cf' && (
                     <div className="print-section">
                         {/* Page 3: Cash Flow */}
-                        <div className={`${activeTab === 'cf' ? 'block' : 'hidden print:block'}`}>
+                        <div>
                             <div className="hidden print:block pb-6 mb-8 border-b-2 border-black mt-2">
                                 <div className="flex justify-between items-start mb-8">
                                     <div><h1 className="text-3xl font-bold text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{companyNameKh}</h1><h2 className="text-xl font-bold text-black uppercase tracking-widest mt-2 px-1">{companyNameEn}</h2></div>
@@ -657,10 +663,10 @@ const FinancialStatements = ({ onBack }) => {
                     </div>
                     )}
 
-                    {viewMode === 'annual' && (
+                    {viewMode === 'annual' && activeTab === 'sce' && (
                     <div className="print-section">
                         {/* Page 4: Statement of Changes in Equity */}
-                        <div className={`${activeTab === 'sce' ? 'block' : 'hidden print:block'}`}>
+                        <div>
                             <div className="hidden print:block pb-6 mb-8 border-b-2 border-black mt-2">
                                 <div className="flex justify-between items-start mb-8">
                                     <div><h1 className="text-3xl font-bold text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{companyNameKh}</h1><h2 className="text-xl font-bold text-black uppercase tracking-widest mt-2 px-1">{companyNameEn}</h2></div>
@@ -714,10 +720,10 @@ const FinancialStatements = ({ onBack }) => {
                     </div>
                     )}
 
-                    {viewMode === 'annual' && (
+                    {viewMode === 'annual' && activeTab === 'notes' && (
                     <div className="print-section">
                         {/* Page 5: Notes */}
-                        <div className={`${activeTab === 'notes' ? 'block' : 'hidden print:block'}`}>
+                        <div>
                             <div className="hidden print:block pb-6 mb-8 border-b-2 border-black mt-2">
                                 <div className="flex justify-between items-start mb-8">
                                     <div><h1 className="text-3xl font-bold text-black" style={{ fontFamily: '"Kantumruy Pro", sans-serif' }}>{companyNameKh}</h1><h2 className="text-xl font-bold text-black uppercase tracking-widest mt-2 px-1">{companyNameEn}</h2></div>

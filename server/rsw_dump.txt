@@ -1,0 +1,36 @@
+
+nameKh: អ អេស ដាប់បែលយូ អេស៊ា អ៊ិនធើណេសិនណល ឯ.ក
+extKh: 
+orgProfile:
+# I. EXECUTIVE CORPORATE ARCHITECTURE
+- **Legal Name**: RSW ASIA INTERNATIONAL CO., LTD. / អ អេស ដាប់បែលយូ អេស៊ា អ៊ិនធើណេសិនណល ឯ.ក
+- **Identifiers**:
+    - Tax Identification Number (TIN): K007-902404368
+    - Patent Number: PTM24100996022
+- **Legal Status**:
+    - Company Type: Private limited company / ក្រុមហ៊ុនឯកជនទទួលខុសត្រូវមានកម្រិត
+    - Incorporation Date: Not explicitly stated but patent issued 09 October 2024
+
+# II. GOVERNANCE & SHAREHOLDERS
+- **Board of Directors**:
+    - WICKRAMASINGHE RUWAN SRINATH (Representative)
+- **Shareholders**:
+    - Details not provided, but WICKRAMASINGHE RUWAN SRINATH is identified as the owner/representative.
+    - Nationality of WICKRAMASINGHE RUWAN SRINATH: Sri Lankan / ស្រីលង្កា
+
+# III. OPERATIONAL FOOTPRINT
+- **Headquarters**:
+    - #238, Street 271, Village Sansom Kosal 5, Sangkat Boeung Tumpon Ti 1, Khan Mean Chey, Phnom Penh / #238 ផ្លូវ 271 ភូមិ សន្សំកុសល ៥ សង្កាត់ បឹងទំពុនទី១ ខណ្ឌ មានជ័យ រាជធានីភ្នំពេញ
+- **Business Objectives**:
+    - Import and Export (paint) / អាហរ័ណ នីហរ័ណ (ថ្នាំលាបពណ៌)
+
+# IV. FINANCIAL & LEGAL ASSETS
+- **Capital**:
+    - Patent Tax 2024: 600,000 Riel
+- **Bank Details**:
+    - No bank account information found in the provided text.
+
+# V. ANALYST STRATEGIC DOSSIER
+
+RSW ASIA INTERNATIONAL CO., LTD. appears to be a private limited company operating in Phnom Penh, Cambodia, focused on import and export activities, specifically dealing with paint products. The company's patent tax payment for 2024 suggests ongoing operational status and adherence to regulatory requirements. Leadership is vested in WICKRAMASINGHE RUWAN SRINATH, a Sri Lankan national, who serves as the owner/representative. The company's registration under the General Department of Taxation and the Mean Chey Tax Branch indicates compliance with local tax regulations. While details on shareholders and comprehensive financial assets are limited, the provided information allows for a basic risk assessment. The longevity and potential for growth will largely depend on its competitive strategies and adherence to Cambodian tax laws. With a verified operational address and a clearly defined business focus, RSW ASIA INTERNATIONAL CO., LTD. exhibits a structured organizational framework.
+

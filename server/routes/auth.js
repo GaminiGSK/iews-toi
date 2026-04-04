@@ -189,7 +189,7 @@ router.get('/users', auth, async (req, res) => {
             // Admin sees all units. Sorting alphabetically. Bulletproof role exclusion.
             users = await User.find({
                 role: { $nin: ['admin', 'superadmin'] },
-                username: { $nin: ['Admin', 'ADMIN', 'superadmin', 'TEST', 'test', req.user.username] }
+                username: { $nin: ['Admin', 'ADMIN', 'superadmin', 'TEST', 'test', 'scar', 'SCAR', req.user.username] }
             })
             .collation({ locale: 'en' })
             .sort({ username: 1 })
@@ -250,6 +250,7 @@ router.get('/unassigned-units', auth, async (req, res) => {
         const superadminIds = await User.find({ role: 'superadmin' }).distinct('_id');
         const units = await User.find({
             role: { $in: ['unit', 'user'] },
+            username: { $nin: ['scar', 'SCAR'] },
             $or: [
                 { createdBy: null },
                 { createdBy: { $exists: false } },
@@ -483,8 +484,11 @@ router.get('/admins', auth, async (req, res) => {
 router.get('/admins/:id/units', auth, async (req, res) => {
     if (req.user.role !== 'superadmin') return res.status(403).json({ message: 'Superadmin only' });
     try {
-        const units = await User.find({ createdBy: req.params.id, role: { $in: ['unit', 'user'] } })
-            .select('username companyName loginCode createdAt brFolderId');
+        const units = await User.find({ 
+            createdBy: req.params.id, 
+            role: { $in: ['unit', 'user'] },
+            username: { $nin: ['scar', 'SCAR'] }
+        }).select('username companyName loginCode createdAt brFolderId');
         res.json(units);
     } catch (err) { res.status(500).json({ message: 'Server Error' }); }
 });

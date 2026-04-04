@@ -1,0 +1,3 @@
+Company: SCAR
+  Rule 1: if the company name do not contain Co.,Ltd its a Solo propriteriship, Shareholder and the director is the same position in Ineternal TOI
+  Rule 2: Solo proprietorship  capital is recorded from GL code 30100 to be mentioned in the Internal TOI 

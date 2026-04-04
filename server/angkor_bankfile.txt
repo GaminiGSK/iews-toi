@@ -1,0 +1,50 @@
+Found 12 BankFile(s) for ANGKOR.
+
+=== File: JAN 01, 2025 - JAN 31, 2025.pdf | DateRange: 2025-01-20 - 2025-01-28 ===
+Status: Processed | Locked: false | Txs: 0
+-> EMPTY TRANSACTIONS (DriveID: 1Gl5HWfgnewsd77-rAY_4oj-1odR2rt5N)
+
+=== File: FEB 01, 2025 - FEB 28, 2025.pdf | DateRange: 2025-02-20 - 2025-02-23 ===
+Status: Processed | Locked: false | Txs: 0
+-> EMPTY TRANSACTIONS (DriveID: 17STNIaGgIX2mfC_f7Go7oCLt90wMObwd)
+
+=== File: MAR 01, 2025 - MAR 31, 2025.pdf | DateRange: 2025-03-01 - 2025-03-31 ===
+Status: Processed | Locked: false | Txs: 0
+-> EMPTY TRANSACTIONS (DriveID: 1-fiHFz8RB6vunoc34eXS8YAUs3y49Y_V)
+
+=== File: APR 01, 2025 - APR 30, 2025.pdf | DateRange: 2025-04-07 - 2025-04-23 ===
+Status: Processed | Locked: false | Txs: 0
+-> EMPTY TRANSACTIONS (DriveID: 1Mn6qVq88iH1l6iUxQ66Db0jbvZHE7bI9)
+
+=== File: MAY 01, 2025 - MAY 31, 2025.pdf | DateRange: 2025-05-25 - 2025-05-26 ===
+Status: Processed | Locked: false | Txs: 0
+-> EMPTY TRANSACTIONS (DriveID: 1Iep8SIFAGjvYEDeQEMkBZgEKf66H3wKz)
+
+=== File: JUNE.pdf | DateRange: 2025-06-11 - 2025-06-24 ===
+Status: Processed | Locked: false | Txs: 0
+-> EMPTY TRANSACTIONS (DriveID: 1_gQ3qY0q7zuQD_XxSUE8hsl4dPx9Q1FG)
+
+=== File: JUL 01, 2025 - JUL 31, 2025.pdf | DateRange: 2025-07-06 - 2025-07-06 ===
+Status: Processed | Locked: false | Txs: 0
+-> EMPTY TRANSACTIONS (DriveID: 1saUcoPKBjimZ3OKoy0ZPjhk45d1NFAQl)
+
+=== File: AUG 01, 2025 - AUG 31, 2025.pdf | DateRange: 2025-08-12 - 2025-08-25 ===
+Status: Processed | Locked: false | Txs: 0
+-> EMPTY TRANSACTIONS (DriveID: 1YkfjZtF6NdlblAXpm9ZuJdTsboLDLzuU)
+
+=== File: SEP 01, 2025 - SEP 30, 2025.pdf | DateRange: 2025-09-30 - 2025-09-30 ===
+Status: Processed | Locked: false | Txs: 0
+-> EMPTY TRANSACTIONS (DriveID: 1VneGhzP9zoJHA_y0QJqn_U-4G3HP8LR8)
+
+=== File: 10-2025.pdf | DateRange: 2025-10-31 - 2025-10-31 ===
+Status: Processed | Locked: false | Txs: 0
+-> EMPTY TRANSACTIONS (DriveID: 179l0vhWbBQOc2jbr0Ski1-Do3amJDzfr)
+
+=== File: 11-2025.pdf | DateRange: 2025-11-01 - 2025-11-02 ===
+Status: Processed | Locked: false | Txs: 0
+-> EMPTY TRANSACTIONS (DriveID: 1uq_jNe1lQ-pc41dri4a28Jb6wfXlJoWJ)
+
+=== File: 12-2025.pdf | DateRange: 2025-12-25 - 2025-12-25 ===
+Status: Processed | Locked: false | Txs: 0
+-> EMPTY TRANSACTIONS (DriveID: 1GC8HkHecIwOHt753Px80lXkfeQtfzw31)
+

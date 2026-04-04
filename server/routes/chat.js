@@ -243,6 +243,17 @@ router.post('/message', auth, async (req, res) => {
                 }));
         }
 
+        // INJECT BUSINESS RULES INTO AI CONTEXT SO BA AUDITOR FOLLOWS THEM
+        if (profile.businessRules && Array.isArray(profile.businessRules)) {
+            const rulesText = profile.businessRules.map(r => r.content).join('\n\n');
+            if (rulesText) {
+                backendBrData.push({
+                    name: 'ACTIVE NATURAL LANGUAGE BUSINESS RULES & DIRECTIVES',
+                    text: rulesText
+                });
+            }
+        }
+
         const context = {
             companyCode,
             companyName,

@@ -17,7 +17,8 @@ export default function AdminDashboard() {
     const [editingId, setEditingId] = useState(null);
     const [formData, setFormData] = useState({ username: '', companyName: '', password: '' });
     const [message, setMessage] = useState('');
-    const [activeTab, setActiveTab] = useState(() => localStorage.getItem('lastActiveTab') || 'user');
+    const [userSearch, setUserSearch] = useState('');
+    const [activeTab, setActiveTab] = useState('user');
     const [viewingFile, setViewingFile] = useState(null);
     const [profileTemplate, setProfileTemplate] = useState(null);
     const [savingTemplate, setSavingTemplate] = useState(false);
@@ -75,10 +76,7 @@ export default function AdminDashboard() {
         fetchProfileTemplate();
     }, []);
 
-    // SYNC PERSISTENCE
-    useEffect(() => {
-        localStorage.setItem('lastActiveTab', activeTab);
-    }, [activeTab]);
+
 
     useEffect(() => {
         localStorage.setItem('lastBRView', brView);
@@ -384,46 +382,58 @@ export default function AdminDashboard() {
                     {activeTab === 'user' && (
                         <div className="h-full overflow-y-auto p-10 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <div className="max-w-6xl mx-auto">
-                                <div className="flex justify-between items-center bg-white/[0.03] p-8 rounded-[32px] border border-white/5 mb-8">
+                                <div className="flex justify-between items-center bg-white/[0.03] p-6 lg:p-8 rounded-[32px] border border-white/5 mb-8 flex-wrap gap-4">
                                     <div>
-                                        <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-tight">User Matrix</h2>
-                                        <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.3em]">Authorized Access Control & Entitlement Engine</p>
+                                        <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-tight">USER AGENT MAITRIX</h2>
+                                        <div className="flex items-center gap-2 text-blue-400 text-[10px] font-bold uppercase tracking-[0.3em]">
+                                            <div className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)] animate-pulse"></div>
+                                            Agent of Blue
+                                        </div>
                                     </div>
-                                    <button
-                                        onClick={() => { resetForm(); setIsCreating(true); }}
-                                        className="bg-white text-black hover:bg-blue-600 hover:text-white px-8 py-4 rounded-2xl font-black shadow-2xl transition-all flex items-center gap-3 uppercase text-[11px] tracking-widest active:scale-95"
-                                    >
-                                        <UserPlus size={18} /> Deploy New Profile
-                                    </button>
+                                    <div className="flex items-center gap-4 w-full md:w-auto mt-4 md:mt-0">
+                                        <input
+                                            type="text"
+                                            value={userSearch}
+                                            onChange={(e) => setUserSearch(e.target.value)}
+                                            placeholder="Search units..."
+                                            className="bg-slate-900 border border-white/10 rounded-2xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors w-full md:w-[250px]"
+                                        />
+                                        <button
+                                            onClick={() => { resetForm(); setIsCreating(true); }}
+                                            className="bg-white text-black hover:bg-blue-600 hover:text-white px-6 py-3 rounded-2xl font-black shadow-2xl transition-all flex items-center gap-3 uppercase text-[11px] tracking-widest active:scale-95 whitespace-nowrap h-[46px]"
+                                        >
+                                            <UserPlus size={18} /> Deploy New Profile
+                                        </button>
+                                    </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                                    {users.map((user) => (
-                                        <div key={user._id} className="bg-slate-900/40 border border-white/5 rounded-[32px] p-8 flex justify-between items-center group hover:border-blue-500/30 hover:bg-slate-900/60 transition-all duration-500 relative overflow-hidden">
-                                            <div className="absolute -top-24 -left-24 w-48 h-48 bg-blue-600/5 rounded-full blur-[80px] opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                            <div className="relative z-10">
-                                                <h3 className="text-2xl font-black text-white group-hover:text-blue-400 transition-colors uppercase tracking-tight mb-4">{user.companyName || 'Restricted Entity'}</h3>
-                                                <div className="space-y-2">
-                                                    <div className="flex items-center gap-3 text-[10px] text-slate-500 font-black uppercase tracking-widest">
-                                                        <div className="w-5 h-5 rounded-lg bg-blue-500/10 flex items-center justify-center"><User size={10} className="text-blue-400" /></div>
-                                                        {user.username}
+                                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 2xl:grid-cols-8 gap-4">
+                                    {users.filter(u => `${u.username} ${u.companyName}`.toLowerCase().includes(userSearch.toLowerCase())).map((user) => (
+                                        <div key={user._id} className="bg-slate-900/40 border border-white/5 rounded-[24px] p-5 flex py-6 flex-col justify-between items-center text-center group hover:border-blue-500/30 hover:bg-slate-900/60 transition-all duration-500 relative overflow-hidden h-[190px]">
+                                            <div className="absolute -top-10 -left-10 w-32 h-32 bg-blue-600/5 rounded-full blur-[40px] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                            <div className="relative z-10 w-full mb-auto flex flex-col items-center">
+                                                <h3 className="text-[13px] font-black text-white group-hover:text-blue-400 transition-colors uppercase tracking-tight mb-2 truncate w-full" title={user.companyName}>{user.companyName || 'Restricted Entity'}</h3>
+                                                <div className="space-y-1.5 w-full flex flex-col items-center">
+                                                    <div className="flex items-center gap-2 text-[9px] text-slate-400 font-black uppercase tracking-widest bg-white/5 py-1 px-2 rounded w-full justify-center">
+                                                        <User size={10} className="text-blue-400" />
+                                                        <span className="truncate">{user.username}</span>
                                                     </div>
-                                                    <div className="flex items-center gap-3 text-[10px] text-slate-500 font-mono">
-                                                        <div className="w-5 h-5 rounded-lg bg-slate-500/10 flex items-center justify-center"><Lock size={10} /></div>
-                                                        {user.loginCode}
+                                                    <div className="flex items-center gap-2 text-[9px] text-slate-500 font-mono bg-white/5 py-1 px-2 rounded w-full justify-center">
+                                                        <Lock size={10} className="text-rose-400" />
+                                                        <span className="truncate">{user.loginCode}</span>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="flex gap-3 relative z-10">
+                                            <div className="flex gap-1.5 mt-4 relative z-10 justify-center w-full">
                                                 <button
                                                     onClick={() => {
                                                         localStorage.setItem('lastSelectedBR', user.username);
                                                         window.open(`/tax-live?packageId=${user.username}_2026`, '_blank', 'noopener,noreferrer');
                                                     }}
-                                                    className="w-12 h-12 flex items-center justify-center bg-emerald-500/10 text-emerald-400 hover:bg-emerald-600 hover:text-white rounded-2xl transition-all duration-300"
+                                                    className="w-8 h-8 flex items-center justify-center bg-emerald-500/10 text-emerald-400 hover:bg-emerald-600 hover:text-white rounded-lg transition-all duration-300 shadow"
                                                     title="Open Tax Workspace"
                                                 >
-                                                    <FileSpreadsheet size={18} />
+                                                    <FileSpreadsheet size={14} />
                                                 </button>
                                                 <button
                                                     onClick={() => {
@@ -431,13 +441,13 @@ export default function AdminDashboard() {
                                                         setActiveTab('profile');
                                                         fetchUserBRDocs(user.username);
                                                     }}
-                                                    className="w-12 h-12 flex items-center justify-center bg-indigo-500/10 text-indigo-400 hover:bg-indigo-600 hover:text-white rounded-2xl transition-all duration-300"
+                                                    className="w-8 h-8 flex items-center justify-center bg-indigo-500/10 text-indigo-400 hover:bg-indigo-600 hover:text-white rounded-lg transition-all duration-300 shadow"
                                                     title="View Intelligence Profile"
                                                 >
-                                                    <Brain size={18} />
+                                                    <Brain size={14} />
                                                 </button>
-                                                <button onClick={() => startEdit(user)} className="w-12 h-12 flex items-center justify-center bg-white/5 text-gray-500 hover:bg-blue-600 hover:text-white rounded-2xl transition-all duration-300"><Edit2 size={18} /></button>
-                                                <button onClick={() => deleteUser(user._id)} className="w-12 h-12 flex items-center justify-center bg-white/5 text-gray-500 hover:bg-red-600 hover:text-white rounded-2xl transition-all duration-300"><Trash2 size={18} /></button>
+                                                <button onClick={() => startEdit(user)} className="w-8 h-8 flex items-center justify-center bg-white/5 text-gray-500 hover:bg-blue-600 hover:text-white rounded-lg transition-all duration-300 shadow" title="Edit"><Edit2 size={14} /></button>
+                                                <button onClick={() => deleteUser(user._id)} className="w-8 h-8 flex items-center justify-center bg-rose-500/10 text-rose-400 hover:bg-red-600 hover:text-white rounded-lg transition-all duration-300 shadow" title="Delete"><Trash2 size={14} /></button>
                                             </div>
                                         </div>
                                     ))}

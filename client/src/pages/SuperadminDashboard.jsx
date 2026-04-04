@@ -224,6 +224,15 @@ export default function SuperadminDashboard() {
                     >
                         <BookOpen className="w-3.5 h-3.5" /> BA Knowledge Vault
                     </button>
+                    <button
+                        onClick={() => {
+                            localStorage.setItem('lastSelectedBR', 'SCAR');
+                            window.location.href = '/dashboard?packageId=SCAR';
+                        }}
+                        className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all text-slate-400 hover:text-white hover:bg-red-500/10 border border-transparent hover:border-red-500/30`}
+                    >
+                        <AlertCircle className="w-3.5 h-3.5 text-red-500" /> SCAR
+                    </button>
                 </div>
             </div>
 

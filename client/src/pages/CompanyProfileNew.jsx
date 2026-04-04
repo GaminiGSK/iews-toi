@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Receipt, Loader2, CheckCircle, AlertCircle, Table, Save, X, Eye, FileText, CloudUpload, Calendar, Book, Tag, DollarSign, Scale, TrendingUp, ArrowLeft, ShieldCheck, Sparkles, QrCode, BookOpen, RefreshCw, Terminal, Plus, Box, ChevronRight, Brain, Layers, Users, Bot, Globe, Send, Wifi } from 'lucide-react';
+import { Receipt, Loader2, CheckCircle, AlertCircle, Table, Save, X, Eye, FileText, CloudUpload, Calendar, Book, Tag, DollarSign, Scale, TrendingUp, ArrowLeft, ShieldCheck, Sparkles, QrCode, BookOpen, RefreshCw, Terminal, Plus, Box, ChevronRight, Brain, Layers, Users, Bot, Globe, Send, Wifi, Star, Trash2 } from 'lucide-react';
 import GeneralLedger from './GeneralLedger';
 import AccountingCodes from './AccountingCodes';
 import CurrencyExchange from './CurrencyExchange';
@@ -159,6 +159,429 @@ export default function CompanyProfile() {
     const [isDocScanning, setIsDocScanning] = useState(false);
 
     const [extractionResults, setExtractionResults] = useState(null);
+
+    // --- RULES ENGINE STATE ---
+    const [activeBrTab, setActiveBrTab] = useState('data'); // 'data' or 'rules'
+    const [newRuleContent, setNewRuleContent] = useState('');
+    const [isCreatingRule, setIsCreatingRule] = useState(false);
+    const [savingRule, setSavingRule] = useState(false);
+
+    // --- SCAR LAB STATES ---
+    const [scarDocsOpts] = useState([
+        { 
+            id: 'taxPatent', 
+            label: '1. Tax Patent',
+            theme: {
+                base: 'text-emerald-400 border-emerald-500/30 bg-emerald-500/5',
+                hover: 'hover:bg-emerald-500/20 hover:border-emerald-500/60 hover:text-emerald-300',
+                active: 'border-emerald-500 bg-emerald-500/30 text-white shadow-[0_0_20px_-3px_rgba(16,185,129,0.6)]',
+                completed: 'border-emerald-500 bg-emerald-500/10 text-emerald-400 shadow-[0_0_15px_-3px_rgba(16,185,129,0.3)]',
+                uploading: 'border-emerald-500/50 bg-emerald-500/20 text-emerald-200 animate-pulse',
+                textRaw: 'text-emerald-400',
+                icon: 'text-emerald-500',
+                panelBorder: 'border-emerald-500/50 shadow-[0_0_40px_-10px_rgba(16,185,129,0.2)] bg-emerald-950/20'
+            }
+        },
+        { 
+            id: 'taxIdCard', 
+            label: '2. Tax ID Card',
+            theme: {
+                base: 'text-amber-400 border-amber-500/30 bg-amber-500/5',
+                hover: 'hover:bg-amber-500/20 hover:border-amber-500/60 hover:text-amber-300',
+                active: 'border-amber-500 bg-amber-500/30 text-white shadow-[0_0_20px_-3px_rgba(245,158,11,0.6)]',
+                completed: 'border-amber-500 bg-amber-500/10 text-amber-400 shadow-[0_0_15px_-3px_rgba(245,158,11,0.3)]',
+                uploading: 'border-amber-500/50 bg-amber-500/20 text-amber-200 animate-pulse',
+                textRaw: 'text-amber-400',
+                icon: 'text-amber-500',
+                panelBorder: 'border-amber-500/50 shadow-[0_0_40px_-10px_rgba(245,158,11,0.2)] bg-amber-950/20'
+            }
+        },
+        { 
+            id: 'moc', 
+            label: '3. MOC',
+            theme: {
+                base: 'text-sky-400 border-sky-500/30 bg-sky-500/5',
+                hover: 'hover:bg-sky-500/20 hover:border-sky-500/60 hover:text-sky-300',
+                active: 'border-sky-500 bg-sky-500/30 text-white shadow-[0_0_20px_-3px_rgba(14,165,233,0.6)]',
+                completed: 'border-sky-500 bg-sky-500/10 text-sky-400 shadow-[0_0_15px_-3px_rgba(14,165,233,0.3)]',
+                uploading: 'border-sky-500/50 bg-sky-500/20 text-sky-200 animate-pulse',
+                textRaw: 'text-sky-400',
+                icon: 'text-sky-500',
+                panelBorder: 'border-sky-500/50 shadow-[0_0_40px_-10px_rgba(14,165,233,0.2)] bg-sky-950/20'
+            }
+        },
+        { 
+            id: 'mocEn', 
+            label: '4. MOC Extract English',
+            theme: {
+                base: 'text-violet-400 border-violet-500/30 bg-violet-500/5',
+                hover: 'hover:bg-violet-500/20 hover:border-violet-500/60 hover:text-violet-300',
+                active: 'border-violet-500 bg-violet-500/30 text-white shadow-[0_0_20px_-3px_rgba(139,92,246,0.6)]',
+                completed: 'border-violet-500 bg-violet-500/10 text-violet-400 shadow-[0_0_15px_-3px_rgba(139,92,246,0.3)]',
+                uploading: 'border-violet-500/50 bg-violet-500/20 text-violet-200 animate-pulse',
+                textRaw: 'text-violet-400',
+                icon: 'text-violet-500',
+                panelBorder: 'border-violet-500/50 shadow-[0_0_40px_-10px_rgba(139,92,246,0.2)] bg-violet-950/20'
+            }
+        },
+        { 
+            id: 'mocKh', 
+            label: '5. MOC Extract Khmer',
+            theme: {
+                base: 'text-rose-400 border-rose-500/30 bg-rose-500/5',
+                hover: 'hover:bg-rose-500/20 hover:border-rose-500/60 hover:text-rose-300',
+                active: 'border-rose-500 bg-rose-500/30 text-white shadow-[0_0_20px_-3px_rgba(244,63,94,0.6)]',
+                completed: 'border-rose-500 bg-rose-500/10 text-rose-400 shadow-[0_0_15px_-3px_rgba(244,63,94,0.3)]',
+                uploading: 'border-rose-500/50 bg-rose-500/20 text-rose-200 animate-pulse',
+                textRaw: 'text-rose-400',
+                icon: 'text-rose-500',
+                panelBorder: 'border-rose-500/50 shadow-[0_0_40px_-10px_rgba(244,63,94,0.2)] bg-rose-950/20'
+            }
+        }
+    ]);
+    const [uploadingScar, setUploadingScar] = useState(null);
+    const [showScarData, setShowScarData] = useState(null);
+    const [confirmDeleteScar, setConfirmDeleteScar] = useState(null);
+
+    const isScarLab = !!formData && (formData.companyCode === 'SCAR' || (['admin', 'superadmin'].includes(formData.role) && adminSelectedUser === 'SCAR'));
+    
+    const handleScarUpload = async (docTypeId, file, inputElement = null) => {
+        if (!file) return;
+
+        setUploadingScar(docTypeId);
+        const submitData = new FormData();
+        submitData.append('file', file);
+        submitData.append('docType', docTypeId);
+        
+        // Always enforce SCAR as target for SCAR LAB
+        submitData.append('companyCode', 'SCAR');
+
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.post('/api/company/upload-scar-doc', submitData, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            setFormData(prev => {
+                const updated = { ...prev };
+                if (docTypeId === 'taxPatent') updated.scarTaxPatent = res.data.extractedData;
+                if (docTypeId === 'taxIdCard') updated.scarTaxIdCard = res.data.extractedData;
+                if (docTypeId === 'moc') updated.scarMoc = res.data.extractedData;
+                if (docTypeId === 'mocEn') updated.scarMocEn = res.data.extractedData;
+                if (docTypeId === 'mocKh') updated.scarMocKh = res.data.extractedData;
+                return updated;
+            });
+            setShowScarData(docTypeId);
+
+        } catch (err) {
+            console.error(err);
+            alert('SCAR Extract failed: ' + (err.response?.data?.message || err.message));
+        } finally {
+            setUploadingScar(null);
+            if (inputElement) inputElement.value = null;
+        }
+    };
+
+    const handleScarDelete = async (docTypeId, e) => {
+        if (e) e.stopPropagation();
+
+        try {
+            const token = localStorage.getItem('token');
+            await axios.post('/api/company/delete-scar-doc', {
+                docType: docTypeId,
+                companyCode: 'SCAR'
+            }, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            setFormData(prev => {
+                const updated = { ...prev };
+                if (docTypeId === 'taxPatent') updated.scarTaxPatent = undefined;
+                if (docTypeId === 'taxIdCard') updated.scarTaxIdCard = undefined;
+                if (docTypeId === 'moc') updated.scarMoc = undefined;
+                if (docTypeId === 'mocEn') updated.scarMocEn = undefined;
+                if (docTypeId === 'mocKh') updated.scarMocKh = undefined;
+                return updated;
+            });
+            setShowScarData(null);
+            setConfirmDeleteScar(null);
+
+        } catch (err) {
+            console.error('Delete Error:', err);
+            alert('Failed to delete standard document.');
+        }
+    };
+
+    const handleAddRule = async () => {
+        if (!newRuleContent.trim()) return;
+        setSavingRule(true);
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.post('/api/company/rules', {
+                companyCode: adminSelectedUser || formData.companyCode,
+                content: newRuleContent
+            }, { headers: { 'Authorization': `Bearer ${token}` } });
+            
+            setFormData(prev => ({ ...prev, businessRules: res.data.rules }));
+            setNewRuleContent('');
+            setIsCreatingRule(false);
+        } catch (err) {
+            console.error('Error adding rule:', err);
+            alert('Failed to add rule');
+        } finally {
+            setSavingRule(false);
+        }
+    };
+
+    const handleDeleteRule = async (ruleId) => {
+        try {
+            const token = localStorage.getItem('token');
+            const targetCompany = adminSelectedUser || formData.companyCode;
+            const res = await axios.delete(`/api/company/rules/${ruleId}?companyCode=${targetCompany}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            setFormData(prev => ({ ...prev, businessRules: res.data.rules }));
+        } catch (err) {
+            console.error('Error deleting rule:', err);
+            alert('Failed to delete rule');
+        }
+    };
+
+    const renderScarLab = () => {
+        const generateMasterProfile = () => {
+            const parseSafely = (str) => {
+                if (typeof str === 'object' && str !== null) return str;
+                try { 
+                    const parsed = str ? JSON.parse(str) : {}; 
+                    return (parsed !== null && typeof parsed === 'object') ? parsed : {};
+                }
+                catch (e) { return {}; }
+            };
+            const patent = parseSafely(formData?.scarTaxPatent);
+            const idCard = parseSafely(formData?.scarTaxIdCard);
+            const moc = parseSafely(formData?.scarMoc);
+            const mocEn = parseSafely(formData?.scarMocEn);
+            const mocKh = parseSafely(formData?.scarMocKh);
+
+            // Clean up empty objects
+            const clean = (obj) => {
+                const cleaned = Object.fromEntries(Object.entries(obj).filter(([_, v]) => v !== undefined && v !== null && v !== ''));
+                return Object.keys(cleaned).length > 0 ? cleaned : undefined;
+            };
+
+            return {
+                "Corporate Identity": clean({
+                    "Entity Name (Khmer)": mocKh.entityNameKh || patent.entityNameKh || idCard.entityNameKh || moc.entityNameKh,
+                    "Entity Name (English)": mocEn.entityName || patent.entityNameEn || idCard.entityNameEn || moc.entityNameEn,
+                    "Legal Form (Khmer)": moc.legalFormKh || patent.legalFormKh,
+                    "Legal Form (English)": moc.legalFormEn || patent.legalFormEn,
+                    "Registration ID (Arabic)": mocEn.registrationNumber || moc.registrationNumberEn || mocKh.registrationNumber,
+                    "Registration ID (Khmer)": moc.registrationNumberKh || mocKh.registrationNumber,
+                    "Incorporation Date (English)": mocEn.incorporationDate || moc.incorporationDateEn,
+                    "Incorporation Date (Khmer)": moc.incorporationDateKh || mocKh.incorporationDate,
+                    "MOC Document No": moc.mocDocumentNo
+                }),
+                "Tax Identity": clean({
+                    "Tax Identification Number (TIN)": patent.taxTIN || idCard.taxTIN,
+                    "Tax Branch": patent.taxBranch || idCard.taxBranch,
+                    "Tax Payer Type": patent.taxPayerType,
+                    "Tax Registration Date": idCard.taxRegistrationDateEn || patent.taxRegistrationDate,
+                    "Tax Registration Date (Khmer)": idCard.taxRegistrationDateKh,
+                    "Tax Patent Year": patent.taxYear
+                }),
+                "Governance & Ownership": clean({
+                    "Directors": mocEn.directors || mocKh.directorsKh || (patent.ownerName ? [{ name: patent.ownerName, title: "Owner" }] : undefined),
+                    "Shareholders": mocEn.shareholders || mocKh.shareholdersKh
+                }),
+                "Operations": clean({
+                    "Business Activities": mocEn.businessObjectives || patent.businessActivities || mocKh.businessObjectivesKh,
+                    "Registered Address": mocEn.registeredAddress || patent.address || mocKh.registeredAddressKh
+                })
+            };
+        };
+
+        const hasAnyScarData = !!(formData?.scarTaxPatent || formData?.scarTaxIdCard || formData?.scarMoc || formData?.scarMocEn || formData?.scarMocKh);
+
+        return (
+            <div className="flex min-h-[calc(100vh-120px)] bg-slate-900 font-sans overflow-hidden">
+                <div className="flex w-[400px] flex-col overflow-y-auto border-r border-white/5 bg-slate-900/60 p-6 space-y-4 custom-scrollbar shrink-0">
+                    <div className="flex items-center gap-3 mb-4">
+                        <Terminal size={20} className="text-orange-500" />
+                        <h2 className="text-sm font-black text-white tracking-[0.2em] uppercase">SCAR Extraction Lab</h2>
+                    </div>
+
+                    {hasAnyScarData && (
+                        <div 
+                            className={`bg-slate-800/50 border ${showScarData === 'master' ? 'border-yellow-500/50 shadow-[0_0_20px_-3px_rgba(234,179,8,0.2)]' : 'border-yellow-500/10'} rounded-2xl p-4 flex flex-col gap-3 transition-colors cursor-pointer hover:border-yellow-500/30 mb-2`}
+                            onClick={() => setShowScarData('master')}
+                        >
+                            <div className="flex justify-between items-center">
+                                <span className={`text-sm font-black uppercase tracking-widest flex items-center gap-2 ${showScarData === 'master' ? 'text-yellow-400' : 'text-yellow-500/60'}`}>
+                                    <Star size={16} /> MASTER PROFILE
+                                </span>
+                                <button className="w-8 h-8 rounded-lg bg-yellow-500/20 text-yellow-400 flex items-center justify-center">
+                                    <FileText size={14} />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {scarDocsOpts.map(doc => {
+                        let extractedText = '';
+                        if (doc.id === 'taxPatent') extractedText = formData?.scarTaxPatent;
+                        if (doc.id === 'taxIdCard') extractedText = formData?.scarTaxIdCard;
+                        if (doc.id === 'moc') extractedText = formData?.scarMoc;
+                        if (doc.id === 'mocEn') extractedText = formData?.scarMocEn;
+                        if (doc.id === 'mocKh') extractedText = formData?.scarMocKh;
+                        const hasData = !!extractedText;
+
+                        return (
+                            <div 
+                                key={doc.id} 
+                                className={`bg-slate-800/50 border ${showScarData === doc.id ? 'border-primary-500/50' : 'border-white/5'} rounded-2xl p-4 flex flex-col gap-3 transition-colors ${hasData ? 'cursor-pointer hover:border-white/20' : ''}`}
+                                onClick={() => {
+                                   if (hasData) setShowScarData(doc.id);
+                                }}
+                            >
+                                <div className="flex justify-between items-center">
+                                    <span className={`text-xs font-bold uppercase tracking-widest ${showScarData === doc.id ? 'text-primary-400' : 'text-slate-300'}`}>{doc.label}</span>
+                                    {hasData && (
+                                        <div className="flex items-center gap-2 relative z-20">
+                                            <button 
+                                                className="w-8 h-8 rounded-lg bg-orange-500/20 text-orange-400 hover:bg-orange-500 hover:text-white flex items-center justify-center transition-colors"
+                                                title="View AI Extraction Data"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setShowScarData(doc.id);
+                                                }}
+                                            >
+                                                <FileText size={14} />
+                                            </button>
+                                            {confirmDeleteScar === doc.id ? (
+                                                <button 
+                                                    className="px-2 h-8 rounded-lg bg-red-600 text-white font-bold text-[10px] uppercase flex items-center justify-center transition-all z-20 animate-pulse"
+                                                    title="Confirm Delete"
+                                                    onClick={(e) => handleScarDelete(doc.id, e)}
+                                                >
+                                                    Confirm?
+                                                </button>
+                                            ) : (
+                                                <button 
+                                                    className="w-8 h-8 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors z-20"
+                                                    title="Delete Extracted Data"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setConfirmDeleteScar(doc.id);
+                                                    }}
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                                <div 
+                                    className="relative"
+                                    onDrop={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        const file = e.dataTransfer?.files[0];
+                                        if (file) handleScarUpload(doc.id, file, null);
+                                    }}
+                                    onDragOver={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                    }}
+                                >
+                                    <input
+                                        type="file"
+                                        accept=".pdf,.png,.jpg,.jpeg"
+                                        title=""
+                                        onChange={(e) => handleScarUpload(doc.id, e.target.files[0], e.target)}
+                                        onClick={(e) => {
+                                            e.stopPropagation(); // Prevent opening the view when clicking the dropzone
+                                            e.target.value = null; // Clear file to allow re-uploading the same file
+                                        }}
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-wait z-10"
+                                        disabled={uploadingScar === doc.id}
+                                    />
+                                    <div className={`w-full py-8 flex-col rounded-xl border-2 border-dashed flex items-center justify-center gap-2 text-xs font-bold uppercase transition-all duration-300 ${
+                                        uploadingScar === doc.id 
+                                            ? doc.theme.uploading
+                                            : showScarData === doc.id
+                                                ? doc.theme.active
+                                                : hasData
+                                                    ? doc.theme.completed
+                                                    : `${doc.theme.base} ${doc.theme.hover}`
+                                    }`}>
+                                        {uploadingScar === doc.id ? (
+                                            <><Loader2 size={14} className="animate-spin" /> Extracting AI Data...</>
+                                        ) : hasData ? (
+                                            <><CheckCircle size={14} /> Re-Drop File</>
+                                        ) : (
+                                            <><CloudUpload size={14} /> Drop PDF File Here</>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                <div className="flex-1 bg-black/40 p-10 overflow-hidden">
+                     {showScarData ? (() => {
+                          let isMaster = showScarData === 'master';
+                          let docObj = isMaster ? {
+                             label: 'Unified Master Profile',
+                             theme: {
+                                textRaw: 'text-yellow-400',
+                                icon: 'text-yellow-500',
+                                panelBorder: 'border-yellow-500/50 shadow-[0_0_40px_-10px_rgba(234,179,8,0.15)] bg-yellow-950/20'
+                             }
+                          } : (scarDocsOpts.find(d => d.id === showScarData) || {
+                             label: 'Unknown Document',
+                             theme: { textRaw: '', icon: '', panelBorder: '' }
+                          });
+
+                          let text = '';
+                          if (isMaster) {
+                              text = JSON.stringify(generateMasterProfile(), null, 2);
+                          } else {
+                              if (showScarData === 'taxPatent') text = formData?.scarTaxPatent;
+                              if (showScarData === 'taxIdCard') text = formData?.scarTaxIdCard;
+                              if (showScarData === 'moc') text = formData?.scarMoc;
+                              if (showScarData === 'mocEn') text = formData?.scarMocEn;
+                              if (showScarData === 'mocKh') text = formData?.scarMocKh;
+                          }
+                          
+                          return (
+                              <div className={`bg-slate-900 border-2 rounded-3xl p-8 h-full flex flex-col overflow-hidden transition-all duration-500 ${docObj.theme.panelBorder}`}>
+                                  <div className="flex justify-between items-center border-b border-white/10 pb-6 mb-6 shrink-0">
+                                      <h3 className={`text-xl font-black uppercase tracking-widest flex items-center gap-3 ${docObj.theme.textRaw}`}>
+                                          {isMaster ? <Star className={docObj.theme.icon} size={24} /> : <Terminal className={docObj.theme.icon} size={24} />}
+                                          {docObj.label} - AI {isMaster ? 'Merged Output' : 'Raw Output'}
+                                      </h3>
+                                      <button onClick={() => setShowScarData(null)} className="text-slate-500 hover:text-white transition-colors bg-white/5 p-2 rounded-xl">
+                                          <X size={20} />
+                                      </button>
+                                  </div>
+                                  <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar">
+                                      <pre className={`text-sm font-mono whitespace-pre-wrap font-medium ${docObj.theme.textRaw}`}>
+                                          {text || "No exact text generated or file contained no text."}
+                                      </pre>
+                                  </div>
+                              </div>
+                          );
+                     })() : (
+                         <div className="h-full flex flex-col items-center justify-center opacity-20">
+                             <Terminal size={64} className="text-white mb-6" />
+                             <p className="text-2xl font-black text-white uppercase tracking-[0.3em]">Drop A File To Begin Extraction</p>
+                         </div>
+                     )}
+                </div>
+            </div>
+        );
+    };
 
     // Fetch Templates (Reusing Tax Template API for now as per "100% same method" request)
     // In future, we might want to filter by 'groupName' or similar if we separate them.
@@ -1457,10 +1880,6 @@ export default function CompanyProfile() {
 
         return (
             <div className="w-full h-[calc(100vh-80px)] animate-fade-in flex bg-slate-900 font-sans overflow-hidden">
-
-                {/* Sidebar Removed per Clean Protocol */}
-
-                {/* --- MAIN CONTENT AREA --- */}
                 <div className="flex-1 overflow-y-auto bg-slate-900 relative custom-scrollbar">
 
                     {/* Header Action Bar (Streamlined) */}
@@ -1472,8 +1891,30 @@ export default function CompanyProfile() {
                             >
                                 <ArrowLeft size={20} />
                             </button>
-                            <div>
+                            <div className="flex items-center gap-6">
                                 <h2 className="text-xl font-black text-white tracking-tighter uppercase leading-none">Business Data</h2>
+                                <div className="flex bg-slate-950/50 rounded-xl p-1 border border-white/5">
+                                    <button
+                                        onClick={() => setActiveBrTab('data')}
+                                        className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${
+                                            activeBrTab === 'data' 
+                                                ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30' 
+                                                : 'text-slate-500 hover:text-white border border-transparent'
+                                        }`}
+                                    >
+                                        Extracts
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveBrTab('rules')}
+                                        className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all flex items-center gap-2 ${
+                                            activeBrTab === 'rules' 
+                                                ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30 shadow-[0_0_15px_-3px_rgba(245,158,11,0.3)]' 
+                                                : 'text-slate-500 hover:text-white border border-transparent'
+                                        }`}
+                                    >
+                                        <Brain size={14} /> Rules
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1485,7 +1926,86 @@ export default function CompanyProfile() {
                                 <h3 className="text-2xl font-black text-white uppercase tracking-tighter mb-4">No Target Entity Selected</h3>
                                 <p className="text-slate-500 max-w-sm font-medium">Please use the dropdown menu at the top to select a company profile. This will link the AI agent to that entity's BR intelligence fragments.</p>
                             </div>
-                        ) : (
+                        ) : activeBrTab === 'rules' ? (
+                            <div className="p-10 animate-fade-in max-w-4xl mx-auto space-y-8">
+                                <div className="flex justify-between items-end border-b border-white/10 pb-6">
+                                    <div>
+                                        <h3 className="text-2xl font-black text-white tracking-tighter uppercase mb-2">Business AI Directives</h3>
+                                        <p className="text-sm text-slate-400 font-medium max-w-xl">
+                                            Define custom natural language rules here. The Blue Agent (BA) will strictly read and enforce these directives during reporting, analysis, and TOI calculations for {adminSelectedUser || formData.companyCode}.
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={() => setIsCreatingRule(true)}
+                                        className="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-black font-black uppercase tracking-widest text-xs rounded-xl flex items-center gap-2 transition-all shadow-[0_0_20px_-5px_rgba(245,158,11,0.5)]"
+                                    >
+                                        <Plus size={16} /> Create Rule
+                                    </button>
+                                </div>
+
+                                {isCreatingRule && (
+                                    <div className="bg-slate-800/80 border border-amber-500/30 rounded-2xl p-6 shadow-xl relative animate-in fade-in zoom-in-95">
+                                        <button onClick={() => setIsCreatingRule(false)} className="absolute top-6 right-6 w-8 h-8 rounded-lg flex items-center justify-center bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition-colors">
+                                            <X size={16} />
+                                        </button>
+                                        <div className="flex items-center gap-3 mb-4 text-amber-400">
+                                            <Terminal size={20} />
+                                            <h4 className="font-bold uppercase tracking-widest">New System Directive</h4>
+                                        </div>
+                                        <textarea
+                                            value={newRuleContent}
+                                            onChange={(e) => setNewRuleContent(e.target.value)}
+                                            placeholder="Example: If the company name does not have Co.,Ltd. or Limited Company, treat it as a Sole Proprietorship. Shareholder is Director. Apply GL share capital to TOI..."
+                                            className="w-full bg-slate-950/50 border border-slate-700 rounded-xl p-4 text-white text-sm font-medium min-h-[120px] focus:outline-none focus:border-amber-500/50 resize-y mb-4 custom-scrollbar leading-relaxed placeholder:text-slate-600"
+                                        />
+                                        <div className="flex justify-end">
+                                            <button
+                                                onClick={handleAddRule}
+                                                disabled={savingRule || !newRuleContent.trim()}
+                                                className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white disabled:opacity-50 font-bold uppercase tracking-widest text-xs rounded-xl flex items-center gap-2 transition-all"
+                                            >
+                                                {savingRule ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} 
+                                                Save Rule
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="space-y-4">
+                                    {!formData.businessRules || formData.businessRules.length === 0 ? (
+                                        <div className="bg-slate-800/30 border border-dashed border-slate-700 rounded-2xl p-12 text-center text-slate-500">
+                                            <Bot size={48} className="mx-auto mb-4 opacity-20" />
+                                            <p className="font-medium text-lg">No active directives found.</p>
+                                            <p className="text-sm mt-1">Create a rule to program the agent's logic for this entity.</p>
+                                        </div>
+                                    ) : (
+                                        formData.businessRules.map((rule, idx) => (
+                                            <div key={rule._id || idx} className="bg-slate-800/50 border border-white/5 rounded-2xl p-6 flex gap-4 group hover:border-amber-500/30 transition-colors relative">
+                                                <div className="mt-1 w-8 h-8 rounded-full bg-amber-500/10 text-amber-400 flex items-center justify-center shrink-0">
+                                                    <span className="font-black text-xs">{idx + 1}</span>
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-white text-sm font-medium leading-relaxed whitespace-pre-wrap">{rule.content}</p>
+                                                    <div className="flex items-center gap-4 mt-4 text-[10px] uppercase font-bold tracking-widest text-slate-500">
+                                                        <span>By: {rule.addedBy || 'Admin'}</span>
+                                                        <span>•</span>
+                                                        <span>{new Date(rule.createdAt).toLocaleDateString()}</span>
+                                                        <span className="text-emerald-400 flex items-center gap-1"><CheckCircle size={10} /> Active</span>
+                                                    </div>
+                                                </div>
+                                                <button 
+                                                    onClick={() => handleDeleteRule(rule._id)}
+                                                    className="w-8 h-8 rounded-lg bg-red-500/10 text-red-400 flex items-center justify-center shrink-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 hover:text-white"
+                                                    title="Delete Directive"
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        ) : isScarLab ? renderScarLab() : (
                             activeDocTemplateId ? (
                                 /* --- INDIVIDUAL DOCUMENT VIEW --- */
                                 <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">

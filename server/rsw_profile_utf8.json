@@ -1,0 +1,75 @@
+{
+  "_id": "69c646d2177736817c4354ec",
+  "user": "69a96b7e74d65383db8b8201",
+  "companyCode": "RSW",
+  "abaOpeningBalance": 0,
+  "gdtUsername": "RSW",
+  "gdtPassword": "111111",
+  "documents": [
+    {
+      "docType": "moc_cert",
+      "originalName": "1000422137_MOC_Certificate (1).pdf",
+      "path": "drive:1g2Idkmqg_pLUKwTw2gcDkc2mm_Tn6gF8",
+      "mimeType": "application/pdf",
+      "status": "Verified",
+      "rawText": "ក្រសួងពាណិជ្ជកម្ម\nMINISTRY OF COMMERCE\nលេខ(No) MOC-00041427 ពណ.ចបព\n\nនាមករណ៍\nNAME\nចុះបញ្ជីក្រោមលេខ\nREGISTRATION NUMBER\nកាលបរិច្ឆេទចុះក្នុងបញ្ជីពាណិជ្ជកម្ម\nINCORPORATION DATE\nត្រូវបានទទួលស្គាល់ថាជា\nIS INCORPORATED AS\nវិញ្ញាបនបត្រ\nបញ្ជាក់ការចុះឈ្មោះក្នុងបញ្ជីពាណិជ្ជកម្ម\nCERTIFICATE OF INCORPORATION\nព្រះរាជាណាចក្រកម្ពុជា\nជាតិ សាសនា ព្រះមហាក្សត្រ\nKINGDOM OF CAMBODIA\nNATION RELIGION KING\n\n:\tអ អេស ដាប់បែលយូ អេស៊ា អ៊ុនធើណេសិនណល ឯ.ក\n:\tRS W ASIA INTERNATIONAL CO., LTD.\n:\t១០០០៤២២១៣៧\n:\t1000422137\n:\t២៥ កញ្ញា ២០២៤\n:\t25 September 2024\n:\tក្រុមហ៊ុនឯកជនទទួលខុសត្រូវមានកម្រិត\nPrivate Limited Company\n\nស្ថិតក្រោមបទបញ្ញត្តិនៃច្បាប់ស្តីពីវិធានពាណិជ្ជកម្មនិង\nបញ្ជីពាណិជ្ជកម្ម ច្បាប់ស្តីពីសហគ្រាសពាណិជ្ជកម្ម ក្រមរដ្ឋប្បវេណី\nនិងក្រមព្រហ្មទណ្ឌ ដែលមានជាធរមាននៃព្រះរាជាណាចក្រកម្ពុជា។\nUNDER THE REGULATIONS OF COMMERCIAL RULES AND\nREGISTER LAW, COMMERCIAL ENTERPRISES LAW, CIVIL\nCODE AND PENAL CODE OF THE KINGDOM OF CAMBODIA\n\nVERIFY\nGOV.KH\nរាជធានីភ្នំពេញ, ២៥ កញ្ញា ២០២៤\nPHNOM PENH, 25 September 2024\nជ. រដ្ឋមន្ត្រីក្រសួងពាណិជ្ជកម្ម\nF. MINISTER OF COMMERCE\n*\nហូ-ស៊ីវយ៉ុង\nHO SIVYONG\n",
+      "uploadedAt": "2026-03-27T08:58:58.314Z",
+      "_id": "69c646d2177736817c4354ed"
+    },
+    {
+      "docType": "br_extraction",
+      "originalName": "1000422137_MOC_company_detail_en (1).pdf",
+      "path": "drive:1BlToiH8wUzxCt9bw-WeVKazdtBtlAdEu",
+      "mimeType": "application/pdf",
+      "status": "Verified",
+      "rawText": "```text\nCompany Number - 1000422137\nCompany Extract\nGeneral Details\nCompany Number: 1000422137\nCompany Name (in Khmer ) អ អេស ដាប់បែលយូ អេស៊ា អ៊ុនធើណេសិនណល ឯ.ក\nCompany Name (in English) RS W ASIA INTERNATIONAL CO., LTD.\nCompany Type: Limited Company\nCompany Sub Type: Private Limited Liability Company\nCompany Status Registered\nIncorporation Date: 25-September-2024\nBusiness Activities:\nBusiness Objectives: 466 Other specialized wholesale\nMain Business Activities: 46632 Wholesale of paints and varnish\nAddresses\nPhysical Registered Office Address: House/Building No. 238, Street/Road No. 271, Sansam Kosal 5, Boeng Tumpun 1,\nMean Chey, Phnom Penh, Cambodia\nPostal Registered Office Address:\nContact Email: ruwanwicky@gmail.com\nContact Telephone Number: +855 96 653 8891\nDirectors\nName (Khmer):\nName (English) WICKRAMASINGHE RUWAN SRINATH\nPostal Registered Office Address: 194, Weliamuna Road, Hekitta, Wattala, Sri Lanka, Sri Lanka\nChairman of the Board of Yes\nDirectors:\nShares & Shareholders\nRegistered Share Capital (KHR): 80,000,000\nRegistered Share Capital equivalent 0\n(USD):\nMore than one class of share: No\nPage 1 of 2\nThe validation code for this Business Extract is MOC-00041427.\nExtract generated as at 09 October 2024 09:15 PM\nCompany Number - 1000422137\nIndividual Shareholder\nName (Khmer):\nName (English): WICKRAMASINGHE RUWAN SRINATH\nPostal Registered Office 194, Weliamuna Road, Hekitta, Wattala, Sri Lanka, Sri Lanka\nAddress:\nNumber of shares: 1000\nNationality of Majority Foreigners\nShareholders:\nPercentage of Majority 100.00\nShareholders(%)\n\nPage 2 of 2\nThe validation code for this Business Extract is MOC-00041427.\nExtract generated as at 09 October 2024 09:15 PM\n```",
+      "uploadedAt": "2026-03-27T08:59:31.366Z",
+      "_id": "69c646f3177736817c4354f9"
+    },
+    {
+      "docType": "br_extraction",
+      "originalName": "1000422137_MOC_company_detail_kh (1).pdf",
+      "path": "drive:1nf-ijvbuo0XKQIeCHE9a2wOZINraMRzj",
+      "mimeType": "application/pdf",
+      "status": "Verified",
+      "rawText": "```text\nCompany Number - 1000422137\nសម្រង់ក្រុមហ៊ុន\nព័ត៌មានលម្អិត\nអគ្គលេខក្រុមហ៊ុន\nនាមករណ៍ក្រុមហ៊ុន\nឈ្មោះដែលបានស្នើ (ជាភាសាអង់គ្លេស):\nប្រភេទក្រុមហ៊ុន\nអនុប្រភេទ\nស្ថានភាពក្រុមហ៊ុន\nកាលបរិច្ឆេទចុះបញ្ជីពាណិជ្ជកម្ម\nសកម្មភាពអាជីវកម្ម\nកម្មវត្ថុអាជីវកម្ម\nសកម្មភាពអាជីវកម្មចម្បង\n1000422137\nអ អេស ដាប់បែលយូ អេស៊ា អ៊ុនធើណេសិនណល ឯ.ក\nRS W ASIA INTERNATIONAL CO., LTD.\nក្រុមហ៊ុនមូលធន\nក្រុមហ៊ុនឯកជនទទួលខុសត្រូវមានកម្រិត\nចុះបញ្ជីពាណិជ្ជកម្ម\n២៥-កញ្ញា-២០២៤\n466 ការលក់ដុំឯកទេសផ្សេងៗ\n46632 ការលក់ដុំថ្នាំលាប និងថ្នាំលាបឈើឲ្យរលោង\nអាសយដ្ឋាន\nអាសយដ្ឋានទីស្នាក់ការចុះបញ្ជី\nអាសយដ្ឋានទីស្នាក់ការចុះបញ្ជីដូច\nអាសយដ្ឋានទីស្នាក់ការតាមប្រៃសណីយ\nអ៊ីម៉ែល:\nលេខទូរស័ព្ទទំនាក់ទំនង:\nផ្ទះលេខ 238, ផ្លូវលេខ 271, សន្សំកុសល ៥, បឹងទំពុនទី១, មានជ័យ, ភ្នំពេញ, កម្ពុជា\nruwanwicky@gmail.com\n+855 96 653 8891\nអភិបាល\nឈ្មោះ (ជាភាសាខ្មែរ):\nឈ្មោះ (ជាភាសាអង់គ្លេស):\nអាស័យដ្ឋានទីស្នាក់ការចុះបញ្ជី\nតាមប្រៃសណីយ៍\nWICKRAMASINGHE RUWAN SRINATH\n194, Weliamuna Road, Hekitta, Wattala, Sri Lanka, Sri Lanka\nប្រធានក្រុមប្រឹក្សាភិបាល\nភាគហ៊ុន និងម្ចាស់ហ៊ុន\nបាទ/ចាស\nដើមទុនចុះបញ្ជី (ជារៀល):\nដើមទុនចុះបញ្ជី (ជាដុល្លា):\nតើប្រភេទភាគហ៊ុនមាន\nច្រើនជាងមួយប្រភេទ?:\n80,000,000\n0\nទេ\n\nCompany Number - 1000422137\nបុគ្គលជាម្ចាស់ហ៊ុន\nឈ្មោះ (ជាភាសាខ្មែរ):\nឈ្មោះ (ជាអង់គ្លេស):\nអាស័យដ្ឋានទីស្នាក់ការចុះបញ្ជី\nតាមប្រៃសណីយ៍:\nWICKRAMASINGHE RUWAN SRINATH\n194, Weliamuna Road, Hekitta, Wattala, Sri Lanka, Sri Lanka\nចំនួនភាគហ៊ុន\nសញ្ជាតិរបស់បណ្តាម្ចាស់ហ៊ុន\nដែលកាន់កាប់ភាគហ៊ុន សរុប\nច្រើនជាងគេ\nភាគរយ (%):\n1000\nបរទេស\n100.00\n\nទំព័រ 1 នៃ 2\nThe validation code for this Business Extract is MOC-00041427.\nសម្រង់បានបង្កើតនៅកាលបរិច្ឆេទ 09 October 2024 09:15 PM\n\nទំព័រ 2 នៃ 2\nThe validation code for this Business Extract is MOC-00041427.\nសម្រង់បានបង្កើតនៅកាលបរិច្ឆេទ 09 October 2024 09:15 PM\n```",
+      "uploadedAt": "2026-03-27T09:18:54.376Z",
+      "_id": "69c64b7e177736817c4355b8"
+    },
+    {
+      "docType": "tax_patent",
+      "originalName": "Patent-1.pdf",
+      "path": "drive:1e_5gNW_EQ8aBWg9wokvHROHM67UEYaXm",
+      "mimeType": "application/pdf",
+      "status": "Verified",
+      "rawText": "ក្រសួងសេដ្ឋកិច្ចនិងហិរញ្ញវត្ថុ\nMINISTRY OF ECONOMY AND FINANCE\nអគ្គនាយកដ្ឋានពន្ធដារ\nGENERAL DEPARTMENT OF TAXATION\nលេខ/N° PTM24100996022 អពដ\n\nព្រះរាជាណាចក្រកម្ពុជា\nKINGDOM OF CAMBODIA\nជាតិ សាសនា ព្រះមហាក្សត្រ\nNATION RELIGION KING\n◆ GENERAL DEPARTMENT OF TAXATION\n\nប័ណ្ណពន្ធប៉ាតង់ ឆ្នាំ ២០២៤\nអ្នកជាប់ពន្ធមធ្យម\nលេខអត្តសញ្ញាណកម្មសារពើពន្ធ៖ K007-902404368\nឈ្មោះសហគ្រាស៖ អ អេស ដាប់បែលយូ អេស៊ា អ៊ិនធើណេសិនណល ឯ.ក\nចុះបញ្ជីនៅ៖ អគ្គនាយកដ្ឋានពន្ធដារ ស្ថិតក្រោមការគ្រប់គ្រង៖ សាខាពន្ធដារខណ្ឌមានជ័យ\nទ្រង់ទ្រាយសហគ្រាស៖ ក្រុមហ៊ុនឯកជនទទួលខុសត្រូវមានកម្រិត\nសកម្មភាពអាជីវកម្មចម្បង៖ អាហរ័ណ នីហរ័ណ (ថ្នាំលាបពណ៌)\nអាសយដ្ឋាន៖ #238 ផ្លូវ 271 ភូមិ សន្សំកុសល ៥ សង្កាត់ បឹងទំពុនទី១ ខណ្ឌ មានជ័យ រាជធានីភ្នំពេញ\nម្ចាស់សហគ្រាស ឬអ្នកតំណាង៖ WICKRAMASINGHE RUWAN SRINATH សញ្ជាតិ៖ ស្រីលង្កា\n\nPATENT TAX 2024\nMedium Taxpayer\nTax Identification Number (TIN): K007-902404368\nEnterprise's name: RSW ASIA INTERNATIONAL CO., LTD.\nRegistered at: General Department of Taxation Under: Mean Chey Tax Branch\nMain business activity: Import Export (paint)\nForm of enterprise: Private limited company\nOwner/Representative's name : WICKRAMASINGHE RUWAN SRINATH Nationality: Sri Lankan\nទឹកប្រាក់ពន្ធប៉ាតង់ ២០២៤\n៦០០.០០០ រៀល\nលេខ SN: EOBR2024090200121897\nរាជធានីភ្នំពេញ ថ្ងៃទី៩ ខែតុលា ឆ្នាំ២០២៤\nPhnom Penh, 09 October 2024\nអគ្គនាយកដ្ឋានពន្ធដារកម\nGeneral Department of Taxation\nបោះពុម្ពនៅ / Printed at\nអគ្គនាយកដ្ឋាន\nពនជារ\nក្រសួងសេដ្ឋកិចនិងហិរ\n*\n\nបញ្ជាក់៖ ប័ណ្ណពន្ធប៉ាតង់នេះត្រូវដាក់តាំង ឬព្យួរនៅទីកន្លែងប្រកបអាជីវកម្ម។ ប័ណ្ណពន្ធប៉ាតង់នេះ ត្រូវបានចេញជូនតាមទម្រង់អេឡិចត្រូនិក សម្រាប់ប្រើប្រាស់ជាផ្លូវការ។ លោក លោកស្រីមានកាតព្វកិច្ចមក\nបង្ហាញខ្លួនចំពោះរដ្ឋបាលសារពើពន្ធតាមកាលបរិច្ឆេទដែលមានចុះនៅក្នុងលិខិតអញ្ជើញរបស់រដ្ឋបាលសារពើពន្ធ។ ក្នុងករណីលោក លោកស្រី មិនបានបង្គ្រប់ឯកសារសម្រាប់ការចុះបញ្ជីនៅរដ្ឋបាល\nសារពើពន្ធក្នុងរយៈពេល ១៥ ថ្ងៃ ប័ណ្ណពន្ធប៉ាតង់នេះ នឹងត្រូវនិរាករណ៍ដោយស្វ័យប្រវត្តិ។\nNote: This patent tax must be hanged or displayed at the company's office. This patent is issued under an electronic form for official used. You have an obligation to present\nyourself at the tax administration according to the date and place specified in the invitation letter. If you do not complete the requirements in 15 days, this patent shall be\nautomatically abrogated.\n",
+      "uploadedAt": "2026-03-27T09:19:24.290Z",
+      "_id": "69c64b9c177736817c4355c6"
+    },
+    {
+      "docType": "br_organization",
+      "originalName": "Patent-1.pdf",
+      "path": "drive:1V6dLwPlQdbAOW89hVBioEPm-0ALihYfg",
+      "status": "Verified",
+      "rawText": "ក្រសួងសេដ្ឋកិច្ចនិងហិរញ្ញវត្ថុ\nMINISTRY OF ECONOMY AND FINANCE\nអគ្គនាយកដ្ឋានពន្ធដារ\nGENERAL DEPARTMENT OF TAXATION\nលេខ/N° PTM24100996022 អពដ\n\nព្រះរាជាណាចក្រកម្ពុជា\nKINGDOM OF CAMBODIA\nជាតិ សាសនា ព្រះមហាក្សត្រ\nNATION RELIGION KING\n◆ GENERAL DEPARTMENT OF TAXATION\n\nប័ណ្ណពន្ធប៉ាតង់ ឆ្នាំ ២០២៤\nអ្នកជាប់ពន្ធមធ្យម\nលេខអត្តសញ្ញាណកម្មសារពើពន្ធ៖ K007-902404368\nឈ្មោះសហគ្រាស៖ អ អេស ដាប់បែលយូ អេស៊ា អ៊ិនធើណេសិនណល ឯ.ក\nចុះបញ្ជីនៅ៖ អគ្គនាយកដ្ឋានពន្ធដារ ស្ថិតក្រោមការគ្រប់គ្រង៖ សាខាពន្ធដារខណ្ឌមានជ័យ\nទ្រង់ទ្រាយសហគ្រាស៖ ក្រុមហ៊ុនឯកជនទទួលខុសត្រូវមានកម្រិត\nសកម្មភាពអាជីវកម្មចម្បង៖ អាហរ័ណ នីហរ័ណ (ថ្នាំលាបពណ៌)\nអាសយដ្ឋាន៖ #238 ផ្លូវ 271 ភូមិ សន្សំកុសល ៥ សង្កាត់ បឹងទំពុនទី១ ខណ្ឌ មានជ័យ រាជធានីភ្នំពេញ\nម្ចាស់សហគ្រាស ឬអ្នកតំណាង៖ WICKRAMASINGHE RUWAN SRINATH សញ្ជាតិ៖ ស្រីលង្កា\n\nPATENT TAX 2024\nMedium Taxpayer\nTax Identification Number (TIN): K007-902404368\nEnterprise's name: RSW ASIA INTERNATIONAL CO., LTD.\nRegistered at: General Department of Taxation Under: Mean Chey Tax Branch\nMain business activity: Import Export (paint)\nForm of enterprise: Private limited company\nOwner/Representative's name : WICKRAMASINGHE RUWAN SRINATH Nationality: Sri Lankan\nទឹកប្រាក់ពន្ធប៉ាតង់ ២០២៤\n៦០០.០០០ រៀល\nលេខ SN: EOBR2024090200121897\nរាជធានីភ្នំពេញ ថ្ងៃទី៩ ខែតុលា ឆ្នាំ២០២៤\nPhnom Penh, 09 October 2024\nអគ្គនាយកដ្ឋានពន្ធដារកម\nGeneral Department of Taxation\nបោះពុម្ពនៅ / Printed at\nអគ្គនាយកដ្ឋាន\nពនជារ\nក្រសួងសេដ្ឋកិចនិងហិរ\n*\n\nបញ្ជាក់៖ ប័ណ្ណពន្ធប៉ាតង់នេះត្រូវដាក់តាំង ឬព្យួរនៅទីកន្លែងប្រកបអាជីវកម្ម។ ប័ណ្ណពន្ធប៉ាតង់នេះ ត្រូវបានចេញជូនតាមទម្រង់អេឡិចត្រូនិក សម្រាប់ប្រើប្រាស់ជាផ្លូវការ។ លោក លោកស្រីមានកាតព្វកិច្ចមក\nបង្ហាញខ្លួនចំពោះរដ្ឋបាលសារពើពន្ធតាមកាលបរិច្ឆេទដែលមានចុះនៅក្នុងលិខិតអញ្ជើញរបស់រដ្ឋបាលសារពើពន្ធ។ ក្នុងករណីលោក លោកស្រី មិនបានបង្គ្រប់ឯកសារសម្រាប់ការចុះបញ្ជីនៅរដ្ឋបាល\nសារពើពន្ធក្នុងរយៈពេល ១៥ ថ្ងៃ ប័ណ្ណពន្ធប៉ាតង់នេះ នឹងត្រូវនិរាករណ៍ដោយស្វ័យប្រវត្តិ។\nNote: This patent tax must be hanged or displayed at the company's office. This patent is issued under an electronic form for official used. You have an obligation to present\nyourself at the tax administration according to the date and place specified in the invitation letter. If you do not complete the requirements in 15 days, this patent shall be\nautomatically abrogated.\n",
+      "uploadedAt": "2026-03-27T09:19:39.052Z",
+      "_id": "69c64bab177736817c4355d0",
+      "data": ""
+    }
+  ],
+  "organizedProfile": "# I. EXECUTIVE CORPORATE ARCHITECTURE\n- **Legal Name**: RSW ASIA INTERNATIONAL CO., LTD. / អ អេស ដាប់បែលយូ អេស៊ា អ៊ិនធើណេសិនណល ឯ.ក\n- **Identifiers**:\n    - Tax Identification Number (TIN): K007-902404368\n    - Patent Number: PTM24100996022\n- **Legal Status**:\n    - Company Type: Private limited company / ក្រុមហ៊ុនឯកជនទទួលខុសត្រូវមានកម្រិត\n    - Incorporation Date: Not explicitly stated but patent issued 09 October 2024\n\n# II. GOVERNANCE & SHAREHOLDERS\n- **Board of Directors**:\n    - WICKRAMASINGHE RUWAN SRINATH (Representative)\n- **Shareholders**:\n    - Details not provided, but WICKRAMASINGHE RUWAN SRINATH is identified as the owner/representative.\n    - Nationality of WICKRAMASINGHE RUWAN SRINATH: Sri Lankan / ស្រីលង្កា\n\n# III. OPERATIONAL FOOTPRINT\n- **Headquarters**:\n    - #238, Street 271, Village Sansom Kosal 5, Sangkat Boeung Tumpon Ti 1, Khan Mean Chey, Phnom Penh / #238 ផ្លូវ 271 ភូមិ សន្សំកុសល ៥ សង្កាត់ បឹងទំពុនទី១ ខណ្ឌ មានជ័យ រាជធានីភ្នំពេញ\n- **Business Objectives**:\n    - Import and Export (paint) / អាហរ័ណ នីហរ័ណ (ថ្នាំលាបពណ៌)\n\n# IV. FINANCIAL & LEGAL ASSETS\n- **Capital**:\n    - Patent Tax 2024: 600,000 Riel\n- **Bank Details**:\n    - No bank account information found in the provided text.\n\n# V. ANALYST STRATEGIC DOSSIER\n\nRSW ASIA INTERNATIONAL CO., LTD. appears to be a private limited company operating in Phnom Penh, Cambodia, focused on import and export activities, specifically dealing with paint products. The company's patent tax payment for 2024 suggests ongoing operational status and adherence to regulatory requirements. Leadership is vested in WICKRAMASINGHE RUWAN SRINATH, a Sri Lankan national, who serves as the owner/representative. The company's registration under the General Department of Taxation and the Mean Chey Tax Branch indicates compliance with local tax regulations. While details on shareholders and comprehensive financial assets are limited, the provided information allows for a basic risk assessment. The longevity and potential for growth will largely depend on its competitive strategies and adherence to Cambodian tax laws. With a verified operational address and a clearly defined business focus, RSW ASIA INTERNATIONAL CO., LTD. exhibits a structured organizational framework.\n",
+  "createdAt": "2026-03-27T08:58:58.317Z",
+  "updatedAt": "2026-03-31T08:50:35.331Z",
+  "__v": 9,
+  "directors": [],
+  "lockedGLYears": [
+    "2025"
+  ],
+  "moreThanOneClassOfShares": false,
+  "shareholders": [],
+  "companyNameEn": "RS W ASIA INTERNATIONAL CO., LTD.",
+  "companyNameKh": "NAME",
+  "address": "House/Building No. 238, Street/Road No. 271, Sansam Kosal 5, Boeng Tumpun 1,",
+  "director": "RS W ASIA INTERNATIONAL CO., LTD.",
+  "registrationNumber": "1000422137"
+}

@@ -58,11 +58,118 @@ async function callGeminiWithRetry(fn, maxRetries = 3) {
 function fileToGenerativePart(path, mimeType) {
     return {
         inlineData: {
-            data: fs.readFileSync(path).toString("base64"),
+            data: Buffer.from(fs.readFileSync(path)).toString("base64"),
             mimeType
         },
     };
 }
+
+exports.extractScarDoc = async (filePath, docType) => {
+    console.log(`[GeminiAI] SCAR Lab Extraction (Type: ${docType}): ${filePath}`);
+    try {
+        const ext = path.extname(filePath).toLowerCase();
+        let mimeType = 'image/jpeg';
+        if (ext === '.png') mimeType = 'image/png';
+        if (ext === '.webp') mimeType = 'image/webp';
+        if (ext === '.pdf') mimeType = 'application/pdf';
+        if (ext === '.jpg' || ext === '.jpeg') mimeType = 'image/jpeg';
+
+        const filePart = fileToGenerativePart(filePath, mimeType);
+        
+        let prompt = '';
+        switch (docType) {
+            case 'taxPatent':
+                prompt = `You are a strict Data Extraction AI for Cambodian Tax Patents.
+Extract all data into this exact JSON structure:
+{
+  "entityNameKh": "Khmer name as exactly written",
+  "entityNameEn": "English name",
+  "taxTIN": "Tax Identification Number",
+  "taxYear": "Year of the patent (e.g. 2024, 2025)",
+  "taxRegistrationDate": "Date of tax registration if visible",
+  "taxPayerType": "Small/Medium/Large Taxpayer",
+  "taxBranch": "Where it is registered (e.g. Sensok Tax Branch)",
+  "legalFormKh": "Form of business in Khmer",
+  "legalFormEn": "Form of business in English (e.g. Sole proprietorship)",
+  "businessActivities": [{"descriptionKh": "Exact activity text in Khmer", "descriptionEn": "Exact activity text in English"}],
+  "address": "Registered physical address",
+  "ownerName": "Name of owner",
+  "ownerNationality": "Nationality of the owner"
+}
+Return ONLY valid JSON. Do not summarize.`;
+                break;
+            case 'taxIdCard':
+                prompt = `You are a strict Data Extraction AI for Cambodian Tax Registration Identification Cards.
+Extract all data into this exact JSON structure:
+{
+  "entityNameKh": "Enterprise's name in Khmer as exactly written",
+  "entityNameEn": "Enterprise's name in English",
+  "taxTIN": "Tax Identification Number (TIN)",
+  "taxBranch": "Branch name (e.g. Chamkar Mon Tax Branch)",
+  "taxRegistrationDateKh": "Date in Khmer format (e.g. ២១ មេសា ២០២៥)",
+  "taxRegistrationDateEn": "Date in English format (e.g. 21 April 2025)",
+  "barcodeNumber": "The alpha-numeric string under the barcode (e.g. GDTREG...)"
+}
+Return ONLY valid JSON. Do not summarize.`;
+                break;
+            case 'moc':
+                prompt = `You are a strict Data Extraction AI for Cambodian MOC Certificates of Incorporation.
+Extract all data into this exact JSON structure:
+{
+  "entityNameKh": "Enterprise's name in Khmer as exactly written",
+  "entityNameEn": "Enterprise's name in English",
+  "registrationNumberKh": "Registration Number in Khmer Numerals (e.g. ១០០០៤៥៥១៩១)",
+  "registrationNumberEn": "Registration Number in Arabic Numerals (e.g. 1000455191)",
+  "incorporationDateKh": "Date in Khmer format (e.g. ៣០ មករា ២០២៥)",
+  "incorporationDateEn": "Date in English format (e.g. 30 January 2025)",
+  "legalFormKh": "Legal Form in Khmer (e.g. ក្រុមហ៊ុនឯកជនទទួលខុសត្រូវមានកម្រិត)",
+  "legalFormEn": "Legal Form in English (e.g. Private Limited Company)",
+  "mocDocumentNo": "The document identifier at the top left (e.g. MOC-00044916 ពណ.ចបព)",
+  "issuedPlaceAndDateKh": "The place and date issued at the bottom right in Khmer (e.g. រាជធានីភ្នំពេញ, ៣០ មករា ២០២៥)",
+  "issuedPlaceAndDateEn": "The place and date issued at the bottom right in English (e.g. PHNOM PENH, 30 January 2025)"
+}
+Return ONLY valid JSON. Do not summarize.`;
+                break;
+            case 'mocEn':
+                prompt = `You are a strict Data Extraction AI for Cambodian MOC Business Extracts (English).
+Extract exhaustive details into this exact JSON structure:
+{
+  "entityName": "Company Name",
+  "registrationNumber": "Reg ID",
+  "incorporationDate": "Date",
+  "directors": [{"name": "Director Name", "title": "Chairman/Director"}],
+  "shareholders": [{"name": "Shareholder Name", "shares": "Number of shares"}],
+  "businessObjectives": [{"code": "ISIC", "description": "Activity description"}],
+  "registeredAddress": "Full physical address"
+}
+Return ONLY valid JSON. Do not summarize.`;
+                break;
+            case 'mocKh':
+                prompt = `You are a strict Data Extraction AI for Cambodian MOC Business Extracts (Khmer).
+Extract exhaustive details into this exact JSON structure. KEEP ALL TEXT IN KHMER UNICODE:
+{
+  "entityNameKh": "Company Name in Khmer",
+  "registrationNumber": "Reg ID",
+  "incorporationDate": "Date in Khmer format if applicable",
+  "directorsKh": [{"nameKh": "Director Name Khmer", "titleKh": "Title Khmer"}],
+  "shareholdersKh": [{"nameKh": "Shareholder Name Khmer", "shares": "Number of shares"}],
+  "businessObjectivesKh": [{"code": "ISIC", "descriptionKh": "Khmer activity description"}],
+  "registeredAddressKh": "Full physical address in Khmer"
+}
+Return ONLY valid JSON. Do not translate.`;
+                break;
+            default:
+                prompt = `Extract all text verbatim and return as JSON: {"rawText": "..."}`;
+        }
+
+        const result = await callGeminiWithRetry(() => getModel().generateContent([prompt, filePart]));
+        const response = await result.response;
+        return cleanAndParseJSON(response.text()) || { error: "Failed to parse JSON", raw: response.text() };
+    } catch (err) {
+        console.error("SCAR Extract Error:", err);
+        return { error: 'Extraction failed: ' + err.message };
+    }
+};
 
 exports.extractDocumentData = async (filePath, docType) => {
     console.log(`[GeminiAI] Processing Document (Vision 2.0): ${filePath} (Type: ${docType})`);
@@ -425,6 +532,41 @@ exports.suggestAccountingCodes = async (transactions, codes, organicMemory = [])
 
 const TOI_KNOWLEDGE = require('../data/toi_knowledge'); // Import Knowledge Base
 
+exports.applyBusinessRulesToToi = async (formData, businessRules) => {
+    if (!businessRules || businessRules.length === 0) return formData;
+    
+    const rulesText = businessRules.map(r => r.content).join('\n');
+    console.log(`[GeminiAI] Applying Business Rules to TOI Payload...`);
+    const prompt = `You are a strict Tax Compliance AI Expert.
+You have been given a pre-filled JSON payload for a Tax on Income (TOI) form.
+You must apply the following Natural Language Business Rules to modify the payload.
+
+BUSINESS RULES:
+${rulesText}
+
+ORIGINAL PAYLOAD:
+${JSON.stringify(formData)}
+
+INSTRUCTIONS:
+1. Evaluate the original payload against the business rules exactly as written.
+2. If a rule dictates a change (e.g., changing legalForm based on the company name, or setting capital logic), mathematically or textually modify the corresponding fields in the payload.
+3. Return the FINAL, modified JSON payload.
+4. Return ONLY valid JSON that matches the original structure perfectly. No markdown, no explanation.`;
+
+    try {
+        const result = await callGeminiWithRetry(() => getModel().generateContent([{ text: prompt }]));
+        if (!result || !result.response) return formData;
+        const responseText = result.response.text();
+        const finalData = cleanAndParseJSON(responseText);
+        if (finalData && typeof finalData === 'object' && !finalData.error) {
+            return { ...formData, ...finalData };
+        }
+    } catch (err) {
+        console.error("[GeminiAI] Failed to apply rules to TOI:", err);
+    }
+    return formData;
+};
+
 exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
     try {
         const { companyName, profile, codes, recentTransactions, summary, monthlyStats, yearlyStats, ui, brData, history, auditSessions } = context;
@@ -456,10 +598,12 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
                - If the user's message contains raw registration document text (e.g., pasted text from an MOC certificate, business extract, patent tax certificate, or any Khmer/English registration document), you MUST read the message text itself.
                - IMPORTANT FOR PASTED TEXT: Do NOT just output the fields as text. You MUST use your execution tool \`save_br_data\` to extract the available fields (Entity Name EN/KH, Reg ID, VAT/TIN, Date, Address, etc.) and save them directly to the database. Even if you output the fields to the user, you must trigger the \`save_br_data\` tool alongside your response.
                - ONLY IF the user's message does not contain any pasted registration text AND the Company Identity block below shows "N/A" fields: point this out conversationally. Say: "Your business information is currently incomplete... Please paste your registration document text and I will extract and save it for you."
-            7. **TOI Form Filling & Director Logic**: Provide full support for filling the TOI form.
+            7. **TOI Form Filling, Reporting & Business Rules Engine**: Provide full support for filling the TOI form and updating reports.
+               - **CRITICAL BUSINESS RULES OVERRIDE**: ALWAYS read and obey the "ACTIVE NATURAL LANGUAGE BUSINESS RULES & DIRECTIVES" provided in the Business Registration Context below. If a user-defined rule changes the logic for Legal Form, Capital, Directorship, Shareholders, or Financial mappings, the user's rule OVERRIDES any default default logic. Apply the rules when computing values or formatting strings.
                - Important: The terms "Owner" and "Director" are completely interchangeable in this context. If you find an Owner Name, treat it as the Director Name. Do NOT complain that a Director name is missing if an Owner name is present.
                - Important: If the Khmer name is missing, DO NOT reject the field. ALWAYS fall back directly to the English name. 
                - Important: If the user asks you to fill out the form, but crucial information (like tax dates, software used, or exact tax percentages) is missing from your context, DO NOT just sit idly and sleep. You must take initiative and ask the user for the missing fields ONE BY ONE in a conversational manner until the form is fully populated.
+               - When generating 'fill_toi_workspace' payload, actively apply the Business Rules to populate the requested fields based precisely on what the rule states.
             8. **Income Tax Evaluation**: If the user asks about Income Tax:
                - If the profile is incomplete, mention that a full evaluation requires those details first.
                - If the profile is complete and there are transactions, perform a high-level evaluation using "Cambodian Tax Law" knowledge below.

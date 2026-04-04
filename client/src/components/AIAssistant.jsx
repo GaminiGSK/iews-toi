@@ -21,7 +21,26 @@ const AIAssistant = () => {
     const [isOpen, setIsOpen] = useState(true); // Default Open
     const [selectedModel, setSelectedModel] = useState('gemini-2.0'); // Default
     // Per-user history key: prevents cross-company data leaks
-    const currentCompanyCode = localStorage.getItem('companyCode') || 'guest';
+    let currentCompanyCode = 'guest';
+
+    // 1. Check logged-in user natively (for regular unit users)
+    try {
+        const u = JSON.parse(localStorage.getItem('user'));
+        if (u && u.companyCode) currentCompanyCode = u.companyCode;
+        else if (u && u.username && u.role !== 'admin' && u.role !== 'superadmin') currentCompanyCode = u.username;
+    } catch(e) {}
+    
+    // 2. Check URL for Admin Override (when admin views a unit's profile/workspace)
+    const urlParams = new URLSearchParams(location.search);
+    const pId = urlParams.get('packageId'); 
+    const cCode = urlParams.get('companyCode');
+    
+    if (pId) {
+        currentCompanyCode = pId.split('_')[0]; // Split RSW_2026 -> RSW
+    } else if (cCode) {
+        currentCompanyCode = cCode;
+    }
+
     const HISTORY_KEY = `ba_chat_history_${currentCompanyCode}`;
 
     const [messages, setMessages] = useState(() => {
@@ -36,8 +55,29 @@ const AIAssistant = () => {
         ];
     });
 
+    const activeKeyRef = useRef(HISTORY_KEY);
+
     useEffect(() => {
-        localStorage.setItem(HISTORY_KEY, JSON.stringify(messages));
+        if (activeKeyRef.current !== HISTORY_KEY) {
+            // If the key changed, we just switched units! DO NOT save the current (old) messages.
+            // Instead, load the new unit's history.
+            activeKeyRef.current = HISTORY_KEY;
+            try {
+                const saved = localStorage.getItem(HISTORY_KEY);
+                if (saved) {
+                    setMessages(JSON.parse(saved));
+                } else {
+                    setMessages([{ role: 'assistant', text: 'Hello! I am the blue agent Auditor. Describe your request or paste an image for analysis.' }]);
+                }
+            } catch (e) {
+                setMessages([{ role: 'assistant', text: 'Hello! I am the blue agent Auditor. Describe your request or paste an image for analysis.' }]);
+            }
+        } else {
+            // Normal message update within the same unit, persist to localStorage safely
+            if (messages.length > 0) {
+                localStorage.setItem(HISTORY_KEY, JSON.stringify(messages));
+            }
+        }
     }, [messages, HISTORY_KEY]);
     const [input, setInput] = useState('');
     const [image, setImage] = useState(null); // Base64 string
@@ -93,7 +133,7 @@ const AIAssistant = () => {
                     packageId: packageId,
                     params: {
                         year: packageId,
-                        companyCode: localStorage.getItem('companyCode')
+                        companyCode: currentCompanyCode
                     }
                 });
             }
@@ -187,7 +227,7 @@ const AIAssistant = () => {
                     // Merge default context with AI-generated params
                     const actionParams = {
                         year: packageId,
-                        companyCode: localStorage.getItem('companyCode'),
+                        companyCode: currentCompanyCode,
                         ...toolAction.params
                         // NOTE: history is intentionally excluded to keep payload small
                     };
@@ -321,7 +361,7 @@ const AIAssistant = () => {
                 packageId: packageId,
                 params: {
                     ...actionData.params,
-                    companyCode: localStorage.getItem('companyCode')
+                    companyCode: currentCompanyCode
                 }
             });
             setMessages(prev => [...prev, {
