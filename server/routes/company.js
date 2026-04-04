@@ -3556,33 +3556,53 @@ router.get('/toi/autofill', auth, async (req, res) => {
         const addrRaw = ext('address1') || ext('address') || p.address || '';
         const addrKh = extractKhmerText(addrRaw);
 
+        // --- SCAR EXTRACTION LAB: UNIFIED MASTER PROFILE DATA ---
+        const ___parseSafely = (str) => {
+            if (typeof str === 'object' && str !== null) return str;
+            try { const parsed = str ? JSON.parse(str) : null; return parsed && typeof parsed === 'object' ? parsed : {}; } catch (e) { return {}; }
+        };
+        const ___scPatent = ___parseSafely(p.scarTaxPatent);
+        const ___scIdCard = ___parseSafely(p.scarTaxIdCard);
+        const ___scMoc = ___parseSafely(p.scarMoc);
+        const ___scMocEn = ___parseSafely(p.scarMocEn);
+        const ___scMocKh = ___parseSafely(p.scarMocKh);
+
+        const scCompanyNameEn = ___scMocEn.entityName || ___scPatent.entityNameEn || ___scIdCard.entityNameEn || ___scMoc.entityNameEn;
+        const scCompanyNameKh = ___scMocKh.entityNameKh || ___scPatent.entityNameKh || ___scIdCard.entityNameKh || ___scMoc.entityNameKh;
+        const scRegId = ___scMocEn.registrationNumber || ___scMoc.registrationNumberEn || ___scMocKh.registrationNumber || ___scMoc.registrationNumberKh;
+        const scIncDate = ___scMocEn.incorporationDate || ___scMoc.incorporationDateEn || ___scMoc.incorporationDateKh || ___scMocKh.incorporationDate;
+        const scTin = ___scPatent.taxTIN || ___scIdCard.taxTIN;
+        const scLegalFormEn = ___scMoc.legalFormEn || ___scPatent.legalFormEn;
+        const scBusinessEn = ___scMocEn.businessObjectives || ___scPatent.businessActivities || ___scMocKh.businessObjectivesKh;
+        const scAddressKh = ___scMocKh.registeredAddressKh || addrKh;
+
         const formData = {
             // ── PAGE 1: Cover / TIN / Identification ─────────────────────
             taxMonths:         '12',
             fromDate:          fromDateStr,
             untilDate:         untilDateStr,
             tin:               (() => {
-                let text = p.vatTin || ext('tin') || ext('vatTin') || '';
+                let text = scTin || p.vatTin || ext('tin') || ext('vatTin') || '';
                 if (!text && p.organizedProfile) {
                     const match = p.organizedProfile.match(/(?:TIN|VAT TIN|Tax Identification Number|អត្តសញ្ញាណកម្មសារពើពន្ធ)[\s:]*([A-Za-z0-9\-]{9,15})/i);
                     if (match) text = match[1];
                 }
-                if (!text) text = p.registrationNumber || '';
+                if (!text) text = scRegId || p.registrationNumber || '';
                 return text.replace(/[^0-9A-Z]/gi, '');
             })(),
 
             // ── Row 2: Name of Enterprise (key = "name" in ToiAcar.jsx) ──
-            name:              [(() => { const parts = (p.companyNameKh || ext('companyNameKh') || '').split('/'); return parts[parts.length - 1].trim(); })(), (() => { const parts = (p.companyNameEn || ext('companyNameEn') || ext('name') || '').split('/'); return parts[parts.length - 1].trim(); })()].filter(Boolean).join(' - '),
-            companyNameKH:     (() => { const parts = (p.companyNameKh || ext('companyNameKh') || '').split('/'); return parts[parts.length - 1].trim(); })(),
-            companyNameEN:     (() => { const parts = (p.companyNameEn || ext('companyNameEn') || ext('name') || '').split('/'); return parts[parts.length - 1].trim(); })(),
-            enterpriseName:    [(() => { const parts = (p.companyNameKh || ext('companyNameKh') || '').split('/'); return parts[parts.length - 1].trim(); })(), (() => { const parts = (p.companyNameEn || ext('companyNameEn') || ext('name') || '').split('/'); return parts[parts.length - 1].trim(); })()].filter(Boolean).join(' - '),
+            name:              [(() => { const parts = (scCompanyNameKh || p.companyNameKh || ext('companyNameKh') || '').split('/'); return parts[parts.length - 1].trim(); })(), (() => { const parts = (scCompanyNameEn || p.companyNameEn || ext('companyNameEn') || ext('name') || '').split('/'); return parts[parts.length - 1].trim(); })()].filter(Boolean).join(' - '),
+            companyNameKH:     (() => { const parts = (scCompanyNameKh || p.companyNameKh || ext('companyNameKh') || '').split('/'); return parts[parts.length - 1].trim(); })(),
+            companyNameEN:     (() => { const parts = (scCompanyNameEn || p.companyNameEn || ext('companyNameEn') || ext('name') || '').split('/'); return parts[parts.length - 1].trim(); })(),
+            enterpriseName:    [(() => { const parts = (scCompanyNameKh || p.companyNameKh || ext('companyNameKh') || '').split('/'); return parts[parts.length - 1].trim(); })(), (() => { const parts = (scCompanyNameEn || p.companyNameEn || ext('companyNameEn') || ext('name') || '').split('/'); return parts[parts.length - 1].trim(); })()].filter(Boolean).join(' - '),
 
             // ── Row 3: Branch count (key = "branchOut") ───────────────────
             branchOut:         ext('branchOut') || ext('branchCount') || '0',
 
             // ── Rows 4,5 ─────────────────────────────────────────────────
             registrationDate:  (() => {
-                let dt = p.incorporationDate || ext('incorporationDate') || ext('registrationDate') || '';
+                let dt = scIncDate || p.incorporationDate || ext('incorporationDate') || ext('registrationDate') || '';
                 if (!dt) return '';
                 if (/^[0-9]{4,8}$/.test(dt) && dt.length === 8) {
                     return dt.substring(0,2) + ' / ' + dt.substring(2,4) + ' / ' + dt.substring(4,8);
@@ -3775,8 +3795,8 @@ router.get('/toi/autofill', auth, async (req, res) => {
 
             // ── Rows 7-10: Addresses (Khmer only) ───────────────────────
             agentName:         'GK SMART AI',
-            address1:          addrKh,    // Current Registered Office (Khmer)
-            address2:          addrKh,    // Current Principal Establishment (Khmer)
+            address1:          scAddressKh || addrKh,    // Current Registered Office (Khmer)
+            address2:          scAddressKh || addrKh,    // Current Principal Establishment (Khmer)
             address3:          '',
 
             // ── Other Page 1 fields ───────────────────────────────────────
@@ -3785,7 +3805,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
             //       No suffix (e.g. "GK SMART") → Sole Proprietorship / Physical Person
             // Confirmed by BR: GK SMART = Sole Proprietorship (MOC Cert + Patent Tax 2025)
             legalForm: (() => {
-                const taught = ext('legalForm') || p.registrationType || '';
+                const taught = scLegalFormEn || ext('legalForm') || p.registrationType || '';
                 if (/sole|proprietor|physical/i.test(taught)) return 'Sole Proprietorship / Physical Person';
                 if (/single member/i.test(taught)) return 'Single Member Private Limited Company';
                 if (/public limited/i.test(taught)) return 'Public Limited Company';
@@ -3872,6 +3892,26 @@ router.get('/toi/autofill', auth, async (req, res) => {
                     );
                 }
 
+                // Source 3.5: SCAR Extraction Lab Deep Data
+                const parseSafely = (str) => {
+                    if (typeof str === 'object' && str !== null) return str;
+                    try { const p = str ? JSON.parse(str) : null; return p && typeof p === 'object' ? p : {}; } catch (e) { return {}; }
+                };
+                const scPatent = parseSafely(p.scarTaxPatent);
+                const scMocEn = parseSafely(p.scarMocEn);
+                const scMocKh = parseSafely(p.scarMocKh);
+
+                const scShareholders = scMocEn.shareholders || scMocKh.shareholdersKh || [];
+                for (const sh of scShareholders) {
+                    const pct = parseFloat(sh.ownershipPct || sh.pct || sh.numberOfShares || sh.shares) || 0;
+                    addPerson(sh.nameEn || sh.nameKh || sh.name || '', 'Shareholder', pct || (scShareholders.length === 1 ? 100 : 0), sh.nationality || 'Cambodian');
+                }
+                const scDirectors = scMocEn.directors || scMocKh.directorsKh || [];
+                for (const d of scDirectors) {
+                    addPerson(d.nameEn || d.nameKh || d.name || '', d.title || d.titleKh || 'Director', scDirectors.length === 1 ? 100 : 0, 'Cambodian');
+                }
+                if (scPatent.ownerName) addPerson(scPatent.ownerName, 'Owner', 100, 'Cambodian');
+
                 // Source 4: flat p.shareholder / p.director string — last resort
                 // Filter out AI system-message phrases that are not real names
                 if (list.length === 0) {
@@ -3940,6 +3980,42 @@ router.get('/toi/autofill', auth, async (req, res) => {
                     seen.add(key);
                     list.push({ name, address: addrKh || '', position: 'Director', pct: brd.length === 1 ? 100 : 0 });
                 }
+                // Source 3.5: SCAR Extraction Lab Deep Data
+                const parseSafely = (str) => {
+                    if (typeof str === 'object' && str !== null) return str;
+                    try { const p = str ? JSON.parse(str) : null; return p && typeof p === 'object' ? p : {}; } catch (e) { return {}; }
+                };
+                const scPatent = parseSafely(p.scarTaxPatent);
+                const scMocEn = parseSafely(p.scarMocEn);
+                const scMocKh = parseSafely(p.scarMocKh);
+
+                const scShareholders = scMocEn.shareholders || scMocKh.shareholdersKh || [];
+                for (const sh of scShareholders) {
+                    const name = (sh.nameEn || sh.nameKh || sh.name || '').trim();
+                    if (!name || SYSTEM_TEXT.test(name)) continue;
+                    const key = name.toLowerCase();
+                    if (seen.has(key)) continue;
+                    seen.add(key);
+                    const pct = parseFloat(sh.ownershipPct || sh.pct || sh.numberOfShares || sh.shares) || 0;
+                    list.push({ name, address: addrKh || '', position: 'Shareholder', pct: pct || (scShareholders.length === 1 ? 100 : 0) });
+                }
+                const scDirectors = scMocEn.directors || scMocKh.directorsKh || [];
+                for (const d of scDirectors) {
+                    const name = (d.nameEn || d.nameKh || d.name || '').trim();
+                    if (!name || SYSTEM_TEXT.test(name)) continue;
+                    const key = name.toLowerCase();
+                    if (seen.has(key)) continue;
+                    seen.add(key);
+                    list.push({ name, address: addrKh || '', position: d.title || d.titleKh || 'Director', pct: scDirectors.length === 1 ? 100 : 0 });
+                }
+                if (scPatent.ownerName) {
+                    const name = scPatent.ownerName.trim();
+                    if (name && !SYSTEM_TEXT.test(name) && !seen.has(name.toLowerCase())) {
+                        seen.add(name.toLowerCase());
+                        list.push({ name, address: addrKh || '', position: 'Owner', pct: 100 });
+                    }
+                }
+
                 // Source 4: flat p.shareholder / p.director string — only if not a system phrase
                 if (list.length === 0) {
                     const rawNames = p.shareholder || ext('shareholder') || p.director || ext('director') || ext('directorName') || '';
