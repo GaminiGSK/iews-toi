@@ -3604,8 +3604,8 @@ router.get('/toi/autofill', auth, async (req, res) => {
                 
                 return dt;
             })(),
-            directorName:      (p.director || ext('director') || '').replace(/\(Representative\)/i, '(Director)'),
-            signatoryName:     (p.director || ext('director') || '').replace(/\(Representative\)/i, '(Director)'),
+            directorName:      (p.director || ext('director') || ext('directorName') || '').replace(/\(Representative\)/i, '(Director)'),
+            signatoryName:     (p.director || ext('director') || ext('directorName') || '').replace(/\(Representative\)/i, '(Director)'),
 
             // ── Row 6: Business Activities ───────────────────────────────
             businessActivities: (() => {
@@ -3875,7 +3875,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
                 // Source 4: flat p.shareholder / p.director string — last resort
                 // Filter out AI system-message phrases that are not real names
                 if (list.length === 0) {
-                    const rawName = p.shareholder || p.director || '';
+                    const rawName = p.shareholder || ext('shareholder') || p.director || ext('director') || ext('directorName') || '';
                     const isSystemText = /no board|not applicable|listed in|provided data|n\/a|none/i.test(rawName);
                     if (!isSystemText) {
                         addPerson(rawName, 'Owner / ម្ចាស់', 100, 'Cambodian');
@@ -3942,7 +3942,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
                 }
                 // Source 4: flat p.shareholder / p.director string — only if not a system phrase
                 if (list.length === 0) {
-                    const rawNames = p.shareholder || p.director || '';
+                    const rawNames = p.shareholder || ext('shareholder') || p.director || ext('director') || ext('directorName') || '';
                     if (rawNames && !SYSTEM_TEXT.test(rawNames)) {
                         rawNames.split(',').map(n => n.trim()).filter(Boolean).forEach((personName, _i, arr) => {
                             const key = personName.toLowerCase();
