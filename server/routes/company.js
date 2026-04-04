@@ -3261,7 +3261,10 @@ router.post('/toi/withholdings', auth, async (req, res) => {
 router.get('/toi/autofill', auth, async (req, res) => {
     try {
         const userId      = req.user.id;
-        const companyCode = req.user.companyCode;
+        let companyCode   = req.user.companyCode;
+        if (req.query.companyCode && ['admin', 'superadmin'].includes(req.user.role)) {
+            companyCode = req.query.companyCode;
+        }
         const year        = parseInt(req.query.year) || 2025;
 
         // --- 0. AUTO-SYNC MODULES TO GL (Permanent Fix for Missing Salary/Depreciation) ---

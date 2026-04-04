@@ -318,7 +318,8 @@ const ToiAcar = ({ onBack, packageId, year }) => {
     setFillStatus(null);
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get(`/api/company/toi/autofill?year=${selectedYear}`, {
+      const companyParam = packageId ? `&companyCode=${packageId}` : '';
+      const res = await axios.get(`/api/company/toi/autofill?year=${selectedYear}${companyParam}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.data.ok && res.data.formData) {
