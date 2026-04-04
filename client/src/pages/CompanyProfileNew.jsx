@@ -2899,7 +2899,7 @@ export default function CompanyProfile() {
                 {view === 'codes' && <AccountingCodes onBack={() => setView('home')} />}
                 {view === 'financials' && <ErrorBoundary><FinancialStatements onBack={() => setView('home')} /></ErrorBoundary>}
                 {view === 'currency' && <CurrencyExchange onBack={() => setView('home')} />}
-                {view === 'toi_acar' && <ToiAcar onBack={() => setView('home')} />}
+                {view === 'toi_acar' && <ToiAcar onBack={() => setView('home')} packageId={adminSelectedUser || formData?.companyCode} />}
                 {view === 'assets' && <AssetDepreciation onBack={() => setView('home')} />}
                 {view === 'salary' && <SalaryTOSRecon onBack={() => setView('home')} />}
                 {view === 'related' && <RelatedPartyDisclosure onBack={() => setView('home')} />}
