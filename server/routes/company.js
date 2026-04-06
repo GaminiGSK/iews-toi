@@ -3679,7 +3679,8 @@ router.get('/toi/autofill', auth, async (req, res) => {
                     if (typeof item === 'string') return item;
                     const kh = item.descriptionKh || item.nameKh;
                     const en = item.descriptionEn || item.description || item.name || item.activity || '';
-                    if (preferKh && kh && /[ក-៿]/.test(kh)) return kh;
+                    // Always prefer Khmer if the field has real Khmer characters — regardless of source
+                    if (kh && /[ក-៿]/.test(kh)) return kh;
                     return en || kh || '';
                 }).filter(v => {
                     if (!v) return false;
@@ -3693,6 +3694,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
             if (typeof arr === 'string' && arr.trim()) return arr.trim();
             return null;
         };
+
         const scBusinessKh = extractBusinessStr(___scMocKh, true);
         const scBusinessEnOnly = extractBusinessStr(___scMocEn, false);
         const scBusinessEn = (scBusinessKh && /[ក-៿]/.test(scBusinessKh))
@@ -3819,6 +3821,12 @@ router.get('/toi/autofill', auth, async (req, res) => {
                     '47':    'ការលក់រាយ ទំនិញទូទៅ',
                     '46':    'ការលក់ដុំ ទំនិញទូទៅ',
                     '56':    'ម្ហូបអាហារ និងភេសជ្ជៈ',
+                    '561':   'ភោជនីយដ្ឋាន និងកន្លែងស៊ីផឹករង្គសាល',
+                    '5610':  'ភោជនីយដ្ឋាន និងកន្លែងស៊ីផឹករង្គសាល',
+                    '56101': 'ភោជនីយដ្ឋាន និងកន្លែងស៊ីផឹករង្គសាល',
+                    '56102': 'ភោជនីយដ្ឋានខ្នាតអាហារ',
+                    '56109': 'កន្លែងស៊ីភេសជ្ជៈផ្សេងៗ',
+                    '563':   'កន្លែងស៊ីភេសជ្ជៈបៀរ',
                     '41':    'ការសាងសង់',
                     '68':    'អចលនទ្រព្យ',
                     '69':    'សេវាកម្មច្បាប់ និងគណនេយ្យ',
@@ -3844,22 +3852,25 @@ router.get('/toi/autofill', auth, async (req, res) => {
                 // Fallback translations for common unstructured English inputs
                 if (!kh) {
                     const lowerEn = actEn.toLowerCase();
-                    if (lowerEn.includes('hospital')) kh = 'សកម្មភាពមន្ទីរពេទ្យ';
+                    if (lowerEn.includes('restaurant') || lowerEn.includes('night club') || lowerEn.includes('nightclub')) kh = 'ភោជនីយដ្ឋាន និងកន្លែងស៊ីផឹករង្គសាល';
+                    else if (lowerEn.includes('food service') || lowerEn.includes('catering') || lowerEn.includes('mobile food')) kh = 'សេវាកម្មមហូបអាហារ';
+                    else if (lowerEn.includes('hospital')) kh = 'សកម្មភាពមន្ទីរពេទ្យ';
                     else if (lowerEn.includes('clinic') || lowerEn.includes('medical')) kh = 'សេវាកម្មព្យាបាលជំងឺ';
                     else if (lowerEn.includes('health')) kh = 'សេវាកម្មថែទាំសុខភាព';
                     else if (lowerEn.includes('pharma') || lowerEn.includes('drug')) kh = 'ផលិតឬចែកចាយថ្នាំ';
                     else if (lowerEn.includes('wholesale')) kh = 'ការលក់ដុំទំនិញទូទៅ';
                     else if (lowerEn.includes('retail')) kh = 'ការលក់រាយទំនិញទូទៅ';
+                    else if (lowerEn.includes('food') || lowerEn.includes('beverage')) kh = 'ម្ហូបអាហារ និងភេសជ្ជៈ';
                     else if (lowerEn.includes('software') || lowerEn.includes('tech')) kh = 'សេវាកម្មបច្ចេកវិទ្យា និងកម្មវិធីកុំព្យូទ័រ';
                     else if (lowerEn.includes('consult')) kh = 'សេវាកម្មប្រឹក្សាយោបល់';
                     else if (lowerEn.includes('design')) kh = 'សេវាកម្មរចនា';
                     else if (lowerEn.includes('trade')) kh = 'ពាណិជ្ជកម្មទូទៅ';
                     else if (lowerEn.includes('construction') || lowerEn.includes('building')) kh = 'ការសាងសង់ និងអចលនទ្រព្យ';
-                    else if (lowerEn.includes('food') || lowerEn.includes('restaurant')) kh = 'ម្ហូបអាហារ និងភេសជ្ជៈ';
                     else if (lowerEn.includes('educati') || lowerEn.includes('school') || lowerEn.includes('training')) kh = 'សេវាកម្មអប់រំ';
                     else if (lowerEn.includes('transport') || lowerEn.includes('logistic')) kh = 'ដឹកជញ្ជូន និងឃ្លាំង';
                     else if (lowerEn.includes('import') || lowerEn.includes('export')) kh = 'នាំចូល-នាំចេញ';
                 }
+
 
                 return kh ? kh + '\n' + actEn : actEn;
             })(),
