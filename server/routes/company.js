@@ -3258,6 +3258,29 @@ router.post('/toi/withholdings', auth, async (req, res) => {
 
 // ===============================// GET /api/company/toi/autofill
 // Generates the JSON data required to fill the 17-page GDT Tax on Income declaration form
+router.get('/toi/autofill_debug', async (req, res) => {
+    try {
+        const companyCode = req.query.companyCode || 'SCAR';
+        const profile = await CompanyProfile.findOne({ companyCode }).lean();
+        const p = profile || {};
+        const ___parseSafely = (str) => {
+            if (typeof str === 'object' && str !== null) return str;
+            try { const parsed = str ? JSON.parse(str) : null; return parsed && typeof parsed === 'object' ? parsed : {}; } catch (e) { return {}; }
+        };
+        const ___scPatent = ___parseSafely(p.scarTaxPatent);
+        const scTin = ___scPatent.taxTIN || ___scPatent.TIN;
+        res.json({
+           ok: true,
+           tin_pre: scTin,
+           tin_form: scTin ? scTin.replace(/[^0-9A-Z]/gi, '') : null,
+           patentString: typeof p.scarTaxPatent,
+           rawPatent: p.scarTaxPatent
+        });
+    } catch(err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 router.get('/toi/autofill', auth, async (req, res) => {
     try {
         const userId      = req.user.id;
@@ -3277,6 +3300,12 @@ router.get('/toi/autofill', auth, async (req, res) => {
         if (companyCode === 'SCAR') {
             console.log(`[SCAR-DEBUG] Autofill profile pull. Mongoose lean() used. Keys present:`, Object.keys(profile || {}));
             console.log(`[SCAR-DEBUG] scarMocEn type: ${typeof profile?.scarMocEn}, length: ${String(profile?.scarMocEn).length}`);
+            console.log(`[SCAR-DEBUG] scarMocEn content: ${String(profile?.scarMocEn).substring(0, 500)}`);
+            console.log(`[SCAR-DEBUG] scarMocKh content: ${String(profile?.scarMocKh).substring(0, 500)}`);
+            console.log(`[SCAR-DEBUG] organizedProfile snippet: ${String(profile?.organizedProfile || '').substring(0, 600)}`);
+            console.log(`[SCAR-DEBUG] profile.director:`, profile?.director);
+            console.log(`[SCAR-DEBUG] profile.businessActivity:`, profile?.businessActivity);
+            console.log(`[SCAR-DEBUG] profile.businessActivities:`, JSON.stringify(profile?.businessActivities)?.substring(0, 300));
         }
 
         const p = profile || {};
@@ -3331,8 +3360,16 @@ router.get('/toi/autofill', auth, async (req, res) => {
         }
 
         if (!p.director && p.organizedProfile) {
-            const dirMatch = p.organizedProfile.match(/(?:Director|Owner|Chairman).*?:\s*([^\n]+)/i);
-            if (dirMatch) p.director = dirMatch[1].trim();
+            // Try to find Khmer director name first, fall back to English
+            const khDirMatch = p.organizedProfile.match(/(?:Director|Owner|Chairman|ប្រធាន|នាយក|ម្ចាស់).*?[:\-]\s*([\u1780-\u17FF][^\n]+)/i);
+            const enDirMatch = p.organizedProfile.match(/(?:Director|Owner|Chairman).*?[:\-]\s*([A-Za-z][^\n]+)/i);
+            if (khDirMatch) p.director = khDirMatch[1].trim();
+            else if (enDirMatch) p.director = enDirMatch[1].trim();
+        }
+
+        if (!p.businessActivity && p.organizedProfile) {
+            const actMatch = p.organizedProfile.match(/(?:Business Activit|Business Object|Main Activit).*?[:\-]\s*([^\n]+(?:\n[-*•][^\n]*)*)/i);
+            if (actMatch) p.businessActivity = actMatch[1].replace(/^[-*•]\s*/gm, '').trim();
         }
 
         if (!p.vatTin && p.organizedProfile) {
@@ -3582,9 +3619,79 @@ router.get('/toi/autofill', auth, async (req, res) => {
         const scIncDate = ___scMocEn.incorporationDate || ___scMoc.incorporationDateEn || ___scMoc.incorporationDateKh || ___scMocKh.incorporationDate;
         const scTin = ___scPatent.taxTIN || ___scIdCard.taxTIN;
         const scLegalFormEn = ___scMoc.legalFormEn || ___scPatent.legalFormEn;
-        const scBusinessEn = ___scMocEn.businessObjectives || ___scPatent.businessActivities || ___scMocKh.businessObjectivesKh;
         const scAddressKh = ___scMocKh.registeredAddressKh || addrKh;
 
+        // ── DEEP RECURSIVE SEARCH: find any key at any nesting level ──
+        const deepFindArr = (obj, keyPattern, visited = new Set()) => {
+            if (!obj || typeof obj !== 'object') return null;
+            const sig = Object.keys(obj).join(',').substring(0, 80);
+            if (visited.has(sig)) return null;
+            visited.add(sig);
+            for (const key of Object.keys(obj)) {
+                if (keyPattern.test(key)) {
+                    const val = obj[key];
+                    if (Array.isArray(val) && val.length > 0) return val;
+                    if (typeof val === 'string' && val.trim()) return val;
+                }
+            }
+            for (const key of Object.keys(obj)) {
+                const val = obj[key];
+                if (val && typeof val === 'object' && !Array.isArray(val)) {
+                    const found = deepFindArr(val, keyPattern, visited);
+                    if (found) return found;
+                }
+            }
+            return null;
+        };
+
+        // ── Director: deep search, Khmer preferred ──
+        const extractDirectorName = (rawJson, preferKh = false) => {
+            if (!rawJson || !Object.keys(rawJson).length) return '';
+            const dirArr = deepFindArr(rawJson, /^directors?(Kh)?$/i);
+            if (Array.isArray(dirArr) && dirArr[0]) {
+                const d = dirArr[0];
+                const khName = d.nameKh || d.name_kh;
+                const enName = d.nameEn || d.name || d.fullName || '';
+                if (preferKh && khName && /[ក-៿]/.test(khName)) return khName;
+                return enName || khName || (typeof d === 'string' ? d : '');
+            }
+            // Flat string fallback
+            return rawJson.Director || rawJson.director || rawJson.directorName ||
+                   rawJson.representative || rawJson.ownerName || '';
+        };
+        const scDirectorKh = extractDirectorName(___scMocKh, true);
+        const scDirectorEn = extractDirectorName(___scMocEn, false);
+        const scDirector = (scDirectorKh && /[ក-៿]/.test(scDirectorKh))
+            ? scDirectorKh
+            : (scDirectorEn || scDirectorKh || ___scPatent.ownerName || ___scPatent.Owner || '');
+        console.log('[SmartFill-DIR] scDirector:', JSON.stringify(scDirector));
+        console.log('[SmartFill-DIR] scarMocEn top-keys:', Object.keys(___scMocEn).join('|'));
+        console.log('[SmartFill-DIR] scarMocKh top-keys:', Object.keys(___scMocKh).join('|'));
+
+
+        // ── Business Activities: deep search, Khmer preferred ──
+        const extractBusinessStr = (rawJson, preferKh = false) => {
+            if (!rawJson || !Object.keys(rawJson).length) return null;
+            const arr = deepFindArr(rawJson, /^(business(activities|objectives?)|objectives?|activities)$/i);
+            if (Array.isArray(arr) && arr.length > 0) {
+                return arr.map(item => {
+                    if (typeof item === 'string') return item;
+                    const kh = item.descriptionKh || item.nameKh;
+                    const en = item.descriptionEn || item.description || item.name || item.activity || '';
+                    if (preferKh && kh && /[ក-៿]/.test(kh)) return kh;
+                    return en || kh || '';
+                }).filter(Boolean).join('\n');
+            }
+            if (typeof arr === 'string' && arr.trim()) return arr.trim();
+            return null;
+        };
+        const scBusinessKh = extractBusinessStr(___scMocKh, true);
+        const scBusinessEnOnly = extractBusinessStr(___scMocEn, false);
+        const scBusinessEn = (scBusinessKh && /[ក-៿]/.test(scBusinessKh))
+            ? scBusinessKh
+            : (scBusinessEnOnly || scBusinessKh || extractBusinessStr(___scPatent, false));
+        console.log('[SmartFill-BIZ] scBusinessEn:', JSON.stringify(scBusinessEn));
+        console.log('[SmartFill-BIZ] scarMocEn snapshot:', JSON.stringify(___scMocEn).substring(0, 400));
         const formData = {
             // ── PAGE 1: Cover / TIN / Identification ─────────────────────
             taxMonths:         '12',
@@ -3633,11 +3740,12 @@ router.get('/toi/autofill', auth, async (req, res) => {
                 
                 return dt;
             })(),
-            directorName:      (p.director || ext('director') || ext('directorName') || '').replace(/\(Representative\)/i, '(Director)'),
-            signatoryName:     (p.director || ext('director') || ext('directorName') || '').replace(/\(Representative\)/i, '(Director)'),
+            directorName:      (scDirector || p.director || ext('director') || ext('directorName') || '').replace(/\(Representative\)/i, '(Director)'),
+            signatoryName:     (scDirector || p.director || ext('director') || ext('directorName') || '').replace(/\(Representative\)/i, '(Director)'),
 
             // ── Row 6: Business Activities ───────────────────────────────
             businessActivities: (() => {
+                if (scBusinessEn) return scBusinessEn;
                 // Helper: strip AI hallucinated placeholders from descriptionKh
                 const cleanKh = (kh) => {
                     if (!kh) return null;
@@ -4808,4 +4916,156 @@ router.delete('/rules/:ruleId', auth, async (req, res) => {
     }
 });
 
+// ============================================================
+// SCAR PROMOTE — Push SCAR Lab BR data → Target Company Profile
+// POST /api/company/scar-promote
+// Body: { targetCompanyCode }  (admin only; targetCompanyCode = company to update)
+// This reads raw scarTaxPatent, scarMocEn etc. from the SCAR profile,
+// maps them to standard canonical fields, and $set-updates the target profile.
+// ============================================================
+router.post('/scar-promote', auth, async (req, res) => {
+    try {
+        // Only admin / superadmin can trigger a promotion
+        if (!['admin', 'superadmin'].includes(req.user.role)) {
+            return res.status(403).json({ message: 'Access denied. Admin only.' });
+        }
+
+        const targetCompanyCode = req.body.targetCompanyCode;
+        if (!targetCompanyCode) {
+            return res.status(400).json({ message: 'targetCompanyCode is required.' });
+        }
+
+        // 1. Load the SCAR lab profile (source of truth)
+        const scarProfile = await CompanyProfile.findOne({ companyCode: 'SCAR' });
+        if (!scarProfile) {
+            return res.status(404).json({ message: 'SCAR profile not found. Please upload documents in the SCAR Lab first.' });
+        }
+
+        // 2. Safe JSON parser helper
+        const parseSafely = (val) => {
+            if (!val) return {};
+            if (typeof val === 'object') return val;
+            try {
+                const p = JSON.parse(val);
+                return (p && typeof p === 'object') ? p : {};
+            } catch (e) { return {}; }
+        };
+
+        const patent  = parseSafely(scarProfile.scarTaxPatent);
+        const idCard  = parseSafely(scarProfile.scarTaxIdCard);
+        const moc     = parseSafely(scarProfile.scarMoc);
+        const mocEn   = parseSafely(scarProfile.scarMocEn);
+        const mocKh   = parseSafely(scarProfile.scarMocKh);
+
+        // 3. Build promotion object — priority: MOC English > MOC Kh > Tax Patent > Tax ID Card
+        const setObj = {};
+        const setIfPresent = (key, val) => {
+            if (val !== null && val !== undefined && val !== '' && val !== '—') {
+                setObj[key] = val;
+            }
+        };
+
+        // --- Corporate Identity ---
+        setIfPresent('companyNameEn',
+            mocEn.entityName || mocEn.entityNameEn || moc.entityNameEn || patent.entityNameEn || idCard.entityNameEn);
+        setIfPresent('companyNameKh',
+            mocKh.entityNameKh || moc.entityNameKh || patent.entityNameKh || idCard.entityNameKh);
+        setIfPresent('registrationNumber',
+            mocEn.registrationNumber || moc.registrationNumberEn || mocKh.registrationNumber);
+        setIfPresent('oldRegistrationNumber',
+            moc.oldRegistrationNumber || mocEn.oldRegistrationNumber);
+        setIfPresent('incorporationDate',
+            mocEn.incorporationDate || moc.incorporationDateEn);
+        setIfPresent('companyType',
+            moc.legalFormEn || patent.legalFormEn || mocEn.legalForm);
+
+        // --- Tax Identity ---
+        setIfPresent('vatTin',
+            patent.taxTIN || idCard.taxTIN || idCard.barcode);
+        setIfPresent('taxRegistrationDate',
+            idCard.taxRegistrationDateEn || idCard.registrationDate || patent.taxRegistrationDate);
+        setIfPresent('taxBranch',
+            patent.taxBranch || idCard.taxBranch);
+        setIfPresent('taxPayerType',
+            patent.taxPayerType);
+        setIfPresent('taxYear',
+            patent.taxYear);
+
+        // --- Address ---
+        setIfPresent('address',
+            mocEn.registeredAddress || patent.address || mocKh.registeredAddressKh);
+
+        // --- Business Activities ---
+        const rawActivities = mocEn.businessObjectives || patent.businessActivities || mocKh.businessObjectivesKh || [];
+        if (Array.isArray(rawActivities) && rawActivities.length > 0) {
+            setObj.businessActivities = rawActivities;
+            // Build a readable flat string for display in forms
+            setObj.businessActivity = rawActivities
+                .map(a => {
+                    if (typeof a === 'string') return a;
+                    return a.descriptionEn || a.descriptionKh || a.objectiveEn || a.objectiveKh || a.code || JSON.stringify(a);
+                })
+                .filter(Boolean)
+                .join('; ');
+        }
+
+        // --- Directors ---
+        const rawDirectors = mocEn.directors || mocKh.directorsKh || [];
+        if (Array.isArray(rawDirectors) && rawDirectors.length > 0) {
+            setObj.directors = rawDirectors;
+            // Flat string: primary director name for legacy form fill
+            const primaryDir = rawDirectors[0];
+            setObj.director = primaryDir?.nameEn || primaryDir?.name || primaryDir?.nameKh || '';
+        } else if (patent.ownerName) {
+            setObj.director = patent.ownerName;
+            setObj.directors = [{ nameEn: patent.ownerName, isChairman: true }];
+        }
+
+        // --- Shareholders ---
+        const rawShareholders = mocEn.shareholders || mocKh.shareholdersKh || [];
+        if (Array.isArray(rawShareholders) && rawShareholders.length > 0) {
+            setObj.shareholders = rawShareholders;
+            setObj.shareholder = rawShareholders
+                .map(s => `${s.nameEn || s.nameKh || s.name} (${s.numberOfShares || s.shares || 0} shares)`)
+                .filter(Boolean)
+                .join(', ');
+        }
+
+        // --- Capital ---
+        setIfPresent('registeredShareCapitalKHR',
+            mocEn.registeredShareCapital || moc.shareCapital || mocKh.shareCapital);
+
+        // 4. Load or create target profile
+        let targetProfile = await CompanyProfile.findOne({ companyCode: targetCompanyCode });
+        if (!targetProfile) {
+            return res.status(404).json({ message: `Company profile for "${targetCompanyCode}" not found.` });
+        }
+
+        // 5. Atomic update — only promoted fields, never wipes existing accounting data
+        setObj.scarLastPromotedAt = new Date();
+        setObj.scarPromotedBy = req.user.username;
+
+        const result = await CompanyProfile.updateOne(
+            { companyCode: targetCompanyCode },
+            { $set: setObj }
+        );
+
+        const promotedFields = Object.keys(setObj).filter(k => !['scarLastPromotedAt','scarPromotedBy'].includes(k));
+
+        console.log(`[SCAR PROMOTE] ✅ ${promotedFields.length} fields promoted from SCAR → ${targetCompanyCode} by ${req.user.username}`);
+
+        res.json({
+            message: `✅ SCAR data successfully promoted to ${targetCompanyCode}`,
+            promotedFields,
+            fieldCount: promotedFields.length,
+            targetCompanyCode
+        });
+
+    } catch (err) {
+        console.error('[SCAR PROMOTE] Error:', err);
+        res.status(500).json({ message: 'Promotion failed: ' + err.message });
+    }
+});
+
 module.exports = router;
+
