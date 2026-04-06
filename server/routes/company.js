@@ -3674,13 +3674,21 @@ router.get('/toi/autofill', auth, async (req, res) => {
             if (!rawJson || !Object.keys(rawJson).length) return null;
             const arr = deepFindArr(rawJson, /^(business(activities|objectives?)|objectives?|activities)$/i);
             if (Array.isArray(arr) && arr.length > 0) {
-                return arr.map(item => {
+                const seen = new Set();
+                const lines = arr.map(item => {
                     if (typeof item === 'string') return item;
                     const kh = item.descriptionKh || item.nameKh;
                     const en = item.descriptionEn || item.description || item.name || item.activity || '';
                     if (preferKh && kh && /[ក-៿]/.test(kh)) return kh;
                     return en || kh || '';
-                }).filter(Boolean).join('\n');
+                }).filter(v => {
+                    if (!v) return false;
+                    const key = v.trim().toLowerCase();
+                    if (seen.has(key)) return false;
+                    seen.add(key);
+                    return true;
+                });
+                return lines.join('\n') || null;
             }
             if (typeof arr === 'string' && arr.trim()) return arr.trim();
             return null;
@@ -3745,7 +3753,18 @@ router.get('/toi/autofill', auth, async (req, res) => {
 
             // ── Row 6: Business Activities ───────────────────────────────
             businessActivities: (() => {
-                if (scBusinessEn) return scBusinessEn;
+                // Deduplicate a multi-line string value
+                const dedupLines = (s) => {
+                    if (!s) return s;
+                    const seen = new Set();
+                    return s.split('\n').filter(l => {
+                        const k = l.trim().toLowerCase();
+                        if (!k || seen.has(k)) return false;
+                        seen.add(k);
+                        return true;
+                    }).join('\n');
+                };
+                if (scBusinessEn) return dedupLines(scBusinessEn);
                 // Helper: strip AI hallucinated placeholders from descriptionKh
                 const cleanKh = (kh) => {
                     if (!kh) return null;
@@ -3807,6 +3826,11 @@ router.get('/toi/autofill', auth, async (req, res) => {
                     '73':    'សេវាកម្មផ្សព្វផ្សាយពាណិជ្ជកម្ម',
                     '85':    'សេវាកម្មអប់រំ',
                     '86':    'សេវាកម្មថែទាំសុខភាព',
+                    '861':   'សកម្មភាពមន្ទីរពេទ្យ',
+                    '862':   'សេវាកម្មវេជ្ជបណ្ឌិត ធ្មេញបណ្ឌិត',
+                    '863':   'សេវាកម្មថែទាំជំងឺ មន្ទីរពហុវិស័យ',
+                    '864':   'សេវាកម្មព្យាបាលជំងឺ',
+                    '869':   'សេវាកម្មថែទាំសុខភាពផ្សេងៗ',
                 };
                 let kh = '';
                 for (const [code, khLabel] of Object.entries(isicKhmer)) {
@@ -3820,12 +3844,21 @@ router.get('/toi/autofill', auth, async (req, res) => {
                 // Fallback translations for common unstructured English inputs
                 if (!kh) {
                     const lowerEn = actEn.toLowerCase();
-                    if (lowerEn.includes('wholesale')) kh = 'ការលក់ដុំទំនិញទូទៅ';
+                    if (lowerEn.includes('hospital')) kh = 'សកម្មភាពមន្ទីរពេទ្យ';
+                    else if (lowerEn.includes('clinic') || lowerEn.includes('medical')) kh = 'សេវាកម្មព្យាបាលជំងឺ';
+                    else if (lowerEn.includes('health')) kh = 'សេវាកម្មថែទាំសុខភាព';
+                    else if (lowerEn.includes('pharma') || lowerEn.includes('drug')) kh = 'ផលិតឬចែកចាយថ្នាំ';
+                    else if (lowerEn.includes('wholesale')) kh = 'ការលក់ដុំទំនិញទូទៅ';
                     else if (lowerEn.includes('retail')) kh = 'ការលក់រាយទំនិញទូទៅ';
                     else if (lowerEn.includes('software') || lowerEn.includes('tech')) kh = 'សេវាកម្មបច្ចេកវិទ្យា និងកម្មវិធីកុំព្យូទ័រ';
                     else if (lowerEn.includes('consult')) kh = 'សេវាកម្មប្រឹក្សាយោបល់';
                     else if (lowerEn.includes('design')) kh = 'សេវាកម្មរចនា';
                     else if (lowerEn.includes('trade')) kh = 'ពាណិជ្ជកម្មទូទៅ';
+                    else if (lowerEn.includes('construction') || lowerEn.includes('building')) kh = 'ការសាងសង់ និងអចលនទ្រព្យ';
+                    else if (lowerEn.includes('food') || lowerEn.includes('restaurant')) kh = 'ម្ហូបអាហារ និងភេសជ្ជៈ';
+                    else if (lowerEn.includes('educati') || lowerEn.includes('school') || lowerEn.includes('training')) kh = 'សេវាកម្មអប់រំ';
+                    else if (lowerEn.includes('transport') || lowerEn.includes('logistic')) kh = 'ដឹកជញ្ជូន និងឃ្លាំង';
+                    else if (lowerEn.includes('import') || lowerEn.includes('export')) kh = 'នាំចូល-នាំចេញ';
                 }
 
                 return kh ? kh + '\n' + actEn : actEn;
