@@ -4022,13 +4022,22 @@ router.get('/toi/autofill', auth, async (req, res) => {
                 // Source 2: p.shareholders[] array — BR schema uses nameEn / nameKh
                 const brShareholders = Array.isArray(p.shareholders) ? p.shareholders : [];
                 for (const sh of brShareholders) {
-                    const pct = parseFloat(sh.ownershipPct || sh.pct || sh.numberOfShares) || 0;
-                    addPerson(
-                        sh.nameEn || sh.nameKh || sh.name || '',
-                        'Shareholder',
-                        pct || (brShareholders.length === 1 ? 100 : 0),
-                        sh.nationality
-                    );
+                    const pct = parseFloat(sh.ownershipPct || sh.pct || sh.percentage) || 0;
+                    const shAddr = sh.address || sh.postalAddress || sh.postalRegisteredOfficeAddress || addrKh || '';
+                    const key = (sh.nameEn || sh.nameKh || sh.name || '').trim().toLowerCase();
+                    if (!key || seen.has(key)) continue;
+                    seen.add(key);
+                    const p100 = pct || (brShareholders.length === 1 ? 100 : Math.round(100 / brShareholders.length * 100) / 100);
+                    list.push({
+                        name:        (sh.nameEn || sh.nameKh || sh.name || '').trim(),
+                        address:     shAddr,
+                        nationality: sh.nationality || 'Cambodian',
+                        position:    'Shareholder',
+                        pctStart:    p100,
+                        amtStart:    Math.round(totalEquityStart * p100 / 100),
+                        pctEnd:      p100,
+                        amtEnd:      Math.round(totalEquityEnd * p100 / 100),
+                    });
                 }
 
                 // Source 3: p.directors[] array — BR schema uses nameEn / nameKh
@@ -4036,8 +4045,8 @@ router.get('/toi/autofill', auth, async (req, res) => {
                 for (const d of brDirectors) {
                     addPerson(
                         d.nameEn || d.nameKh || '',
-                        'Director',
-                        brDirectors.length === 1 ? 100 : 0,
+                        d.title || 'Director',
+                        brDirectors.length === 1 ? 100 : Math.round(100 / brDirectors.length * 100) / 100,
                         'Cambodian'
                     );
                 }
@@ -4053,12 +4062,31 @@ router.get('/toi/autofill', auth, async (req, res) => {
 
                 const scShareholders = scMocEn.shareholders || scMocKh.shareholdersKh || [];
                 for (const sh of scShareholders) {
-                    const pct = parseFloat(sh.ownershipPct || sh.pct || sh.numberOfShares || sh.shares) || 0;
-                    addPerson(sh.nameEn || sh.nameKh || sh.name || '', 'Shareholder', pct || (scShareholders.length === 1 ? 100 : 0), sh.nationality || 'Cambodian');
+                    const pct = parseFloat(sh.ownershipPct || sh.pct || sh.percentage || sh.numberOfShares || sh.shares) || 0;
+                    const shAddr = sh.address || sh.postalAddress || sh.postalRegisteredOfficeAddress || addrKh || '';
+                    const key = (sh.nameEn || sh.nameKh || sh.name || '').trim().toLowerCase();
+                    if (!key || seen.has(key)) continue;
+                    seen.add(key);
+                    const p100 = pct || (scShareholders.length === 1 ? 100 : Math.round(100 / scShareholders.length * 100) / 100);
+                    list.push({
+                        name:        (sh.nameEn || sh.nameKh || sh.name || '').trim(),
+                        address:     shAddr,
+                        nationality: sh.nationality || 'Cambodian',
+                        position:    'Shareholder',
+                        pctStart:    p100,
+                        amtStart:    Math.round(totalEquityStart * p100 / 100),
+                        pctEnd:      p100,
+                        amtEnd:      Math.round(totalEquityEnd * p100 / 100),
+                    });
                 }
                 const scDirectors = scMocEn.directors || scMocKh.directorsKh || [];
                 for (const d of scDirectors) {
-                    addPerson(d.nameEn || d.nameKh || d.name || '', d.title || d.titleKh || 'Director', scDirectors.length === 1 ? 100 : 0, 'Cambodian');
+                    addPerson(
+                        d.nameEn || d.nameKh || d.name || '',
+                        d.title || d.titleKh || 'Director',
+                        scDirectors.length === 1 ? 100 : Math.round(100 / scDirectors.length * 100) / 100,
+                        'Cambodian'
+                    );
                 }
                 if (scPatent.ownerName) addPerson(scPatent.ownerName, 'Owner', 100, 'Cambodian');
 
@@ -4120,7 +4148,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
                     seen.add(key);
                     list.push({ name, address: addrKh || '', position: 'Shareholder', pct: brs.length === 1 ? 100 : 0 });
                 }
-                // Source 3: p.directors[] — BR schema uses nameEn / nameKh
+                // Source 3: p.directors[] — equal split if no pct
                 const brd = Array.isArray(p.directors) ? p.directors : [];
                 for (const d of brd) {
                     const name = (d.nameEn || d.nameKh || '').trim();
@@ -4128,7 +4156,12 @@ router.get('/toi/autofill', auth, async (req, res) => {
                     const key = name.toLowerCase();
                     if (seen.has(key)) continue;
                     seen.add(key);
-                    list.push({ name, address: addrKh || '', position: 'Director', pct: brd.length === 1 ? 100 : 0 });
+                    list.push({
+                        name,
+                        address: d.address || d.postalAddress || addrKh || '',
+                        position: d.title || 'Director',
+                        pct: brd.length === 1 ? 100 : Math.round(100 / brd.length * 100) / 100
+                    });
                 }
                 // Source 3.5: SCAR Extraction Lab Deep Data
                 const parseSafely = (str) => {
@@ -4156,7 +4189,12 @@ router.get('/toi/autofill', auth, async (req, res) => {
                     const key = name.toLowerCase();
                     if (seen.has(key)) continue;
                     seen.add(key);
-                    list.push({ name, address: addrKh || '', position: d.title || d.titleKh || 'Director', pct: scDirectors.length === 1 ? 100 : 0 });
+                    list.push({
+                        name,
+                        address: d.address || d.postalAddress || addrKh || '',
+                        position: d.title || d.titleKh || 'Director',
+                        pct: scDirectors.length === 1 ? 100 : Math.round(100 / scDirectors.length * 100) / 100
+                    });
                 }
                 if (scPatent.ownerName) {
                     const name = scPatent.ownerName.trim();
