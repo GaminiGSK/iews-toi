@@ -13,6 +13,8 @@ const GeneralLedger = ({ onBack }) => {
     const [taggingStatus, setTaggingStatus] = useState('');
     const [lockedGLYears, setLockedGLYears] = useState([]);
     const [userRole, setUserRole] = useState('unit');
+    const [lockConfirm, setLockConfirm] = useState(null); // { action: 'LOCK'|'UNLOCK', year }
+    const [lockMsg, setLockMsg] = useState(null); // { ok, text }
     const [companyNameEn, setCompanyNameEn] = useState('');
     const [companyNameKh, setCompanyNameKh] = useState('');
 
@@ -94,28 +96,33 @@ const GeneralLedger = ({ onBack }) => {
 
 
 
-    // Toggle Lock Year
-    const handleToggleLock = async () => {
+    // Toggle Lock Year — shows inline confirm modal instead of window.confirm()
+    const handleToggleLock = () => {
         if (fiscalYear === 'all') return;
         const isLocked = lockedGLYears.includes(fiscalYear);
-        const actionStr = isLocked ? 'UNLOCK' : 'LOCK';
-        if (!window.confirm(`Are you sure you want to ${actionStr} the entire fiscal year ${fiscalYear}?\n\nIf locked, no transactions from this year can be re-categorized.`)) return;
+        setLockConfirm({ action: isLocked ? 'UNLOCK' : 'LOCK', year: fiscalYear });
+    };
 
+    const confirmToggleLock = async () => {
+        if (!lockConfirm) return;
+        const isLocking = lockConfirm.action === 'LOCK';
+        setLockConfirm(null);
         try {
             setTagging(true);
             const token = localStorage.getItem('token');
             const targetCompanyCode = new URLSearchParams(window.location.search).get('companyCode');
             const res = await axios.post('/api/company/lock-year', {
-                year: fiscalYear,
-                locked: !isLocked,
+                year: lockConfirm.year,
+                locked: isLocking,
                 companyCode: targetCompanyCode
             }, { headers: { 'Authorization': `Bearer ${token}` } });
-            
             setLockedGLYears(res.data.lockedGLYears || []);
-            alert(res.data.message);
+            setLockMsg({ ok: true, text: res.data.message });
+            setTimeout(() => setLockMsg(null), 3000);
         } catch (err) {
             console.error(err);
-            alert('Failed to toggle year lock');
+            setLockMsg({ ok: false, text: 'Failed to toggle year lock' });
+            setTimeout(() => setLockMsg(null), 4000);
         } finally {
             setTagging(false);
         }
@@ -708,6 +715,50 @@ const GeneralLedger = ({ onBack }) => {
                     </div>
                 </div>
             </div>
+            {/* ── Inline Lock Confirm Modal ── */}
+            {lockConfirm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" id="gl-lock-confirm-overlay">
+                    <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 w-full max-w-md mx-4 overflow-hidden" id="gl-lock-confirm-modal">
+                        <div className={`px-6 py-4 flex items-center gap-3 ${lockConfirm.action === 'LOCK' ? 'bg-red-50 border-b border-red-100' : 'bg-emerald-50 border-b border-emerald-100'}`}>
+                            {lockConfirm.action === 'LOCK'
+                                ? <Lock className="w-5 h-5 text-red-500" />
+                                : <Unlock className="w-5 h-5 text-emerald-600" />}
+                            <h3 className="font-bold text-gray-800">
+                                {lockConfirm.action} Year {lockConfirm.year}?
+                            </h3>
+                        </div>
+                        <div className="px-6 py-5 text-sm text-gray-600 leading-relaxed">
+                            {lockConfirm.action === 'LOCK'
+                                ? <>Are you sure you want to <strong>LOCK</strong> the entire fiscal year <strong>{lockConfirm.year}</strong>?<br /><br />Once locked, no bank transactions from this year can be re-categorized.</>
+                                : <>Are you sure you want to <strong>UNLOCK</strong> the fiscal year <strong>{lockConfirm.year}</strong>?<br /><br />Transactions will become editable again.</>}
+                        </div>
+                        <div className="px-6 py-4 flex justify-end gap-3 border-t border-gray-100 bg-gray-50">
+                            <button
+                                id="gl-lock-confirm-cancel"
+                                onClick={() => setLockConfirm(null)}
+                                className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                id="gl-lock-confirm-ok"
+                                onClick={confirmToggleLock}
+                                className={`px-5 py-2 text-sm font-bold text-white rounded-lg transition ${lockConfirm.action === 'LOCK' ? 'bg-red-600 hover:bg-red-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}
+                            >
+                                Yes, {lockConfirm.action}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ── Lock/Unlock Toast ── */}
+            {lockMsg && (
+                <div className={`fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl shadow-lg font-medium text-sm flex items-center gap-3 transition-all ${lockMsg.ok ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'}`}>
+                    {lockMsg.ok ? <Unlock size={16} /> : <Lock size={16} />}
+                    {lockMsg.text}
+                </div>
+            )}
         </ErrorBoundary>
     );
 };
