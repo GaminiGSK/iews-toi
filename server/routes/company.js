@@ -1981,16 +1981,22 @@ router.get('/ledger', auth, async (req, res) => {
         // Fetch all Exchange Rates
         const rates = await ExchangeRate.find({ companyCode: req.user.companyCode }).lean();
 
-        // Helper to get rate for a year
-        const getRate = (date) => {
+        // Helper to get rate for a year, using rateType if specified (BE/ME/GE/IE)
+        const getRate = (date, rateType) => {
             const year = new Date(date).getFullYear();
             const rateObj = rates.find(r => r.year === year);
-            return rateObj ? rateObj.rate : 4000; // Default to 4000 (Safe Fallback)
+            if (!rateObj) return 4000; // Default fallback
+            if (rateType === 'BE' && rateObj.BE) return rateObj.BE;
+            if (rateType === 'ME' && rateObj.ME) return rateObj.ME;
+            if (rateType === 'GE' && rateObj.GE) return rateObj.GE;
+            if (rateType === 'IE' && rateObj.IE) return rateObj.IE;
+            // Fallback: use effectiveRate priority (GE > BE > ME > IE > legacy rate)
+            return rateObj.GE || rateObj.BE || rateObj.ME || rateObj.IE || rateObj.rate || 4000;
         };
 
         // Enrich transactions with KHR values
         const enrichedTransactions = combinedTransactions.map(tx => {
-            const rate = getRate(tx.date);
+            const rate = getRate(tx.date, tx.rateType);
             return {
                 ...tx,
                 rateUsed: rate,
@@ -2282,6 +2288,43 @@ router.post('/transactions/tag', auth, async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Error tagging transaction' });
+    }
+});
+
+// POST Tag Transaction Rate Type (BE / ME / GE / IE)
+router.post('/transactions/tag-rate', auth, async (req, res) => {
+    try {
+        const Transaction = require('../models/Transaction');
+        const { transactionId, rateType } = req.body;
+
+        if (!transactionId) return res.status(400).json({ message: 'Transaction ID required' });
+        if (!['BE', 'ME', 'GE', 'IE', ''].includes(rateType)) {
+            return res.status(400).json({ message: 'rateType must be BE, ME, GE, IE, or empty' });
+        }
+
+        const existingTx = await Transaction.findOne({ _id: transactionId, companyCode: req.user.companyCode });
+        if (!existingTx) return res.status(404).json({ message: 'Transaction not found' });
+
+        // Respect year lock
+        const CompanyProfile = require('../models/CompanyProfile');
+        const profile = await CompanyProfile.findOne({ companyCode: req.user.companyCode });
+        if (profile?.lockedGLYears && existingTx.date) {
+            const txYear = new Date(existingTx.date).getFullYear().toString();
+            if (profile.lockedGLYears.includes(txYear)) {
+                return res.status(403).json({ message: `Cannot modify transaction. Fiscal Year ${txYear} is locked.` });
+            }
+        }
+
+        const updatedTx = await Transaction.findOneAndUpdate(
+            { _id: transactionId, companyCode: req.user.companyCode },
+            { rateType: rateType || '' },
+            { new: true }
+        );
+
+        res.json({ message: `Rate type set to ${rateType || 'default'}`, transaction: updatedTx });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error tagging rate type' });
     }
 });
 

@@ -94,6 +94,26 @@ const GeneralLedger = ({ onBack }) => {
         }
     };
 
+    const handleRateTypeChange = async (transactionId, rateType) => {
+        try {
+            const token = localStorage.getItem('token');
+            // Optimistically update UI
+            setTransactions(prev => prev.map(tx =>
+                tx._id === transactionId ? { ...tx, rateType } : tx
+            ));
+            await axios.post('/api/company/transactions/tag-rate', {
+                transactionId,
+                rateType
+            }, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+        } catch (err) {
+            console.error(err);
+            alert('Failed to update rate type');
+            fetchLedger();
+        }
+    };
+
 
 
     // Toggle Lock Year — shows inline confirm modal instead of window.confirm()
@@ -373,6 +393,26 @@ const GeneralLedger = ({ onBack }) => {
                                         <div title="Tagged by Keyword Rule" className="text-blue-500">
                                             <Sparkles size={14} />
                                         </div>
+                                    )}
+                                    {/* ── Rate Type Pill (2nd agentic assignment: BE/ME/GE/IE) ── */}
+                                    {!tx.isJournalEntry && (
+                                        <select
+                                            value={tx.rateType || ''}
+                                            onChange={(e) => handleRateTypeChange(tx._id, e.target.value)}
+                                            title="Assign exchange rate type for KHR conversion"
+                                            className={`shrink-0 border rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase focus:ring-1 focus:ring-indigo-400 outline-none transition-colors cursor-pointer print:hidden
+                                                ${ tx.rateType === 'BE' ? 'bg-blue-50 border-blue-300 text-blue-700'
+                                                  : tx.rateType === 'ME' ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
+                                                  : tx.rateType === 'GE' ? 'bg-purple-50 border-purple-300 text-purple-700'
+                                                  : tx.rateType === 'IE' ? 'bg-orange-50 border-orange-300 text-orange-700'
+                                                  : 'bg-gray-50 border-gray-200 text-gray-400'}`}
+                                        >
+                                            <option value="">Rate</option>
+                                            <option value="BE">BE</option>
+                                            <option value="ME">ME</option>
+                                            <option value="GE">GE</option>
+                                            <option value="IE">IE</option>
+                                        </select>
                                     )}
                                 </div>
                                 {/* Print UI */}

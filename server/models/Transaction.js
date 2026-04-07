@@ -12,6 +12,7 @@ const TransactionSchema = new mongoose.Schema({
     category: { type: String }, // GL Category
     accountCode: { type: mongoose.Schema.Types.ObjectId, ref: 'AccountCode' }, // Link to Chart of Accounts
     tagSource: { type: String, enum: ['manual', 'ai', 'rule'], default: 'manual' },
+    rateType: { type: String, enum: ['BE', 'ME', 'GE', 'IE', ''], default: '' }, // Which exchange rate applies
     sequence: { type: Number, default: 0 }, // For ordering same-day transactions
     originalData: { type: Object } // Store raw mapped data just in case
 }, { timestamps: true });
