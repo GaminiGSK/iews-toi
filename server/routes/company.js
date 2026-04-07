@@ -1909,11 +1909,13 @@ router.post('/lock-year', auth, async (req, res) => {
         const profile = await CompanyProfile.findOne({ companyCode: targetCompanyCode });
         if (!profile) return res.status(404).json({ message: 'Profile not found' });
         
-        let years = profile.lockedGLYears || [];
-        if (locked && !years.includes(year)) {
-            years.push(year);
-        } else if (!locked && years.includes(year)) {
-            years = years.filter(y => y !== year);
+        // Normalize to strings for consistent comparison (fiscalYear state on frontend is always a string)
+        const yearStr = String(year);
+        let years = (profile.lockedGLYears || []).map(y => String(y));
+        if (locked && !years.includes(yearStr)) {
+            years.push(yearStr);
+        } else if (!locked && years.includes(yearStr)) {
+            years = years.filter(y => y !== yearStr);
         }
         
         profile.lockedGLYears = years;
@@ -2031,7 +2033,7 @@ router.get('/ledger', auth, async (req, res) => {
             transactions: enrichedTransactions,
             companyNameEn: nameEn,
             companyNameKh: nameKh,
-            lockedGLYears: profile ? profile.lockedGLYears || [] : [],
+            lockedGLYears: (profile ? profile.lockedGLYears || [] : []).map(y => String(y)),
             userRole: req.user.role || 'unit'
         });
 
