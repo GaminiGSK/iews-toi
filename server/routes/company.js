@@ -2197,21 +2197,34 @@ router.get('/rates', auth, async (req, res) => {
     }
 });
 
-// POST Upsert Exchange Rate
+// POST Upsert Exchange Rate (4 types: BE, ME, GE, IE)
 router.post('/rates', auth, async (req, res) => {
     try {
         const ExchangeRate = require('../models/ExchangeRate');
-        const { year, rate } = req.body;
+        const { year, rate, BE, ME, GE, IE } = req.body;
 
-        if (!year || !rate) return res.status(400).json({ message: 'Year and Rate required' });
+        if (!year) return res.status(400).json({ message: 'Year is required' });
+
+        // At least one rate type must be provided
+        const hasAnyRate = rate || BE || ME || GE || IE;
+        if (!hasAnyRate) return res.status(400).json({ message: 'At least one rate value is required' });
+
+        // Resolve primary rate for legacy TB compatibility: GE > BE > ME > IE > direct rate
+        const effectiveRate = parseFloat(GE || BE || ME || IE || rate || 0);
+
+        const updates = {
+            user: req.user.id,
+            rate: effectiveRate, // legacy field
+        };
+        if (BE !== undefined && BE !== '') updates.BE = parseFloat(BE);
+        if (ME !== undefined && ME !== '') updates.ME = parseFloat(ME);
+        if (GE !== undefined && GE !== '') updates.GE = parseFloat(GE);
+        if (IE !== undefined && IE !== '') updates.IE = parseFloat(IE);
 
         const updatedRate = await ExchangeRate.findOneAndUpdate(
-            { companyCode: req.user.companyCode, year },
-            {
-                user: req.user.id,
-                rate
-            },
-            { new: true, upsert: true } // Create if not exists
+            { companyCode: req.user.companyCode, year: parseInt(year) },
+            { $set: updates },
+            { new: true, upsert: true }
         );
 
         res.json({ message: 'Rate saved', rate: updatedRate });
@@ -2221,6 +2234,7 @@ router.post('/rates', auth, async (req, res) => {
         res.status(500).json({ message: 'Error saving rate' });
     }
 });
+
 
 // --- TRIAL BALANCE API ---
 
