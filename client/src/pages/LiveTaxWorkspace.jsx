@@ -1499,7 +1499,7 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear: prop
                         ឈ្មោះអ្នកចូលហ៊ុន
                       </span>
                       <span className="text-slate-500 text-[9px] font-black uppercase leading-tight">
-                        Shareholder's Name
+                        Shareholder's Name (Name of Individual / Legal Entity)
                       </span>
                     </div>
                     <div className="w-[18%] border-r border-white/10 p-3 flex flex-col items-center justify-center text-center">
@@ -1510,7 +1510,7 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear: prop
                         អាសយដ្ឋានបច្ចុប្បន្ន
                       </span>
                       <span className="text-slate-500 text-[9px] font-black uppercase leading-tight">
-                        Current Address
+                        Current Address of Shareholder
                       </span>
                     </div>
                     <div className="w-[12%] border-r border-white/10 p-3 flex flex-col items-center justify-center text-center">
@@ -1521,7 +1521,7 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear: prop
                         មុខងារ
                       </span>
                       <span className="text-slate-500 text-[9px] font-black uppercase leading-tight">
-                        Position
+                        Position in the Enterprise
                       </span>
                     </div>
                     <div className="flex-1 flex flex-col">
@@ -1548,7 +1548,7 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear: prop
                               ដើមការិយបរិច្ឆេទ
                             </span>
                             <span className="text-slate-500 text-[8px] font-black uppercase">
-                              Start Period
+                              Beginning of the Period
                             </span>
                           </div>
                           <div className="flex-1 flex text-[10px] font-black text-slate-400">
@@ -1557,7 +1557,7 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear: prop
                             </div>
                             <div className="flex-1 flex flex-col items-center justify-center leading-none">
                               <span className="uppercase text-[8px]">
-                                Amount
+                                Amount(KHR)
                               </span>
                             </div>
                           </div>
@@ -1573,7 +1573,7 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear: prop
                               ចុងការិយបរិច្ឆេទ
                             </span>
                             <span className="text-slate-500 text-[8px] font-black uppercase">
-                              End Period
+                              Ending of the Period
                             </span>
                           </div>
                           <div className="flex-1 flex text-[10px] font-black text-slate-400">
@@ -1582,7 +1582,7 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear: prop
                             </div>
                             <div className="flex-1 flex flex-col items-center justify-center leading-none">
                               <span className="uppercase text-[8px]">
-                                Amount
+                                Amount(KHR)
                               </span>
                             </div>
                           </div>
@@ -1591,16 +1591,16 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear: prop
                     </div>
                   </div>
 
-                  {/* SECTION A: REGISTERED CAPITAL — dynamic */}
-                  <div className="bg-emerald-950/30 border-b border-white/10 px-4 py-2 flex items-center justify-between">
+                  {/* SECTION A: REGISTERED CAPITAL — GDT dark grey header */}
+                  <div className="border-b border-white/10 px-4 py-2.5 flex items-center justify-between" style={{ backgroundColor: '#495057' }}>
                     <div className="flex flex-col">
                       <span className="text-white font-bold text-xs" style={{ fontFamily: 'Kantumruy Pro, sans-serif' }}>
                         ក. មូលធន/មូលធនភាគហ៊ុនចុះបញ្ជី
                       </span>
-                      <span className="text-slate-500 text-[9px] font-black uppercase tracking-wider">A. Registered Capital / Share Capital</span>
+                      <span className="text-white/70 text-[9px] font-black uppercase tracking-wider">A - Registered Capital / Share Capital</span>
                     </div>
                     {(formData.shareholders?.length > 0) && (
-                      <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                      <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-white/20 text-white border border-white/30">
                         ✦ {formData.shareholders.length} shareholder{formData.shareholders.length > 1 ? 's' : ''} auto-detected
                       </span>
                     )}
@@ -1662,36 +1662,37 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear: prop
                       </div>
                     </div>
                   ))}
-                  <div className="flex border-b border-white/10 h-7 bg-white/[0.01] hover:bg-white/[0.03] cursor-pointer transition-colors"
+                  <div className="flex border-b border-white/10 h-7 hover:bg-white/[0.03] cursor-pointer transition-colors" style={{ backgroundColor: 'rgba(108,117,125,0.15)' }}
                     onClick={() => handleFormChange('shareholders', [...(formData.shareholders||[]), {name:'',address:'',position:'Shareholder',pctStart:'',amtStart:'',pctEnd:'',amtEnd:''}])}>
-                    <div className="w-full flex items-center justify-center text-slate-700 hover:text-slate-400 text-[10px] font-black uppercase tracking-widest transition-colors">
+                    <div className="w-full flex items-center justify-center text-slate-500 hover:text-slate-300 text-[10px] font-black uppercase tracking-widest transition-colors">
                       + Add Shareholder Row
                     </div>
                   </div>
-                  <div className="flex h-10 bg-white/[0.04] border-b border-white/10">
-                    <div className="w-[50%] border-r border-white/10 flex items-center px-4 gap-2">
-                      <span className="text-white font-bold text-xs" style={{ fontFamily: 'Kantumruy Pro, sans-serif' }}>សរុប</span>
-                      <span className="text-slate-500 text-[9px] font-black uppercase">Total</span>
+                  {/* SECTION A TOTAL ROW — GDT medium grey */}
+                  <div className="flex h-9 border-b border-white/10" style={{ backgroundColor: 'rgba(108,117,125,0.35)' }}>
+                    <div className="w-[50%] border-r border-white/10 flex items-center justify-end px-4 gap-2">
+                      <span className="text-white font-bold text-xs" style={{ fontFamily: 'Kantumruy Pro, sans-serif' }}>សរុប /</span>
+                      <span className="text-white/80 text-[9px] font-black uppercase tracking-wider">Total</span>
                     </div>
                     <div className="flex-1 flex">
                       <div className="w-1/2 flex border-r border-white/10">
-                        <div className="w-[30%] border-r border-white/10 flex items-center justify-center font-black text-rose-400 text-[10px]">100%</div>
-                        <div className="flex-1 p-2 flex items-center justify-end font-black text-emerald-400 text-[10px]">{formData.share_capital_total || '-'}</div>
+                        <div className="w-[30%] border-r border-white/10 flex items-center justify-center font-black text-white text-[11px]">0 %</div>
+                        <div className="flex-1 p-2 flex items-center justify-end font-black text-white text-[11px]">{formData.share_capital_total || '0'}</div>
                       </div>
                       <div className="flex-1 flex font-black">
-                        <div className="w-[30%] border-r border-white/10 flex items-center justify-center text-rose-400 text-[10px]">100%</div>
-                        <div className="flex-1 p-2 flex items-center justify-end text-emerald-400 text-[10px]">{formData.share_capital_total || '-'}</div>
+                        <div className="w-[30%] border-r border-white/10 flex items-center justify-center text-white text-[11px]">0 %</div>
+                        <div className="flex-1 p-2 flex items-center justify-end text-white text-[11px]">{formData.share_capital_total || '0'}</div>
                       </div>
                     </div>
                   </div>
 
-                  {/* SECTION B: PAID-UP CAPITAL — mirrors Section A */}
-                  <div className="bg-sky-950/20 border-y border-white/10 px-4 py-2 flex items-center justify-between">
+                  {/* SECTION B: PAID-UP CAPITAL — GDT dark grey header */}
+                  <div className="border-y border-white/10 px-4 py-2.5 flex items-center justify-between" style={{ backgroundColor: '#495057' }}>
                     <div className="flex flex-col">
                       <span className="text-white font-bold text-xs" style={{ fontFamily: 'Kantumruy Pro, sans-serif' }}>ខ. មូលធន/មូលធនភាគហ៊ុន (បានបង់)</span>
-                      <span className="text-slate-500 text-[9px] font-black uppercase tracking-wider">B. Paid up Capital / Share Capital</span>
+                      <span className="text-white/70 text-[9px] font-black uppercase tracking-wider">B - Paid up Capital / Share Capital</span>
                     </div>
-                    <span className="text-[9px] text-slate-600 italic font-bold">↑ auto-mirrors Section A</span>
+                    <span className="text-[9px] text-white/50 italic font-bold">↑ mirrors Section A</span>
                   </div>
                   {(formData.shareholders?.length > 0 ? formData.shareholders : [{}]).map((sh, i) => (
                     <div key={i} className="flex border-b border-white/10 min-h-[40px] bg-sky-950/10">
@@ -1713,19 +1714,20 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear: prop
                       </div>
                     </div>
                   ))}
-                  <div className="flex h-10 bg-white/[0.04]">
-                    <div className="w-[50%] border-r border-white/10 flex items-center px-4 gap-2">
-                      <span className="text-white font-bold text-xs" style={{ fontFamily: 'Kantumruy Pro, sans-serif' }}>សរុប</span>
-                      <span className="text-slate-500 text-[9px] font-black uppercase">Total</span>
+                  {/* SECTION B TOTAL ROW — GDT medium grey */}
+                  <div className="flex h-9" style={{ backgroundColor: 'rgba(108,117,125,0.35)' }}>
+                    <div className="w-[50%] border-r border-white/10 flex items-center justify-end px-4 gap-2">
+                      <span className="text-white font-bold text-xs" style={{ fontFamily: 'Kantumruy Pro, sans-serif' }}>សរុប /</span>
+                      <span className="text-white/80 text-[9px] font-black uppercase tracking-wider">Total</span>
                     </div>
                     <div className="flex-1 flex font-black">
                       <div className="w-1/2 flex border-r border-white/10">
-                        <div className="w-[30%] border-r border-white/10 flex items-center justify-center text-rose-400 text-[10px]">100%</div>
-                        <div className="flex-1 p-2 flex items-center justify-end text-emerald-400 text-[10px]">{formData.share_capital_total || '-'}</div>
+                        <div className="w-[30%] border-r border-white/10 flex items-center justify-center text-white text-[11px]">0 %</div>
+                        <div className="flex-1 p-2 flex items-center justify-end text-white text-[11px]">{formData.share_capital_total || '0'}</div>
                       </div>
                       <div className="flex-1 flex">
-                        <div className="w-[30%] border-r border-white/10 flex items-center justify-center text-rose-400 text-[10px]">100%</div>
-                        <div className="flex-1 p-2 flex items-center justify-end text-emerald-400 text-[10px]">{formData.share_capital_total || '-'}</div>
+                        <div className="w-[30%] border-r border-white/10 flex items-center justify-center text-white text-[11px]">0 %</div>
+                        <div className="flex-1 p-2 flex items-center justify-end text-white text-[11px]">{formData.share_capital_total || '0'}</div>
                       </div>
                     </div>
                   </div>
@@ -4740,7 +4742,7 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear: prop
                 {/* LEFT COLUMN: PROFIT & NON-DEDUCTIBLE EXPENSES */}
                 <div className="flex flex-col gap-8">
                   {/* SECTION: INITIAL PROFIT/LOSS */}
-                  <div className="border hover:border-indigo-400 transition-colors border-white/20 h-20 bg-indigo-500/20 rounded-2xl flex items-center shadow-xl overflow-hidden backdrop-blur-sm">
+                  <div className="border border-white/20 h-20 rounded-2xl flex items-center shadow-xl overflow-hidden backdrop-blur-sm" style={{ backgroundColor: '#495057' }}>
                     <div className="w-[75%] border-r border-white/20 px-8">
                       <span
                         className="text-base font-bold block leading-tight text-white mb-1"
@@ -4748,8 +4750,8 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear: prop
                       >
                         ប្រាក់ចំណេញ/(ខាត) មុនបង់ពន្ធ (E1 = B46)
                       </span>
-                      <span className="text-xs block text-indigo-300 font-bold uppercase tracking-widest">
-                        Accounting Profit / (Loss)
+                      <span className="text-xs block text-white/60 font-bold uppercase tracking-widest">
+                        Profit / (Loss) Before Tax — E1 = B46
                       </span>
                     </div>
                     <div className="w-[10%] border-r border-white/20 flex items-center justify-center font-black text-base text-indigo-400/50">
@@ -4762,7 +4764,7 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear: prop
 
                   {/* SECTION: NON-DEDUCTIBLE EXPENSES */}
                   <div className="border border-white/20 overflow-hidden text-white bg-slate-900/40 rounded-2xl shadow-xl backdrop-blur-sm">
-                    <div className="flex bg-slate-800 border-b-2 border-white/20 py-4 px-6 gap-6 items-center">
+                    <div className="flex border-b-2 border-white/10 py-4 px-6 gap-6 items-center" style={{ backgroundColor: '#495057' }}>
                       <div className="bg-rose-600 px-3 py-1 text-xs font-black uppercase rounded shadow-lg text-white">
                         Add
                       </div>
@@ -4774,7 +4776,7 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear: prop
                           ចំណាយមិនអាចកាត់កងបាន
                         </span>
                         <span className="text-xs font-black uppercase tracking-widest text-slate-400">
-                          Non-Deductible Expenses
+                         Non-Deductible Expenses [E18 = Sum(E2:E17)]
                         </span>
                       </div>
                     </div>
@@ -4912,12 +4914,12 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear: prop
                         </div>
                       </div>
                     ))}
-                    <div className="flex bg-rose-500/20 py-4 items-center font-black border-t-2 border-rose-500/50 shadow-[0_-10px_20px_-5px_rgba(225,29,72,0.2)]">
-                      <div className="w-[85%] border-r-2 border-rose-500/50 px-6 text-sm uppercase text-rose-200">
-                        សរុប [E18 = សរុប(E2:E17)] / Total
+                    <div className="flex py-4 items-center font-black border-t-2 border-white/20" style={{ backgroundColor: 'rgba(108,117,125,0.5)' }}>
+                      <div className="w-[85%] border-r-2 border-white/20 px-6 text-sm uppercase text-white font-bold">
+                        Total [E18 = Sum(E2:E17)]
                       </div>
-                      <div className="w-[15%] min-w-[120px] flex items-center justify-end px-4 md:px-6 text-rose-400 text-base">
-                        {formData.e18_amount || "0.00"}
+                      <div className="w-[15%] min-w-[120px] flex items-center justify-end px-4 md:px-6 text-white text-base font-black">
+                        {formData.e18_amount || "0"}
                       </div>
                     </div>
                   </div>
@@ -4927,7 +4929,7 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear: prop
                 <div className="flex flex-col gap-8">
                   {/* SECTION: TAXABLE INCOME NOT IN BOOKS */}
                   <div className="border border-white/20 overflow-hidden text-white bg-slate-900/40 shadow-xl rounded-2xl backdrop-blur-sm">
-                    <div className="flex bg-indigo-500/30 border-b-2 border-white/20 py-4 px-6 gap-6 items-center">
+                    <div className="flex border-b-2 border-white/10 py-4 px-6 gap-6 items-center" style={{ backgroundColor: '#495057' }}>
                       <div className="bg-indigo-500 px-3 py-1 text-xs font-black uppercase rounded shadow-lg text-white">
                         Add
                       </div>
@@ -4939,7 +4941,7 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear: prop
                           ចំណូលជាប់ពន្ធដែលមិនបានកត់ត្រា...
                         </span>
                         <span className="text-xs font-black uppercase tracking-widest text-slate-400">
-                          Taxable incomes not recorded
+                           Taxable Income not Recorded in the Accounting Book [E25 = Sum(E19:E24)]
                         </span>
                       </div>
                     </div>
@@ -5017,19 +5019,19 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear: prop
                         </div>
                       </div>
                     ))}
-                    <div className="flex bg-indigo-500/20 py-4 items-center font-black border-t-2 border-indigo-500/50 shadow-[0_-10px_20px_-5px_rgba(99,102,241,0.2)]">
-                      <div className="w-[85%] border-r-2 border-indigo-500/50 px-6 text-sm uppercase text-indigo-200">
-                        សរុប [E25 = សរុប(E19:E24)] / Total
+                    <div className="flex py-4 items-center font-black border-t-2 border-white/20" style={{ backgroundColor: 'rgba(108,117,125,0.5)' }}>
+                      <div className="w-[85%] border-r-2 border-white/20 px-6 text-sm uppercase text-white font-bold">
+                        Total [E25 = Sum(E19:E24)]
                       </div>
-                      <div className="w-[15%] min-w-[120px] flex items-center justify-end px-4 md:px-6 text-indigo-400 text-base">
-                        {formData.e25_amount || "0.00"}
+                      <div className="w-[15%] min-w-[120px] flex items-center justify-end px-4 md:px-6 text-white text-base font-black">
+                        {formData.e25_amount || "0"}
                       </div>
                     </div>
                   </div>
 
                   {/* SECTION: DEDUCTIBLE EXPENSES NOT IN BOOKS */}
                   <div className="border border-white/20 overflow-hidden text-white bg-slate-900/40 shadow-xl rounded-2xl backdrop-blur-sm">
-                    <div className="flex bg-emerald-500/30 border-b-2 border-white/20 py-4 px-6 gap-6 items-center">
+                    <div className="flex border-b-2 border-white/10 py-4 px-6 gap-6 items-center" style={{ backgroundColor: '#495057' }}>
                       <div className="bg-emerald-500 px-3 py-1 text-xs font-black uppercase text-white rounded shadow-lg">
                         Less
                       </div>
@@ -5040,8 +5042,8 @@ const LiveTaxWorkspace = ({ embedded = false, forcePage = null, activeYear: prop
                         >
                           ចំណាយមិនកត់ត្រាក្នុងបញ្ជីគណនេយ្យ...
                         </span>
-                        <span className="text-xs font-black uppercase tracking-widest text-emerald-200">
-                          Deductible expenses not in books
+                        <span className="text-xs font-black uppercase tracking-widest text-white/70">
+                          Deductible Expenses not Recorded in Books [E31 = Sum(E28:E30)]
                         </span>
                       </div>
                     </div>
