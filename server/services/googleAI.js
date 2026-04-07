@@ -155,18 +155,21 @@ CRITICAL: For EACH shareholder, find their specific "Postal Registered Office Ad
 Return ONLY valid JSON. Do not summarize.`;
                 break;
             case 'mocKh':
-                prompt = `You are a strict Data Extraction AI for Cambodian MOC Business Extracts (Khmer).
-Extract exhaustive details into this exact JSON structure. KEEP ALL TEXT IN KHMER UNICODE:
+                prompt = `You are a strict Data Extraction AI for Cambodian MOC Business Extracts (Khmer version).
+Extract exhaustive details into this exact JSON structure. Preserve Khmer Unicode text exactly as written:
 {
   "entityNameKh": "Company Name in Khmer",
   "registrationNumber": "Reg ID",
   "incorporationDate": "Date in Khmer format if applicable",
-  "directorsKh": [{"nameKh": "Director Name Khmer", "titleKh": "Title Khmer"}],
-  "shareholdersKh": [{"nameKh": "Shareholder Name Khmer", "shares": "Number of shares"}],
-  "businessObjectivesKh": [{"code": "ISIC", "descriptionKh": "Khmer activity description"}],
-  "registeredAddressKh": "Full physical address in Khmer"
+  "directorsKh": [{"nameKh": "Director Name in Khmer (or null)", "addressKh": "Director Postal Registered Office Address — copy exactly as written even if Latin script", "titleKh": "Title in Khmer", "isChairman": false}],
+  "shareholdersKh": [{"nameKh": "Shareholder Name in Khmer (or null)", "addressKh": "Shareholder Postal Registered Office Address — look under each Individual Shareholder section, copy exactly as written even if Latin script", "shares": "Number of shares", "nationality": "Foreigner or Cambodian"}],
+  "businessObjectivesKh": [{"code": "ISIC code", "descriptionKh": "Khmer activity description"}],
+  "registeredAddressKh": "Physical Registered Office Address in Khmer",
+  "registeredShareCapitalKHR": "Registered Share Capital value in KHR as a number e.g. 80000000",
+  "majorityNationality": "e.g. Foreigners or Cambodians"
 }
-Return ONLY valid JSON. Do not translate.`;
+CRITICAL: For EACH shareholder, extract their individual Postal Registered Office Address from their own section. Even if the address is written in Latin/English script (e.g. Chinese address), copy it into the addressKh field exactly as found in the document. Do NOT leave addressKh empty if an address exists.
+Return ONLY valid JSON. Do not translate Khmer text.`;
                 break;
             default:
                 prompt = `Extract all text verbatim and return as JSON: {"rawText": "..."}`;

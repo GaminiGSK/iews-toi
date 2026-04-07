@@ -4184,26 +4184,66 @@ router.get('/toi/autofill', auth, async (req, res) => {
                 const scMocEn = parseSafely(p.get ? p.get('scarMocEn') : p.scarMocEn);
                 const scMocKh = parseSafely(p.get ? p.get('scarMocKh') : p.scarMocKh);
 
-                const scShareholders = scMocEn.shareholders || scMocKh.shareholdersKh || [];
-                for (const sh of scShareholders) {
-                    const name = (sh.nameEn || sh.nameKh || sh.name || '').trim();
+                // Build a merged shareholder map: mocKh (Khmer address first) merged with mocEn (English address fallback)
+                const khShMap = {}; // keyed by numberOfShares or index for cross-referencing
+                for (const shKh of (scMocKh.shareholdersKh || [])) {
+                    const nameKey = (shKh.nameKh || '').trim().toLowerCase() || `shares_${shKh.shares}`;
+                    if (nameKey) khShMap[nameKey] = shKh;
+                }
+                const scShareholders = scMocEn.shareholders && scMocEn.shareholders.length > 0
+                    ? scMocEn.shareholders
+                    : (scMocKh.shareholdersKh || []);
+
+                for (let si = 0; si < scShareholders.length; si++) {
+                    const sh = scShareholders[si];
+                    const nameEn = (sh.nameEn || sh.name || '').trim();
+                    const nameKh = (sh.nameKh || '').trim();
+                    const name = nameEn || nameKh;
                     if (!name || SYSTEM_TEXT.test(name)) continue;
                     const key = name.toLowerCase();
                     if (seen.has(key)) continue;
                     seen.add(key);
+
+                    // Find matching Khmer entry by index or name
+                    const khEntry = scMocKh.shareholdersKh?.[si] || khShMap[nameKh.toLowerCase()] || {};
+
+                    // Address priority: Khmer address → English address → company address
+                    const addrResolved = khEntry.addressKh || sh.address || sh.postalAddress || addrKh || '';
+
                     const pct = parseFloat(sh.ownershipPct || sh.pct || 0) || 0;
-                    list.push({ name, address: sh.address || sh.postalAddress || addrKh || '', position: 'Shareholder', pct: pct || (scShareholders.length === 1 ? 100 : 0) });
+                    list.push({ name, address: addrResolved, position: 'Shareholder', pct: pct || (scShareholders.length === 1 ? 100 : 0) });
                 }
-                const scDirectors = scMocEn.directors || scMocKh.directorsKh || [];
-                for (const d of scDirectors) {
+                // Also add Khmer-only shareholders not present in English extract
+                for (let si = 0; si < (scMocKh.shareholdersKh || []).length; si++) {
+                    const shKh = scMocKh.shareholdersKh[si];
+                    const nameKh = (shKh.nameKh || '').trim();
+                    if (!nameKh || seen.has(nameKh.toLowerCase())) continue;
+                    if (SYSTEM_TEXT.test(nameKh)) continue;
+                    seen.add(nameKh.toLowerCase());
+                    list.push({ name: nameKh, address: shKh.addressKh || addrKh || '', position: 'Shareholder', pct: 0 });
+                }
+
+                // Directors: same Khmer-first address priority
+                const khDirMap = {};
+                for (const dKh of (scMocKh.directorsKh || [])) {
+                    const k = (dKh.nameKh || '').trim().toLowerCase();
+                    if (k) khDirMap[k] = dKh;
+                }
+                const scDirectors = scMocEn.directors && scMocEn.directors.length > 0
+                    ? scMocEn.directors
+                    : (scMocKh.directorsKh || []);
+                for (let di = 0; di < scDirectors.length; di++) {
+                    const d = scDirectors[di];
                     const name = (d.nameEn || d.nameKh || d.name || '').trim();
                     if (!name || SYSTEM_TEXT.test(name)) continue;
                     const key = name.toLowerCase();
                     if (seen.has(key)) continue;
                     seen.add(key);
+                    const khDir = scMocKh.directorsKh?.[di] || khDirMap[name.toLowerCase()] || {};
+                    const addrResolved = khDir.addressKh || d.address || d.postalAddress || addrKh || '';
                     list.push({
                         name,
-                        address: d.address || d.postalAddress || addrKh || '',
+                        address: addrResolved,
                         position: d.title || d.titleKh || 'Director',
                         pct: scDirectors.length === 1 ? 100 : Math.round(100 / scDirectors.length * 100) / 100
                     });
