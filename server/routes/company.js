@@ -4147,7 +4147,7 @@ router.get('/toi/autofill', auth, async (req, res) => {
                     if (seen.has(key)) continue;
                     seen.add(key);
                     const pct = parseFloat(party.ownershipPct) || 0;
-                    list.push({ name: party.name.trim(), address: addrKh || '', position: party.relationship || 'Shareholder', pct: pct || (parties.length === 1 ? 100 : 0) });
+                    list.push({ name: party.name.trim(), address: party.address || party.postalAddress || addrKh || '', position: party.relationship || 'Shareholder', pct: pct || (parties.length === 1 ? 100 : 0) });
                 }
                 // Source 2: p.shareholders[] — BR schema uses nameEn / nameKh
                 const brs = Array.isArray(p.shareholders) ? p.shareholders : [];
@@ -4157,7 +4157,8 @@ router.get('/toi/autofill', auth, async (req, res) => {
                     const key = name.toLowerCase();
                     if (seen.has(key)) continue;
                     seen.add(key);
-                    list.push({ name, address: addrKh || '', position: 'Shareholder', pct: brs.length === 1 ? 100 : 0 });
+                    const shPct = parseFloat(sh.ownershipPct || sh.pct || 0) || (brs.length === 1 ? 100 : 0);
+                    list.push({ name, address: sh.address || sh.postalAddress || addrKh || '', position: 'Shareholder', pct: shPct });
                 }
                 // Source 3: p.directors[] — equal split if no pct
                 const brd = Array.isArray(p.directors) ? p.directors : [];
@@ -4190,8 +4191,8 @@ router.get('/toi/autofill', auth, async (req, res) => {
                     const key = name.toLowerCase();
                     if (seen.has(key)) continue;
                     seen.add(key);
-                    const pct = parseFloat(sh.ownershipPct || sh.pct || sh.numberOfShares || sh.shares) || 0;
-                    list.push({ name, address: addrKh || '', position: 'Shareholder', pct: pct || (scShareholders.length === 1 ? 100 : 0) });
+                    const pct = parseFloat(sh.ownershipPct || sh.pct || 0) || 0;
+                    list.push({ name, address: sh.address || sh.postalAddress || addrKh || '', position: 'Shareholder', pct: pct || (scShareholders.length === 1 ? 100 : 0) });
                 }
                 const scDirectors = scMocEn.directors || scMocKh.directorsKh || [];
                 for (const d of scDirectors) {

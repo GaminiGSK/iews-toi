@@ -131,17 +131,27 @@ Extract all data into this exact JSON structure:
 Return ONLY valid JSON. Do not summarize.`;
                 break;
             case 'mocEn':
-                prompt = `You are a strict Data Extraction AI for Cambodian MOC Business Extracts (English).
+                prompt = `You are a strict Data Extraction AI for Cambodian MOC Business Extracts (English Company Extract PDF).
 Extract exhaustive details into this exact JSON structure:
 {
-  "entityName": "Company Name",
-  "registrationNumber": "Reg ID",
-  "incorporationDate": "Date",
-  "directors": [{"name": "Director Name", "title": "Chairman/Director"}],
-  "shareholders": [{"name": "Shareholder Name", "shares": "Number of shares"}],
-  "businessObjectives": [{"code": "ISIC", "description": "Activity description"}],
-  "registeredAddress": "Full physical address"
+  "entityName": "Company Name in English",
+  "entityNameKh": "Company Name in Khmer if visible",
+  "registrationNumber": "Registration Number",
+  "incorporationDate": "Date e.g. 09-December-2025",
+  "companyType": "e.g. Private Limited Liability Company",
+  "directors": [{"nameEn": "Director Name English", "nameKh": "Khmer if visible", "address": "Their Postal Registered Office Address", "isChairman": true}],
+  "shareholders": [{"nameEn": "Shareholder Name English", "nameKh": "Khmer if visible", "address": "Their Postal Registered Office Address — look under each Individual Shareholder section", "numberOfShares": 600, "nationality": "Foreigner or Cambodian"}],
+  "registeredShareCapitalKHR": "The KHR value e.g. 80000000 — look for Registered Share Capital (KHR)",
+  "registeredShareCapitalUSD": "The USD equivalent if shown",
+  "businessObjectives": [{"code": "ISIC code e.g. 561", "description": "Activity description"}],
+  "registeredAddress": "Physical Registered Office Address",
+  "postalAddress": "Postal Registered Office Address of the company",
+  "contactEmail": "Email address",
+  "contactPhone": "Phone number",
+  "majorityNationality": "e.g. Foreigners",
+  "percentageOfMajorityShareholders": "e.g. 100.00"
 }
+CRITICAL: For EACH shareholder, find their specific "Postal Registered Office Address" listed under their "Individual Shareholder" section. Do NOT leave address blank if it is in the document.
 Return ONLY valid JSON. Do not summarize.`;
                 break;
             case 'mocKh':
