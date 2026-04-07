@@ -2913,6 +2913,36 @@ router.post('/journal-entry', auth, async (req, res) => {
     }
 });
 
+// DELETE Journal Entry by ID (scoped to company)
+router.delete('/journal-entry/:id', auth, async (req, res) => {
+    try {
+        const JournalEntry = require('../models/JournalEntry');
+        const { id } = req.params;
+        const je = await JournalEntry.findOne({ _id: id, companyCode: req.user.companyCode });
+        if (!je) return res.status(404).json({ message: 'Journal Entry not found or not authorized' });
+        await JournalEntry.deleteOne({ _id: id });
+        res.json({ message: `Journal Entry "${je.reference || je.description}" deleted` });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error deleting journal entry' });
+    }
+});
+
+// DELETE All Journal Entries for this company (admin/superadmin only — used to clear test seeds)
+router.delete('/journal-entries/all', auth, async (req, res) => {
+    try {
+        if (!['admin','superadmin'].includes(req.user.role)) {
+            return res.status(403).json({ message: 'Admin only' });
+        }
+        const JournalEntry = require('../models/JournalEntry');
+        const result = await JournalEntry.deleteMany({ companyCode: req.user.companyCode });
+        res.json({ message: `Deleted ${result.deletedCount} journal entries`, deletedCount: result.deletedCount });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error clearing journal entries' });
+    }
+});
+
 // DELETE File (Soft Delete from Drive) - For Unsaved Files
 router.post('/delete-file', auth, async (req, res) => {
     try {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { ArrowLeft, Tag, Sparkles, Wand2, Calendar, Layers, Lock, Unlock } from 'lucide-react';
+import { ArrowLeft, Tag, Sparkles, Wand2, Calendar, Layers, Lock, Unlock, Trash2 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import ErrorBoundary from '../components/ErrorBoundary';
 
@@ -101,6 +101,23 @@ const GeneralLedger = ({ onBack }) => {
         if (fiscalYear === 'all') return;
         const isLocked = lockedGLYears.includes(fiscalYear);
         setLockConfirm({ action: isLocked ? 'UNLOCK' : 'LOCK', year: fiscalYear });
+    };
+
+    // Delete a Journal Entry — tx._id is composite "jeObjectId_lineIndex", extract the real JE id
+    const handleDeleteJE = async (compositeTxId) => {
+        const jeId = String(compositeTxId).split('_')[0]; // real MongoDB ObjectId
+        if (!window.confirm('Delete this Journal Entry? This will remove ALL lines of this entry from the GL.')) return;
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.delete(`/api/company/journal-entry/${jeId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            alert(res.data.message);
+            fetchLedger();
+        } catch (err) {
+            console.error(err);
+            alert(err.response?.data?.message || 'Error deleting journal entry');
+        }
     };
 
     const confirmToggleLock = async () => {
@@ -318,9 +335,20 @@ const GeneralLedger = ({ onBack }) => {
                                 {/* Screen UI */}
                                 <div className="flex items-center gap-2 print:hidden">
                                     {(tx.isJournalEntry || (tx.date && lockedGLYears.includes(new Date(tx.date).getFullYear().toString()))) ? (
-                                        <div className={`flex-1 px-2 py-1 text-xs font-mono border rounded-lg flex items-center gap-1 shadow-sm ${tx.isJournalEntry ? 'bg-orange-50 text-orange-800 border-orange-200' : 'bg-red-50 text-red-800 border-red-200'}`}>
-                                            {tx.isJournalEntry ? <Tag size={12} className="text-orange-500" /> : <Lock size={12} className="text-red-500" />}
-                                            {codes.find(c => c._id === tx.accountCode)?.code || (tx.isJournalEntry ? 'LOCKED (JE)' : 'LOCKED (YEAR)')}
+                                        <div className="flex items-center gap-1.5 flex-1">
+                                            <div className={`flex-1 px-2 py-1 text-xs font-mono border rounded-lg flex items-center gap-1 shadow-sm ${tx.isJournalEntry ? 'bg-orange-50 text-orange-800 border-orange-200' : 'bg-red-50 text-red-800 border-red-200'}`}>
+                                                {tx.isJournalEntry ? <Tag size={12} className="text-orange-500" /> : <Lock size={12} className="text-red-500" />}
+                                                {codes.find(c => c._id === tx.accountCode)?.code || (tx.isJournalEntry ? 'LOCKED (JE)' : 'LOCKED (YEAR)')}
+                                            </div>
+                                            {tx.isJournalEntry && tx._id && (
+                                                <button
+                                                    onClick={() => handleDeleteJE(tx._id)}
+                                                    title="Delete this Journal Entry"
+                                                    className="p-1 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded transition print:hidden"
+                                                >
+                                                    <Trash2 size={13} />
+                                                </button>
+                                            )}
                                         </div>
                                     ) : (
                                         <select
