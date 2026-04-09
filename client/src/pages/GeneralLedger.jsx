@@ -395,25 +395,30 @@ const GeneralLedger = ({ onBack }) => {
                                         </div>
                                     )}
                                     {/* ── Rate Type Pill (2nd agentic assignment: BE/ME/GE/IE) ── */}
-                                    {!tx.isJournalEntry && (
-                                        <select
-                                            value={tx.rateType || ''}
-                                            onChange={(e) => handleRateTypeChange(tx._id, e.target.value)}
-                                            title="Assign exchange rate type for KHR conversion"
-                                            className={`shrink-0 border rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase focus:ring-1 focus:ring-indigo-400 outline-none transition-colors cursor-pointer print:hidden
-                                                ${ tx.rateType === 'BE' ? 'bg-blue-50 border-blue-300 text-blue-700'
-                                                  : tx.rateType === 'ME' ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
-                                                  : tx.rateType === 'GE' ? 'bg-purple-50 border-purple-300 text-purple-700'
-                                                  : tx.rateType === 'IE' ? 'bg-orange-50 border-orange-300 text-orange-700'
-                                                  : 'bg-gray-50 border-gray-200 text-gray-400'}`}
-                                        >
-                                            <option value="">Rate</option>
-                                            <option value="BE">BE</option>
-                                            <option value="ME">ME</option>
-                                            <option value="GE">GE</option>
-                                            <option value="IE">IE</option>
-                                        </select>
-                                    )}
+                                    {!tx.isJournalEntry && (() => {
+                                        const rateColors = {
+                                            BE: { background: '#eff6ff', border: '1px solid #93c5fd', color: '#1d4ed8' }, // blue
+                                            ME: { background: '#ecfdf5', border: '1px solid #6ee7b7', color: '#065f46' }, // emerald
+                                            GE: { background: '#f5f3ff', border: '1px solid #c4b5fd', color: '#6d28d9' }, // purple
+                                            IE: { background: '#fff7ed', border: '1px solid #fdba74', color: '#c2410c' }, // orange
+                                        };
+                                        const style = rateColors[tx.rateType] || { background: '#f9fafb', border: '1px solid #e5e7eb', color: '#9ca3af' };
+                                        return (
+                                            <select
+                                                value={tx.rateType || ''}
+                                                onChange={(e) => handleRateTypeChange(tx._id, e.target.value)}
+                                                title="Assign exchange rate type for KHR conversion"
+                                                style={{ ...style, borderRadius: '6px', padding: '2px 6px', fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', outline: 'none', cursor: 'pointer', flexShrink: 0 }}
+                                                className="print:hidden"
+                                            >
+                                                <option value="">Rate</option>
+                                                <option value="BE">🔵 BE</option>
+                                                <option value="ME">🟢 ME</option>
+                                                <option value="GE">🟣 GE</option>
+                                                <option value="IE">🟠 IE</option>
+                                            </select>
+                                        );
+                                    })()}
                                 </div>
                                 {/* Print UI */}
                                 <div className="hidden print:block font-mono text-[13px] text-black font-semibold truncate max-w-[14vw]">
