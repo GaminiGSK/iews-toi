@@ -44,6 +44,9 @@ class AgentExecutor {
                 case 'bulk_tag_ledger':
                     await this.bulkTagLedger(socket, params);
                     break;
+                case 'tag_rate_type':
+                    await this.tagRateType(socket, params);
+                    break;
 
                 case 'auto_match_codes':
                     await this.autoMatchCodes(socket, params);
@@ -277,6 +280,43 @@ class AgentExecutor {
         }
 
         socket.emit('agent:message', { text: `AI Auto-Tagging Complete! Successfully tagged ${count} transactions.` });
+        socket.emit('ledger:updated');
+    }
+
+    async tagRateType(socket, params) {
+        const trustedCompanyCode = this._getAuthenticatedCompanyCode(socket) || params.companyCode;
+        const { rateType, description_match } = params;
+
+        const validRates = ['BE', 'ME', 'GE', 'IE', ''];
+        if (!validRates.includes(rateType)) {
+            socket.emit('agent:message', { text: `Invalid rate type "${rateType}". Must be BE, ME, GE, or IE.` });
+            return;
+        }
+
+        const Transaction = require('../models/Transaction');
+        const query = { companyCode: trustedCompanyCode };
+
+        if (description_match && description_match.trim().length > 0) {
+            const escaped = description_match.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            query.description = { $regex: new RegExp(escaped, 'i') };
+        } else {
+            // Safety: require at least something to narrow the scope
+            socket.emit('agent:message', { text: `Please tell me which transactions to tag with ${rateType} rate (e.g. a vendor name or keyword).` });
+            return;
+        }
+
+        const count = await Transaction.countDocuments(query);
+        if (count === 0) {
+            socket.emit('agent:message', { text: `No transactions found matching "${description_match}".` });
+            return;
+        }
+
+        await Transaction.updateMany(query, { rateType: rateType });
+
+        const rateLabels = { BE: 'Bank Exchange', ME: 'Market Exchange', GE: 'GDT Exchange', IE: 'Internal Exchange' };
+        socket.emit('agent:message', {
+            text: `✅ Tagged ${count} transaction(s) matching "${description_match}" with ${rateType} (${rateLabels[rateType] || rateType}) exchange rate. KHR values will recalculate on reload.`
+        });
         socket.emit('ledger:updated');
     }
 

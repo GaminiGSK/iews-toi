@@ -97,7 +97,7 @@ const GeneralLedger = ({ onBack }) => {
     const handleRateTypeChange = async (transactionId, rateType) => {
         try {
             const token = localStorage.getItem('token');
-            // Optimistically update UI
+            // Optimistically update the rateType label immediately
             setTransactions(prev => prev.map(tx =>
                 tx._id === transactionId ? { ...tx, rateType } : tx
             ));
@@ -107,6 +107,8 @@ const GeneralLedger = ({ onBack }) => {
             }, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
+            // Re-fetch ledger so KHR column recalculates with the new rate
+            fetchLedger();
         } catch (err) {
             console.error(err);
             alert('Failed to update rate type');
@@ -324,23 +326,23 @@ const GeneralLedger = ({ onBack }) => {
 
     const renderTable = (data, showHeader = true) => {
         return (
-            <table className="w-full text-left print:text-black print:table-fixed">
+            <table className="w-full min-w-[1200px] text-left print:text-black print:table-fixed">
                 {showHeader && (
                     <thead className="bg-gray-50 text-gray-600 text-xs font-bold uppercase border-b border-gray-200 print:bg-white print:text-[8px] print:text-black print:border-b print:border-black">
                         <tr>
-                            <th className="px-6 py-4 w-[120px] print:px-2 print:py-3 print:border-b print:border-black print:w-[11%] print:text-[12px]" rowSpan="2">Date</th>
-                            <th className="px-6 py-4 w-[200px] print:px-2 print:py-3 print:border-b print:border-black print:w-[12%] print:text-[12px]" rowSpan="2">Account Code</th>
-                            <th className="px-6 py-4 w-full print:px-2 print:py-3 print:border-b print:border-black print:w-[31%] print:text-[12px]" rowSpan="2">Description</th>
-                            <th className="px-6 py-4 text-center border-l border-gray-200 print:px-2 print:py-3 print:border-black print:border-l print:text-[12px] print:w-[23%]" colSpan="3">USD ($)</th>
-                            <th className="px-6 py-4 text-center border-l border-gray-200 print:px-2 print:py-3 print:border-black print:border-l print:text-[12px] print:w-[23%]" colSpan="3">KHR (៛)</th>
+                            <th className="px-4 py-4 w-[110px] print:px-2 print:py-3 print:border-b print:border-black print:w-[11%] print:text-[12px]" rowSpan="2">Date</th>
+                            <th className="px-3 py-4 w-[220px] print:px-2 print:py-3 print:border-b print:border-black print:w-[12%] print:text-[12px]" rowSpan="2">Account Code</th>
+                            <th className="px-4 py-4 print:px-2 print:py-3 print:border-b print:border-black print:w-[31%] print:text-[12px]" rowSpan="2">Description</th>
+                            <th className="px-4 py-4 text-center border-l border-gray-200 print:px-2 print:py-3 print:border-black print:border-l print:text-[12px] print:w-[23%]" colSpan="3">USD ($)</th>
+                            <th className="px-4 py-4 text-center border-l border-gray-200 print:px-2 print:py-3 print:border-black print:border-l print:text-[12px] print:w-[23%]" colSpan="3">KHR (៛)</th>
                         </tr>
                         <tr className="border-t border-gray-200 print:border-black">
-                            <th className="px-4 py-2 text-right border-l text-gray-500 print:px-2 print:py-2 print:border-l print:border-black print:text-[11px]">In</th>
-                            <th className="px-4 py-2 text-right text-gray-500 print:px-2 print:py-2 print:text-[11px]">Out</th>
-                            <th className="px-4 py-2 text-right text-gray-500 print:px-2 print:py-2 print:text-[11px]">Bal</th>
-                            <th className="px-4 py-2 text-right border-l text-gray-500 print:px-2 print:py-2 print:border-l print:border-black print:text-[11px]">In</th>
-                            <th className="px-4 py-2 text-right text-gray-500 print:px-2 print:py-2 print:text-[11px]">Out</th>
-                            <th className="px-4 py-2 text-right text-gray-500 print:px-2 print:py-2 print:text-[11px]">Bal</th>
+                            <th className="px-4 py-2 w-[110px] text-right border-l text-gray-500 print:px-2 print:py-2 print:border-l print:border-black print:text-[11px]">In</th>
+                            <th className="px-4 py-2 w-[110px] text-right text-gray-500 print:px-2 print:py-2 print:text-[11px]">Out</th>
+                            <th className="px-4 py-2 w-[110px] text-right text-gray-500 print:px-2 print:py-2 print:text-[11px]">Bal</th>
+                            <th className="px-4 py-2 w-[130px] text-right border-l text-gray-500 print:px-2 print:py-2 print:border-l print:border-black print:text-[11px]">In</th>
+                            <th className="px-4 py-2 w-[130px] text-right text-gray-500 print:px-2 print:py-2 print:text-[11px]">Out</th>
+                            <th className="px-4 py-2 w-[130px] text-right text-gray-500 print:px-2 print:py-2 print:text-[11px]">Bal</th>
                         </tr>
                     </thead>
                 )}
@@ -734,7 +736,7 @@ const GeneralLedger = ({ onBack }) => {
                         ) : filteredTransactions.length === 0 ? (
                             <div className="bg-white p-12 text-center text-gray-500 rounded-xl border border-gray-200">No transactions found for this selection.</div>
                         ) : viewMode === 'date' ? (
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden print:border-none print:shadow-none print:w-full">
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto print:border-none print:shadow-none print:w-full">
                                 {renderTable(filteredTransactions)}
                             </div>
                         ) : (
@@ -763,7 +765,9 @@ const GeneralLedger = ({ onBack }) => {
                                             </p>
                                         </div>
                                     </div>
-                                    {renderTable(group.items, true)}
+                                    <div className="overflow-x-auto">
+                                        {renderTable(group.items, true)}
+                                    </div>
                                 </div>
                             ))
                         )}

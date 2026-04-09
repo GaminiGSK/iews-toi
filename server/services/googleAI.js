@@ -122,9 +122,9 @@ Extract all data into this exact JSON structure:
   "registrationNumberEn": "Registration Number in Arabic Numerals (e.g. 1000455191)",
   "incorporationDateKh": "Date in Khmer format (e.g. ៣០ មករា ២០២៥)",
   "incorporationDateEn": "Date in English format (e.g. 30 January 2025)",
-  "legalFormKh": "Legal Form in Khmer (e.g. ក្រុមហ៊ុនឯកជនទទួលខុសត្រូវមានកម្រិត)",
+  "legalFormKh": "Legal Form in Khmer (e.g. ក្រុមហ៊ុនឯកជនទទួលខុសត្រូវមានកម្រិ�?",
   "legalFormEn": "Legal Form in English (e.g. Private Limited Company)",
-  "mocDocumentNo": "The document identifier at the top left (e.g. MOC-00044916 ពណ.ចបព)",
+  "mocDocumentNo": "The document identifier at the top left (e.g. MOC-00044916 ពណ.ចប�?",
   "issuedPlaceAndDateKh": "The place and date issued at the bottom right in Khmer (e.g. រាជធានីភ្នំពេញ, ៣០ មករា ២០២៥)",
   "issuedPlaceAndDateEn": "The place and date issued at the bottom right in English (e.g. PHNOM PENH, 30 January 2025)"
 }
@@ -140,8 +140,8 @@ Extract exhaustive details into this exact JSON structure:
   "incorporationDate": "Date e.g. 09-December-2025",
   "companyType": "e.g. Private Limited Liability Company",
   "directors": [{"nameEn": "Director Name English", "nameKh": "Khmer if visible", "address": "Their Postal Registered Office Address", "isChairman": true}],
-  "shareholders": [{"nameEn": "Shareholder Name English", "nameKh": "Khmer if visible", "address": "Their Postal Registered Office Address — look under each Individual Shareholder section", "numberOfShares": 600, "nationality": "Foreigner or Cambodian"}],
-  "registeredShareCapitalKHR": "The KHR value e.g. 80000000 — look for Registered Share Capital (KHR)",
+  "shareholders": [{"nameEn": "Shareholder Name English", "nameKh": "Khmer if visible", "address": "Their Postal Registered Office Address �?look under each Individual Shareholder section", "numberOfShares": 600, "nationality": "Foreigner or Cambodian"}],
+  "registeredShareCapitalKHR": "The KHR value e.g. 80000000 �?look for Registered Share Capital (KHR)",
   "registeredShareCapitalUSD": "The USD equivalent if shown",
   "businessObjectives": [{"code": "ISIC code e.g. 561", "description": "Activity description"}],
   "registeredAddress": "Physical Registered Office Address",
@@ -161,8 +161,8 @@ Extract exhaustive details into this exact JSON structure. Preserve Khmer Unicod
   "entityNameKh": "Company Name in Khmer",
   "registrationNumber": "Reg ID",
   "incorporationDate": "Date in Khmer format if applicable",
-  "directorsKh": [{"nameKh": "Director Name in Khmer (or null)", "addressKh": "Director Postal Registered Office Address — copy exactly as written even if Latin script", "titleKh": "Title in Khmer", "isChairman": false}],
-  "shareholdersKh": [{"nameKh": "Shareholder Name in Khmer (or null)", "addressKh": "Shareholder Postal Registered Office Address — look under each Individual Shareholder section, copy exactly as written even if Latin script", "shares": "Number of shares", "nationality": "Foreigner or Cambodian"}],
+  "directorsKh": [{"nameKh": "Director Name in Khmer (or null)", "addressKh": "Director Postal Registered Office Address �?copy exactly as written even if Latin script", "titleKh": "Title in Khmer", "isChairman": false}],
+  "shareholdersKh": [{"nameKh": "Shareholder Name in Khmer (or null)", "addressKh": "Shareholder Postal Registered Office Address �?look under each Individual Shareholder section, copy exactly as written even if Latin script", "shares": "Number of shares", "nationality": "Foreigner or Cambodian"}],
   "businessObjectivesKh": [{"code": "ISIC code", "descriptionKh": "Khmer activity description"}],
   "registeredAddressKh": "Physical Registered Office Address in Khmer",
   "registeredShareCapitalKHR": "Registered Share Capital value in KHR as a number e.g. 80000000",
@@ -190,7 +190,7 @@ exports.extractDocumentData = async (filePath, docType) => {
         const prompt = `You are an expert Document Intelligence Agent for Cambodian Corporate & Tax Documents.
 Carefully read this document and extract EVERY data field with 100% accuracy.
 Identify if it is a MOC Extract, Patent, Tax Certificate, or Bank Letter, and extract all relevant fields.
-Return ONLY a strict JSON object — no markdown, no code fences, no explanation.
+Return ONLY a strict JSON object �?no markdown, no code fences, no explanation.
 
 {
   "companyNumber": "Company registration number",
@@ -226,11 +226,11 @@ Return ONLY a strict JSON object — no markdown, no code fences, no explanation
 }
 
 IMPORTANT:
-- Extract ALL directors listed — do not stop at one.
+- Extract ALL directors listed �?do not stop at one.
 - Extract ALL shareholders with their exact share count.
 - Extract ALL business activity codes and descriptions.
 - If a field is absent from the document, return null. DO NOT guess.
-- For "descriptionKh": ONLY return actual Khmer Unicode script (ក-ឿ character range). NEVER return phrases like "Khmer script not available", "not available", "transliterated from English", or any English text in this field. If there is no actual Khmer text for the business activity, return null.
+- For "descriptionKh": ONLY return actual Khmer Unicode script (ក-�?character range). NEVER return phrases like "Khmer script not available", "not available", "transliterated from English", or any English text in this field. If there is no actual Khmer text for the business activity, return null.
 - Return ONLY the JSON object.`;
 
         const ext = path.extname(filePath).toLowerCase();
@@ -686,7 +686,7 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
             **Harvested Bank Statements Context (from PDF OCR):**
             ${context.harvestedBankStatements && context.harvestedBankStatements.length > 0 ? context.harvestedBankStatements.map(bs => `Bank: ${bs.bankName} | Account: ${bs.accountNumber} | Date Range: ${bs.dateRange}\nTransactions (Preview):\n${bs.transactions.map(tx => `  - Date: ${tx.date}, Desc: ${tx.desc}, IN: ${tx.in}, OUT: ${tx.out}`).join('\n')}`).join('\n\n') : "No harvested bank statements available."}
 
-            **🔴 PHYSICAL BANK STATEMENT AUDIT MEMORY (BA's Source of Truth — Do NOT Ignore):**
+            **🔴 PHYSICAL BANK STATEMENT AUDIT MEMORY (BA's Source of Truth �?Do NOT Ignore):**
             ${auditSessions && auditSessions.length > 0 ? 
                 auditSessions.map(s => `
 --- ${s.quarter} (${s.period}) ---
@@ -763,7 +763,7 @@ ${s.transactions.map(t => `  ${t.date} | IN:$${t.moneyIn||0} OUT:$${t.moneyOut||
             6. **delete_untagged_transactions**: PERMANENTLY deletes all bank transactions from the ledger that are currently sitting without an Account Code tag. Do not run this unless explicitly requested.
                Schema: { "tool_use": "workspace_action", "action": "delete_untagged_transactions", "params": {}, "reply_text": "I am initiating the mass deletion of all untagged ledger entries as you requested." }
 
-            7. **escalate_to_antigravity**: Sends your entire memory buffer to the Senior Engineering terminal. STRICT USAGE RULE: Use ONLY when the user EXPLICITLY says "contact engineering", "ask the bridge", "escalate", or "send to terminal". NEVER trigger this for: bank statement checks, GL comparisons, financial data queries, Q1/Q2/Q3/Q4 data requests, balance checks, or any audit task — you MUST answer ALL of those directly from the context sections above. Being "confused" about financial data is NOT a reason to escalate — always attempt the analysis first using the data in your context.
+            7. **escalate_to_antigravity**: Sends your entire memory buffer to the Senior Engineering terminal. STRICT USAGE RULE: Use ONLY when the user EXPLICITLY says "contact engineering", "ask the bridge", "escalate", or "send to terminal". NEVER trigger this for: bank statement checks, GL comparisons, financial data queries, Q1/Q2/Q3/Q4 data requests, balance checks, or any audit task �?you MUST answer ALL of those directly from the context sections above. Being "confused" about financial data is NOT a reason to escalate �?always attempt the analysis first using the data in your context.
                Schema: { "tool_use": "workspace_action", "action": "escalate_to_antigravity", "params": { "reason": "Explain briefly why you are escalating this." }, "reply_text": "Escalating to engineering as explicitly requested." }
 
             8. **refresh_reports**: Use this when the user asks you to update, fill, or refresh the **Trial Balance (TB)**, **Statement of Financial Position**, **Balance Sheet**, or **Income Statement**. 
@@ -787,7 +787,15 @@ ${s.transactions.map(t => `  ${t.date} | IN:$${t.moneyIn||0} OUT:$${t.moneyOut||
                  CRITICAL IFRS GATEKEEPER RULE: Before proposing this edit, you MUST evaluate the new description against the IFRS structural category of the code block (1=Asset, 2=Liability, 3=Equity, 4/7=Revenue, 5/6=Expense). If the requested classification violates IFRS (e.g., turning a 10000-level Asset code into Revenue/Expenses), you MUST REJECT the user's request. Explain why it breaks the Trial Balance, and suggest an alternative compliant code block. Do NOT execute the tool if it violates IFRS.
                  Schema: { "tool_use": "edit_account_code", "params": { "code": "61220", "description": "Bank Fees & Internet", "matchDescription": "ABA fees and EZECOM ISP", "note": "Updated per user request" }, "reply_text": "I have updated the accounting code description in the database to better reflect your business nature." }
 
-            **CRITICAL EXECUTOR LOOP**:
+            
+             13. **tag_rate_type**: Assigns the KHR exchange rate type (BE/ME/GE/IE) to ALL transactions matching a description substring. Use this when the user says things like "Rate is BE", "set rate to GE for EZECOM", etc.
+                 - **BE** = Bank Exchange Rate (NBC official bank rate)
+                 - **ME** = Market Exchange Rate (open market rate)
+                 - **GE** = GDT Exchange Rate (General Department of Taxation rate)
+                 - **IE** = Internal Exchange Rate (company internal rate)
+                 Extract rateType (BE/ME/GE/IE) and description_match from the message.
+                 Schema: { "tool_use": "workspace_action", "action": "tag_rate_type", "params": { "rateType": "BE", "description_match": "GUNASINGHA" }, "reply_text": "Tagged matching transactions with BE rate type." }
+**CRITICAL EXECUTOR LOOP**:
             1. Is the user asking about bank statement data, Q1/Q2/Q3/Q4 data, GL comparison, audit, balance check, or ANY financial data? Answer in PLAIN TEXT using the context already provided. NEVER use escalate_to_antigravity for financial queries.
             2. Did the user ask for a specific ACTION (fill form, bulk tag, journal entry, refresh, chart), OR confirm "yes/do it"? Use the matching tool JSON.
             3. All other questions: PLAIN TEXT only.
