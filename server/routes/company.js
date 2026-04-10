@@ -2032,6 +2032,15 @@ router.get('/ledger', auth, async (req, res) => {
                     if (enMatch && !nameEn) nameEn = enMatch[1].trim();
                 }
             }
+            // ── SCAR Fallback: read directly from scar* fields if canonical are still empty ──
+            if (!nameEn || !nameKh) {
+                const parseScar = (v) => { if (!v) return {}; if (typeof v === 'object') return v; try { return JSON.parse(v) || {}; } catch { return {}; } };
+                const scMocEn = parseScar(profile.scarMocEn);
+                const scMocKh = parseScar(profile.scarMocKh);
+                const scPatent = parseScar(profile.scarTaxPatent);
+                if (!nameEn) nameEn = scMocEn.entityName || scMocEn.entityNameEn || scPatent.entityNameEn || '';
+                if (!nameKh) nameKh = scMocKh.entityNameKh || scPatent.entityNameKh || '';
+            }
             if (!nameEn) nameEn = fallbackName;
         }
 
@@ -2630,6 +2639,15 @@ router.get('/trial-balance', auth, async (req, res) => {
                     if (enMatch && !nameEn) nameEn = enMatch[1].trim();
                 }
             }
+            // ── SCAR Fallback for TB ──
+            if (!nameEn || !nameKh) {
+                const parseScar = (v) => { if (!v) return {}; if (typeof v === 'object') return v; try { return JSON.parse(v) || {}; } catch { return {}; } };
+                const scMocEn = parseScar(profile.scarMocEn);
+                const scMocKh = parseScar(profile.scarMocKh);
+                const scPatent = parseScar(profile.scarTaxPatent);
+                if (!nameEn) nameEn = scMocEn.entityName || scMocEn.entityNameEn || scPatent.entityNameEn || '';
+                if (!nameKh) nameKh = scMocKh.entityNameKh || scPatent.entityNameKh || '';
+            }
             if (!nameEn) nameEn = req.user.companyCode;
         }
 
@@ -2860,8 +2878,18 @@ router.get('/financials-monthly', auth, async (req, res) => {
                     if (enMatch && !nameEn) nameEn = enMatch[1].trim();
                 }
             }
+            // ── SCAR Fallback for IFS/Financial Statements ──
+            if (!nameEn || !nameKh) {
+                const parseScar = (v) => { if (!v) return {}; if (typeof v === 'object') return v; try { return JSON.parse(v) || {}; } catch { return {}; } };
+                const scMocEn = parseScar(profile.scarMocEn);
+                const scMocKh = parseScar(profile.scarMocKh);
+                const scPatent = parseScar(profile.scarTaxPatent);
+                if (!nameEn) nameEn = scMocEn.entityName || scMocEn.entityNameEn || scPatent.entityNameEn || '';
+                if (!nameKh) nameKh = scMocKh.entityNameKh || scPatent.entityNameKh || '';
+            }
             if (!nameEn) nameEn = companyCode;
         }
+
 
         res.json({
             pl: Object.values(plData).filter(r => r.months[0] !== 0 || ['41000','51000','61000'].includes(r.code)), 
