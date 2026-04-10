@@ -5011,8 +5011,13 @@ router.post('/upload-scar-doc', auth, async (req, res) => {
 
             let profile = await CompanyProfile.findOne({ companyCode });
             if (!profile) {
-                console.log("[SCAR] Profile missing. Auto-generating SCAR lab profile framework.");
-                profile = new CompanyProfile({ user: req.user.id, companyCode: 'SCAR', companyNameEn: 'SCAR Extraction Lab' });
+                console.log(`[SCAR-BR] Profile missing for ${companyCode}. Auto-creating.`);
+                const targetUserForProfile = await require('../models/User').findOne({ companyCode });
+                profile = new CompanyProfile({
+                    user: targetUserForProfile?._id || req.user.id,
+                    companyCode,
+                    companyNameEn: targetUserForProfile?.companyName || companyCode
+                });
                 await profile.save();
             }
 
@@ -5034,10 +5039,26 @@ router.post('/upload-scar-doc', auth, async (req, res) => {
                  );
             }
 
+            // Archive original PDF to unit's Google Drive BR folder
+            try {
+                const { uploadFile } = require('../services/googleDrive');
+                const User = require('../models/User');
+                const targetUser = await User.findOne({ companyCode });
+                const driveFolderId = targetUser?.brFolderId || targetUser?.driveFolderId;
+                if (driveFolderId && fs.existsSync(req.file.path)) {
+                    const driveFileName = `SCAR_${docType.toUpperCase()}_${req.file.originalname}`;
+                    await uploadFile(req.file.path, req.file.mimetype, driveFileName, driveFolderId);
+                    console.log(`[SCAR-BR] Archived ${driveFileName} to Drive folder ${driveFolderId}`);
+                }
+            } catch (driveErr) {
+                console.warn('[SCAR-BR] Drive archive non-fatal:', driveErr.message);
+            }
+
             const fs = require('fs');
             if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
 
             res.json({ message: 'Document Extracted Successfully', extractedData });
+
         } catch (err) {
             console.error('SCAR Upload Error:', err);
             res.status(500).json({ message: 'Error extracting SCAR document' });
