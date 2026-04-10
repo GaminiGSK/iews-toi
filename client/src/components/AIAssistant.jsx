@@ -145,10 +145,16 @@ const AIAssistant = () => {
             window.dispatchEvent(new Event('ledger:refresh'));
         };
 
+        const onRatesUpdated = (data) => {
+            // Bridge socket event → window CustomEvent so GL can recalculate live
+            window.dispatchEvent(new CustomEvent('rates:updated', { detail: data }));
+        };
+
         socket.on('connect', onConnect);
         socket.on('disconnect', onDisconnect);
         socket.on('agent:message', onAgentMessage);
         socket.on('ledger:updated', onLedgerUpdated);
+        socket.on('rates:updated', onRatesUpdated);
 
         // If socket is already connected when effect runs, fire onConnect logic
         if (socket.connected) onConnect();
@@ -158,7 +164,9 @@ const AIAssistant = () => {
             socket.off('disconnect', onDisconnect);
             socket.off('agent:message', onAgentMessage);
             socket.off('ledger:updated', onLedgerUpdated);
+            socket.off('rates:updated', onRatesUpdated);
         };
+
     }, [socket]); // Only depend on socket instance
 
     // HANDLERS

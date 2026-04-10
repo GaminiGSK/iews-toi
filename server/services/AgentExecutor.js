@@ -47,6 +47,9 @@ class AgentExecutor {
                 case 'tag_rate_type':
                     await this.tagRateType(socket, params);
                     break;
+                case 'set_exchange_rate':
+                    await this.setExchangeRate(socket, params);
+                    break;
 
                 case 'auto_match_codes':
                     await this.autoMatchCodes(socket, params);
@@ -317,6 +320,45 @@ class AgentExecutor {
         socket.emit('agent:message', {
             text: `✅ Tagged ${count} transaction(s) matching "${description_match}" with ${rateType} (${rateLabels[rateType] || rateType}) exchange rate. KHR values will recalculate on reload.`
         });
+        socket.emit('ledger:updated');
+    }
+
+    async setExchangeRate(socket, params) {
+        const companyCode = this._getAuthenticatedCompanyCode(socket) || params.companyCode;
+        const { rateType, year, rate } = params;
+
+        const validTypes = ['BE', 'ME', 'GE', 'IE'];
+        if (!validTypes.includes(rateType)) {
+            socket.emit('agent:message', { text: `Invalid rate type "${rateType}". Use BE, ME, GE, or IE.` });
+            return;
+        }
+        const rateNum = parseFloat(rate);
+        if (!rateNum || rateNum < 1) {
+            socket.emit('agent:message', { text: `Invalid rate value "${rate}". Please provide a positive number (e.g. 4150).` });
+            return;
+        }
+        const targetYear = parseInt(year) || new Date().getFullYear();
+
+        socket.emit('agent:message', { text: `🔄 Updating ${rateType} rate for ${targetYear} to ${rateNum.toLocaleString()} KHR/USD...` });
+
+        const ExchangeRate = require('../models/ExchangeRate');
+        const User = require('../models/User');
+        const user = await User.findOne({ companyCode });
+        if (!user) { socket.emit('agent:message', { text: `Company not found: ${companyCode}` }); return; }
+
+        await ExchangeRate.findOneAndUpdate(
+            { companyCode, year: targetYear },
+            { $set: { [rateType]: rateNum, user: user._id } },
+            { upsert: true, new: true }
+        );
+
+        const rateLabels = { BE: 'Bank Exchange', ME: 'Market Exchange', GE: 'GDT Exchange', IE: 'Internal Exchange' };
+        socket.emit('agent:message', {
+            text: `✅ ${rateType} (${rateLabels[rateType]}) for ${targetYear} → **${rateNum.toLocaleString()} KHR/USD**\n\n⚡ All GL KHR values are recalculating now.`
+        });
+
+        // Broadcast to ALL clients so GL refreshes live
+        this.io.emit('rates:updated', { companyCode, year: targetYear, rateType, rate: rateNum });
         socket.emit('ledger:updated');
     }
 

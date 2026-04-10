@@ -17,6 +17,7 @@ const GeneralLedger = ({ onBack }) => {
     const [lockMsg, setLockMsg] = useState(null); // { ok, text }
     const [companyNameEn, setCompanyNameEn] = useState('');
     const [companyNameKh, setCompanyNameKh] = useState('');
+    const [rateFlash, setRateFlash] = useState(null); // { rateType, rate, year }
 
     // Fetch TOI BR Database data for Company name if available
     const [filledData, setFilledData] = useState(() => {
@@ -39,7 +40,20 @@ const GeneralLedger = ({ onBack }) => {
         fetchLedger();
         const handleRefresh = () => fetchLedger();
         window.addEventListener('ledger:refresh', handleRefresh);
-        return () => window.removeEventListener('ledger:refresh', handleRefresh);
+
+        // Live rate update — emitted by BA set_exchange_rate action
+        const handleRatesUpdated = (e) => {
+            const { rateType, rate, year } = e.detail || {};
+            setRateFlash({ rateType, rate, year });
+            setTimeout(() => setRateFlash(null), 5000);
+            fetchLedger();
+        };
+        window.addEventListener('rates:updated', handleRatesUpdated);
+
+        return () => {
+            window.removeEventListener('ledger:refresh', handleRefresh);
+            window.removeEventListener('rates:updated', handleRatesUpdated);
+        };
     }, []);
 
     const fetchLedger = async () => {
@@ -474,6 +488,18 @@ const GeneralLedger = ({ onBack }) => {
                 }
             `}</style>
             <div className="gl-print-root min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900">
+                {/* ⚡ Live Rate Update Toast */}
+                {rateFlash && (
+                    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-top-4 fade-in duration-300 print:hidden">
+                        <div className="bg-teal-900 border border-teal-400/50 text-teal-100 px-6 py-3 rounded-2xl shadow-2xl shadow-teal-900/50 flex items-center gap-3">
+                            <span className="w-2.5 h-2.5 bg-teal-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(45,212,191,0.8)]"></span>
+                            <span className="font-bold text-sm">
+                                ⚡ {rateFlash.rateType} rate ({rateFlash.year}) → {Number(rateFlash.rate || 0).toLocaleString()} KHR/USD — GL recalculating...
+                            </span>
+                        </div>
+                    </div>
+                )}
+
                 {/* Header - Left Aligned */}
                 <div className="bg-white border-b border-gray-200 px-8 py-5 flex items-center gap-8 sticky top-0 z-20 shadow-sm overflow-x-auto print:hidden">
                     <div className="flex items-center gap-4 shrink-0">
