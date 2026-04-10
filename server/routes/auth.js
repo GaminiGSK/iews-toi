@@ -186,8 +186,9 @@ router.get('/users', auth, async (req, res) => {
             .sort({ username: 1 })
             .select('username companyName loginCode createdAt role createdBy');
         } else {
-            // Admin sees all units. Sorting alphabetically. Bulletproof role exclusion.
+            // Admin sees ONLY units they created (createdBy = their own _id)
             users = await User.find({
+                createdBy: req.user.id,
                 role: { $nin: ['admin', 'superadmin'] },
                 username: { $nin: ['Admin', 'ADMIN', 'superadmin', 'TEST', 'test', 'scar', 'SCAR', req.user.username] }
             })
