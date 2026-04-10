@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import DynamicForm from '../components/DynamicForm';
 import { ArrowLeft, Layout, Save, Eye, Code, Play } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -75,19 +75,54 @@ const TaxFormWorkbench = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         taxMonths: "12",
-        fromDate: "01012026",
-        untilDate: "31122026",
-        enterpriseName: "GK SMART TESTING LTD",
-        tin: "L001-123456789",
-        directorName: "DR. GK SMART"
+        fromDate: "01012025",
+        untilDate: "31122025",
+        enterpriseName: "",
+        tin: "",
+        directorName: "",
+        mainActivity: "",
+        registeredAddress: ""
     });
-    const [previewMode, setPreviewMode] = useState('editor'); // 'editor' | 'preview'
+    const [previewMode, setPreviewMode] = useState('editor');
     const [activePage, setActivePage] = useState(1);
+    const [autoFilled, setAutoFilled] = useState(false);
+    const [loadingAF, setLoadingAF] = useState(false);
+
+    // Auto-load from SCAR BR data on mount
+    const loadFromScar = async () => {
+        setLoadingAF(true);
+        try {
+            const token = localStorage.getItem('token');
+            const year = new Date().getFullYear() - 1; // default prior year
+            const res = await (await import('axios')).default.get(
+                `/api/company/toi/autofill?year=${year}`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            const d = res.data;
+            setFormData(prev => ({
+                ...prev,
+                enterpriseName: d.row1?.entityName || d.row1?.companyNameEn || prev.enterpriseName,
+                tin: (d.row2?.tin || '').replace(/[^0-9A-Za-z]/g, ''),
+                directorName: d.row4?.directorNameEn || d.row5?.directorNameEn || prev.directorName,
+                mainActivity: Array.isArray(d.row6) ? d.row6.map(a => a.activityEn || a).join(', ') : (d.row6 || prev.mainActivity),
+                registeredAddress: d.row7?.address || d.row7?.addressLine || prev.registeredAddress,
+                taxRegistrationDate: d.row3?.registrationDate || prev.taxRegistrationDate,
+            }));
+            setAutoFilled(true);
+        } catch (err) {
+            console.warn('[Workbench] SCAR autofill failed:', err.message);
+        } finally {
+            setLoadingAF(false);
+        }
+    };
+
+    // Load on mount
+    React.useEffect(() => { loadFromScar(); }, []);
 
     const handleFormChange = (key, value) => {
         setFormData(prev => ({ ...prev, [key]: value }));
-        console.log(`[Workbench] Updated ${key}:`, value);
     };
+
 
     return (
         <div className="min-h-screen bg-[#0f172a] flex flex-col font-sans">
@@ -127,6 +162,20 @@ const TaxFormWorkbench = () => {
                 </div>
 
                 <div className="flex items-center gap-3">
+                    {/* SCAR autofill badge */}
+                    {autoFilled && (
+                        <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                            ✓ SCAR Loaded
+                        </span>
+                    )}
+                    <button
+                        onClick={loadFromScar}
+                        disabled={loadingAF}
+                        className="px-3 py-1.5 rounded-lg text-[10px] font-bold border border-white/10 bg-white/5 text-white hover:bg-white/10 transition flex items-center gap-1.5 active:scale-95"
+                    >
+                        <Play size={10} className={loadingAF ? 'animate-spin' : ''} />
+                        {loadingAF ? 'Loading...' : 'Reload from SCAR'}
+                    </button>
                     <div className="flex bg-black/20 p-1 rounded-lg border border-white/5">
                         <button
                             onClick={() => setPreviewMode('editor')}
@@ -142,6 +191,7 @@ const TaxFormWorkbench = () => {
                         </button>
                     </div>
                 </div>
+
             </div>
 
             <div className="flex-1 flex overflow-hidden">
