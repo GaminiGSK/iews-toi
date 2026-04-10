@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
-    UserPlus, User, Edit2, Trash2, X, Lock, Users, FileSpreadsheet, Brain, ChevronRight, FileText, ArrowLeft, CloudUpload, Loader2, CheckCircle, KeyRound, AlertCircle
+    UserPlus, User, Edit2, Trash2, X, Lock, Users, FileSpreadsheet, Brain, ChevronRight,
+    FileText, ArrowLeft, CloudUpload, Loader2, CheckCircle, KeyRound, AlertCircle,
+    Star, Terminal, Upload, Sparkles
 } from 'lucide-react';
 import TaxFormWorkbench from './TaxFormWorkbench';
 import LiveTaxWorkspace from './LiveTaxWorkspace';
@@ -25,7 +27,7 @@ export default function AdminDashboard() {
     const [knowledgeBase, setKnowledgeBase] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState(null);
 
-    // --- BR Extraction State ---
+    // --- BR / SCAR Extraction State ---
     const [isScanning, setIsScanning] = useState(false);
     const [selectedDoc, setSelectedDoc] = useState(null);
     const version = "v5.12.24_CLEAN";
@@ -34,7 +36,31 @@ export default function AdminDashboard() {
     const [activeBRIndex, setActiveBRIndex] = useState(null);
     const [selectedUserBR, setSelectedUserBR] = useState(() => localStorage.getItem('lastSelectedBR') || '');
     const [organizingProfile, setOrganizingProfile] = useState(false);
-    const [brView, setBrView] = useState(() => localStorage.getItem('lastBRView') || 'organized'); // 'raw' or 'organized'
+    const [brView, setBrView] = useState(() => localStorage.getItem('lastBRView') || 'organized');
+
+    // --- SCAR 5-Slot State (new BR method) ---
+    const scarDocSlots = [
+        { id: 'taxPatent',  label: '1. Tax Patent',           color: 'emerald' },
+        { id: 'taxIdCard',  label: '2. Tax ID Card',           color: 'amber'   },
+        { id: 'moc',        label: '3. MOC',                   color: 'sky'     },
+        { id: 'mocEn',      label: '4. MOC Extract English',   color: 'violet'  },
+        { id: 'mocKh',      label: '5. MOC Extract Khmer',     color: 'rose'    },
+    ];
+    const scarColors = {
+        emerald: { base: '#10b981', bg: 'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.3)', glow: 'rgba(16,185,129,0.2)' },
+        amber:   { base: '#f59e0b', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.3)', glow: 'rgba(245,158,11,0.2)' },
+        sky:     { base: '#0ea5e9', bg: 'rgba(14,165,233,0.08)', border: 'rgba(14,165,233,0.3)', glow: 'rgba(14,165,233,0.2)' },
+        violet:  { base: '#8b5cf6', bg: 'rgba(139,92,246,0.08)', border: 'rgba(139,92,246,0.3)', glow: 'rgba(139,92,246,0.2)' },
+        rose:    { base: '#f43f5e', bg: 'rgba(244,63,94,0.08)',  border: 'rgba(244,63,94,0.3)',  glow: 'rgba(244,63,94,0.2)'  },
+    };
+    const [scarData, setScarData]           = useState({});  // { taxPatent: '...', mocEn: '...', ... }
+    const [uploadingScarf, setUploadingScarf] = useState(null); // which slot is uploading
+    const [showScarPanel, setShowScarPanel] = useState(null);   // which slot's data to show
+    const [confirmDelScarf, setConfirmDelScarf] = useState(null);
+    const [scarPromoteTarget, setScarPromoteTarget] = useState('');
+    const [scarPromoting, setScarPromoting] = useState(false);
+    const [scarPromoteResult, setScarPromoteResult] = useState(null);
+
 
     // --- Data Fetching ---
     const fetchUsers = async () => {
@@ -85,10 +111,118 @@ export default function AdminDashboard() {
     useEffect(() => {
         if (selectedUserBR) {
             localStorage.setItem('lastSelectedBR', selectedUserBR);
-            // On tab change or selection, force the dossier to reload from master record
             fetchUserBRDocs(selectedUserBR);
+            loadScarData(selectedUserBR);
         }
     }, [selectedUserBR, activeTab]);
+
+    // Load existing SCAR data for a unit
+    const loadScarData = async (username) => {
+        if (!username) { setScarData({}); return; }
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.get(`/api/company/admin/profile/${username}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const p = res.data || {};
+            setScarData({
+                taxPatent: p.scarTaxPatent || null,
+                taxIdCard: p.scarTaxIdCard || null,
+                moc:       p.scarMoc       || null,
+                mocEn:     p.scarMocEn     || null,
+                mocKh:     p.scarMocKh     || null,
+            });
+        } catch (e) { setScarData({}); }
+    };
+
+    // Upload a SCAR doc for any unit
+    const handleScarfUpload = async (slotId, file, inputEl = null) => {
+        if (!file || !selectedUserBR) return;
+        setUploadingScarf(slotId);
+        const fd = new FormData();
+        fd.append('file', file);
+        fd.append('docType', slotId);
+        const targetUser = users.find(u => u.username === selectedUserBR);
+        fd.append('companyCode', targetUser?.companyCode || selectedUserBR.toUpperCase());
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.post('/api/company/upload-scar-doc', fd, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            setScarData(prev => ({ ...prev, [slotId]: res.data.extractedData }));
+            setShowScarPanel(slotId);
+        } catch (err) {
+            alert('Extract failed: ' + (err.response?.data?.message || err.message));
+        } finally {
+            setUploadingScarf(null);
+            if (inputEl) inputEl.value = null;
+        }
+    };
+
+    // Delete a SCAR doc slot for a unit
+    const handleScarfDelete = async (slotId) => {
+        const targetUser = users.find(u => u.username === selectedUserBR);
+        const companyCode = targetUser?.companyCode || selectedUserBR.toUpperCase();
+        try {
+            const token = localStorage.getItem('token');
+            await axios.post('/api/company/delete-scar-doc', { docType: slotId, companyCode }, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            setScarData(prev => ({ ...prev, [slotId]: null }));
+            setShowScarPanel(null);
+            setConfirmDelScarf(null);
+        } catch (err) { alert('Delete failed: ' + err.message); }
+    };
+
+    // Promote SCAR data → canonical CompanyProfile fields
+    const handleScarfPromote = async () => {
+        if (!scarPromoteTarget) return;
+        setScarPromoting(true);
+        setScarPromoteResult(null);
+        // First copy the current unit's scar fields into the SCAR sandbox profile so scar-promote works
+        // Actually we promote directly from the unit — need a direct promote
+        // We'll re-use scar-promote with the source being this unit's own scar fields
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.post('/api/company/scar-promote', {
+                targetCompanyCode: scarPromoteTarget,
+                sourceCompanyCode: users.find(u => u.username === selectedUserBR)?.companyCode || selectedUserBR.toUpperCase()
+            }, { headers: { 'Authorization': `Bearer ${token}` } });
+            setScarPromoteResult({ success: true, ...res.data });
+        } catch (err) {
+            setScarPromoteResult({ success: false, message: err.response?.data?.message || 'Promotion failed' });
+        } finally { setScarPromoting(false); }
+    };
+
+    // Build Master Profile from scar data
+    const buildMasterProfile = () => {
+        const parse = (s) => { if (!s) return {}; if (typeof s === 'object') return s; try { return JSON.parse(s) || {}; } catch { return {}; } };
+        const patent = parse(scarData.taxPatent), idCard = parse(scarData.taxIdCard),
+              moc = parse(scarData.moc), mocEn = parse(scarData.mocEn), mocKh = parse(scarData.mocKh);
+        return {
+            'Corporate Identity': {
+                'Entity Name (EN)': mocEn.entityName || mocEn.entityNameEn || patent.entityNameEn || idCard.entityNameEn,
+                'Entity Name (KH)': mocKh.entityNameKh || moc.entityNameKh || patent.entityNameKh,
+                'Registration No.': mocEn.registrationNumber || moc.registrationNumberEn || mocKh.registrationNumber,
+                'Incorporation Date': mocEn.incorporationDate || moc.incorporationDateEn,
+                'Legal Form': moc.legalFormEn || mocEn.legalForm || patent.legalFormEn,
+            },
+            'Tax Identity': {
+                'TIN': patent.taxTIN || idCard.taxTIN,
+                'Tax Branch': patent.taxBranch || idCard.taxBranch,
+                'Taxpayer Type': patent.taxPayerType,
+                'Tax Reg. Date': idCard.taxRegistrationDateEn || patent.taxRegistrationDate,
+            },
+            'Governance': {
+                'Directors': JSON.stringify(mocEn.directors || mocKh.directorsKh || []),
+                'Shareholders': JSON.stringify(mocEn.shareholders || mocKh.shareholdersKh || []),
+            },
+            'Operations': {
+                'Business Activities': JSON.stringify(mocEn.businessObjectives || patent.businessActivities || []),
+                'Address': mocEn.registeredAddress || patent.address,
+            }
+        };
+    };
 
     const fetchFileContent = async (category, fileName) => {
         try {
@@ -577,212 +711,166 @@ export default function AdminDashboard() {
                         </div>
                     )}
 
+                    {/* SCAR 5-SLOT BR PANEL */}
                     {activeTab === 'profile' && (
                         <div className="h-full overflow-hidden flex animate-in fade-in duration-500">
-                            {/* --- SIDEBAR: Uploaded Documents --- */}
-                            <div className="w-[450px] border-r border-white/5 bg-slate-900/40 p-10 overflow-y-auto">
-                                <div className="flex items-center justify-between mb-8">
-                                    <h3 className="text-xs font-black text-indigo-400 uppercase tracking-[0.3em]">BR Document Pool</h3>
-                                    {syncStatus && (
-                                        <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full ${syncStatus.includes('Error') || syncStatus.includes('Failed') ? 'bg-red-500/20 text-red-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
-                                            {syncStatus}
-                                        </span>
-                                    )}
+                            {/* LEFT: Unit Selector + 5 Slots */}
+                            <div style={{ width: 420, borderRight: '1px solid rgba(255,255,255,0.05)', background: 'rgba(15,23,42,0.6)' }} className="flex flex-col overflow-y-auto p-8 gap-5 shrink-0">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <Terminal size={18} className="text-orange-400" />
+                                    <h3 className="text-xs font-black text-white tracking-[0.2em] uppercase">SCAR Extraction</h3>
+                                    <span className="text-[9px] px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/30 font-black uppercase">New</span>
                                 </div>
 
-                                {/* User Dropdown */}
-                                <div className="mb-8 space-y-3">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-2">Select Target Entity</label>
-                                    <div className="flex gap-2">
+                                {/* Unit Selector */}
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Target Unit</label>
+                                    <select
+                                        className="w-full bg-black/50 border border-white/10 p-4 rounded-2xl text-white font-bold uppercase outline-none focus:ring-2 focus:ring-orange-500/30 appearance-none cursor-pointer text-sm"
+                                        value={selectedUserBR}
+                                        onChange={(e) => { setSelectedUserBR(e.target.value); setScarData({}); setShowScarPanel(null); setScarPromoteResult(null); }}
+                                    >
+                                        <option value="">Select a unit...</option>
+                                        {users.map(u => (
+                                            <option key={u._id} value={u.username}>{u.companyName || u.username} ({u.username})</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Master Profile Button */}
+                                {selectedUserBR && Object.values(scarData).some(Boolean) && (
+                                    <div
+                                        onClick={() => setShowScarPanel('master')}
+                                        style={{ background: showScarPanel === 'master' ? 'rgba(234,179,8,0.12)' : 'rgba(255,255,255,0.03)', border: `1px solid ${showScarPanel === 'master' ? 'rgba(234,179,8,0.5)' : 'rgba(234,179,8,0.15)'}`, borderRadius: 16, padding: '14px 16px', cursor: 'pointer' }}
+                                        className="flex items-center justify-between transition-all hover:border-yellow-400/40"
+                                    >
+                                        <span className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-yellow-400">
+                                            <Star size={14} /> Master Profile
+                                        </span>
+                                        <FileText size={13} className="text-yellow-500" />
+                                    </div>
+                                )}
+
+                                {/* Promote Panel */}
+                                {selectedUserBR && Object.values(scarData).some(Boolean) && (
+                                    <div style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: 16, padding: 16 }} className="flex flex-col gap-3">
+                                        <p className="text-[10px] font-black text-emerald-300 uppercase tracking-widest flex items-center gap-2"><Upload size={12} /> Promote to Profile</p>
                                         <select
-                                            className="flex-1 bg-black/50 border border-white/10 p-5 rounded-[24px] text-white font-bold uppercase outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none cursor-pointer"
-                                            value={selectedUserBR}
-                                            onChange={(e) => {
-                                                const val = e.target.value;
-                                                setSelectedUserBR(val);
-                                                if (val) fetchUserBRDocs(val);
-                                            }}
+                                            value={scarPromoteTarget}
+                                            onChange={e => { setScarPromoteTarget(e.target.value); setScarPromoteResult(null); }}
+                                            className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs font-bold outline-none"
                                         >
-                                            <option value="">Choose a user profile...</option>
+                                            <option value="">— Same unit (self) —</option>
                                             {users.map(u => (
-                                                <option key={u._id} value={u.username}>{u.companyName} ({u.username})</option>
+                                                <option key={u._id} value={u.companyCode || u.username.toUpperCase()}>
+                                                    {u.companyName} ({u.username})
+                                                </option>
                                             ))}
                                         </select>
-                                        <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/5">
-                                            <Brain size={20} className="text-indigo-400 opacity-20" />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Upload Dropzone (Enlarged) */}
-                                <div
-                                    className={`border-2 border-dashed rounded-[48px] p-24 mb-10 flex flex-col items-center group transition-all cursor-pointer ${!selectedUserBR ? 'opacity-30 grayscale cursor-not-allowed border-white/5' : 'border-indigo-500/30 bg-indigo-500/5 hover:border-indigo-500 hover:bg-indigo-500/10'}`}
-                                    onClick={() => selectedUserBR && document.getElementById('br-upload').click()}
-                                    onDragOver={(e) => e.preventDefault()}
-                                    onDrop={(e) => { e.preventDefault(); if (selectedUserBR) handleBRUpload(e.dataTransfer.files); }}
-                                >
-                                    <input
-                                        type="file"
-                                        id="br-upload"
-                                        className="hidden"
-                                        multiple
-                                        disabled={!selectedUserBR}
-                                        onChange={(e) => handleBRUpload(e.target.files)}
-                                    />
-                                    <div className="w-24 h-24 bg-indigo-500/10 rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:bg-indigo-500 transition-all duration-500">
-                                        {uploadingBR ? <Loader2 size={48} className="text-white animate-spin" /> : <CloudUpload size={48} className={`${!selectedUserBR ? 'text-gray-700' : 'text-indigo-400 group-hover:text-white'}`} />}
-                                    </div>
-                                    <span className="text-xs font-black text-gray-400 group-hover:text-indigo-300 uppercase tracking-widest text-center leading-relaxed">
-                                        {selectedUserBR ? 'Drop documents here\nto sync for ' + selectedUserBR : 'Select a user above\nto enable dropzone'}
-                                    </span>
-                                </div>
-
-                                {/* List */}
-                                <div className="space-y-4">
-                                    {brDocs.map((doc, idx) => (
-                                        <div
-                                            key={doc.id}
-                                            onClick={() => setActiveBRIndex(idx)}
-                                            className={`p-6 rounded-2xl border transition-all cursor-pointer ${activeBRIndex === idx ? 'bg-indigo-600/10 border-indigo-500/50' : 'bg-white/[0.03] border-white/5 hover:bg-white/[0.05]'}`}
+                                        <button
+                                            onClick={handleScarfPromote}
+                                            disabled={scarPromoting}
+                                            className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 transition-all"
                                         >
-                                            <div className="flex items-center gap-4">
-                                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${activeBRIndex === idx ? 'bg-indigo-500 text-white' : 'bg-white/5 text-gray-500'}`}>
-                                                    <FileText size={18} />
-                                                </div>
-                                                <div className="flex flex-col overflow-hidden">
-                                                    <span className="text-xs font-bold text-white truncate">{doc.name}</span>
-                                                    <span className="text-[8px] text-gray-500 font-black uppercase tracking-widest mt-1">Extracted {doc.timestamp}</span>
-                                                </div>
-                                                <div className="ml-auto">
-                                                    <CheckCircle size={14} className="text-emerald-500" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                    {brDocs.length === 0 && (
-                                        <div className="py-20 text-center opacity-10">
-                                            <FileText size={48} className="mx-auto mb-4" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest">Awaiting documents</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* --- MAIN: Display --- */}
-                            <div className="flex-1 overflow-y-auto p-12 bg-black/40">
-                                {activeBRIndex !== null ? (
-                                    <div className="max-w-5xl mx-auto space-y-10 animate-in fade-in slide-in-from-right-8 duration-700">
-                                        <div className="flex items-center justify-between border-b border-white/5 pb-8 mb-4">
-                                            <div>
-                                                <h2 className="text-4xl font-black text-white uppercase tracking-tight mb-2">{brDocs[activeBRIndex].name}</h2>
-                                                <div className="flex items-center gap-4">
-                                                    <p className="text-indigo-400 text-[10px] font-black uppercase tracking-[0.4em]">
-                                                        {brView === 'raw' ? 'Full AI Transcription • Bilingual Extraction (KH/EN)' : 'Structured Intelligence • Natural Language Business Profile'}
-                                                    </p>
-                                                    <div className="flex bg-white/5 p-1 rounded-xl">
-                                                        <button
-                                                            onClick={() => setBrView('raw')}
-                                                            className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${brView === 'raw' ? 'bg-indigo-500 text-white' : 'text-slate-500 hover:text-white'}`}
-                                                        >Raw Text</button>
-                                                        <button
-                                                            onClick={() => { if (brDocs[activeBRIndex].organizedText) setBrView('organized'); }}
-                                                            className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${brView === 'organized' ? 'bg-emerald-500 text-white' : 'text-slate-500 hover:text-white'}`}
-                                                        >
-                                                            Organized Profile
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {brView === 'raw' && (
-                                                <button
-                                                    onClick={() => setBrView('organized')}
-                                                    className="bg-emerald-500 hover:bg-emerald-400 text-black px-8 py-4 rounded-[20px] font-black text-[11px] uppercase tracking-widest flex items-center gap-3 transition-all shadow-xl shadow-emerald-500/20 active:scale-95"
-                                                >
-                                                    <ChevronRight size={16} />
-                                                    View Synthesis
-                                                </button>
-                                            )}
-                                        </div>
-
-                                        {brView === 'raw' ? (
-                                            <div className="bg-slate-900/60 border border-white/10 rounded-[48px] p-12 shadow-2xl relative overflow-hidden group">
-                                                <div className="absolute top-0 right-0 p-8 opacity-5">
-                                                    <Brain size={120} />
-                                                </div>
-                                                <div className="prose prose-invert max-w-none">
-                                                    <pre className="whitespace-pre-wrap text-[#CFCFCF] font-mono text-md leading-[1.8] tracking-wide focus:outline-none">
-                                                        {brDocs[activeBRIndex].text}
-                                                    </pre>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div className="bg-white border border-slate-200 rounded-[40px] p-20 shadow-2xl relative overflow-hidden animate-in zoom-in duration-500 min-h-[800px]">
-                                                {/* Header Line */}
-                                                <div className="border-b-2 border-slate-900 pb-8 mb-12 flex justify-between items-end">
-                                                    <div>
-                                                        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] mb-2">SYSTEM SYNTHESIS REPORT</h3>
-                                                        <h4 className="text-3xl font-black text-slate-900 uppercase tracking-tighter">Entity Intelligence Profile</h4>
-                                                    </div>
-                                                    <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center">
-                                                        <CheckCircle size={24} className="text-emerald-600" />
-                                                    </div>
-                                                </div>
-
-                                                <div className="prose prose-slate max-w-none text-slate-800 leading-relaxed space-y-8">
-                                                    {(brDocs[activeBRIndex].organizedText || '').split('\n').map((line, i) => {
-                                                        const cleanLine = line.trim();
-                                                        if (!cleanLine) return <div key={i} className="h-4" />;
-
-                                                        if (/^[IVX]+\./.test(cleanLine) || cleanLine.startsWith('#')) {
-                                                            return (
-                                                                <h4 key={i} className="text-lg font-black text-slate-900 uppercase tracking-widest pt-8 border-t border-slate-100 mb-4 flex items-center gap-4">
-                                                                    <span className="w-2 h-2 bg-indigo-500 rounded-full"></span>
-                                                                    {cleanLine.replace(/#/g, '').trim()}
-                                                                </h4>
-                                                            );
-                                                        }
-
-                                                        if (cleanLine.startsWith('- **') || cleanLine.startsWith('**')) {
-                                                            const parts = cleanLine.split('**:');
-                                                            if (parts.length > 1) {
-                                                                return (
-                                                                    <div key={i} className="flex gap-6 py-2 border-b border-slate-50">
-                                                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest w-32 shrink-0 pt-1">
-                                                                            {parts[0].replace(/[-*]/g, '').trim()}
-                                                                        </span>
-                                                                        <span className="text-sm font-bold text-slate-700">
-                                                                            {parts[1].trim()}
-                                                                        </span>
-                                                                    </div>
-                                                                );
-                                                            }
-                                                        }
-
-                                                        return <p key={i} className="text-md font-medium text-slate-600 leading-relaxed text-justify mb-4">{cleanLine}</p>
-                                                    })}
-                                                </div>
-
-                                                <div className="mt-16 pt-12 border-t border-slate-100 flex items-center justify-between">
-                                                    <span className="text-[9px] font-black text-slate-300 uppercase tracking-[0.5em]">AUTHORED BY GK SMART AI • VERIFIED DOSSIER</span>
-                                                    <button
-                                                        onClick={handleSaveOrganizedProfile}
-                                                        disabled={organizingProfile}
-                                                        className="bg-slate-900 hover:bg-black text-white px-10 py-5 rounded-[24px] font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50"
-                                                    >
-                                                        {organizingProfile ? 'SYNCHRONIZING...' : 'Sync to Dashboard'}
-                                                    </button>
-                                                </div>
-                                            </div>
+                                            {scarPromoting ? <><Loader2 size={12} className="animate-spin" /> Promoting...</> : <><Upload size={12} /> Push to Profile</>}
+                                        </button>
+                                        {scarPromoteResult && (
+                                            <p className={`text-[10px] font-semibold rounded-lg p-2 ${scarPromoteResult.success ? 'bg-emerald-500/10 text-emerald-300' : 'bg-red-500/10 text-red-300'}`}>
+                                                {scarPromoteResult.message}
+                                            </p>
                                         )}
                                     </div>
-                                ) : (
-                                    <div className="h-full flex flex-col items-center justify-center text-center">
-                                        <div className="w-32 h-32 bg-indigo-500/5 rounded-[40px] flex items-center justify-center mb-8 border border-white/5 animate-pulse">
-                                            <Brain size={64} className="text-indigo-500/20" />
+                                )}
+
+                                {/* 5 Doc Slots */}
+                                {scarDocSlots.map(slot => {
+                                    const col = scarColors[slot.color];
+                                    const hasData = !!scarData[slot.id];
+                                    const isUploading = uploadingScarf === slot.id;
+                                    const isActive = showScarPanel === slot.id;
+                                    return (
+                                        <div key={slot.id}
+                                            onClick={() => hasData && setShowScarPanel(slot.id)}
+                                            style={{
+                                                background: isActive ? col.bg : 'rgba(255,255,255,0.02)',
+                                                border: `1px solid ${isActive ? col.base : hasData ? col.border : 'rgba(255,255,255,0.07)'}`,
+                                                borderRadius: 16, padding: 16,
+                                                cursor: hasData ? 'pointer' : 'default',
+                                                boxShadow: isActive ? `0 0 24px -4px ${col.glow}` : 'none',
+                                                transition: 'all 0.25s'
+                                            }}
+                                        >
+                                            <div className="flex justify-between items-center mb-3">
+                                                <span style={{ color: isActive ? col.base : hasData ? col.base : '#64748b' }} className="text-[11px] font-black uppercase tracking-widest">{slot.label}</span>
+                                                {hasData && (
+                                                    <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
+                                                        <button onClick={() => setShowScarPanel(slot.id)} style={{ background: 'rgba(249,115,22,0.15)', color: '#fb923c', borderRadius: 8, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FileText size={12} /></button>
+                                                        {confirmDelScarf === slot.id ? (
+                                                            <button onClick={() => handleScarfDelete(slot.id)} style={{ background: '#dc2626', color: 'white', borderRadius: 8, padding: '0 8px', height: 28, fontSize: 9, fontWeight: 900 }}>CONFIRM?</button>
+                                                        ) : (
+                                                            <button onClick={() => setConfirmDelScarf(slot.id)} style={{ background: 'rgba(239,68,68,0.1)', color: '#f87171', borderRadius: 8, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Trash2 size={12} /></button>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="relative" onDrop={e => { e.preventDefault(); handleScarfUpload(slot.id, e.dataTransfer.files[0]); }} onDragOver={e => e.preventDefault()}>
+                                                <input type="file" accept=".pdf,.png,.jpg,.jpeg" disabled={!selectedUserBR || isUploading}
+                                                    onChange={e => handleScarfUpload(slot.id, e.target.files[0], e.target)}
+                                                    onClick={e => { e.stopPropagation(); e.target.value = null; }}
+                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed z-10" />
+                                                <div style={{
+                                                    border: `2px dashed ${!selectedUserBR ? 'rgba(255,255,255,0.05)' : isUploading ? col.base : hasData ? col.border : 'rgba(255,255,255,0.1)'}`,
+                                                    borderRadius: 12, padding: '20px 0',
+                                                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6,
+                                                    background: isUploading ? col.bg : 'transparent',
+                                                    animation: isUploading ? 'pulse 1.5s infinite' : 'none'
+                                                }}>
+                                                    {isUploading ? (
+                                                        <><Loader2 size={14} style={{ color: col.base, animation: 'spin 1s linear infinite' }} /><span style={{ color: col.base, fontSize: 10, fontWeight: 900, textTransform: 'uppercase' }}>Extracting AI Data...</span></>
+                                                    ) : hasData ? (
+                                                        <><CheckCircle size={14} style={{ color: col.base }} /><span style={{ color: col.base, fontSize: 10, fontWeight: 900, textTransform: 'uppercase' }}>Re-Drop to Update</span></>
+                                                    ) : (
+                                                        <><CloudUpload size={14} className="text-slate-600" /><span className="text-slate-600 text-[10px] font-bold uppercase">{selectedUserBR ? 'Drop PDF / Image' : 'Select a unit first'}</span></>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
-                                        <h3 className="text-2xl font-black text-slate-700 uppercase tracking-[0.3em]">AI Document Viewer</h3>
-                                        <p className="text-slate-800 text-xs mt-4 max-w-xs leading-relaxed font-bold uppercase tracking-widest">Select an extracted document from the pool to view raw bilingual intelligence fragments.</p>
+                                    );
+                                })}
+                            </div>
+
+                            {/* RIGHT: Data Viewer */}
+                            <div className="flex-1 bg-black/40 p-10 overflow-hidden flex flex-col">
+                                {showScarPanel ? (() => {
+                                    const isMaster = showScarPanel === 'master';
+                                    const slot = scarDocSlots.find(s => s.id === showScarPanel);
+                                    const col = isMaster ? { base: '#eab308', bg: 'rgba(234,179,8,0.05)', border: 'rgba(234,179,8,0.4)', glow: 'rgba(234,179,8,0.15)' } : scarColors[slot?.color] || {};
+                                    let text = '';
+                                    if (isMaster) text = JSON.stringify(buildMasterProfile(), null, 2);
+                                    else text = typeof scarData[showScarPanel] === 'string' ? scarData[showScarPanel] : JSON.stringify(scarData[showScarPanel], null, 2);
+
+                                    return (
+                                        <div style={{ background: '#0f172a', border: `2px solid ${col.border}`, borderRadius: 24, padding: 36, boxShadow: `0 0 50px -10px ${col.glow}`, display: 'flex', flexDirection: 'column', height: '100%' }}>
+                                            <div className="flex justify-between items-center mb-6 pb-6" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                                                <h3 style={{ color: col.base }} className="text-lg font-black uppercase tracking-widest flex items-center gap-3">
+                                                    {isMaster ? <Star size={20} /> : <Terminal size={20} />}
+                                                    {isMaster ? 'MASTER PROFILE — AI Merged' : `${slot?.label} — AI Raw Output`}
+                                                </h3>
+                                                <button onClick={() => setShowScarPanel(null)} className="text-slate-500 hover:text-white transition-colors bg-white/5 p-2 rounded-xl"><X size={18} /></button>
+                                            </div>
+                                            <div className="flex-1 overflow-y-auto">
+                                                <pre style={{ color: col.base, fontFamily: 'monospace', fontSize: 13, whiteSpace: 'pre-wrap', fontWeight: 500, lineHeight: 1.7 }}>
+                                                    {text || 'No data yet.'}
+                                                </pre>
+                                            </div>
+                                        </div>
+                                    );
+                                })() : (
+                                    <div className="h-full flex flex-col items-center justify-center opacity-15">
+                                        <Terminal size={64} className="text-white mb-6" />
+                                        <p className="text-xl font-black text-white uppercase tracking-[0.25em] text-center">
+                                            {selectedUserBR ? 'Drop a file to begin extraction' : 'Select a unit to start'}
+                                        </p>
                                     </div>
                                 )}
                             </div>

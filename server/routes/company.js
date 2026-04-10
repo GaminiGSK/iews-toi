@@ -5000,8 +5000,13 @@ router.post('/upload-scar-doc', auth, async (req, res) => {
                 companyCode = req.body.companyCode;
             }
 
-            if (companyCode.toUpperCase() !== 'SCAR') {
-                return res.status(403).json({ message: 'Access denied. Reserved for SCAR lab.' });
+            // Security: admin can only target units they own (or SCAR sandbox)
+            if (['admin'].includes(req.user.role) && companyCode.toUpperCase() !== 'SCAR') {
+                const User = require('../models/User');
+                const targetUnit = await User.findOne({ companyCode, createdBy: req.user.id });
+                if (!targetUnit) {
+                    return res.status(403).json({ message: 'Access denied. You can only extract documents for your own units.' });
+                }
             }
 
             let profile = await CompanyProfile.findOne({ companyCode });
@@ -5050,8 +5055,13 @@ router.post('/delete-scar-doc', auth, async (req, res) => {
             companyCode = req.body.companyCode;
         }
 
-        if (companyCode.toUpperCase() !== 'SCAR') {
-            return res.status(403).json({ message: 'Access denied. Reserved for SCAR lab.' });
+        // Security: admin can only delete for their own units (or SCAR sandbox)
+        if (['admin'].includes(req.user.role) && companyCode.toUpperCase() !== 'SCAR') {
+            const User = require('../models/User');
+            const targetUnit = await User.findOne({ companyCode, createdBy: req.user.id });
+            if (!targetUnit) {
+                return res.status(403).json({ message: 'Access denied. You can only clear documents for your own units.' });
+            }
         }
 
         let fieldName = '';
@@ -5147,10 +5157,13 @@ router.post('/scar-promote', auth, async (req, res) => {
             return res.status(400).json({ message: 'targetCompanyCode is required.' });
         }
 
-        // 1. Load the SCAR lab profile (source of truth)
-        const scarProfile = await CompanyProfile.findOne({ companyCode: 'SCAR' });
+        // Support sourceCompanyCode — defaults to SCAR sandbox for backward compatibility
+        const sourceCompanyCode = req.body.sourceCompanyCode || 'SCAR';
+
+        // 1. Load the source profile (unit's own OR the SCAR sandbox)
+        const scarProfile = await CompanyProfile.findOne({ companyCode: sourceCompanyCode });
         if (!scarProfile) {
-            return res.status(404).json({ message: 'SCAR profile not found. Please upload documents in the SCAR Lab first.' });
+            return res.status(404).json({ message: `Source profile "${sourceCompanyCode}" not found. Please upload documents first.` });
         }
 
         // 2. Safe JSON parser helper
