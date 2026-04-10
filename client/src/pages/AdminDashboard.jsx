@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
-    UserPlus, User, Edit2, Trash2, X, Lock, Users, FileSpreadsheet, Brain, ChevronRight, FileText, ArrowLeft, CloudUpload, Loader2, CheckCircle, KeyRound
+    UserPlus, User, Edit2, Trash2, X, Lock, Users, FileSpreadsheet, Brain, ChevronRight, FileText, ArrowLeft, CloudUpload, Loader2, CheckCircle, KeyRound, AlertCircle
 } from 'lucide-react';
 import TaxFormWorkbench from './TaxFormWorkbench';
 import LiveTaxWorkspace from './LiveTaxWorkspace';
@@ -372,6 +372,15 @@ export default function AdminDashboard() {
                     className={`flex items-center gap-4 px-10 py-6 text-[22px] font-black uppercase tracking-[0.2em] border-b-4 transition-all ${activeTab === 'profile' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-gray-600 hover:text-gray-400'}`}
                 >
                     <FileText size={28} /> BR
+                </button>
+                <button
+                    onClick={() => {
+                        localStorage.setItem('lastSelectedBR', 'SCAR');
+                        window.location.href = '/dashboard?packageId=SCAR';
+                    }}
+                    className={`flex items-center gap-4 px-10 py-6 text-[22px] font-black uppercase tracking-[0.2em] border-b-4 transition-all border-transparent text-gray-600 hover:text-red-400 hover:border-red-500/50`}
+                >
+                    <AlertCircle size={28} className="text-red-500" /> SCAR
                 </button>
             </div>
 
