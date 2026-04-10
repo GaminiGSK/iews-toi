@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Receipt, Loader2, CheckCircle, AlertCircle, Table, Save, X, Eye, FileText, CloudUpload, Calendar, Book, Tag, DollarSign, Scale, TrendingUp, ArrowLeft, ShieldCheck, Sparkles, QrCode, BookOpen, RefreshCw, Terminal, Plus, Box, ChevronRight, Brain, Layers, Users, Bot, Globe, Send, Wifi, Star, Trash2 } from 'lucide-react';
+import { Receipt, Loader2, CheckCircle, AlertCircle, Table, Save, X, Eye, FileText, CloudUpload, Calendar, Book, Tag, DollarSign, Scale, TrendingUp, ArrowLeft, ShieldCheck, Sparkles, QrCode, BookOpen, RefreshCw, Terminal, Plus, Box, ChevronRight, Brain, Layers, Users, Bot, Globe, Send, Wifi, Star, Trash2, Upload } from 'lucide-react';
+
 import GeneralLedger from './GeneralLedger';
 import AccountingCodes from './AccountingCodes';
 import CurrencyExchange from './CurrencyExchange';
@@ -166,6 +167,11 @@ export default function CompanyProfile() {
     const [isCreatingRule, setIsCreatingRule] = useState(false);
     const [savingRule, setSavingRule] = useState(false);
 
+    // --- SCAR PROMOTE STATE ---
+    const [scarPromoteTarget, setScarPromoteTarget] = useState('');
+    const [scarPromoting, setScarPromoting] = useState(false);
+    const [scarPromoteResult, setScarPromoteResult] = useState(null);
+
     // --- SCAR LAB STATES ---
     const [scarDocsOpts] = useState([
         { 
@@ -243,8 +249,33 @@ export default function CompanyProfile() {
     const [showScarData, setShowScarData] = useState(null);
     const [confirmDeleteScar, setConfirmDeleteScar] = useState(null);
 
-    const isScarLab = !!formData && (formData.companyCode === 'SCAR' || (['admin', 'superadmin'].includes(formData.role) && adminSelectedUser === 'SCAR'));
+    // UPGRADED: All units now use the SCAR 5-slot extraction method
+    // Previously only SCAR sandbox or admin-viewing-SCAR had this panel
+    // Now every unit (role: unit/user/admin/superadmin) uses SCAR BR directly
+    const isScarLab = !!formData;
     
+    const handleScarPromote = async () => {
+        if (!scarPromoteTarget) return;
+        setScarPromoting(true);
+        setScarPromoteResult(null);
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.post('/api/company/scar-promote', {
+                targetCompanyCode: scarPromoteTarget
+            }, { headers: { 'Authorization': `Bearer ${token}` } });
+            setScarPromoteResult({ success: true, ...res.data });
+            // Refresh page data if we're viewing the promoted company
+            window.dispatchEvent(new Event('ledger:refresh'));
+        } catch (err) {
+            setScarPromoteResult({
+                success: false,
+                message: err.response?.data?.message || 'Promotion failed'
+            });
+        } finally {
+            setScarPromoting(false);
+        }
+    };
+
     const handleScarUpload = async (docTypeId, file, inputElement = null) => {
         if (!file) return;
 
@@ -253,8 +284,12 @@ export default function CompanyProfile() {
         submitData.append('file', file);
         submitData.append('docType', docTypeId);
         
-        // Always enforce SCAR as target for SCAR LAB
-        submitData.append('companyCode', 'SCAR');
+        // Send the unit's own companyCode — each unit uploads to their own profile
+        // For admin viewing SCAR sandbox, still uses SCAR
+        const targetCode = (adminSelectedUser === 'SCAR' || formData?.companyCode === 'SCAR')
+            ? 'SCAR'
+            : (formData?.companyCode || 'SCAR');
+        submitData.append('companyCode', targetCode);
 
         try {
             const token = localStorage.getItem('token');
@@ -281,6 +316,7 @@ export default function CompanyProfile() {
             if (inputElement) inputElement.value = null;
         }
     };
+
 
     const handleScarDelete = async (docTypeId, e) => {
         if (e) e.stopPropagation();
@@ -411,19 +447,107 @@ export default function CompanyProfile() {
                     </div>
 
                     {hasAnyScarData && (
-                        <div 
-                            className={`bg-slate-800/50 border ${showScarData === 'master' ? 'border-yellow-500/50 shadow-[0_0_20px_-3px_rgba(234,179,8,0.2)]' : 'border-yellow-500/10'} rounded-2xl p-4 flex flex-col gap-3 transition-colors cursor-pointer hover:border-yellow-500/30 mb-2`}
-                            onClick={() => setShowScarData('master')}
-                        >
-                            <div className="flex justify-between items-center">
-                                <span className={`text-sm font-black uppercase tracking-widest flex items-center gap-2 ${showScarData === 'master' ? 'text-yellow-400' : 'text-yellow-500/60'}`}>
-                                    <Star size={16} /> MASTER PROFILE
-                                </span>
-                                <button className="w-8 h-8 rounded-lg bg-yellow-500/20 text-yellow-400 flex items-center justify-center">
-                                    <FileText size={14} />
-                                </button>
+                        <>
+                            {/* MASTER PROFILE VIEW BUTTON */}
+                            <div
+                                className={`bg-slate-800/50 border ${showScarData === 'master' ? 'border-yellow-500/50 shadow-[0_0_20px_-3px_rgba(234,179,8,0.2)]' : 'border-yellow-500/10'} rounded-2xl p-4 flex flex-col gap-2 transition-colors cursor-pointer hover:border-yellow-500/30`}
+                                onClick={() => setShowScarData('master')}
+                            >
+                                <div className="flex justify-between items-center">
+                                    <span className={`text-sm font-black uppercase tracking-widest flex items-center gap-2 ${showScarData === 'master' ? 'text-yellow-400' : 'text-yellow-500/60'}`}>
+                                        <Star size={16} /> MASTER PROFILE
+                                    </span>
+                                    <button className="w-8 h-8 rounded-lg bg-yellow-500/20 text-yellow-400 flex items-center justify-center">
+                                        <FileText size={14} />
+                                    </button>
+                                </div>
+                                <p className="text-[10px] text-slate-600 font-medium">Click to preview AI-merged output</p>
                             </div>
-                        </div>
+
+                            {/* ── PROMOTION ENGINE PANEL ── */}
+                            <div className="bg-slate-800/60 border border-emerald-500/20 rounded-2xl p-5 flex flex-col gap-4 shadow-[0_0_30px_-10px_rgba(16,185,129,0.15)]">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-7 h-7 rounded-lg bg-emerald-500/15 flex items-center justify-center shrink-0">
+                                        <Upload size={13} className="text-emerald-400" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-black text-emerald-300 uppercase tracking-widest">Promote to Profile</p>
+                                        <p className="text-[9px] text-slate-500 font-medium mt-0.5">Push BR data → Company canonical fields</p>
+                                    </div>
+                                </div>
+
+                                {/* Target Company Selector */}
+                                <div>
+                                    <label className="text-[10px] text-slate-400 font-black uppercase tracking-widest block mb-1.5">Target Company</label>
+                                    <select
+                                        value={scarPromoteTarget}
+                                        onChange={e => { setScarPromoteTarget(e.target.value); setScarPromoteResult(null); }}
+                                        className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-3 py-2.5 text-white text-xs font-bold focus:outline-none focus:border-emerald-500/50 transition-colors"
+                                    >
+                                        <option value="">— Select target company —</option>
+                                        {(users || []).filter(u => u.companyCode && u.companyCode !== 'SCAR').map(u => (
+                                            <option key={u.companyCode} value={u.companyCode}>
+                                                {u.companyCode}{u.username ? ` (${u.username})` : ''}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Fields preview badges */}
+                                <div className="bg-slate-900/60 rounded-xl p-3 border border-white/5">
+                                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">Fields ready to promote</p>
+                                    <div className="flex flex-wrap gap-1">
+                                        {[
+                                            formData?.scarMocEn    ? 'Name EN'            : null,
+                                            formData?.scarMocKh    ? 'Name KH'            : null,
+                                            (formData?.scarMocEn || formData?.scarMoc) ? 'Reg. No.'   : null,
+                                            formData?.scarMocEn    ? 'Inc. Date'          : null,
+                                            formData?.scarMocEn    ? 'Legal Form'         : null,
+                                            (formData?.scarTaxPatent || formData?.scarTaxIdCard) ? 'TIN' : null,
+                                            formData?.scarTaxPatent ? 'Tax Branch'        : null,
+                                            formData?.scarTaxPatent ? 'Taxpayer Type'     : null,
+                                            (formData?.scarMocEn || formData?.scarTaxPatent) ? 'Address' : null,
+                                            formData?.scarMocEn    ? 'Directors'          : null,
+                                            formData?.scarMocEn    ? 'Shareholders'       : null,
+                                            formData?.scarMocEn    ? 'Business Activity'  : null,
+                                        ].filter(Boolean).map((label, i) => (
+                                            <span key={i} className="px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-md text-[9px] font-bold">
+                                                ✓ {label}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Promote Button */}
+                                <button
+                                    onClick={handleScarPromote}
+                                    disabled={!scarPromoteTarget || scarPromoting}
+                                    className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-500 text-white font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/30 active:scale-95"
+                                >
+                                    {scarPromoting ? (
+                                        <><Loader2 size={14} className="animate-spin" /> Promoting...</>
+                                    ) : (
+                                        <><Upload size={14} /> Push to → {scarPromoteTarget || 'Select Company'}</>
+                                    )}
+                                </button>
+
+                                {/* Result feedback */}
+                                {scarPromoteResult && (
+                                    <div className={`rounded-xl p-3 border text-xs font-medium animate-in fade-in duration-300 ${
+                                        scarPromoteResult.success
+                                            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                                            : 'bg-red-500/10 border-red-500/30 text-red-300'
+                                    }`}>
+                                        <p className="font-black mb-1">{scarPromoteResult.message}</p>
+                                        {scarPromoteResult.promotedFields && (
+                                            <p className="text-[10px] text-slate-400 leading-relaxed">
+                                                <span className="text-emerald-400 font-bold">{scarPromoteResult.fieldCount} fields</span> updated: {scarPromoteResult.promotedFields.join(', ')}
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </>
                     )}
 
                     {scarDocsOpts.map(doc => {
