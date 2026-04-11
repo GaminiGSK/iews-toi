@@ -2069,12 +2069,13 @@ export default function CompanyProfile() {
                     </div>
 
                     <div className="w-full h-full p-0">
-                        {formData.role === 'admin' && !adminSelectedUser ? (
+                        {formData.role === 'superadmin' && !adminSelectedUser ? (
                             <div className="flex flex-col items-center justify-center h-[500px] text-center p-20">
                                 <AlertCircle size={64} className="text-indigo-500 mb-8 opacity-20" />
                                 <h3 className="text-2xl font-black text-white uppercase tracking-tighter mb-4">No Target Entity Selected</h3>
                                 <p className="text-slate-500 max-w-sm font-medium">Please use the dropdown menu at the top to select a company profile. This will link the AI agent to that entity's BR intelligence fragments.</p>
                             </div>
+
                         ) : activeBrTab === 'rules' ? (
                             <div className="p-10 animate-fade-in max-w-4xl mx-auto space-y-8">
                                 <div className="flex justify-between items-end border-b border-white/10 pb-6">
