@@ -724,8 +724,21 @@ router.get('/profile', auth, async (req, res) => {
         const companyCode = req.user.companyCode;
         if (!companyCode) return res.status(400).json({ message: 'No Company Code associated with user' });
 
-        // Fetch FULL profile to allow for healing and normalization
+        // 1. Try by user._id (normal unit users)
         let profile = await CompanyProfile.findOne({ user: req.user.id });
+
+        // 2. Admin/superadmin fallback: try by companyCode
+        if (!profile && ['admin', 'superadmin'].includes(req.user.role)) {
+            profile = await CompanyProfile.findOne({ companyCode: { $regex: new RegExp(`^${companyCode.trim()}$`, 'i') } });
+        }
+
+        // 3. Admin/superadmin last resort: inherit from SCAR super-sandbox
+        if (!profile && ['admin', 'superadmin'].includes(req.user.role)) {
+            profile = await CompanyProfile.findOne({ companyCode: 'SCAR' });
+            if (profile) {
+                console.log(`[Profile] Admin ${req.user.username} has no own profile — serving SCAR super-profile`);
+            }
+        }
 
         if (!profile) {
             return res.json({
@@ -760,6 +773,7 @@ router.get('/profile', auth, async (req, res) => {
         res.status(500).json({ message: 'Server Error' });
     }
 });
+
 
 // Upload Registration & Extract
 // Upload Registration & Extract (Analyze Only)
@@ -5028,14 +5042,15 @@ router.post('/upload-scar-doc', auth, async (req, res) => {
                 companyCode = req.body.companyCode;
             }
 
-            // Security: admin can only target units they own (or SCAR sandbox)
-            if (['admin'].includes(req.user.role) && companyCode.toUpperCase() !== 'SCAR') {
+            // Security: admin can only target units they own, SCAR sandbox, or their OWN companyCode
+            if (['admin'].includes(req.user.role) && companyCode.toUpperCase() !== 'SCAR' && companyCode.toUpperCase() !== req.user.companyCode?.toUpperCase()) {
                 const User = require('../models/User');
                 const targetUnit = await User.findOne({ companyCode, createdBy: req.user.id });
                 if (!targetUnit) {
                     return res.status(403).json({ message: 'Access denied. You can only extract documents for your own units.' });
                 }
             }
+
 
             let profile = await CompanyProfile.findOne({ companyCode });
             if (!profile) {

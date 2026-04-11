@@ -284,11 +284,24 @@ export default function CompanyProfile() {
         submitData.append('file', file);
         submitData.append('docType', docTypeId);
         
-        // Send the unit's own companyCode — each unit uploads to their own profile
-        // For admin viewing SCAR sandbox, still uses SCAR
-        const targetCode = (adminSelectedUser === 'SCAR' || formData?.companyCode === 'SCAR')
-            ? 'SCAR'
-            : (formData?.companyCode || 'SCAR');
+        // Determine target companyCode:
+        // - If admin explicitly selected a unit (adminSelectedUser), use that unit's companyCode
+        // - If viewing own profile as admin, use own companyCode from localStorage
+        // - For SCAR sandbox explicitly selected, use 'SCAR'
+        const savedUser = JSON.parse(localStorage.getItem('user') || '{}');
+        let targetCode;
+        if (adminSelectedUser === 'SCAR' || formData?.companyCode === 'SCAR') {
+            // Explicitly viewing SCAR sandbox
+            targetCode = 'SCAR';
+        } else if (adminSelectedUser && adminSelectedUser !== savedUser.username) {
+            // Admin selected a child unit
+            targetCode = formData?.companyCode || adminSelectedUser.toUpperCase();
+        } else if (['admin', 'superadmin'].includes(savedUser.role)) {
+            // Admin viewing their OWN profile — use their own companyCode
+            targetCode = savedUser.companyCode || savedUser.username?.toUpperCase() || 'SCAR';
+        } else {
+            targetCode = formData?.companyCode || 'SCAR';
+        }
         submitData.append('companyCode', targetCode);
 
         try {
@@ -323,12 +336,24 @@ export default function CompanyProfile() {
 
         try {
             const token = localStorage.getItem('token');
+        const savedUser2 = JSON.parse(localStorage.getItem('user') || '{}');
+        let delCode;
+        if (adminSelectedUser === 'SCAR' || formData?.companyCode === 'SCAR') {
+            delCode = 'SCAR';
+        } else if (adminSelectedUser && adminSelectedUser !== savedUser2.username) {
+            delCode = formData?.companyCode || adminSelectedUser.toUpperCase();
+        } else if (['admin', 'superadmin'].includes(savedUser2.role)) {
+            delCode = savedUser2.companyCode || savedUser2.username?.toUpperCase() || 'SCAR';
+        } else {
+            delCode = formData?.companyCode || 'SCAR';
+        }
             await axios.post('/api/company/delete-scar-doc', {
                 docType: docTypeId,
-                companyCode: 'SCAR'
+                companyCode: delCode
             }, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
+
 
             setFormData(prev => {
                 const updated = { ...prev };
