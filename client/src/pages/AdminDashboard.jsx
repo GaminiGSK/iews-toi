@@ -1,9 +1,8 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
     UserPlus, User, Edit2, Trash2, X, Lock, Users, FileSpreadsheet, Brain, ChevronRight,
-    FileText, ArrowLeft, CloudUpload, Loader2, CheckCircle, KeyRound, AlertCircle,
-    Star, Terminal, Upload, Sparkles
+    FileText, ArrowLeft, AlertCircle
 } from 'lucide-react';
 import TaxFormWorkbench from './TaxFormWorkbench';
 import LiveTaxWorkspace from './LiveTaxWorkspace';
@@ -27,39 +26,7 @@ export default function AdminDashboard() {
     const [knowledgeBase, setKnowledgeBase] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState(null);
 
-    // --- BR / SCAR Extraction State ---
-    const [isScanning, setIsScanning] = useState(false);
-    const [selectedDoc, setSelectedDoc] = useState(null);
     const version = "v5.12.24_CLEAN";
-    const [brDocs, setBrDocs] = useState([]);
-    const [uploadingBR, setUploadingBR] = useState(false);
-    const [activeBRIndex, setActiveBRIndex] = useState(null);
-    const [selectedUserBR, setSelectedUserBR] = useState(() => localStorage.getItem('lastSelectedBR') || '');
-    const [organizingProfile, setOrganizingProfile] = useState(false);
-    const [brView, setBrView] = useState(() => localStorage.getItem('lastBRView') || 'organized');
-
-    // --- SCAR 5-Slot State (new BR method) ---
-    const scarDocSlots = [
-        { id: 'taxPatent',  label: '1. Tax Patent',           color: 'emerald' },
-        { id: 'taxIdCard',  label: '2. Tax ID Card',           color: 'amber'   },
-        { id: 'moc',        label: '3. MOC',                   color: 'sky'     },
-        { id: 'mocEn',      label: '4. MOC Extract English',   color: 'violet'  },
-        { id: 'mocKh',      label: '5. MOC Extract Khmer',     color: 'rose'    },
-    ];
-    const scarColors = {
-        emerald: { base: '#10b981', bg: 'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.3)', glow: 'rgba(16,185,129,0.2)' },
-        amber:   { base: '#f59e0b', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.3)', glow: 'rgba(245,158,11,0.2)' },
-        sky:     { base: '#0ea5e9', bg: 'rgba(14,165,233,0.08)', border: 'rgba(14,165,233,0.3)', glow: 'rgba(14,165,233,0.2)' },
-        violet:  { base: '#8b5cf6', bg: 'rgba(139,92,246,0.08)', border: 'rgba(139,92,246,0.3)', glow: 'rgba(139,92,246,0.2)' },
-        rose:    { base: '#f43f5e', bg: 'rgba(244,63,94,0.08)',  border: 'rgba(244,63,94,0.3)',  glow: 'rgba(244,63,94,0.2)'  },
-    };
-    const [scarData, setScarData]           = useState({});  // { taxPatent: '...', mocEn: '...', ... }
-    const [uploadingScarf, setUploadingScarf] = useState(null); // which slot is uploading
-    const [showScarPanel, setShowScarPanel] = useState(null);   // which slot's data to show
-    const [confirmDelScarf, setConfirmDelScarf] = useState(null);
-    const [scarPromoteTarget, setScarPromoteTarget] = useState('');
-    const [scarPromoting, setScarPromoting] = useState(false);
-    const [scarPromoteResult, setScarPromoteResult] = useState(null);
 
 
     // --- Data Fetching ---
@@ -103,128 +70,8 @@ export default function AdminDashboard() {
     }, []);
 
 
-
-    useEffect(() => {
-        localStorage.setItem('lastBRView', brView);
-    }, [brView]);
-
-    useEffect(() => {
-        if (selectedUserBR) {
-            localStorage.setItem('lastSelectedBR', selectedUserBR);
-            fetchUserBRDocs(selectedUserBR);
-            loadScarData(selectedUserBR);
-        }
-    }, [selectedUserBR, activeTab]);
-
-    // Load existing SCAR data for a unit
-    const loadScarData = async (username) => {
-        if (!username) { setScarData({}); return; }
-        try {
-            const token = localStorage.getItem('token');
-            const res = await axios.get(`/api/company/admin/profile/${username}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const p = res.data || {};
-            setScarData({
-                taxPatent: p.scarTaxPatent || null,
-                taxIdCard: p.scarTaxIdCard || null,
-                moc:       p.scarMoc       || null,
-                mocEn:     p.scarMocEn     || null,
-                mocKh:     p.scarMocKh     || null,
-            });
-        } catch (e) { setScarData({}); }
-    };
-
-    // Upload a SCAR doc for any unit
-    const handleScarfUpload = async (slotId, file, inputEl = null) => {
-        if (!file || !selectedUserBR) return;
-        setUploadingScarf(slotId);
-        const fd = new FormData();
-        fd.append('file', file);
-        fd.append('docType', slotId);
-        const targetUser = users.find(u => u.username === selectedUserBR);
-        fd.append('companyCode', targetUser?.companyCode || selectedUserBR.toUpperCase());
-        try {
-            const token = localStorage.getItem('token');
-            const res = await axios.post('/api/company/upload-scar-doc', fd, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            setScarData(prev => ({ ...prev, [slotId]: res.data.extractedData }));
-            setShowScarPanel(slotId);
-        } catch (err) {
-            alert('Extract failed: ' + (err.response?.data?.message || err.message));
-        } finally {
-            setUploadingScarf(null);
-            if (inputEl) inputEl.value = null;
-        }
-    };
-
-    // Delete a SCAR doc slot for a unit
-    const handleScarfDelete = async (slotId) => {
-        const targetUser = users.find(u => u.username === selectedUserBR);
-        const companyCode = targetUser?.companyCode || selectedUserBR.toUpperCase();
-        try {
-            const token = localStorage.getItem('token');
-            await axios.post('/api/company/delete-scar-doc', { docType: slotId, companyCode }, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            setScarData(prev => ({ ...prev, [slotId]: null }));
-            setShowScarPanel(null);
-            setConfirmDelScarf(null);
-        } catch (err) { alert('Delete failed: ' + err.message); }
-    };
-
-    // Promote SCAR data → canonical CompanyProfile fields
-    const handleScarfPromote = async () => {
-        if (!scarPromoteTarget) return;
-        setScarPromoting(true);
-        setScarPromoteResult(null);
-        // First copy the current unit's scar fields into the SCAR sandbox profile so scar-promote works
-        // Actually we promote directly from the unit — need a direct promote
-        // We'll re-use scar-promote with the source being this unit's own scar fields
-        try {
-            const token = localStorage.getItem('token');
-            const res = await axios.post('/api/company/scar-promote', {
-                targetCompanyCode: scarPromoteTarget,
-                sourceCompanyCode: users.find(u => u.username === selectedUserBR)?.companyCode || selectedUserBR.toUpperCase()
-            }, { headers: { 'Authorization': `Bearer ${token}` } });
-            setScarPromoteResult({ success: true, ...res.data });
-        } catch (err) {
-            setScarPromoteResult({ success: false, message: err.response?.data?.message || 'Promotion failed' });
-        } finally { setScarPromoting(false); }
-    };
-
-    // Build Master Profile from scar data
-    const buildMasterProfile = () => {
-        const parse = (s) => { if (!s) return {}; if (typeof s === 'object') return s; try { return JSON.parse(s) || {}; } catch { return {}; } };
-        const patent = parse(scarData.taxPatent), idCard = parse(scarData.taxIdCard),
-              moc = parse(scarData.moc), mocEn = parse(scarData.mocEn), mocKh = parse(scarData.mocKh);
-        return {
-            'Corporate Identity': {
-                'Entity Name (EN)': mocEn.entityName || mocEn.entityNameEn || patent.entityNameEn || idCard.entityNameEn,
-                'Entity Name (KH)': mocKh.entityNameKh || moc.entityNameKh || patent.entityNameKh,
-                'Registration No.': mocEn.registrationNumber || moc.registrationNumberEn || mocKh.registrationNumber,
-                'Incorporation Date': mocEn.incorporationDate || moc.incorporationDateEn,
-                'Legal Form': moc.legalFormEn || mocEn.legalForm || patent.legalFormEn,
-            },
-            'Tax Identity': {
-                'TIN': patent.taxTIN || idCard.taxTIN,
-                'Tax Branch': patent.taxBranch || idCard.taxBranch,
-                'Taxpayer Type': patent.taxPayerType,
-                'Tax Reg. Date': idCard.taxRegistrationDateEn || patent.taxRegistrationDate,
-            },
-            'Governance': {
-                'Directors': JSON.stringify(mocEn.directors || mocKh.directorsKh || []),
-                'Shareholders': JSON.stringify(mocEn.shareholders || mocKh.shareholdersKh || []),
-            },
-            'Operations': {
-                'Business Activities': JSON.stringify(mocEn.businessObjectives || patent.businessActivities || []),
-                'Address': mocEn.registeredAddress || patent.address,
-            }
-        };
-    };
-
     const fetchFileContent = async (category, fileName) => {
+
         try {
             const token = localStorage.getItem('token');
             const res = await axios.get(`/api/knowledge/${category}/${fileName}`, {
@@ -290,7 +137,7 @@ export default function AdminDashboard() {
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        localStorage.removeItem('lastSelectedBR');
+
         window.location.href = '/login';
     };
 
@@ -502,14 +349,7 @@ export default function AdminDashboard() {
                     <Brain size={28} /> BA Knowledge
                 </button>
                 <button
-                    onClick={() => setActiveTab('profile')}
-                    className={`flex items-center gap-4 px-10 py-6 text-[22px] font-black uppercase tracking-[0.2em] border-b-4 transition-all ${activeTab === 'profile' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-gray-600 hover:text-gray-400'}`}
-                >
-                    <FileText size={28} /> BR
-                </button>
-                <button
                     onClick={() => {
-                        localStorage.setItem('lastSelectedBR', 'SCAR');
                         window.location.href = '/dashboard?packageId=SCAR';
                     }}
                     className={`flex items-center gap-4 px-10 py-6 text-[22px] font-black uppercase tracking-[0.2em] border-b-4 transition-all border-transparent text-gray-600 hover:text-red-400 hover:border-red-500/50`}
@@ -578,17 +418,7 @@ export default function AdminDashboard() {
                                                 >
                                                     <FileSpreadsheet size={14} />
                                                 </button>
-                                                <button
-                                                    onClick={() => {
-                                                        setSelectedUserBR(user.username);
-                                                        setActiveTab('profile');
-                                                        fetchUserBRDocs(user.username);
-                                                    }}
-                                                    className="w-8 h-8 flex items-center justify-center bg-indigo-500/10 text-indigo-400 hover:bg-indigo-600 hover:text-white rounded-lg transition-all duration-300 shadow"
-                                                    title="View Intelligence Profile"
-                                                >
-                                                    <Brain size={14} />
-                                                </button>
+
                                                 <button onClick={() => startEdit(user)} className="w-8 h-8 flex items-center justify-center bg-white/5 text-gray-500 hover:bg-blue-600 hover:text-white rounded-lg transition-all duration-300 shadow" title="Edit"><Edit2 size={14} /></button>
                                                 <button onClick={() => deleteUser(user._id)} className="w-8 h-8 flex items-center justify-center bg-rose-500/10 text-rose-400 hover:bg-red-600 hover:text-white rounded-lg transition-all duration-300 shadow" title="Delete"><Trash2 size={14} /></button>
                                             </div>
@@ -711,8 +541,8 @@ export default function AdminDashboard() {
                         </div>
                     )}
 
-                    {/* SCAR 5-SLOT BR PANEL */}
-                    {activeTab === 'profile' && (
+                    {/* BR removed — units manage their own extraction */}
+                    {activeTab === 'profile' && false && (
                         <div className="h-full overflow-hidden flex animate-in fade-in duration-500">
                             {/* LEFT: Unit Selector + 5 Slots */}
                             <div style={{ width: 420, borderRight: '1px solid rgba(255,255,255,0.05)', background: 'rgba(15,23,42,0.6)' }} className="flex flex-col overflow-y-auto p-8 gap-5 shrink-0">
