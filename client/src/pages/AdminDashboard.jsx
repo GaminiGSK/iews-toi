@@ -355,10 +355,8 @@ export default function AdminDashboard() {
                     <Code size={28} /> IFrames
                 </button>
                 <button
-                    onClick={() => {
-                        window.location.href = '/dashboard?packageId=SCAR';
-                    }}
-                    className={`flex items-center gap-4 px-10 py-6 text-[22px] font-black uppercase tracking-[0.2em] border-b-4 transition-all border-transparent text-gray-600 hover:text-red-400 hover:border-red-500/50`}
+                    onClick={() => setActiveTab('profile')}
+                    className={`flex items-center gap-4 px-10 py-6 text-[22px] font-black uppercase tracking-[0.2em] border-b-4 transition-all ${activeTab === 'profile' ? 'border-red-500 text-red-500' : 'border-transparent text-gray-600 hover:text-red-400 hover:border-red-500/50'}`}
                 >
                     <AlertCircle size={28} className="text-red-500" /> SCAR
                 </button>
@@ -601,8 +599,8 @@ export default function AdminDashboard() {
                         </div>
                     )}
 
-                    {/* BR removed — units manage their own extraction */}
-                    {activeTab === 'profile' && false && (
+                    {/* SCAR - Global Admin Level Extraction */}
+                    {activeTab === 'profile' && (
                         <div className="h-full overflow-hidden flex animate-in fade-in duration-500">
                             {/* LEFT: Unit Selector + 5 Slots */}
                             <div style={{ width: 420, borderRight: '1px solid rgba(255,255,255,0.05)', background: 'rgba(15,23,42,0.6)' }} className="flex flex-col overflow-y-auto p-8 gap-5 shrink-0">

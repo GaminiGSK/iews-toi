@@ -1,4 +1,4 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+﻿const { GoogleGenerativeAI } = require("@google/generative-ai");
 const fs = require('fs');
 const path = require('path');
 
@@ -122,9 +122,9 @@ Extract all data into this exact JSON structure:
   "registrationNumberEn": "Registration Number in Arabic Numerals (e.g. 1000455191)",
   "incorporationDateKh": "Date in Khmer format (e.g. ៣០ មករា ២០២៥)",
   "incorporationDateEn": "Date in English format (e.g. 30 January 2025)",
-  "legalFormKh": "Legal Form in Khmer (e.g. ក្រុមហ៊ុនឯកជនទទួលខុសត្រូវមានកម្រិ�?",
+  "legalFormKh": "Legal Form in Khmer (e.g. ក្រុមហ៊ុនឯកជនទទួលខុសត្រូវមានកម្រិ�?",
   "legalFormEn": "Legal Form in English (e.g. Private Limited Company)",
-  "mocDocumentNo": "The document identifier at the top left (e.g. MOC-00044916 ពណ.ចប�?",
+  "mocDocumentNo": "The document identifier at the top left (e.g. MOC-00044916 ពណ.ចប�?",
   "issuedPlaceAndDateKh": "The place and date issued at the bottom right in Khmer (e.g. រាជធានីភ្នំពេញ, ៣០ មករា ២០២៥)",
   "issuedPlaceAndDateEn": "The place and date issued at the bottom right in English (e.g. PHNOM PENH, 30 January 2025)"
 }
@@ -140,8 +140,8 @@ Extract exhaustive details into this exact JSON structure:
   "incorporationDate": "Date e.g. 09-December-2025",
   "companyType": "e.g. Private Limited Liability Company",
   "directors": [{"nameEn": "Director Name English", "nameKh": "Khmer if visible", "address": "Their Postal Registered Office Address", "isChairman": true}],
-  "shareholders": [{"nameEn": "Shareholder Name English", "nameKh": "Khmer if visible", "address": "Their Postal Registered Office Address �?look under each Individual Shareholder section", "numberOfShares": 600, "nationality": "Foreigner or Cambodian"}],
-  "registeredShareCapitalKHR": "The KHR value e.g. 80000000 �?look for Registered Share Capital (KHR)",
+  "shareholders": [{"nameEn": "Shareholder Name English", "nameKh": "Khmer if visible", "address": "Their Postal Registered Office Address �?look under each Individual Shareholder section", "numberOfShares": 600, "nationality": "Foreigner or Cambodian"}],
+  "registeredShareCapitalKHR": "The KHR value e.g. 80000000 �?look for Registered Share Capital (KHR)",
   "registeredShareCapitalUSD": "The USD equivalent if shown",
   "businessObjectives": [{"code": "ISIC code e.g. 561", "description": "Activity description"}],
   "registeredAddress": "Physical Registered Office Address",
@@ -161,8 +161,8 @@ Extract exhaustive details into this exact JSON structure. Preserve Khmer Unicod
   "entityNameKh": "Company Name in Khmer",
   "registrationNumber": "Reg ID",
   "incorporationDate": "Date in Khmer format if applicable",
-  "directorsKh": [{"nameKh": "Director Name in Khmer (or null)", "addressKh": "Director Postal Registered Office Address �?copy exactly as written even if Latin script", "titleKh": "Title in Khmer", "isChairman": false}],
-  "shareholdersKh": [{"nameKh": "Shareholder Name in Khmer (or null)", "addressKh": "Shareholder Postal Registered Office Address �?look under each Individual Shareholder section, copy exactly as written even if Latin script", "shares": "Number of shares", "nationality": "Foreigner or Cambodian"}],
+  "directorsKh": [{"nameKh": "Director Name in Khmer (or null)", "addressKh": "Director Postal Registered Office Address �?copy exactly as written even if Latin script", "titleKh": "Title in Khmer", "isChairman": false}],
+  "shareholdersKh": [{"nameKh": "Shareholder Name in Khmer (or null)", "addressKh": "Shareholder Postal Registered Office Address �?look under each Individual Shareholder section, copy exactly as written even if Latin script", "shares": "Number of shares", "nationality": "Foreigner or Cambodian"}],
   "businessObjectivesKh": [{"code": "ISIC code", "descriptionKh": "Khmer activity description"}],
   "registeredAddressKh": "Physical Registered Office Address in Khmer",
   "registeredShareCapitalKHR": "Registered Share Capital value in KHR as a number e.g. 80000000",
@@ -190,7 +190,7 @@ exports.extractDocumentData = async (filePath, docType) => {
         const prompt = `You are an expert Document Intelligence Agent for Cambodian Corporate & Tax Documents.
 Carefully read this document and extract EVERY data field with 100% accuracy.
 Identify if it is a MOC Extract, Patent, Tax Certificate, or Bank Letter, and extract all relevant fields.
-Return ONLY a strict JSON object �?no markdown, no code fences, no explanation.
+Return ONLY a strict JSON object �?no markdown, no code fences, no explanation.
 
 {
   "companyNumber": "Company registration number",
@@ -226,11 +226,11 @@ Return ONLY a strict JSON object �?no markdown, no code fences, no explanation.
 }
 
 IMPORTANT:
-- Extract ALL directors listed �?do not stop at one.
+- Extract ALL directors listed �?do not stop at one.
 - Extract ALL shareholders with their exact share count.
 - Extract ALL business activity codes and descriptions.
 - If a field is absent from the document, return null. DO NOT guess.
-- For "descriptionKh": ONLY return actual Khmer Unicode script (ក-�?character range). NEVER return phrases like "Khmer script not available", "not available", "transliterated from English", or any English text in this field. If there is no actual Khmer text for the business activity, return null.
+- For "descriptionKh": ONLY return actual Khmer Unicode script (ក-�?character range). NEVER return phrases like "Khmer script not available", "not available", "transliterated from English", or any English text in this field. If there is no actual Khmer text for the business activity, return null.
 - Return ONLY the JSON object.`;
 
         const ext = path.extname(filePath).toLowerCase();
@@ -369,6 +369,50 @@ exports.extractRawText = async (filePath) => {
     } catch (error) {
         console.error("Gemini API Error (Raw Text):", error);
         return "Extraction failed: " + error.message;
+    }
+};
+
+
+exports.analyzeTaxLaw = async (filePath) => {
+    console.log('[GeminiAI] Analyzing Tax Law structured JSON:', filePath);
+    try {
+        const prompt = `You are a Senior Tax Auditor & Legal Analyst for the General Department of Taxation (GDT) of Cambodia.
+Analyze this official document. Extract and translate the text, and distill the operative "hard rules" while ignoring administrative preambles.
+Provide a JSON response strictly matching this structure:
+{
+  "originalTextKhmer": "The exact verbatim text transcribed from the document in Khmer. Do not omit the official letterhead, stamps, or preamble.",
+  "translatedEnglish": "A professional, highly accurate English translation of the document. Use precise legal/tax terminology.",
+  "structuredRules": {
+    "documentNumber": "If found, e.g., '1234 GDT'",
+    "documentDate": "If found, e.g., '12 May 2024'",
+    "subject": "The core topic or title of the circular/law",
+    "hardRules": [
+       "Extracted operational rule 1 (clear, actionable, ignore noise)",
+       "Extracted operational rule 2"
+    ]
+  }
+}
+Return ONLY valid JSON. No markdown code blocks, no explanations.`;
+
+        const path = require('path');
+        const ext = path.extname(filePath).toLowerCase();
+        let mimeType = 'image/jpeg';
+        if (ext === '.png') mimeType = 'image/png';
+        if (ext === '.pdf') mimeType = 'application/pdf';
+        if (ext === '.webp') mimeType = 'image/webp';
+
+        const filePart = fileToGenerativePart(filePath, mimeType);
+        const result = await callGeminiWithRetry(() => getModel().generateContent([prompt, filePart]));
+        let responseText = result.response.text();
+        
+        return cleanAndParseJSON(responseText) || {
+            originalTextKhmer: "Failed to parse JSON, falling back to raw text.",
+            translatedEnglish: "Failed to extract translations.",
+            structuredRules: {}
+        };
+    } catch (error) {
+        console.error("Gemini API Error (Tax Law Analysis):", error);
+        throw error;
     }
 };
 
@@ -686,7 +730,7 @@ exports.chatWithFinancialAgent = async (message, context, imageBase64) => {
             **Harvested Bank Statements Context (from PDF OCR):**
             ${context.harvestedBankStatements && context.harvestedBankStatements.length > 0 ? context.harvestedBankStatements.map(bs => `Bank: ${bs.bankName} | Account: ${bs.accountNumber} | Date Range: ${bs.dateRange}\nTransactions (Preview):\n${bs.transactions.map(tx => `  - Date: ${tx.date}, Desc: ${tx.desc}, IN: ${tx.in}, OUT: ${tx.out}`).join('\n')}`).join('\n\n') : "No harvested bank statements available."}
 
-            **🔴 PHYSICAL BANK STATEMENT AUDIT MEMORY (BA's Source of Truth �?Do NOT Ignore):**
+            **🔴 PHYSICAL BANK STATEMENT AUDIT MEMORY (BA's Source of Truth �?Do NOT Ignore):**
             ${auditSessions && auditSessions.length > 0 ? 
                 auditSessions.map(s => `
 --- ${s.quarter} (${s.period}) ---
@@ -763,7 +807,7 @@ ${s.transactions.map(t => `  ${t.date} | IN:$${t.moneyIn||0} OUT:$${t.moneyOut||
             6. **delete_untagged_transactions**: PERMANENTLY deletes all bank transactions from the ledger that are currently sitting without an Account Code tag. Do not run this unless explicitly requested.
                Schema: { "tool_use": "workspace_action", "action": "delete_untagged_transactions", "params": {}, "reply_text": "I am initiating the mass deletion of all untagged ledger entries as you requested." }
 
-            7. **escalate_to_antigravity**: Sends your entire memory buffer to the Senior Engineering terminal. STRICT USAGE RULE: Use ONLY when the user EXPLICITLY says "contact engineering", "ask the bridge", "escalate", or "send to terminal". NEVER trigger this for: bank statement checks, GL comparisons, financial data queries, Q1/Q2/Q3/Q4 data requests, balance checks, or any audit task �?you MUST answer ALL of those directly from the context sections above. Being "confused" about financial data is NOT a reason to escalate �?always attempt the analysis first using the data in your context.
+            7. **escalate_to_antigravity**: Sends your entire memory buffer to the Senior Engineering terminal. STRICT USAGE RULE: Use ONLY when the user EXPLICITLY says "contact engineering", "ask the bridge", "escalate", or "send to terminal". NEVER trigger this for: bank statement checks, GL comparisons, financial data queries, Q1/Q2/Q3/Q4 data requests, balance checks, or any audit task �?you MUST answer ALL of those directly from the context sections above. Being "confused" about financial data is NOT a reason to escalate �?always attempt the analysis first using the data in your context.
                Schema: { "tool_use": "workspace_action", "action": "escalate_to_antigravity", "params": { "reason": "Explain briefly why you are escalating this." }, "reply_text": "Escalating to engineering as explicitly requested." }
 
             8. **refresh_reports**: Use this when the user asks you to update, fill, or refresh the **Trial Balance (TB)**, **Statement of Financial Position**, **Balance Sheet**, or **Income Statement**. 

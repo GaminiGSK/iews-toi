@@ -1,38 +1,37 @@
 const axios = require('axios');
-const fs = require('fs');
 const FormData = require('form-data');
-require('dotenv').config({ path: 'e:/Antigravity/TOI/server/.env' });
+const fs = require('fs');
 
-async function loginAndUpload() {
-    try {
-        console.log("Logging in...");
-        const loginRes = await axios.post('https://iews-toi-588941282431.asia-southeast1.run.app/api/auth/login', {
-            username: 'admin',
-            code: '999999' // FIXED: use code
-        });
-        const token = loginRes.data.token;
-        console.log("Token received:", token.substring(0, 15) + "...");
+async function testUpload() {
+  try {
+    // 1. Login
+    const loginRes = await axios.post('https://iews-toi-588941282431.asia-southeast1.run.app/api/auth/login', {
+      username: 'Admin',
+      code: '999999'
+    });
+    const token = loginRes.data.token;
+    
+    // 2. Upload
+    console.log('Logged in, uploading...');
+    const form = new FormData();
+    form.append('file', fs.createReadStream('C:/Users/Gamini/.gemini/antigravity/brain/12ef8602-c2b8-4b29-88e4-7b920c04c579/cambodia_tax_law_dummy_1775965338025.png'));
+    form.append('category', 'TAX_LAW');
+    form.append('title', 'System Test Doc');
+    
+    const uploadRes = await axios.post('https://iews-toi-588941282431.asia-southeast1.run.app/api/knowledge/ingest-law', form, {
+      headers: {
+        ...form.getHeaders(),
+        'Authorization': `Bearer ${token}`
+      }
+    });
 
-        console.log("Creating dummy file...");
-        fs.writeFileSync('test_dummy.txt', 'This is a test document with random text like SUPERIOR HOSPITAL.');
-
-        const form = new FormData();
-        form.append('file', fs.createReadStream('test_dummy.txt'), 'test_dummy.txt');
-        form.append('docType', 'taxPatent');
-        form.append('companyCode', 'SCAR');
-
-        console.log("Uploading...");
-        const uploadRes = await axios.post('https://iews-toi-588941282431.asia-southeast1.run.app/api/company/upload-scar-doc', form, {
-            headers: {
-                ...form.getHeaders(),
-                'Authorization': `Bearer ${token}`
-            }
-        });
-
-        console.log("Upload Success! Extracted Data:");
-        console.log(uploadRes.data.extractedData);
-    } catch (e) {
-        console.error("Error:", e.response ? e.response.data : e.message);
-    }
+    console.log('Upload success!');
+    console.log('--- English Translation ---');
+    console.log(uploadRes.data.doc.translatedEnglish);
+    console.log('--- Structured Rules ---');
+    console.log(JSON.stringify(uploadRes.data.doc.structuredRules, null, 2));
+  } catch (err) {
+    console.error('Test failed:', err.response ? err.response.data : err.message);
+  }
 }
-loginAndUpload();
+testUpload();

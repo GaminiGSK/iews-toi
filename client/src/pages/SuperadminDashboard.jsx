@@ -1,15 +1,16 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import {
     Crown, Shield, Plus, Trash2, Edit3, ChevronRight,
     BookOpen, FileText, RefreshCw, LogOut, Users,
-    Building2, Check, AlertCircle, Loader2, X, Eye, EyeOff, Code
+    Building2, Check, AlertCircle, Loader2, X, Eye, EyeOff, Code, UploadCloud
 } from 'lucide-react';
+import { useDropzone } from 'react-dropzone';
 
 export default function SuperadminDashboard() {
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState('admins');
+    const [activeTab, setActiveTab] = useState('knowledge');
     const [admins, setAdmins] = useState([]);
     const [knowledgeFiles, setKnowledgeFiles] = useState([]);
     const [knowledgeStatus, setKnowledgeStatus] = useState(null);
@@ -26,6 +27,11 @@ export default function SuperadminDashboard() {
     const [createError, setCreateError] = useState('');
     const [showCode, setShowCode] = useState({});
     const [toast, setToast] = useState(null);
+
+    const [knowledgeDocs, setKnowledgeDocs] = useState([]);
+    const [uploadingDoc, setUploadingDoc] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState('TAX_LAW');
+    const [selectedDoc, setSelectedDoc] = useState(null);
 
     const token = () => localStorage.getItem('token');
     const headers = () => ({ Authorization: `Bearer ${token()}` });
@@ -51,17 +57,51 @@ export default function SuperadminDashboard() {
         } finally { setLoading(false); }
     };
 
-    // ── Load Knowledge Files ─────────────────────────────────────────────────
+    // ── Load Knowledge Files & Docs ──────────────────────────────────────────
     const loadKnowledge = async () => {
         try {
-            const [filesRes, statusRes] = await Promise.all([
-                axios.get('/api/knowledge/files', { headers: headers() }),
-                axios.get('/api/knowledge/status', { headers: headers() })
+            const [statusRes, docsRes] = await Promise.all([
+                axios.get('/api/knowledge/status', { headers: headers() }).catch(() => ({ data: {} })),
+                axios.get('/api/knowledge/documents', { headers: headers() }).catch(() => ({ data: [] }))
             ]);
-            setKnowledgeFiles(filesRes.data || []);
             setKnowledgeStatus(statusRes.data || {});
+            setKnowledgeDocs(docsRes.data || []);
         } catch (e) { console.warn('Knowledge load:', e.message); }
     };
+    
+    const handleDeleteKnowledgeDoc = async (e, docId) => {
+        e.stopPropagation();
+        if(!window.confirm("Are you sure you want to delete this document from the vault?\nIt will be completely un-indexed.")) return;
+        try {
+            await axios.delete(`/api/knowledge/documents/${docId}`, { headers: headers() });
+            setKnowledgeDocs(prev => prev.filter(d => d._id !== docId));
+            if(selectedDoc?._id === docId) setSelectedDoc(null);
+            showToast("Document deleted successfully");
+        } catch (err) {
+            console.error('Error deleting document', err);
+            showToast("Failed to delete document", "error");
+        }
+    };
+
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({
+        accept: { 'application/pdf': ['.pdf'], 'image/*': ['.png', '.jpg', '.jpeg'] },
+        onDrop: async (acceptedFiles) => {
+            if (!acceptedFiles?.length) return;
+            setUploadingDoc(true);
+            const formData = new FormData();
+            formData.append('file', acceptedFiles[0]);
+            formData.append('category', selectedCategory);
+            try {
+                await axios.post('/api/knowledge/ingest-law', formData, { headers: headers() });
+                showToast('✅ Document ingested successfully');
+                await loadKnowledge();
+            } catch (err) {
+                showToast('❌ Upload failed', 'err');
+            } finally {
+                setUploadingDoc(false);
+            }
+        }
+    });
 
     // ── Sync Knowledge ───────────────────────────────────────────────────────
     const syncKnowledge = async () => {
@@ -223,6 +263,12 @@ export default function SuperadminDashboard() {
                         className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'knowledge' ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-lg shadow-amber-600/20' : 'text-slate-400 hover:text-white'}`}
                     >
                         <BookOpen className="w-3.5 h-3.5" /> BA Knowledge Vault
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('rules')}
+                        className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'rules' ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-lg shadow-emerald-600/20' : 'text-slate-400 hover:text-white'}`}
+                    >
+                        <Shield className="w-3.5 h-3.5" /> BA Rules
                     </button>
                     <button
                         onClick={() => setActiveTab('iframes')}
@@ -430,92 +476,192 @@ export default function SuperadminDashboard() {
 
                 {/* ── KNOWLEDGE VAULT TAB ──────────────────────────────────── */}
                 {activeTab === 'knowledge' && (
-                    <div>
-                        {/* Status Bar */}
-                        <div className="flex items-center justify-between mb-6">
+                    <div className="flex flex-col h-[calc(100vh-140px)]">
+                        <div className="flex items-center justify-between mb-4 shrink-0">
                             <div>
                                 <h2 className="text-xl font-black">BA Knowledge Vault</h2>
-                                <p className="text-xs text-slate-500 mt-1">PDF tax laws & guidelines for BA TOI and BA Audit to learn from</p>
+                                <p className="text-xs text-slate-500 mt-1">Hybrid Cloud Archive & MongoDB Intelligence Layer</p>
                             </div>
-                            <button
-                                onClick={syncKnowledge}
-                                disabled={syncing}
-                                className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-amber-600/20 transition-all disabled:opacity-50"
-                            >
-                                <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
-                                {syncing ? 'Syncing...' : 'Sync Now'}
-                            </button>
-                        </div>
-
-                        {/* Status Cards */}
-                        {knowledgeStatus && (
-                            <div className="grid grid-cols-4 gap-4 mb-6">
-                                {[
-                                    { label: 'Total Files', value: knowledgeFiles.length, icon: FileText, color: 'text-blue-400' },
-                                    { label: 'Active Files', value: knowledgeFiles.filter(f => f.isActive).length, icon: Check, color: 'text-emerald-400' },
-                                    { label: 'Pending Read', value: knowledgeFiles.filter(f => !f.readAt).length, icon: AlertCircle, color: 'text-amber-400' },
-                                    { label: 'Last Sync', value: knowledgeStatus.lastSync ? new Date(knowledgeStatus.lastSync).toLocaleDateString() : 'Never', icon: RefreshCw, color: 'text-slate-400' },
-                                ].map(({ label, value, icon: Icon, color }) => (
-                                    <div key={label} className="bg-slate-900/50 border border-white/5 rounded-2xl p-4">
-                                        <Icon className={`w-4 h-4 ${color} mb-2`} />
-                                        <p className={`text-2xl font-black ${color}`}>{value}</p>
-                                        <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mt-0.5">{label}</p>
-                                    </div>
+                            <div className="flex bg-slate-900 border border-white/5 rounded-xl p-1 shrink-0">
+                                {['TAX_LAW', 'GDT_CIRCULAR', 'TOI_GUIDELINE', 'AUDIT_STANDARD'].map(cat => (
+                                    <button
+                                        key={cat}
+                                        onClick={() => setSelectedCategory(cat)}
+                                        className={`px-4 py-2 text-xs font-black uppercase tracking-wider rounded-lg transition-all ${selectedCategory === cat ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/20' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+                                    >
+                                        {cat.replace('_', ' ')}
+                                    </button>
                                 ))}
                             </div>
-                        )}
-
-                        {/* Category breakdown */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                            {['tax_laws', 'gdt_circulars', 'toi_guidelines', 'audit_standards'].map(cat => {
-                                const count = knowledgeFiles.filter(f => f.category === cat).length;
-                                const label = cat.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
-                                return (
-                                    <div key={cat} className={`rounded-xl border px-4 py-3 ${categoryColors[cat] || categoryColors.other}`}>
-                                        <p className="font-black text-lg">{count}</p>
-                                        <p className="text-[10px] font-semibold uppercase tracking-wider opacity-80">{label}</p>
-                                    </div>
-                                );
-                            })}
                         </div>
 
-                        {/* File List */}
-                        <div className="bg-slate-900/50 border border-white/5 rounded-2xl overflow-hidden">
-                            <div className="px-5 py-3 border-b border-white/5 flex items-center justify-between">
-                                <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Knowledge Files</p>
-                                <p className="text-[10px] text-slate-600">Drop PDFs into Google Drive → Sync Now</p>
-                            </div>
-                            {knowledgeFiles.length === 0 ? (
-                                <div className="text-center py-16 text-slate-500">
-                                    <BookOpen className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                                    <p className="font-semibold">No knowledge files yet</p>
-                                    <p className="text-xs mt-1">Drop PDF files into the Super Knowledge Google Drive folder, then click Sync Now</p>
+                        <div className="flex-1 flex gap-4 min-h-0">
+                            {/* COL 1: Dropzone */}
+                            <div className="w-1/4 flex flex-col gap-4">
+                                <div
+                                    {...getRootProps()}
+                                    className={`flex-1 border-2 border-dashed rounded-3xl p-6 flex flex-col items-center justify-center transition-all cursor-pointer ${isDragActive ? 'border-amber-500 bg-amber-500/10' : 'border-white/10 bg-slate-900/50 hover:bg-slate-800/50 hover:border-amber-500/50'} ${uploadingDoc ? 'opacity-50 pointer-events-none' : ''}`}
+                                >
+                                    <input {...getInputProps()} />
+                                    {uploadingDoc ? (
+                                        <>
+                                            <Loader2 className="w-10 h-10 text-amber-500 mb-4 animate-spin" />
+                                            <p className="text-sm font-black text-white text-center">Ingesting & Translating...</p>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <UploadCloud className={`w-10 h-10 mb-4 ${isDragActive ? 'text-amber-500' : 'text-slate-500'}`} />
+                                            <p className="text-sm font-black text-white text-center mb-1">Drop Khmer PDF Here</p>
+                                            <p className="text-[10px] text-slate-500 text-center uppercase tracking-widest font-semibold">Will be archived & OCR'd</p>
+                                        </>
+                                    )}
                                 </div>
-                            ) : (
-                                <div className="divide-y divide-white/5">
-                                    {knowledgeFiles.map(f => (
-                                        <div key={f._id} className="px-5 py-4 flex items-center justify-between hover:bg-white/2 transition-colors">
-                                            <div className="flex items-center gap-3">
-                                                <FileText className="w-4 h-4 text-slate-400 shrink-0" />
-                                                <div>
-                                                    <p className="text-sm font-semibold text-white">{f.filename}</p>
-                                                    <p className="text-[10px] text-slate-500 mt-0.5">
-                                                        {f.readAt ? `✅ Read ${new Date(f.readAt).toLocaleDateString()}` : '⏳ Pending read'}
-                                                    </p>
-                                                </div>
+                            </div>
+
+                            {/* COL 2: Inbox/List */}
+                            <div className="w-1/3 bg-slate-900/50 border border-white/5 rounded-3xl overflow-hidden flex flex-col">
+                                <div className="px-5 py-4 border-b border-white/5 bg-slate-800/20 shrink-0">
+                                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Extracted Documents</h3>
+                                </div>
+                                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                                    {knowledgeDocs.length === 0 && (
+                                        <div className="text-center text-slate-500 mt-10">No documents ingested yet</div>
+                                    )}
+                                    {knowledgeDocs.map(doc => (
+                                        <div 
+                                            key={doc._id} 
+                                            onClick={() => setSelectedDoc(doc)}
+                                            className={`p-4 rounded-2xl border cursor-pointer transition-all ${selectedDoc?._id === doc._id ? 'bg-amber-500/10 border-amber-500/50 shadow-inner' : 'bg-slate-800/40 border-white/5 hover:border-white/20'}`}
+                                        >
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className="px-2 py-0.5 bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[9px] font-black uppercase tracking-widest rounded-md">
+                                                    {doc.category.replace('_', ' ')}
+                                                </span>
                                             </div>
-                                            <span className={`text-[10px] font-black px-2.5 py-1 rounded-lg border uppercase tracking-wider ${categoryColors[f.category] || categoryColors.other}`}>
-                                                {(f.category || 'other').replace('_', ' ')}
-                                            </span>
+                                            <div className="flex justify-between items-start gap-2">
+                                                <p className="font-bold text-white text-sm line-clamp-2 leading-tight flex-1">{doc.title}</p>
+                                                <button 
+                                                    onClick={(e) => handleDeleteKnowledgeDoc(e, doc._id)}
+                                                    className="opacity-50 hover:opacity-100 text-red-500 transition-opacity"
+                                                    title="Delete Document"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                            <div className="flex items-center gap-2 mt-2 text-[10px] text-slate-500 font-mono">
+                                                <span>{new Date(doc.uploadedAt).toLocaleDateString()}</span>
+                                                {doc.driveFileId && <span className="text-emerald-500">✓ Archive Verified</span>}
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
-                            )}
+                            </div>
+
+                            {/* COL 3: Extracted Text */}
+                            <div className="flex-1 bg-slate-900/50 border border-white/5 rounded-3xl overflow-hidden flex flex-col relative">
+                                {!selectedDoc ? (
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500">
+                                        <BookOpen className="w-12 h-12 mb-4 opacity-20" />
+                                        <p className="font-semibold text-sm">Select a document to view intelligence</p>
+                                    </div>
+                                ) : (
+                                    <div className="flex-1 overflow-y-auto p-8">
+                                        <div className="mb-6 border-b border-white/10 pb-6">
+                                            <h2 className="text-xl font-black text-white mb-2">{selectedDoc.title}</h2>
+                                            <p className="text-xs text-slate-400 font-mono">Original: {selectedDoc.originalFileName}</p>
+                                        </div>
+                                        
+                                        <div className="space-y-8">
+                                            <div>
+                                                <h3 className="text-xs font-black text-amber-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                                    <span className="w-6 h-px bg-amber-500/50"></span> Original Khmer Content
+                                                </h3>
+                                                <div className="p-6 rounded-2xl bg-black/40 border border-white/5 text-sm text-slate-300 whitespace-pre-wrap font-sans leading-relaxed">
+                                                    {selectedDoc.originalTextKhmer || 'No text extracted.'}
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <h3 className="text-xs font-black text-blue-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                                    <span className="w-6 h-px bg-blue-500/50"></span> English Translation
+                                                </h3>
+                                                <div className="p-6 rounded-2xl bg-black/40 border border-white/5 text-sm text-slate-300 whitespace-pre-wrap font-sans leading-relaxed">
+                                                    {selectedDoc.translatedEnglish || 'Translation pending or failed...'}
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <h3 className="text-xs font-black text-emerald-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                                    <span className="w-6 h-px bg-emerald-500/50"></span> Distilled Tax Rules (Operational)
+                                                </h3>
+                                                <div className="space-y-3">
+                                                    {selectedDoc.structuredRules?.hardRules?.length > 0 ? (
+                                                        selectedDoc.structuredRules.hardRules.map((rule, idx) => (
+                                                            <div key={idx} className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-sm text-emerald-400 font-semibold shadow-inner">
+                                                                {rule}
+                                                            </div>
+                                                        ))
+                                                    ) : (
+                                                        <div className="p-4 rounded-xl bg-slate-800 border border-white/5 text-sm text-slate-500 italic">No operational rules extracted.</div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 )}
 
                 {/* ── IFRAMES TAB ────────────────────────────────────────────── */}
+                {/* ── RULES TAB ────────────────────────────────────────── */}
+                {activeTab === 'rules' && (
+                    <div className="flex flex-col h-[calc(100vh-140px)]">
+                        <div className="flex items-center justify-between mb-6 shrink-0">
+                            <div>
+                                <h2 className="text-xl font-black text-white">System Operations Rules</h2>
+                                <p className="text-xs text-slate-500 mt-1">Distilled rules actively used by the BA Tax Agent to audit units.</p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto min-h-0 pb-10">
+                            {knowledgeDocs.filter(d => d.structuredRules?.hardRules?.length > 0).length === 0 && (
+                                <div className="col-span-full p-10 bg-slate-900/50 rounded-3xl border border-white/5 text-center text-slate-500">
+                                    No rules have been distilled yet.
+                                </div>
+                            )}
+                            
+                            {knowledgeDocs.filter(d => d.structuredRules?.hardRules?.length > 0).map(doc => (
+                                <React.Fragment key={doc._id}>
+                                    {doc.structuredRules.hardRules.map((rule, idx) => (
+                                        <div key={`${doc._id}-${idx}`} className="flex flex-col bg-slate-900/50 border border-emerald-500/20 rounded-2xl hover:border-emerald-500/50 transition-colors shadow-lg shadow-emerald-900/10">
+                                            <div className="p-5 relative flex flex-col h-full">
+                                                <div className="w-1 absolute left-0 top-6 bottom-6 bg-emerald-500 rounded-r-lg"></div>
+                                                <div className="flex items-start gap-3 pl-3 mb-4">
+                                                    <Shield className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                                                    <p className="text-sm font-semibold text-emerald-50 leading-relaxed font-sans flex-1">{rule}</p>
+                                                </div>
+                                                <div className="mt-auto pl-3 pt-4 border-t border-white/5 flex flex-wrap items-center gap-x-4 gap-y-2">
+                                                    <div className="flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded border border-emerald-500/20">
+                                                        <BookOpen className="w-3.5 h-3.5" />
+                                                        <span className="text-[10px] font-black uppercase tracking-widest truncate max-w-[200px]" title={doc.title}>
+                                                            {doc.structuredRules?.documentNumber ? `Ref: ${doc.structuredRules.documentNumber}` : doc.title}
+                                                        </span>
+                                                    </div>
+                                                    <div className="text-[10px] text-slate-500 font-mono bg-black/50 px-2.5 py-1 rounded">
+                                                        {doc.structuredRules?.documentDate || new Date(doc.uploadedAt).toLocaleDateString()}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </React.Fragment>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 {activeTab === 'iframes' && (
                     <div>
                         <div className="flex items-center justify-between mb-6">

@@ -58,7 +58,7 @@ axios.interceptors.request.use(config => {
       const user = JSON.parse(userStr);
       if (user.role === 'admin' || user.role === 'superadmin') {
         const lastSelectedBR = localStorage.getItem('lastSelectedBR');
-        if (lastSelectedBR) {
+        if (lastSelectedBR && lastSelectedBR.toUpperCase() !== 'SCAR') {
           config.headers['x-target-user'] = lastSelectedBR;
         }
       }

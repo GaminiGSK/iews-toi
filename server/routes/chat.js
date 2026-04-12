@@ -10,6 +10,7 @@ const CompanyProfile = require('../models/CompanyProfile');
 const BankStatement = require('../models/BankStatement');
 const Bridge = require('../models/Bridge');
 const AuditSession = require('../models/AuditSession');
+const KnowledgeDocument = require('../models/KnowledgeDocument');
 const upload = require('../middleware/upload');
 const fs = require('fs');
 const path = require('path');
@@ -252,6 +253,24 @@ router.post('/message', auth, async (req, res) => {
                     text: rulesText
                 });
             }
+        }
+
+        // INJECT GLOBAL KNOWLEDGE VAULT "LAWS OF THE LAND"
+        const knowledgeDocs = await KnowledgeDocument.find({}).lean();
+        const vaultRules = [];
+        for (const doc of knowledgeDocs) {
+            if (doc.structuredRules?.hardRules?.length > 0) {
+                const docRef = doc.structuredRules.documentNumber ? `Ref: ${doc.structuredRules.documentNumber}` : doc.title;
+                const pubDate = doc.structuredRules.documentDate || new Date(doc.uploadedAt).toLocaleDateString();
+                const rulesBody = doc.structuredRules.hardRules.map(r => `  - RULE: ${r}`).join('\n');
+                vaultRules.push(`LAW SOURCE: [${docRef}] (Published: ${pubDate})\n${rulesBody}`);
+            }
+        }
+        if (vaultRules.length > 0) {
+            backendBrData.push({
+                name: 'GK SMART KNOWLEDGE VAULT: AUTHORITATIVE LAWS & RULES (MANDATORY ENFORCEMENT)',
+                text: vaultRules.join('\n\n')
+            });
         }
 
         const context = {
