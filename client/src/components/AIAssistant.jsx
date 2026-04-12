@@ -9,7 +9,7 @@ import {
     Tooltip as RechartsTooltip, Legend, ResponsiveContainer
 } from 'recharts';
 
-const AIAssistant = () => {
+const AIAssistant = ({ isEmbedded = false }) => {
     // LOCATION
     const location = useLocation();
 
@@ -406,12 +406,15 @@ const AIAssistant = () => {
 
     return (
         // KEY CHANGE: Moved to Right-6, Items-End to accommodate UI needs
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none no-print">
+        <div className={isEmbedded ? "w-full h-full flex flex-col font-sans" : "fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none no-print"}>
             {/* Chat Window */}
-            {isOpen && (
+            {(isOpen || isEmbedded) && (
                 <div
-                    className="bg-[#030712] pointer-events-auto rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] border border-white/60 w-[650px] max-w-[calc(100vw-48px)] flex flex-col mb-4 overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300"
-                    style={{ height: 'calc(100vh - 100px)', maxHeight: '1000px' }}
+                    className={isEmbedded 
+                        ? "bg-[#030712] w-full h-full flex flex-col overflow-hidden" 
+                        : "bg-[#030712] pointer-events-auto rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] border border-white/60 w-[650px] max-w-[calc(100vw-48px)] flex flex-col mb-4 overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300"
+                    }
+                    style={isEmbedded ? {} : { height: 'calc(100vh - 100px)', maxHeight: '1000px' }}
                 >
                     {/* Header - Sleek Dark with Thin Bright Borders */}
                     <div className="bg-[#0a0f18] p-6 shrink-0 flex justify-between items-center text-white border-b border-white/40 relative z-30">
@@ -464,15 +467,17 @@ const AIAssistant = () => {
                         </div>
 
                         {/* Action Buttons: CLOSE */}
-                        <div className="flex items-center gap-3 shrink-0 ml-6">
-                            <button
-                                onClick={() => setIsOpen(false)}
-                                className="p-3 bg-red-500/20 hover:bg-red-500 border border-red-500/40 rounded-2xl transition-all shadow-lg active:scale-95 group text-red-100"
-                                title="Close Agent"
-                            >
-                                <X size={24} className="group-hover:rotate-90 transition-transform" />
-                            </button>
-                        </div>
+                        {!isEmbedded && (
+                            <div className="flex items-center gap-3 shrink-0 ml-6">
+                                <button
+                                    onClick={() => setIsOpen(false)}
+                                    className="p-3 bg-red-500/20 hover:bg-red-500 border border-red-500/40 rounded-2xl transition-all shadow-lg active:scale-95 group text-red-100"
+                                    title="Close Agent"
+                                >
+                                    <X size={24} className="group-hover:rotate-90 transition-transform" />
+                                </button>
+                            </div>
+                        )}
                     </div>
 
 
@@ -688,7 +693,7 @@ const AIAssistant = () => {
             )}
 
             {/* Toggle Button (Collapsed State) - Right Side */}
-            {!isOpen && (
+            {!isOpen && !isEmbedded && (
                 <button
                     onClick={() => setIsOpen(true)}
                     className="pointer-events-auto bg-blue-600 hover:bg-blue-500 text-white p-1 rounded-full shadow-2xl hover:shadow-blue-500/50 hover:scale-105 transition-all duration-300 group relative ring-4 ring-slate-900 border border-white/10"

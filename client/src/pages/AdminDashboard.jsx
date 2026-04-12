@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
     UserPlus, User, Edit2, Trash2, X, Lock, Users, FileSpreadsheet, Brain, ChevronRight,
-    FileText, ArrowLeft, AlertCircle
+    FileText, ArrowLeft, AlertCircle, Code, Shield
 } from 'lucide-react';
 import TaxFormWorkbench from './TaxFormWorkbench';
 import LiveTaxWorkspace from './LiveTaxWorkspace';
@@ -349,6 +349,12 @@ export default function AdminDashboard() {
                     <Brain size={28} /> BA Knowledge
                 </button>
                 <button
+                    onClick={() => setActiveTab('iframes')}
+                    className={`flex items-center gap-4 px-10 py-6 text-[22px] font-black uppercase tracking-[0.2em] border-b-4 transition-all ${activeTab === 'iframes' ? 'border-purple-500 text-purple-400' : 'border-transparent text-gray-600 hover:text-gray-400'}`}
+                >
+                    <Code size={28} /> IFrames
+                </button>
+                <button
                     onClick={() => {
                         window.location.href = '/dashboard?packageId=SCAR';
                     }}
@@ -537,6 +543,60 @@ export default function AdminDashboard() {
                                         </div>
                                     </div>
                                 )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* IFRAMES TAB */}
+                    {activeTab === 'iframes' && (
+                        <div className="h-full overflow-y-auto p-10 space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+                            <div className="max-w-7xl mx-auto">
+                                <div className="flex justify-between items-center bg-white/[0.03] p-8 rounded-[32px] border border-white/5 mb-8">
+                                    <div>
+                                        <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-tight">Embeddable Widgets (iFrames)</h2>
+                                        <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.3em]">Copy and paste these snippets to embed GK SMART & AI widgets into external partner sites.</p>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                    {/* Blue Agent iFrame */}
+                                    <div className="bg-slate-900/40 border border-white/5 rounded-[40px] overflow-hidden flex flex-col group hover:border-purple-500/30 transition-all duration-700">
+                                        <div className="p-10 border-b border-white/5 flex items-center gap-6 bg-white/[0.02]">
+                                            <div className="w-16 h-16 bg-blue-600/20 rounded-2xl flex items-center justify-center">
+                                                <span className="text-blue-400 font-black text-xl">BA</span>
+                                            </div>
+                                            <div>
+                                                <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-1">The Blue Agent</h3>
+                                                <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Chatbot Widget</p>
+                                            </div>
+                                        </div>
+                                        <div className="p-10 flex-1 flex flex-col">
+                                            <p className="text-slate-400 mb-6 text-sm font-medium leading-relaxed">Embeds the chat interface into any column or row. Automatically handles context if connected to an auth session.</p>
+                                            <code className="block w-full p-6 bg-black/60 border border-white/10 rounded-2xl text-xs text-emerald-400 font-mono break-all whitespace-pre-wrap select-all shadow-inner">
+{`<iframe src="https://gksmart-ai-app.web.app/embed/blue-agent?partner=taxshopai" width="100%" height="600px" style="border:none; border-radius:12px;"></iframe>`}
+                                            </code>
+                                        </div>
+                                    </div>
+
+                                    {/* Login iFrame */}
+                                    <div className="bg-slate-900/40 border border-white/5 rounded-[40px] overflow-hidden flex flex-col group hover:border-purple-500/30 transition-all duration-700">
+                                        <div className="p-10 border-b border-white/5 flex items-center gap-6 bg-white/[0.02]">
+                                            <div className="w-16 h-16 bg-purple-600/20 rounded-2xl flex items-center justify-center">
+                                                <Lock className="text-purple-400" size={32} />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-1">Main Login</h3>
+                                                <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Authentication Widget</p>
+                                            </div>
+                                        </div>
+                                        <div className="p-10 flex-1 flex flex-col">
+                                            <p className="text-slate-400 mb-6 text-sm font-medium leading-relaxed">Embeds the authentication portal. Uses postMessage API to securely send JWT tokens back to the host window upon success.</p>
+                                            <code className="block w-full p-6 bg-black/60 border border-white/10 rounded-2xl text-xs text-emerald-400 font-mono break-all whitespace-pre-wrap select-all shadow-inner">
+{`<iframe src="https://gksmart-ai-app.web.app/embed/login?partner=taxshopai" width="100%" height="500px" style="border:none; border-radius:12px;"></iframe>`}
+                                            </code>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     )}

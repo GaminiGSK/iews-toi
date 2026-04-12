@@ -8,6 +8,8 @@ import PrivateRoute from './components/PrivateRoute';
 import AIAssistant from './components/AIAssistant';
 import LiveTaxWorkspace from './pages/LiveTaxWorkspace';
 import TaxFormWorkbench from './pages/TaxFormWorkbench';
+import EmbedLogin from './pages/EmbedLogin';
+import EmbedBlueAgent from './pages/EmbedBlueAgent';
 import { Component } from 'react';
 
 import axios from 'axios';
@@ -68,8 +70,8 @@ axios.interceptors.request.use(config => {
 const AppLayout = ({ children }) => {
   const location = useLocation();
   // Only show AI assistant for unit users on working pages (not admin/superadmin management pages)
-  const isAdminRoute = location.pathname === '/admin' || location.pathname === '/superadmin' || location.pathname === '/login';
-  const showAI = !isAdminRoute;
+  const isExcludedRoute = location.pathname === '/admin' || location.pathname === '/superadmin' || location.pathname === '/login' || location.pathname.startsWith('/embed');
+  const showAI = !isExcludedRoute;
 
   return (
     <>
@@ -85,6 +87,8 @@ function App() {
       <SiteGate>
         <AppLayout>
           <Routes>
+            <Route path="/embed/login" element={<EmbedLogin />} />
+            <Route path="/embed/blue-agent" element={<EmbedBlueAgent />} />
             <Route path="/login" element={<Login />} />
 
             <Route path="/superadmin" element={

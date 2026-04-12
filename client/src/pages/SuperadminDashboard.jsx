@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
     Crown, Shield, Plus, Trash2, Edit3, ChevronRight,
     BookOpen, FileText, RefreshCw, LogOut, Users,
-    Building2, Check, AlertCircle, Loader2, X, Eye, EyeOff
+    Building2, Check, AlertCircle, Loader2, X, Eye, EyeOff, Code
 } from 'lucide-react';
 
 export default function SuperadminDashboard() {
@@ -223,6 +223,12 @@ export default function SuperadminDashboard() {
                         className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'knowledge' ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-lg shadow-amber-600/20' : 'text-slate-400 hover:text-white'}`}
                     >
                         <BookOpen className="w-3.5 h-3.5" /> BA Knowledge Vault
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('iframes')}
+                        className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'iframes' ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg shadow-purple-600/20' : 'text-slate-400 hover:text-white'}`}
+                    >
+                        <Code className="w-3.5 h-3.5" /> IFrames
                     </button>
                     <button
                         onClick={() => {
@@ -505,6 +511,62 @@ export default function SuperadminDashboard() {
                                     ))}
                                 </div>
                             )}
+                        </div>
+                    </div>
+                )}
+
+                {/* ── IFRAMES TAB ────────────────────────────────────────────── */}
+                {activeTab === 'iframes' && (
+                    <div>
+                        <div className="flex items-center justify-between mb-6">
+                            <div>
+                                <h2 className="text-xl font-black">Embeddable Widgets (iFrames)</h2>
+                                <p className="text-xs text-slate-500 mt-1">Copy and paste these snippets to embed GK SMART & AI widgets into external partner sites (like taxshopai.info).</p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* Blue Agent iFrame */}
+                            <div className="bg-slate-900/50 border border-white/5 rounded-2xl overflow-hidden flex flex-col">
+                                <div className="px-5 py-4 border-b border-white/5 flex items-center justify-between bg-slate-800/20">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-lg bg-blue-600/20 flex items-center justify-center">
+                                            <span className="text-blue-400 font-bold text-xs">BA</span>
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-white text-sm">The Blue Agent</p>
+                                            <p className="text-[10px] text-slate-500 uppercase tracking-widest">Chatbot Widget</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="p-5 flex-1 flex flex-col">
+                                    <p className="text-xs text-slate-400 mb-4">Embeds the chat interface into any column or row. Automatically handles context if connected to an auth session.</p>
+                                    <code className="block w-full p-4 bg-black/50 border border-white/10 rounded-xl text-[10px] text-emerald-400 font-mono break-all whitespace-pre-wrap select-all">
+{`<iframe src="https://gksmart-ai-app.web.app/embed/blue-agent?partner=taxshopai" width="100%" height="600px" style="border:none; border-radius:12px;"></iframe>`}
+                                    </code>
+                                </div>
+                            </div>
+
+                            {/* Login iFrame */}
+                            <div className="bg-slate-900/50 border border-white/5 rounded-2xl overflow-hidden flex flex-col">
+                                <div className="px-5 py-4 border-b border-white/5 flex items-center justify-between bg-slate-800/20">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-lg bg-purple-600/20 flex items-center justify-center">
+                                            <Shield className="w-4 h-4 text-purple-400" />
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-white text-sm">Main Login</p>
+                                            <p className="text-[10px] text-slate-500 uppercase tracking-widest">Authentication Widget</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="p-5 flex-1 flex flex-col">
+                                    <p className="text-xs text-slate-400 mb-4">Embeds the authentication portal. Uses postMessage API to securely send JWT tokens back to the host window upon success.</p>
+                                    <code className="block w-full p-4 bg-black/50 border border-white/10 rounded-xl text-[10px] text-emerald-400 font-mono break-all whitespace-pre-wrap select-all">
+{`<iframe src="https://gksmart-ai-app.web.app/embed/login?partner=taxshopai" width="100%" height="500px" style="border:none; border-radius:12px;"></iframe>`}
+                                    </code>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}
